@@ -60,6 +60,7 @@ infrastructure → application (via interfaces)
 | Notification | Email dispatch (async) |
 | Reporting | Aggregated queries, daily summaries |
 | Audit | Append-only event log, state change tracking |
+| CAD | CAD sub-track status, QA/QC sign-off — parallel to main ticket, never gates it |
 
 Modules communicate via the application service layer only. No direct cross-module table access.
 
@@ -149,7 +150,7 @@ tickets
   requester_id, assigned_crew_id, survey_lead_id
   workflow_variant (STANDARD_APPROVAL | DIRECT_ASSIGNMENT)
   status, craft, description
-  requested_date, submitted_at, approved_at, assigned_at, completed_at
+  requested_date, submitted_at, approved_at, assigned_at, started_at, completed_at, closed_at
   rejection_reason (required when status → REJECTED)
   parent_ticket_id (foreign key to tickets.id — set on resubmission after rejection)
   is_priority (boolean, default false — set by whitelist match or manual elevation only)
@@ -163,6 +164,15 @@ ticket_events (append-only — no updates, no deletes, ever)
 attachments
   id, ticket_id, tenant_id, uploaded_by, filename, mime_type,
   storage_key, size_bytes, created_at
+
+cad_work
+  id, ticket_id, tenant_id
+  cad_status (NOT_REQUIRED | NOT_STARTED | IN_PROGRESS | QA_PENDING | COMPLETE)
+  cad_assigned_to (FK users, nullable — CAD technician)
+  cad_reviewed_by (FK users, nullable — CAD Lead who signed off QA/QC)
+  cad_completed_at (timestamptz, nullable — stamped on QA sign-off)
+  — one row per ticket, created at ticket creation with cad_status = NOT_REQUIRED
+  — cad_status is independent of main ticket status; does NOT gate CLOSED transition
 ```
 
 ### Indexes Required
@@ -188,7 +198,7 @@ attachments
 ### Variant 1 — Standard Approval
 
 ```
-DRAFT → SUBMITTED → APPROVED → ASSIGNED → IN_PROGRESS → COMPLETED
+DRAFT → SUBMITTED → APPROVED → ASSIGNED → IN_PROGRESS → COMPLETED → CLOSED
                   ↘ REJECTED
 ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
                                         → CANCEL_REJECTED
@@ -197,17 +207,19 @@ ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
 - 48-hour minimum notice enforced at SUBMITTED transition
 - REJECTED requires rejection_reason before transition completes
 - Cancellation requires Approver or Survey Lead sign-off
+- `COMPLETED → CLOSED` performed by Survey Lead. `CLOSED` is the terminal state.
 
 ### Variant 2 — Direct Assignment
 
 ```
-CREATED → ASSIGNED → IN_PROGRESS → COMPLETED
+CREATED → ASSIGNED → IN_PROGRESS → COMPLETED → CLOSED
 ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
                                         → CANCEL_REJECTED
 ```
 
 - No approval gate
 - Auto-proceeds to ASSIGNED immediately
+- Same `COMPLETED → CLOSED` terminal step applies
 
 ### Transition Rules
 
@@ -250,6 +262,8 @@ Example: FSS-U1-00247
 - `SURVEY_LEAD` — assign crew, manage scheduling
 - `PARTY_CHIEF` — execute assigned work
 - `INSTRUMENT_MAN` — execute assigned work
+- `CAD_TECHNICIAN` — produce linework, surfaces, stakeout files for CAD-requiring tickets
+- `CAD_LEAD` — QA/QC sign-off on CAD deliverables (second-person check)
 - `VIEWER` — read-only project access
 
 RBAC is enforced at the **application/use-case layer**, not just the route.
@@ -290,11 +304,14 @@ Log at every meaningful state transition. Structured format only.
 - `ticket.priority_set_by_whitelist` (logged at submission when requester email matches whitelist)
 - `ticket.priority_elevated` (logged when SURVEY_LEAD or APPROVER manually elevates, reason required)
 - `ticket.assigned`, `ticket.unassigned`
-- `ticket.in_progress`, `ticket.completed`
+- `ticket.in_progress` — **requester must be notified on this event; was missing in original system**
+- `ticket.completed`, `ticket.closed`
 - `ticket.cancel_requested`, `ticket.cancel_approved`, `ticket.cancel_rejected`
 - `attachment.uploaded`, `attachment.downloaded`
 - `user.role_changed`
 - `whitelist.entry_added`, `whitelist.entry_removed` (TENANT_ADMIN actions on priority whitelist)
+- `cad.status_changed` (any cad_status transition, actor recorded)
+- `cad.qa_signed_off` (CAD_LEAD signs off, cad_reviewed_by and cad_completed_at stamped)
 
 Do not log attachment content, passwords, or tokens.
 
@@ -403,4 +420,4 @@ Railway is used only for staging/demo. Production deployment follows only when a
 
 ---
 
-*Last updated: Phase 0 complete — priority system, ticket numbering, and rejection override finalized. Next: Phase 1 — Data model and core backend.*
+*Last updated: Phase 0 complete — priority system, ticket numbering, and rejection override finalized. CAD sub-track, CLOSED terminal state, CAD roles, and IN_PROGRESS requester notification added from historical Power Automate flow analysis. Next: Phase 1 — Data model and core backend.*
