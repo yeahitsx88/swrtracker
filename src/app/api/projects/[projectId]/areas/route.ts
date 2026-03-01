@@ -6,6 +6,7 @@ import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
+import { getTenantRole } from '@/lib/get-tenant-role';
 import { createArea } from '@/modules/tenancy/application/create-area';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { UUID } from '@/shared/types';
@@ -28,12 +29,14 @@ export async function POST(
     }
 
     const { name, code } = body as { name: string; code: string };
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
     const repo = new TenancyRepository();
     const area = await createArea(repo, pool, {
       tenantId:  auth.tenantId,
       projectId: projectId as UUID,
       name,
       code,
+      actorRole,
     });
     return NextResponse.json({ area }, { status: 201 });
   } catch (err) {

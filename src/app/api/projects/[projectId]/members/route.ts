@@ -7,7 +7,7 @@ import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
-import { getProjectRole } from '@/lib/get-project-role';
+import { getTenantRole } from '@/lib/get-tenant-role';
 import { addProjectMember } from '@/modules/tenancy/application/add-project-member';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole } from '@/modules/identity/domain/types';
@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 const VALID_ROLES: ProjectRole[] = [
   'REQUESTER', 'APPROVER', 'SURVEY_LEAD',
-  'PARTY_CHIEF', 'INSTRUMENT_MAN', 'CAD_TECHNICIAN', 'CAD_LEAD', 'VIEWER',
+  'PARTY_CHIEF', 'INSTRUMENT_MAN', 'CAD_TECHNICIAN', 'CAD_LEAD', 'VIEWER', 'AREA_VIEWER',
 ];
 
 export async function POST(
@@ -37,7 +37,7 @@ export async function POST(
     }
 
     const { userId, role } = body as { userId: string; role: ProjectRole };
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
     const repo = new TenancyRepository();
     await addProjectMember(repo, pool, {
       tenantId:  auth.tenantId,

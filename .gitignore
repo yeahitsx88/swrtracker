@@ -7,6 +7,7 @@ out/
 
 # Environment — never commit real credentials
 .env
+.env.test
 .env.local
 .env.*.local
 

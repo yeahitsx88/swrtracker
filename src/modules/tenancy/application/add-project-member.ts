@@ -1,15 +1,15 @@
 import { randomUUID } from 'crypto';
-import { ForbiddenError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
-import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
 import type { ITenancyRepository } from './ports';
+import { assertTenantAdmin } from './shared';
 
 export interface AddProjectMemberParams {
   tenantId:   UUID;
   projectId:  UUID;
   userId:     UUID;
   role:       ProjectRole;
-  actorRole:  ProjectRole | 'TENANT_ADMIN';
+  actorRole:  TenantRole | null;
 }
 
 export async function addProjectMember(
@@ -17,9 +17,7 @@ export async function addProjectMember(
   db: DbClient,
   params: AddProjectMemberParams,
 ): Promise<void> {
-  if (params.actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can add project members');
-  }
+  assertTenantAdmin(params.actorRole);
 
   await repo.saveMembership(db, {
     id:        randomUUID() as UUID,

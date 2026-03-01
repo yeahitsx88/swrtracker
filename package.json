@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "db:migrate": "tsx --env-file=.env db/migrate.ts"
+    "db:migrate": "tsx --env-file=.env db/migrate.ts",
+    "test": "tsx --test tests/**/*.test.ts",
+    "test:watch": "tsx --watch --test tests/**/*.test.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

@@ -44,3 +44,11 @@ export interface ProjectMembership {
   role: ProjectRole;
   createdAt: Date;
 }
+
+export interface TenantMembership {
+  id: UUID;
+  tenantId: UUID;
+  userId: UUID;
+  role: TenantRole;
+  createdAt: Date;
+}

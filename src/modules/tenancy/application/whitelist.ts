@@ -5,19 +5,13 @@
  * Changes are audit-logged by the caller (route handler) after the use case succeeds.
  */
 import { randomUUID } from 'crypto';
-import { ForbiddenError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
-import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { TenantRole } from '@/modules/identity/domain/types';
 import type { PriorityWhitelistEntry } from '../domain/types';
 import type { ITenancyRepository } from './ports';
+import { assertTenantAdmin } from './shared';
 
-type ActorRole = ProjectRole | 'TENANT_ADMIN';
-
-function assertTenantAdmin(actorRole: ActorRole): void {
-  if (actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can manage the priority whitelist');
-  }
-}
+type ActorRole = TenantRole | null;
 
 export async function addToWhitelist(
   repo: ITenancyRepository,
