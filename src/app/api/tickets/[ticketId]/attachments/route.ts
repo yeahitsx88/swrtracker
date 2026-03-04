@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { NotFoundError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { pool } from '@/lib/db';
 import { uploadAttachment } from '@/modules/attachment/application';
 import type {
   AttachmentMetadataValidator,
@@ -83,6 +84,59 @@ export async function POST(
   ctx: { params: Promise<{ ticketId: string }> },
 ) {
   return handlePostTicketAttachments(req, ctx);
+}
+
+interface AttachmentRow {
+  id: string;
+  ticket_id: string;
+  tenant_id: string;
+  uploaded_by: string;
+  filename: string;
+  mime_type: string;
+  storage_key: string;
+  size_bytes: number;
+  created_at: Date;
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ ticketId: string }> },
+) {
+  try {
+    const { ticketId } = await params;
+    const ctx = await getTicketRouteContext(req, ticketId);
+    const ticketRepo = new TicketRepository();
+
+    const visibleTicket = await ticketRepo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
+    if (!visibleTicket) {
+      throw new NotFoundError(`Ticket ${ctx.ticketId} not found`);
+    }
+
+    const { rows } = await pool.query<AttachmentRow>(
+      `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, storage_key, size_bytes, created_at
+       FROM attachments
+       WHERE tenant_id = $1
+         AND ticket_id = $2
+       ORDER BY created_at DESC`,
+      [ctx.tenantId, ctx.ticketId],
+    );
+
+    return NextResponse.json({
+      attachments: rows.map((row) => ({
+        id: row.id,
+        ticketId: row.ticket_id,
+        tenantId: row.tenant_id,
+        uploadedBy: row.uploaded_by,
+        filename: row.filename,
+        mimeType: row.mime_type,
+        storageKey: row.storage_key,
+        sizeBytes: row.size_bytes,
+        createdAt: row.created_at.toISOString(),
+      })),
+    });
+  } catch (err) {
+    return errorResponse(err);
+  }
 }
 
 async function uploadAttachmentForRoute(

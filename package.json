@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "node --import tsx --test --test-isolation=none tests/**/*.test.ts",
     "db:migrate": "tsx --env-file=.env db/migrate.ts"
   },
   "dependencies": {

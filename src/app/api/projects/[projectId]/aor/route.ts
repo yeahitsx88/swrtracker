@@ -143,3 +143,66 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+interface AorLevelRow {
+  id: string;
+  depth: number;
+  label: string;
+}
+
+interface AorNodeRow {
+  id: string;
+  level_id: string;
+  parent_id: string | null;
+  name: string;
+  code: string;
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> },
+) {
+  try {
+    const auth = requireAuth(req);
+    const { projectId } = await params;
+
+    // Membership gate only; visibility details stay in backend ticket queries.
+    await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+
+    const levelsResult = await pool.query<AorLevelRow>(
+      `SELECT id, depth, label
+       FROM aor_levels
+       WHERE tenant_id = $1
+         AND project_id = $2
+       ORDER BY depth ASC`,
+      [auth.tenantId, projectId],
+    );
+
+    const nodesResult = await pool.query<AorNodeRow>(
+      `SELECT id, level_id, parent_id, name, code
+       FROM aor_nodes
+       WHERE tenant_id = $1
+         AND project_id = $2
+         AND retired_at IS NULL
+       ORDER BY name ASC`,
+      [auth.tenantId, projectId],
+    );
+
+    return NextResponse.json({
+      levels: levelsResult.rows.map((level) => ({
+        id: level.id,
+        depth: level.depth,
+        label: level.label,
+      })),
+      nodes: nodesResult.rows.map((node) => ({
+        id: node.id,
+        levelId: node.level_id,
+        parentId: node.parent_id,
+        name: node.name,
+        code: node.code,
+      })),
+    });
+  } catch (err) {
+    return errorResponse(err);
+  }
+}

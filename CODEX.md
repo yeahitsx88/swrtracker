@@ -1711,3 +1711,76 @@ Track Codex-authored remediation batches with a compact, append-only record.
 
 \- Production behavior changed: no
 
+### 2026-03-04 - Batch 36
+\- Intent: implement Phase 3 field-first UI surfaces and shared API client integration without moving workflow logic into the frontend
+
+\- Files touched:
+
+&nbsp; - `src/app/layout.tsx`
+
+&nbsp; - `src/app/page.tsx`
+
+&nbsp; - `src/app/globals.css`
+
+&nbsp; - `src/middleware.ts`
+
+&nbsp; - `src/lib/errors.ts`
+
+&nbsp; - `src/lib/contracts/auth.ts`
+
+&nbsp; - `src/lib/contracts/tickets.ts`
+
+&nbsp; - `src/lib/contracts/index.ts`
+
+&nbsp; - `src/lib/apiClient.ts`
+
+&nbsp; - `src/components/ui/*`
+
+&nbsp; - `src/components/forms/*`
+
+&nbsp; - `src/components/aor/*`
+
+&nbsp; - `src/components/tickets/*`
+
+&nbsp; - `src/app/(auth)/*`
+
+&nbsp; - `src/app/(projects)/*`
+
+&nbsp; - `src/app/api/auth/invite/[token]/route.ts`
+
+&nbsp; - `src/app/api/projects/[projectId]/aor/route.ts`
+
+&nbsp; - `src/app/api/tickets/[ticketId]/attachments/route.ts`
+
+&nbsp; - `package.json`
+
+&nbsp; - `PHASE3_STATUS.md`
+
+&nbsp; - `CODEX.md`
+
+\- Behavior added:
+
+&nbsp; - added Phase 3 route-grouped UI shell and mobile-first pages for authentication, requester submission/dashboard/detail, crew work queue, and Party Chief approval queue
+
+&nbsp; - added a typed frontend API client layer (`lib/apiClient.ts` + `lib/contracts`) so pages orchestrate backend calls while components remain presentation-focused
+
+&nbsp; - added field submission stepper flow at `/projects/[projectId]/request/new` that delegates ticket creation/submission and attachment writes to backend APIs
+
+&nbsp; - added requester surfaces for `/projects/[projectId]/my-requests`, `/projects/[projectId]/drafts`, and ticket detail with attachment list/upload UI
+
+&nbsp; - added crew execution surfaces for `/projects/[projectId]/crew/work` and `/projects/[projectId]/crew/approvals` with explicit backend error surfacing on conflicts/forbidden actions
+
+&nbsp; - added missing UI-supporting read APIs: invite token validation (`GET /api/auth/invite/:token`), AOR tree retrieval (`GET /api/projects/[projectId]/aor`), and attachment listing (`GET /api/tickets/[ticketId]/attachments`)
+
+&nbsp; - restored `pnpm test` script to run the repository TypeScript test runner with Node's test harness
+
+&nbsp; - added `PHASE3_STATUS.md` milestone tracker with build/test checkpoints and blocker documentation
+
+\- Known gap queued for later batches:
+
+&nbsp; - forgot-password execution remains blocked by missing backend password-reset endpoint (CLAUDE.md Section 8 currently defines login/register/logout/invite validation only)
+
+&nbsp; - invite acceptance still relies on existing registration flow inputs (`tenantId`, `companyId`) because invite-token registration completion is not yet implemented server-side
+
+\- Production behavior changed: yes
+
