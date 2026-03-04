@@ -55,7 +55,7 @@ export default function InvitePage() {
           <p className="muted">Expires: {new Date(invite.expiresAt).toLocaleString()}</p>
           <Link
             className="app-link"
-            href={`/register?tenantId=${encodeURIComponent(invite.tenantId)}&email=${encodeURIComponent(invite.email)}`}
+            href={`/register?tenantId=${encodeURIComponent(invite.tenantId)}&email=${encodeURIComponent(invite.email)}&inviteToken=${encodeURIComponent(token)}`}
           >
             Continue to Registration
           </Link>

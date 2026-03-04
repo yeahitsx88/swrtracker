@@ -1868,3 +1868,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: coverage for success payload parsing, typed API error handling, plain-text non-JSON error handling, and empty-body fallback message handling in `apiClient`
 - Known gap queued for later batches: none discovered in this slice
 - Production behavior changed: no
+### 2026-03-04 - Batch 40
+- Intent: tighten invite-to-register UX by preserving invite context and preventing tenant/email drift on registration
+- Files touched:
+  - `src/app/(auth)/invite/[token]/page.tsx`
+  - `src/app/(auth)/register/page.tsx`
+  - `CODEX.md`
+- Behavior added: invite continuation now forwards `inviteToken`; registration locks invite-prefilled tenant/email fields and shows explicit guidance that company ID is still required
+- Known gap queued for later batches: anonymous tenant/company lookup endpoints are not available, so non-invite registration still requires manual tenant/company IDs
+- Production behavior changed: yes

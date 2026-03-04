@@ -11,6 +11,7 @@ import { Field } from '@/components/forms';
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('inviteToken');
   const [tenantId, setTenantId] = useState(searchParams.get('tenantId') ?? '');
   const [companyId, setCompanyId] = useState(searchParams.get('companyId') ?? '');
   const [name, setName] = useState('');
@@ -19,6 +20,8 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const tenantLocked = Boolean(inviteToken && tenantId);
+  const emailLocked = Boolean(inviteToken && email);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,12 +50,20 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card title="Create Account" description="Use your tenant and company IDs to register your requester account.">
+    <Card title="Create Account" description="Register with your tenant and company IDs. Invite links prefill tenant and email.">
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
+        {inviteToken ? (
+          <p className="muted">Invite-validated tenant and email are locked. Enter your company ID to finish registration.</p>
+        ) : null}
         <Field label="Tenant ID">
-          <Input value={tenantId} onChange={(event) => setTenantId(event.target.value)} required />
+          <Input
+            value={tenantId}
+            onChange={(event) => setTenantId(event.target.value)}
+            readOnly={tenantLocked}
+            required
+          />
         </Field>
         <Field label="Company ID">
           <Input value={companyId} onChange={(event) => setCompanyId(event.target.value)} required />
@@ -61,7 +72,13 @@ export default function RegisterPage() {
           <Input value={name} onChange={(event) => setName(event.target.value)} required />
         </Field>
         <Field label="Email">
-          <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          <Input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            readOnly={emailLocked}
+            required
+          />
         </Field>
         <Field label="Password">
           <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
