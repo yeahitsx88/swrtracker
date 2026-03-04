@@ -3,7 +3,7 @@
 Date started: 2026-03-04  
 Current branch: `phase3`  
 Current milestone: Milestone 5 (Crew work surfaces)  
-Last successful build: 2026-03-04 (`pnpm tsc --noEmit` pass, `pnpm test` pass: 129/129)
+Last successful build: 2026-03-04 (`pnpm tsc --noEmit` pass, `pnpm test` pass: 150/150)
 
 ## Milestone 0 - UI skeleton and API client
 Completed items
@@ -24,12 +24,17 @@ Completed items
 - Wired login/logout/register/invite validation flows through API client.
 - Enforced authenticated access to platform routes via middleware.
 - Hardened invite registration UX by carrying invite context into `/register` and locking invite-prefilled tenant/email fields.
+- Added backend password-reset API endpoints:
+  - `POST /api/auth/forgot-password`
+  - `POST /api/auth/reset-password`
+- Added public `/reset-password` UI and replaced `/forgot-password` placeholder with a working request form.
+- Added password reset token persistence (`password_reset_tokens`) with one-time use + expiry handling.
 
 In progress items
 - None.
 
 Blocking issues
-- `/forgot-password` reset execution is blocked by missing backend reset endpoint; CLAUDE.md Section 8 auth routes currently define only login/register/logout/invite validation.
+- None.
 
 ## Milestone 2 - Request submission
 Completed items

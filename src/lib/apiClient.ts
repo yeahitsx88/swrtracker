@@ -4,9 +4,13 @@ import type {
   AorTreeResponse,
   AuthResponse,
   CreateTicketRequest,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   InviteValidationResponse,
   LoginRequest,
   RegisterRequest,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
   TicketListResponse,
   TicketResponse,
   UploadAttachmentRequest,
@@ -67,6 +71,14 @@ export const apiClient = {
 
   register(input: RegisterRequest): Promise<AuthResponse> {
     return apiRequest<AuthResponse>('/api/auth/register', { method: 'POST', body: input });
+  },
+
+  forgotPassword(input: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+    return apiRequest<ForgotPasswordResponse>('/api/auth/forgot-password', { method: 'POST', body: input });
+  },
+
+  resetPassword(input: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    return apiRequest<ResetPasswordResponse>('/api/auth/reset-password', { method: 'POST', body: input });
   },
 
   logout(): Promise<{ success: boolean }> {

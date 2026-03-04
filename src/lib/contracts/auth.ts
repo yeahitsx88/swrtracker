@@ -23,6 +23,25 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface ForgotPasswordRequest {
+  tenantId: string;
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  debugResetToken?: string | null;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+}
+
 export interface InviteValidationResponse {
   invite: {
     tenantId: string;

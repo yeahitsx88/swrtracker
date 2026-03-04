@@ -1903,3 +1903,24 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: exported `handlePostLogin`/`handlePostRegister` handlers with injectable dependencies; tests now cover success, validation, forbidden domain, unauthorized login, and login cookie issuance
 - Known gap queued for later batches: none discovered in this slice
 - Production behavior changed: no
+### 2026-03-04 - Batch 44
+- Intent: close the Phase 3 forgot-password blocker by implementing end-to-end password reset APIs, token persistence, and auth UI flow
+- Files touched:
+  - `db/migrations/014_password_reset_tokens.sql`
+  - `src/modules/identity/application/password-reset.ts`
+  - `src/modules/identity/application/index.ts`
+  - `src/modules/identity/infrastructure/user.repository.ts`
+  - `src/app/api/auth/forgot-password/route.ts`
+  - `src/app/api/auth/reset-password/route.ts`
+  - `src/lib/contracts/auth.ts`
+  - `src/lib/apiClient.ts`
+  - `src/app/(auth)/forgot-password/page.tsx`
+  - `src/app/(auth)/reset-password/page.tsx`
+  - `src/middleware.ts`
+  - `tests/identity/password-reset.test.ts`
+  - `tests/identity/password-reset-routes.test.ts`
+  - `PHASE3_STATUS.md`
+  - `CODEX.md`
+- Behavior added: forgot-password now creates expiring one-time reset tokens for LOCAL users and reset-password consumes valid tokens to rotate password hash; UI now supports reset request and reset completion; middleware allows unauthenticated access to `/reset-password`
+- Known gap queued for later batches: reset-link delivery transport is environment-dependent (debug token is exposed only outside production), so production mail transport integration can be layered without changing API contracts
+- Production behavior changed: yes

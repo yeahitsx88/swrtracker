@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 const SESSION_COOKIE = 'swr_session';
-const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password'];
+const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
@@ -26,7 +26,12 @@ export function middleware(req: NextRequest) {
   }
 
   if (hasSession && isPublic && pathname !== '/invite') {
-    if (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') {
+    if (
+      pathname === '/login' ||
+      pathname === '/register' ||
+      pathname === '/forgot-password' ||
+      pathname === '/reset-password'
+    ) {
       return NextResponse.redirect(new URL('/projects', req.url));
     }
   }
