@@ -8,14 +8,18 @@ export type TenantRole = 'TENANT_ADMIN' | 'BILLING_VIEWER';
 
 export type ProjectRole =
   | 'REQUESTER'
-  | 'APPROVER'
-  | 'SURVEY_LEAD'
+  | 'PROJECT_ADMIN'
+  | 'SURVEY_MANAGER'
+  | 'SURVEY_SUPERINTENDENT'
   | 'PARTY_CHIEF'
   | 'INSTRUMENT_MAN'
   | 'CAD_TECHNICIAN'
   | 'CAD_LEAD'
+  | 'DEPARTMENT_MANAGER'
+  | 'DEPARTMENT_LEAD'
   | 'VIEWER'
-  | 'AREA_VIEWER';
+  | 'AREA_VIEWER'
+  | 'SUBCONTRACTS_COORDINATOR';
 
 export type Role = TenantRole | ProjectRole;
 

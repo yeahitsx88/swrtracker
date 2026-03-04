@@ -1,8 +1,8 @@
 /**
  * POST /api/tickets/[ticketId]/assign
  *
- * APPROVED → ASSIGNED (Variant 1) | CREATED → ASSIGNED (Variant 2).
- * Permitted actor: SURVEY_LEAD.
+ * APPROVED → ASSIGNED for the standard-approval workflow.
+ * Permitted actors: SURVEY_MANAGER, SURVEY_SUPERINTENDENT.
  * assignedPartyChiefId is required; assignedInstrumentManId is optional.
  */
 import { NextResponse, type NextRequest } from 'next/server';
@@ -45,6 +45,7 @@ export async function POST(
         assignedPartyChiefId:    b.assignedPartyChiefId as UUID,
         assignedInstrumentManId,
         surveyLeadId:            ctx.actorId,
+        visibility:              ctx.visibility,
       }),
     );
 

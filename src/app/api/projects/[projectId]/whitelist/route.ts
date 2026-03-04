@@ -8,7 +8,7 @@ import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
-import { getProjectRole } from '@/lib/get-project-role';
+import { getTenantRole } from '@/lib/get-tenant-role';
 import { addToWhitelist, removeFromWhitelist } from '@/modules/tenancy/application/whitelist';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { UUID } from '@/shared/types';
@@ -30,14 +30,15 @@ export async function POST(
     }
 
     const { email } = body as { email: string };
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
     const repo = new TenancyRepository();
     const entry = await addToWhitelist(repo, pool, {
       tenantId:  auth.tenantId,
       projectId: projectId as UUID,
       email,
       addedBy:   auth.userId,
-      actorRole,
+      actorRole: resolvedActorRole,
     });
     return NextResponse.json({ entry }, { status: 201 });
   } catch (err) {
@@ -60,13 +61,14 @@ export async function DELETE(
     }
 
     const { email } = body as { email: string };
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
     const repo = new TenancyRepository();
     await removeFromWhitelist(repo, pool, {
       tenantId:  auth.tenantId,
       projectId: projectId as UUID,
       email,
-      actorRole,
+      actorRole: resolvedActorRole,
     });
     return NextResponse.json({ success: true });
   } catch (err) {

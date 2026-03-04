@@ -1,7 +1,7 @@
 /**
  * POST /api/tickets/[ticketId]/override-rejection
  * REJECTED → APPROVED (CLAUDE.md §6 — Permitted Non-Standard Transition).
- * APPROVER only. Written reason required.
+ * SURVEY_MANAGER only. Written reason required.
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';

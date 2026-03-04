@@ -1,7 +1,7 @@
 /**
  * ElevatePriority — Path B manual priority elevation (CLAUDE.md §4).
- * Sets is_priority = true on a post-submission ticket.
- * Permitted actors: SURVEY_LEAD, APPROVER.
+ * Sets priority = HIGH on a post-submission ticket.
+ * Permitted actor: SURVEY_MANAGER.
  * Requires a written reason. Logged as ticket.priority_elevated.
  * Requester is NOT notified — this is an internal operational action.
  */
@@ -23,8 +23,8 @@ export async function elevateToPrority(
     reason:    string;
   },
 ): Promise<Ticket> {
-  if (params.actorRole !== 'SURVEY_LEAD' && params.actorRole !== 'APPROVER') {
-    throw new ForbiddenError('Only SURVEY_LEAD or APPROVER may elevate ticket priority');
+  if (params.actorRole !== 'SURVEY_MANAGER') {
+    throw new ForbiddenError('Only SURVEY_MANAGER may elevate ticket priority');
   }
   if (!params.reason.trim()) {
     throw new ValidationError('A written reason is required to elevate priority');
@@ -34,10 +34,10 @@ export async function elevateToPrority(
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
 
   await repo.patchTicket(db, params.tenantId, params.ticketId, {
-    status:                 ticket.status, // status unchanged
-    isPriority:             true,
-    priorityElevatedBy:     params.actorId,
-    priorityElevatedReason: params.reason,
+    status:            ticket.status, // status unchanged
+    priority:          'HIGH',
+    prioritySetBy:     params.actorId,
+    prioritySetReason: params.reason,
   });
 
   await appendAuditEvent(db, {
@@ -50,9 +50,9 @@ export async function elevateToPrority(
 
   return {
     ...ticket,
-    isPriority:             true,
-    priorityElevatedBy:     params.actorId,
-    priorityElevatedReason: params.reason,
-    updatedAt:              new Date(),
+    priority:          'HIGH',
+    prioritySetBy:     params.actorId,
+    prioritySetReason: params.reason,
+    updatedAt:         new Date(),
   };
 }

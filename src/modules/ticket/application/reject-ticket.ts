@@ -1,13 +1,13 @@
 /**
  * RejectTicket — SUBMITTED → REJECTED.
  * Requires a written rejection reason before the transition completes.
- * Permitted actor: APPROVER.
+ * Permitted actor: SURVEY_MANAGER.
  */
 import { ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
-import type { ITicketRepository } from './ports';
+import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
 
 export async function rejectTicket(
@@ -19,6 +19,7 @@ export async function rejectTicket(
     actorId:         UUID;
     actorRole:       ProjectRole;
     rejectionReason: string;
+    visibility?:     VisibilityScope;
   },
 ): Promise<Ticket> {
   if (!params.rejectionReason.trim()) {
@@ -30,10 +31,11 @@ export async function rejectTicket(
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['APPROVER'],
+    permittedRoles: ['SURVEY_MANAGER'],
     to:             'REJECTED',
     patch:          { rejectionReason: params.rejectionReason },
     eventType:      'ticket.rejected',
     eventPayload:   { rejectionReason: params.rejectionReason },
+    visibility:     params.visibility,
   });
 }

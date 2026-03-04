@@ -4,6 +4,13 @@
  */
 import type { UUID } from '@/shared/types';
 
+export interface AttachmentObjectMetadata {
+  filename: string;
+  mimeType: string;
+  storageKey: string;
+  sizeBytes: number;
+}
+
 export interface Attachment {
   id: UUID;
   ticketId: UUID;

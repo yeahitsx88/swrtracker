@@ -4,23 +4,32 @@
  */
 import type { DbClient, UUID, Page } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
-import type { Ticket, TicketStatus } from '../domain/types';
+import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus } from '../domain/types';
+import type { ProjectStatus } from '@/modules/tenancy/domain/types';
 
 export interface TicketStatusPatch {
   status:                   TicketStatus;
+  departmentId?:            UUID | null;
+  ticketNumber?:            string | null;
   submittedAt?:             Date | null;
   approvedAt?:              Date | null;
   assignedAt?:              Date | null;
   startedAt?:               Date | null;
+  pendingPcOutcome?:        PendingPcOutcome | null;
+  pendingPcReason?:         string | null;
+  surveyCancelRequestedBy?: UUID | null;
+  surveyCancelRequestedRole?: string | null;
+  surveyCancelReason?:      string | null;
+  surveyCancelRequestedAt?: Date | null;
   completedAt?:             Date | null;
   closedAt?:                Date | null;
   rejectionReason?:         string | null;
   assignedPartyChiefId?:    UUID | null;
   assignedInstrumentManId?: UUID | null;
   surveyLeadId?:            UUID | null;
-  isPriority?:              boolean;
-  priorityElevatedBy?:      UUID | null;
-  priorityElevatedReason?:  string | null;
+  priority?:                TicketPriority;
+  prioritySetBy?:           UUID | null;
+  prioritySetReason?:       string | null;
 }
 
 /**
@@ -30,10 +39,14 @@ export interface TicketStatusPatch {
 export interface VisibilityScope {
   actorId:   UUID;
   actorRole: ProjectRole;
+  /** The actor's project department membership, when visibility depends on department tags. */
+  departmentId?: UUID;
   /** The actor's company_id — used for SUBCONTRACTOR isolation on top of role scoping. */
   companyId: UUID;
-  /** Area IDs the actor may see — only required/used for AREA_VIEWER role. */
-  areaIds?:  UUID[];
+  /** The actor's company type — SUBCONTRACTOR triggers company-level isolation. */
+  companyType?: string;
+  /** AOR node IDs the actor may see — includes descendants for AOR-scoped roles. */
+  aorNodeIds?: UUID[];
   /**
    * The Party Chief ID the actor reports to — required for INSTRUMENT_MAN role
    * so the repository can filter to that Party Chief's tickets.
@@ -72,8 +85,32 @@ export interface ITicketRepository {
    */
   nextSequence(db: DbClient, projectId: UUID): Promise<number>;
 
-  /** Fetch the area code string for ticket number generation. */
-  findAreaCode(db: DbClient, tenantId: UUID, areaId: UUID): Promise<string | null>;
+  /** Fetch the AOR node code string for ticket number generation. */
+  findAorNodeCode(db: DbClient, tenantId: UUID, aorNodeId: UUID): Promise<string | null>;
+  findDepartmentById(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    departmentId: UUID,
+  ): Promise<{ id: UUID } | null>;
+  findRequesterDepartmentMembership(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    requesterId: UUID,
+  ): Promise<{ departmentId: UUID; title: string | null } | null>;
+  findDepartmentTitlePriority(
+    db: DbClient,
+    tenantId: UUID,
+    departmentId: UUID,
+    title: string,
+  ): Promise<TicketPriority | null>;
+  isEmailWhitelisted(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    email: string,
+  ): Promise<boolean>;
 
   /** Patch ticket status + associated timestamp / field changes. */
   patchTicket(db: DbClient, tenantId: UUID, ticketId: UUID, patch: TicketStatusPatch): Promise<void>;
@@ -98,10 +135,12 @@ export interface ITicketRepository {
   ): Promise<UUID | null>;
 
   /**
-   * Find all area IDs assigned to a user via area_memberships.
-   * Used for AREA_VIEWER visibility scoping.
+   * Find all AOR node IDs assigned to a user, including descendants.
+   * Used for AOR-scoped visibility.
    */
-  findAreaIdsForUser(
+  findAorNodeIdsForUser(
     db: DbClient, projectId: UUID, userId: UUID,
   ): Promise<UUID[]>;
+
+  findProjectStatus(db: DbClient, tenantId: UUID, projectId: UUID): Promise<ProjectStatus | null>;
 }

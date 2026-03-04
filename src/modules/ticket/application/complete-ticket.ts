@@ -1,11 +1,11 @@
 /**
- * CompleteTicket — IN_PROGRESS → COMPLETED.
- * Permitted actors: PARTY_CHIEF, INSTRUMENT_MAN, SURVEY_LEAD.
+ * CompleteTicket — IN_PROGRESS → PENDING_PC_APPROVAL.
+ * Field status submission is not final until Party Chief approval.
  */
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
-import type { ITicketRepository } from './ports';
+import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
 
 export async function completeTicket(
@@ -16,6 +16,7 @@ export async function completeTicket(
     ticketId:  UUID;
     actorId:   UUID;
     actorRole: ProjectRole;
+    visibility?: VisibilityScope;
   },
 ): Promise<Ticket> {
   return performTransition(db, repo, {
@@ -23,9 +24,14 @@ export async function completeTicket(
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_LEAD'],
-    to:             'COMPLETED',
-    patch:          { completedAt: new Date() },
-    eventType:      'ticket.completed',
+    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'SURVEY_MANAGER'],
+    to:             'PENDING_PC_APPROVAL',
+    patch:          {
+      pendingPcOutcome: 'COMPLETED',
+      pendingPcReason: null,
+    },
+    eventType:    'ticket.pending_pc_approval',
+    eventPayload: { requestedStatus: 'COMPLETED' },
+    visibility:   params.visibility,
   });
 }

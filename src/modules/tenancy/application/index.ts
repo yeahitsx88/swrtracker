@@ -6,12 +6,37 @@
 export type {
   Tenant,
   Project,
+  ProjectTemplate,
+  TenantMembership,
   Company,
-  Area,
-  Subarea,
+  AorLevel,
+  AorNode,
+  AorAssignment,
+  Department,
+  DepartmentTitle,
   PriorityWhitelistEntry,
   CompanyType,
   ProjectStatus,
+  CrewBuild,
 } from '../domain/types';
 
-// Use-case implementations added here in Phase 2.
+export { createAorLevel } from './create-aor-level';
+export { createAorNode } from './create-aor-node';
+export { assignAorUser, deactivateAorUserAssignment } from './assign-aor-user';
+export { assignAorDepartment, deactivateAorDepartmentAssignment } from './assign-aor-department';
+export { createDepartment } from './create-department';
+export { listDepartments } from './list-departments';
+export { upsertDepartmentTitle } from './upsert-department-title';
+export { listDepartmentTitles } from './list-department-titles';
+export { addDepartmentMember } from './add-department-member';
+export { assignDepartmentTitle } from './assign-department-title';
+export { reassignDepartmentMember } from './reassign-department-member';
+export {
+  createProjectTemplate,
+  updateProjectTemplate,
+  deleteProjectTemplate,
+} from './project-templates';
+export {
+  upsertTenantMembership,
+  removeTenantMembership,
+} from './tenant-memberships';

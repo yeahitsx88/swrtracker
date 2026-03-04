@@ -11,7 +11,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { AuditEventType } from '@/modules/audit/domain/types';
 import type { Ticket, TicketStatus } from '../domain/types';
-import type { ITicketRepository, TicketStatusPatch } from './ports';
+import type { ITicketRepository, TicketStatusPatch, VisibilityScope } from './ports';
 
 export function assertActorHasRole(
   actorRole: ProjectRole,
@@ -37,11 +37,14 @@ export async function performTransition(
     patch:          Omit<TicketStatusPatch, 'status'>;
     eventType:      AuditEventType;
     eventPayload?:  Record<string, unknown>;
+    visibility?:    VisibilityScope;
   },
 ): Promise<Ticket> {
   const { tenantId, ticketId, actorId, actorRole, permittedRoles, to, patch, eventType } = options;
 
-  const ticket = await repo.findByIdInternal(db, tenantId, ticketId);
+  const ticket = options.visibility
+    ? await repo.findById(db, tenantId, ticketId, options.visibility)
+    : await repo.findByIdInternal(db, tenantId, ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
 
   assertActorHasRole(actorRole, permittedRoles);

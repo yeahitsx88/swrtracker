@@ -7,7 +7,7 @@ import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
-import { getProjectRole } from '@/lib/get-project-role';
+import { getTenantRole } from '@/lib/get-tenant-role';
 import { addProjectMember } from '@/modules/tenancy/application/add-project-member';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole } from '@/modules/identity/domain/types';
@@ -16,7 +16,7 @@ import type { UUID } from '@/shared/types';
 export const dynamic = 'force-dynamic';
 
 const VALID_ROLES: ProjectRole[] = [
-  'REQUESTER', 'APPROVER', 'SURVEY_LEAD',
+  'REQUESTER', 'SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT',
   'PARTY_CHIEF', 'INSTRUMENT_MAN', 'CAD_TECHNICIAN', 'CAD_LEAD', 'VIEWER',
 ];
 
@@ -37,14 +37,15 @@ export async function POST(
     }
 
     const { userId, role } = body as { userId: string; role: ProjectRole };
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
     const repo = new TenancyRepository();
     await addProjectMember(repo, pool, {
       tenantId:  auth.tenantId,
       projectId: projectId as UUID,
       userId:    userId    as UUID,
       role,
-      actorRole,
+      actorRole: resolvedActorRole,
     });
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
