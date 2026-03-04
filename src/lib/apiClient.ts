@@ -38,13 +38,23 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) as unknown : null;
+  let payload: unknown = null;
+  if (text) {
+    try {
+      payload = JSON.parse(text) as unknown;
+    } catch {
+      payload = text;
+    }
+  }
 
   if (!response.ok) {
     if (isApiErrorPayload(payload)) {
       throw new ApiClientError(payload.error.type, payload.error.message, response.status);
     }
-    throw new ApiClientError('InternalError', 'Unexpected API failure', response.status);
+    if (typeof payload === 'string' && payload.trim()) {
+      throw new ApiClientError('InternalError', payload.trim(), response.status);
+    }
+    throw new ApiClientError('InternalError', `Request failed with status ${response.status}`, response.status);
   }
 
   return payload as T;

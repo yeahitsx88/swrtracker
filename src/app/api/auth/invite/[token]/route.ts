@@ -13,12 +13,13 @@ interface InviteRow {
   expires_at: Date;
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ token: string }> },
-) {
-  try {
-    const { token } = await params;
+export interface InviteTokenRouteDeps {
+  queryInvite: (token: string) => Promise<InviteRow | null>;
+  now: () => number;
+}
+
+const defaultDeps: InviteTokenRouteDeps = {
+  queryInvite: async (token) => {
     const { rows } = await pool.query<InviteRow>(
       `SELECT tenant_id, project_id, email, role, expires_at
        FROM invites
@@ -29,11 +30,23 @@ export async function GET(
       [token],
     );
 
-    const invite = rows[0];
+    return rows[0] ?? null;
+  },
+  now: () => Date.now(),
+};
+
+export async function handleGetInviteToken(
+  _req: NextRequest,
+  { params }: { params: Promise<{ token: string }> },
+  deps: InviteTokenRouteDeps = defaultDeps,
+) {
+  try {
+    const { token } = await params;
+    const invite = await deps.queryInvite(token);
     if (!invite) {
       throw new NotFoundError('Invite token is invalid');
     }
-    if (invite.expires_at.getTime() <= Date.now()) {
+    if (invite.expires_at.getTime() <= deps.now()) {
       throw new ConflictError('Invite token is expired');
     }
 
@@ -49,4 +62,11 @@ export async function GET(
   } catch (err) {
     return errorResponse(err);
   }
+}
+
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ token: string }> },
+) {
+  return handleGetInviteToken(req, ctx);
 }

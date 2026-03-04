@@ -98,28 +98,45 @@ interface AttachmentRow {
   created_at: Date;
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ ticketId: string }> },
-) {
-  try {
-    const { ticketId } = await params;
-    const ctx = await getTicketRouteContext(req, ticketId);
-    const ticketRepo = new TicketRepository();
+export interface TicketAttachmentsGetRouteDeps {
+  getTicketRouteContext: typeof getTicketRouteContext;
+  createTicketRepo: () => ITicketRepository;
+  listAttachments: (tenantId: string, ticketId: string) => Promise<AttachmentRow[]>;
+}
 
-    const visibleTicket = await ticketRepo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
-    if (!visibleTicket) {
-      throw new NotFoundError(`Ticket ${ctx.ticketId} not found`);
-    }
-
+const defaultGetDeps: TicketAttachmentsGetRouteDeps = {
+  getTicketRouteContext,
+  createTicketRepo: () => new TicketRepository(),
+  listAttachments: async (tenantId, ticketId) => {
     const { rows } = await pool.query<AttachmentRow>(
       `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, storage_key, size_bytes, created_at
        FROM attachments
        WHERE tenant_id = $1
          AND ticket_id = $2
        ORDER BY created_at DESC`,
-      [ctx.tenantId, ctx.ticketId],
+      [tenantId, ticketId],
     );
+
+    return rows;
+  },
+};
+
+export async function handleGetTicketAttachments(
+  req: NextRequest,
+  { params }: { params: Promise<{ ticketId: string }> },
+  deps: TicketAttachmentsGetRouteDeps = defaultGetDeps,
+) {
+  try {
+    const { ticketId } = await params;
+    const ctx = await deps.getTicketRouteContext(req, ticketId);
+    const ticketRepo = deps.createTicketRepo();
+
+    const visibleTicket = await ticketRepo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
+    if (!visibleTicket) {
+      throw new NotFoundError(`Ticket ${ctx.ticketId} not found`);
+    }
+
+    const rows = await deps.listAttachments(ctx.tenantId, ctx.ticketId);
 
     return NextResponse.json({
       attachments: rows.map((row) => ({
@@ -137,6 +154,13 @@ export async function GET(
   } catch (err) {
     return errorResponse(err);
   }
+}
+
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ ticketId: string }> },
+) {
+  return handleGetTicketAttachments(req, ctx);
 }
 
 async function uploadAttachmentForRoute(

@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
-import { ApiClientError } from '@/lib/errors';
+import { getErrorMessage } from '@/lib/errors';
 import type { TicketRecord } from '@/lib/contracts';
 import { CrewWorkActions, TicketCard } from '@/components/tickets';
-import { Card, ErrorBanner } from '@/components/ui';
+import { Button, Card, ErrorBanner } from '@/components/ui';
 
 export default function CrewWorkPage() {
   const params = useParams<{ projectId: string }>();
@@ -23,11 +23,7 @@ export default function CrewWorkPage() {
       const page = await apiClient.listTickets(projectId, 50, 0);
       setTickets(page.data);
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to load crew tickets.');
-      }
+      setError(getErrorMessage(err, 'Unable to load crew tickets.'));
     } finally {
       setLoading(false);
     }
@@ -49,11 +45,7 @@ export default function CrewWorkPage() {
       await action();
       await loadTickets();
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to complete workflow action.');
-      }
+      setError(getErrorMessage(err, 'Unable to complete workflow action.'));
     } finally {
       setBusyTicketId(null);
     }
@@ -66,6 +58,11 @@ export default function CrewWorkPage() {
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
+        <div className="row">
+          <Button variant="secondary" onClick={() => void loadTickets()} disabled={loading}>
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </Button>
+        </div>
         {loading ? <p className="muted">Loading crew work queue...</p> : null}
         {!loading && actionableTickets.length === 0 ? <p className="muted">No actionable crew tickets.</p> : null}
         {actionableTickets.map((ticket) => (

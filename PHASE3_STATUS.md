@@ -84,6 +84,11 @@ Completed items
   - approve to backend-defined final state (completed/delayed/field-canceled)
   - reject back to `IN_PROGRESS`
 - Conflict and authorization errors are surfaced in-page from backend responses.
+- Hardening pass complete:
+  - normalized UI error handling through shared client error-message helper
+  - improved mobile tap targets and horizontal project tab navigation
+  - added active-tab highlighting and `/projects/[projectId]` default redirect
+  - restricted requester quick-cancel controls to cancellable statuses with busy-state and confirmation
 
 In progress items
 - None.

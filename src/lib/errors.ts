@@ -23,3 +23,13 @@ export function isApiErrorPayload(value: unknown): value is ApiErrorPayload {
   const typed = error as { type?: unknown; message?: unknown };
   return typeof typed.type === 'string' && typeof typed.message === 'string';
 }
+
+export function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiClientError) {
+    return error.message;
+  }
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return fallback;
+}

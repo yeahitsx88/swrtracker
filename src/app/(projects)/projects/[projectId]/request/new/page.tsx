@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
-import { ApiClientError } from '@/lib/errors';
+import { getErrorMessage } from '@/lib/errors';
 import type { TicketType, UploadAttachmentRequest } from '@/lib/contracts';
 import { AorNodePicker } from '@/components/aor';
 import { Field, Stepper } from '@/components/forms';
@@ -60,11 +60,7 @@ export default function NewRequestPage() {
         setAorNodes(response.nodes);
       } catch (err) {
         if (!active) return;
-        if (err instanceof ApiClientError) {
-          setError(err.message);
-        } else {
-          setError('Unable to load AOR tree. You can still enter node ID manually.');
-        }
+        setError(getErrorMessage(err, 'Unable to load AOR tree. You can still enter node ID manually.'));
       } finally {
         if (active) setLoadingAor(false);
       }
@@ -81,6 +77,21 @@ export default function NewRequestPage() {
     [attachments],
   );
 
+  const isStepComplete = useMemo(() => {
+    switch (activeStep) {
+      case 0:
+        return Boolean(aorNodeId.trim());
+      case 1:
+        return Boolean(ticketType);
+      case 2:
+        return Boolean(requestedDate);
+      case 3:
+        return Boolean(craft.trim() && description.trim());
+      default:
+        return true;
+    }
+  }, [activeStep, aorNodeId, craft, description, requestedDate, ticketType]);
+
   async function handleSubmit() {
     if (!aorNodeId || !ticketType || !requestedDate || !craft.trim() || !description.trim()) {
       setError('Complete all required fields before submission.');
@@ -94,10 +105,10 @@ export default function NewRequestPage() {
     try {
       const created = await apiClient.createTicket({
         projectId,
-        aorNodeId,
+        aorNodeId: aorNodeId.trim(),
         ticketType,
-        craft,
-        description,
+        craft: craft.trim(),
+        description: description.trim(),
         requestedDate: new Date(requestedDate).toISOString(),
       });
 
@@ -110,11 +121,7 @@ export default function NewRequestPage() {
       setSuccess(`Ticket ${submitted.ticket.ticketNumber ?? submitted.ticket.id} submitted.`);
       router.push(`/projects/${projectId}/tickets/${ticketId}`);
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to submit request.');
-      }
+      setError(getErrorMessage(err, 'Unable to submit request.'));
     } finally {
       setSubmitting(false);
     }
@@ -216,7 +223,7 @@ export default function NewRequestPage() {
           </Button>
           {activeStep < STEP_TITLES.length - 1 ? (
             <Button
-              disabled={submitting}
+              disabled={submitting || !isStepComplete}
               onClick={() => setActiveStep((current) => Math.min(STEP_TITLES.length - 1, current + 1))}
             >
               Next

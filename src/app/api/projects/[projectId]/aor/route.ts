@@ -158,26 +158,29 @@ interface AorNodeRow {
   code: string;
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
-  try {
-    const auth = requireAuth(req);
-    const { projectId } = await params;
+export interface AorReadRouteDeps {
+  requireAuth: typeof requireAuth;
+  getProjectRole: typeof getProjectRole;
+  queryLevels: (tenantId: UUID, projectId: UUID) => Promise<AorLevelRow[]>;
+  queryNodes: (tenantId: UUID, projectId: UUID) => Promise<AorNodeRow[]>;
+}
 
-    // Membership gate only; visibility details stay in backend ticket queries.
-    await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
-
+const defaultAorReadDeps: AorReadRouteDeps = {
+  requireAuth,
+  getProjectRole,
+  queryLevels: async (tenantId, projectId) => {
     const levelsResult = await pool.query<AorLevelRow>(
       `SELECT id, depth, label
        FROM aor_levels
        WHERE tenant_id = $1
          AND project_id = $2
        ORDER BY depth ASC`,
-      [auth.tenantId, projectId],
+      [tenantId, projectId],
     );
 
+    return levelsResult.rows;
+  },
+  queryNodes: async (tenantId, projectId) => {
     const nodesResult = await pool.query<AorNodeRow>(
       `SELECT id, level_id, parent_id, name, code
        FROM aor_nodes
@@ -185,16 +188,36 @@ export async function GET(
          AND project_id = $2
          AND retired_at IS NULL
        ORDER BY name ASC`,
-      [auth.tenantId, projectId],
+      [tenantId, projectId],
     );
 
+    return nodesResult.rows;
+  },
+};
+
+export async function handleGetAor(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> },
+  deps: AorReadRouteDeps = defaultAorReadDeps,
+) {
+  try {
+    const auth = deps.requireAuth(req);
+    const { projectId } = await params;
+    const projectUuid = projectId as UUID;
+
+    // Membership gate only; visibility details stay in backend ticket queries.
+    await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId);
+
+    const levels = await deps.queryLevels(auth.tenantId, projectUuid);
+    const nodes = await deps.queryNodes(auth.tenantId, projectUuid);
+
     return NextResponse.json({
-      levels: levelsResult.rows.map((level) => ({
+      levels: levels.map((level) => ({
         id: level.id,
         depth: level.depth,
         label: level.label,
       })),
-      nodes: nodesResult.rows.map((node) => ({
+      nodes: nodes.map((node) => ({
         id: node.id,
         levelId: node.level_id,
         parentId: node.parent_id,
@@ -205,4 +228,11 @@ export async function GET(
   } catch (err) {
     return errorResponse(err);
   }
+}
+
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ projectId: string }> },
+) {
+  return handleGetAor(req, ctx);
 }

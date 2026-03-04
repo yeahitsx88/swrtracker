@@ -101,6 +101,8 @@ main {
   border: 1px solid var(--line);
   border-radius: 10px;
   font: inherit;
+  font-size: 16px;
+  line-height: 1.35;
   color: inherit;
   background: #fff;
   padding: 0.62rem 0.7rem;
@@ -116,6 +118,7 @@ main {
   border-radius: 10px;
   font: inherit;
   font-weight: 700;
+  min-height: 44px;
   background: var(--brand);
   color: var(--brand-ink);
   padding: 0.55rem 0.8rem;
@@ -262,16 +265,24 @@ main {
 .app-links {
   display: flex;
   gap: 0.38rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
 }
 
 .app-link {
   border: 1px solid var(--line);
   border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
   padding: 0.25rem 0.55rem;
   font-size: 0.77rem;
   color: var(--muted);
   background: #fff;
+  white-space: nowrap;
 }
 
 .app-link-active {
@@ -287,6 +298,12 @@ main {
 
   .panel {
     padding: 1rem;
+  }
+
+  .app-links {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
   }
 }
 

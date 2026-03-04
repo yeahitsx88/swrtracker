@@ -1784,3 +1784,79 @@ Track Codex-authored remediation batches with a compact, append-only record.
 
 \- Production behavior changed: yes
 
+### 2026-03-04 - Batch 37
+\- Intent: Phase 3 hardening pass for mobile UX, navigation flow consistency, and shared error-state handling
+
+\- Files touched:
+
+&nbsp; - `src/lib/errors.ts`
+
+&nbsp; - `src/lib/apiClient.ts`
+
+&nbsp; - `src/app/globals.css`
+
+&nbsp; - `src/components/ui/project-nav.tsx`
+
+&nbsp; - `src/components/ui/index.ts`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/layout.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/page.tsx`
+
+&nbsp; - `src/app/(auth)/login/page.tsx`
+
+&nbsp; - `src/app/(auth)/register/page.tsx`
+
+&nbsp; - `src/app/(auth)/invite/[token]/page.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/request/new/page.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/(requester)/my-requests/page.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/(requester)/drafts/page.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/(crew)/crew/work/page.tsx`
+
+&nbsp; - `src/app/(projects)/projects/[projectId]/(crew)/crew/approvals/page.tsx`
+
+&nbsp; - `PHASE3_STATUS.md`
+
+&nbsp; - `CODEX.md`
+
+\- Behavior added:
+
+&nbsp; - added resilient API response parsing and a shared `getErrorMessage` helper so UI surfaces show consistent actionable error text for both API and unexpected failures
+
+&nbsp; - hardened mobile-first usability by increasing touch target sizes, ensuring form controls keep 16px input sizing, and enabling horizontal tab scrolling on narrow screens
+
+&nbsp; - added project-level active navigation highlighting plus default route redirect from `/projects/[projectId]` to `/projects/[projectId]/my-requests`
+
+&nbsp; - improved requester dashboard safety by limiting quick-cancel controls to cancellable statuses, adding confirmation prompts, and preventing double-submit with per-ticket busy state
+
+&nbsp; - added retry/refresh controls on key requester and crew queue screens to improve field recovery when intermittent backend/network errors occur
+
+&nbsp; - tightened request-submission client flow by trimming payload text fields and requiring step completion before allowing forward navigation
+
+\- Known gap queued for later batches:
+
+&nbsp; - forgot-password remains informational only until a backend reset endpoint is implemented
+
+&nbsp; - invite acceptance still requires manual company ID on registration because invite-token completion API is not yet available
+
+\- Production behavior changed: yes
+
+### 2026-03-04 - Batch 38
+- Intent: add regression coverage for Phase 3 read APIs (invite token validation, project AOR read, ticket attachment listing) using injectable route handlers
+- Files touched:
+  - `src/app/api/auth/invite/[token]/route.ts`
+  - `src/app/api/projects/[projectId]/aor/route.ts`
+  - `src/app/api/tickets/[ticketId]/attachments/route.ts`
+  - `tests/identity/invite-token-route.test.ts`
+  - `tests/tenancy/aor-read-route.test.ts`
+  - `tests/attachment/attachment-read-route.test.ts`
+  - `CODEX.md`
+- Behavior added: new exported `handleGet...` route handlers with dependency injection for deterministic tests; GET route responses and error mapping are now regression-tested for success and failure paths
+- Known gap queued for later batches: none discovered in this slice
+- Production behavior changed: no

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
-import { ApiClientError } from '@/lib/errors';
+import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
 
@@ -22,19 +22,25 @@ export default function RegisterPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!tenantId.trim() || !companyId.trim() || !name.trim() || !email.trim() || !password) {
+      setError('All registration fields are required.');
+      return;
+    }
     setError(null);
     setSuccess(null);
     setLoading(true);
     try {
-      await apiClient.register({ tenantId, companyId, name, email, password });
+      await apiClient.register({
+        tenantId: tenantId.trim(),
+        companyId: companyId.trim(),
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      });
       setSuccess('Registration complete. Sign in with your new credentials.');
-      router.push(`/login?tenantId=${encodeURIComponent(tenantId)}&email=${encodeURIComponent(email)}`);
+      router.push(`/login?tenantId=${encodeURIComponent(tenantId.trim())}&email=${encodeURIComponent(email.trim())}`);
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to register right now.');
-      }
+      setError(getErrorMessage(err, 'Unable to register right now.'));
     } finally {
       setLoading(false);
     }

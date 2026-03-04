@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
-import { ApiClientError } from '@/lib/errors';
+import { getErrorMessage } from '@/lib/errors';
 import type { AttachmentRecord, TicketRecord } from '@/lib/contracts';
 import { AttachmentList, AttachmentUploader, TicketDetails } from '@/components/tickets';
 import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
@@ -26,6 +26,7 @@ export default function TicketDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submittingDraft, setSubmittingDraft] = useState(false);
 
   const uploadsDisabled = !ticket || TERMINAL_UPLOAD_BLOCK_STATUSES.has(ticket.status);
 
@@ -40,11 +41,7 @@ export default function TicketDetailPage() {
       setTicket(ticketResponse.ticket);
       setAttachments(attachmentsResponse.attachments);
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to load ticket details.');
-      }
+      setError(getErrorMessage(err, 'Unable to load ticket details.'));
     } finally {
       setLoading(false);
     }
@@ -57,16 +54,15 @@ export default function TicketDetailPage() {
   async function submitDraft() {
     setError(null);
     setSuccess(null);
+    setSubmittingDraft(true);
     try {
       const response = await apiClient.submitTicket(ticketId);
       setTicket(response.ticket);
       setSuccess('Draft submitted successfully.');
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to submit draft.');
-      }
+      setError(getErrorMessage(err, 'Unable to submit draft.'));
+    } finally {
+      setSubmittingDraft(false);
     }
   }
 
@@ -81,10 +77,13 @@ export default function TicketDetailPage() {
           <div className="row">
             <Link href={`/projects/${projectId}/my-requests`} className="app-link">Back to My Requests</Link>
             <Link href={`/projects/${projectId}/drafts`} className="app-link">Back to Drafts</Link>
+            <Button variant="secondary" onClick={() => void loadAll()}>
+              Refresh
+            </Button>
           </div>
           {ticket?.status === 'DRAFT' ? (
-            <Button onClick={() => void submitDraft()}>
-              Submit Draft
+            <Button disabled={submittingDraft} onClick={() => void submitDraft()}>
+              {submittingDraft ? 'Submitting...' : 'Submit Draft'}
             </Button>
           ) : null}
         </div>
@@ -106,11 +105,7 @@ export default function TicketDetailPage() {
                 setAttachments(refreshed.attachments);
                 setSuccess('Attachment uploaded.');
               } catch (err) {
-                if (err instanceof ApiClientError) {
-                  setError(err.message);
-                } else {
-                  setError('Unable to upload attachment.');
-                }
+                setError(getErrorMessage(err, 'Unable to upload attachment.'));
               }
             }}
           />

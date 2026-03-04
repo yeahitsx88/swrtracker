@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
-import { ApiClientError } from '@/lib/errors';
+import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input } from '@/components/ui';
 import { Field } from '@/components/forms';
 
@@ -19,19 +19,19 @@ export default function LoginPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!tenantId.trim() || !email.trim() || !password) {
+      setError('Tenant ID, email, and password are required.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
-      await apiClient.login({ tenantId, email, password });
+      await apiClient.login({ tenantId: tenantId.trim(), email: email.trim(), password });
       const returnTo = searchParams.get('returnTo') || '/projects';
       router.push(returnTo);
       router.refresh();
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.message);
-      } else {
-        setError('Unable to sign in at this time.');
-      }
+      setError(getErrorMessage(err, 'Unable to sign in at this time.'));
     } finally {
       setLoading(false);
     }
