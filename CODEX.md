@@ -1893,3 +1893,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: tests now verify password hashing on create, duplicate-email conflict handling, successful LOCAL authentication token issuance, invalid-credential rejection, and SSO-password-login rejection
 - Known gap queued for later batches: none discovered in this slice
 - Production behavior changed: no
+### 2026-03-04 - Batch 43
+- Intent: add route-level regression coverage for auth login/register surfaces with dependency-injected handlers
+- Files touched:
+  - `src/app/api/auth/login/route.ts`
+  - `src/app/api/auth/register/route.ts`
+  - `tests/identity/auth-routes.test.ts`
+  - `CODEX.md`
+- Behavior added: exported `handlePostLogin`/`handlePostRegister` handlers with injectable dependencies; tests now cover success, validation, forbidden domain, unauthorized login, and login cookie issuance
+- Known gap queued for later batches: none discovered in this slice
+- Production behavior changed: no

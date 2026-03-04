@@ -4,12 +4,28 @@ import { errorResponse } from '@/lib/api-error';
 import { COOKIE_NAME, TOKEN_TTL_SECONDS } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { authenticateUser } from '@/modules/identity/application/authenticate';
+import type { IUserRepository } from '@/modules/identity/application/ports';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
-import type { UUID } from '@/shared/types';
+import type { DbClient, UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+export interface LoginRouteDeps {
+  db: DbClient;
+  createRepo: () => IUserRepository;
+  authenticateUser: typeof authenticateUser;
+}
+
+const defaultDeps: LoginRouteDeps = {
+  db: pool,
+  createRepo: () => new UserRepository(),
+  authenticateUser,
+};
+
+export async function handlePostLogin(
+  req: NextRequest,
+  deps: LoginRouteDeps = defaultDeps,
+) {
   try {
     const body = await req.json() as unknown;
 
@@ -25,8 +41,8 @@ export async function POST(req: NextRequest) {
 
     const { tenantId, email, password } = body as { tenantId: string; email: string; password: string };
 
-    const repo = new UserRepository();
-    const { user, token } = await authenticateUser(repo, pool, {
+    const repo = deps.createRepo();
+    const { user, token } = await deps.authenticateUser(repo, deps.db, {
       tenantId: tenantId as UUID,
       email,
       password,
@@ -48,4 +64,8 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     return errorResponse(err);
   }
+}
+
+export async function POST(req: NextRequest) {
+  return handlePostLogin(req);
 }
