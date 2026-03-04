@@ -3,7 +3,7 @@
 Date started: 2026-03-04  
 Current branch: `phase3`  
 Current milestone: Milestone 5 (Crew work surfaces)  
-Last successful build: 2026-03-04 (`pnpm tsc --noEmit` pass, `pnpm test` pass: 118/118)
+Last successful build: 2026-03-04 (`pnpm tsc --noEmit` pass, `pnpm test` pass: 129/129)
 
 ## Milestone 0 - UI skeleton and API client
 Completed items
@@ -23,6 +23,7 @@ Completed items
 - Implemented `/login`, `/register`, `/invite/:token`, and `/forgot-password` pages.
 - Wired login/logout/register/invite validation flows through API client.
 - Enforced authenticated access to platform routes via middleware.
+- Hardened invite registration UX by carrying invite context into `/register` and locking invite-prefilled tenant/email fields.
 
 In progress items
 - None.

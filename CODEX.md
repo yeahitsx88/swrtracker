@@ -1877,3 +1877,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: invite continuation now forwards `inviteToken`; registration locks invite-prefilled tenant/email fields and shows explicit guidance that company ID is still required
 - Known gap queued for later batches: anonymous tenant/company lookup endpoints are not available, so non-invite registration still requires manual tenant/company IDs
 - Production behavior changed: yes
+### 2026-03-04 - Batch 41
+- Intent: sync Phase 3 status tracking with current validated baseline and delivered authentication UX hardening
+- Files touched:
+  - `PHASE3_STATUS.md`
+  - `CODEX.md`
+- Behavior added: none (tracking/documentation update only)
+- Known gap queued for later batches: none discovered in this slice
+- Production behavior changed: no
