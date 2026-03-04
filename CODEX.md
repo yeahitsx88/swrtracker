@@ -1885,3 +1885,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: none (tracking/documentation update only)
 - Known gap queued for later batches: none discovered in this slice
 - Production behavior changed: no
+### 2026-03-04 - Batch 42
+- Intent: add identity module regression coverage for user creation and password authentication flows
+- Files touched:
+  - `tests/identity/identity-auth.test.ts`
+  - `CODEX.md`
+- Behavior added: tests now verify password hashing on create, duplicate-email conflict handling, successful LOCAL authentication token issuance, invalid-credential rejection, and SSO-password-login rejection
+- Known gap queued for later batches: none discovered in this slice
+- Production behavior changed: no
