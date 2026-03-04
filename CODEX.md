@@ -1860,3 +1860,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: new exported `handleGet...` route handlers with dependency injection for deterministic tests; GET route responses and error mapping are now regression-tested for success and failure paths
 - Known gap queued for later batches: none discovered in this slice
 - Production behavior changed: no
+### 2026-03-04 - Batch 39
+- Intent: add regression tests for API client request and error parsing behavior introduced in Phase 3 hardening
+- Files touched:
+  - `tests/lib/api-client.test.ts`
+  - `CODEX.md`
+- Behavior added: coverage for success payload parsing, typed API error handling, plain-text non-JSON error handling, and empty-body fallback message handling in `apiClient`
+- Known gap queued for later batches: none discovered in this slice
+- Production behavior changed: no
