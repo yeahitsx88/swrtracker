@@ -30,7 +30,7 @@ export async function POST(
     }
 
     const { email } = body as { email: string };
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
     const repo = new TenancyRepository();
     const entry = await addToWhitelist(repo, pool, {
@@ -61,7 +61,7 @@ export async function DELETE(
     }
 
     const { email } = body as { email: string };
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
     const repo = new TenancyRepository();
     await removeFromWhitelist(repo, pool, {

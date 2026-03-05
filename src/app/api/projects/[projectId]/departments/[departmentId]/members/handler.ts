@@ -39,12 +39,13 @@ export async function resolveDepartmentMembershipActorRole(
   tenantId: UUID,
   projectId: UUID,
   userId: UUID,
+  sessionVersion?: number,
 ): Promise<DepartmentMembershipActorRole> {
-  const tenantRole = await getTenantRole(db, tenantId, userId);
+  const tenantRole = await getTenantRole(db, tenantId, userId, sessionVersion);
   if (tenantRole === 'TENANT_ADMIN') {
     return 'TENANT_ADMIN';
   }
-  return getProjectRole(db, tenantId, projectId, userId);
+  return getProjectRole(db, tenantId, projectId, userId, sessionVersion);
 }
 
 export async function handlePostDepartmentMembers(
@@ -60,7 +61,13 @@ export async function handlePostDepartmentMembers(
       throw new ValidationError('userId is required');
     }
 
-    const actorRole = await deps.resolveActorRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await deps.resolveActorRole(
+      pool,
+      auth.tenantId,
+      projectId as UUID,
+      auth.userId,
+      auth.sessionVersion,
+    );
     await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
@@ -93,7 +100,13 @@ export async function handlePatchDepartmentMembers(
       throw new ValidationError('kind and userId are required');
     }
 
-    const actorRole = await deps.resolveActorRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await deps.resolveActorRole(
+      pool,
+      auth.tenantId,
+      projectId as UUID,
+      auth.userId,
+      auth.sessionVersion,
+    );
     await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 

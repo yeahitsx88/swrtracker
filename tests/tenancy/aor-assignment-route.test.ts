@@ -136,6 +136,7 @@ function makeDeps(repo: ITenancyRepository, actorRole: 'PROJECT_ADMIN' | 'TENANT
     requireAuth: () => ({
       tenantId,
       userId: actorId,
+      sessionVersion: 1,
     }),
     resolveProjectSetupActorRole: async () => actorRole,
     assertProjectSetupMutable: async () => undefined,

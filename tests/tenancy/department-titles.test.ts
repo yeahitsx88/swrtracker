@@ -128,6 +128,7 @@ function makeDeps(
     requireAuth: () => ({
       tenantId,
       userId: actorId,
+      sessionVersion: 1,
     }),
     resolveProjectSetupActorRole: async () => actorRole,
     assertProjectSetupMutable: async () => undefined,

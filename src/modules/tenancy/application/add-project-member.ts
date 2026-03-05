@@ -21,11 +21,22 @@ export async function addProjectMember(
     throw new ForbiddenError('Only TENANT_ADMIN can add project members');
   }
 
+  const project = await repo.findProjectById(db, params.tenantId, params.projectId);
+  if (!project) {
+    throw new ForbiddenError(
+      'Project membership mutation violates tenant boundary',
+      'SEC_TENANT_BOUNDARY_VIOLATION',
+    );
+  }
+
   await repo.saveMembership(db, {
     id:        randomUUID() as UUID,
+    tenantId:  params.tenantId,
     projectId: params.projectId,
     userId:    params.userId,
     role:      params.role,
     createdAt: new Date(),
   });
+
+  await repo.bumpUserSessionVersion?.(db, params.tenantId, params.userId);
 }

@@ -18,6 +18,8 @@ interface DbRow {
   password_hash: string | null;
   auth_method: string;
   name: string;
+  session_version: number;
+  deactivated_at: Date | null;
   created_at: Date;
 }
 
@@ -39,6 +41,8 @@ function rowToUserWithCreds(row: DbRow): UserWithCredentials {
     email:        row.email,
     name:         row.name,
     authMethod:   row.auth_method as AuthMethod,
+    sessionVersion: row.session_version,
+    deactivatedAt: row.deactivated_at,
     passwordHash: row.password_hash,
     createdAt:    row.created_at,
   };
@@ -52,6 +56,8 @@ function rowToUser(row: DbRow): User {
     email:      row.email,
     name:       row.name,
     authMethod: row.auth_method as AuthMethod,
+    sessionVersion: row.session_version,
+    deactivatedAt: row.deactivated_at,
     createdAt:  row.created_at,
   };
 }
@@ -59,7 +65,7 @@ function rowToUser(row: DbRow): User {
 export class UserRepository implements IUserRepository {
   async findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null> {
     const { rows } = await db.query<DbRow>(
-      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, created_at
+      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, session_version, deactivated_at, created_at
        FROM users
        WHERE tenant_id = $1 AND email = $2
        LIMIT 1`,
@@ -70,7 +76,7 @@ export class UserRepository implements IUserRepository {
 
   async findById(db: DbClient, tenantId: UUID, userId: UUID): Promise<User | null> {
     const { rows } = await db.query<DbRow>(
-      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, created_at
+      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, session_version, deactivated_at, created_at
        FROM users
        WHERE tenant_id = $1 AND id = $2
        LIMIT 1`,

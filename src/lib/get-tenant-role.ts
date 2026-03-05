@@ -4,6 +4,7 @@
  */
 import type { DbClient, UUID } from '@/shared/types';
 import type { TenantRole } from '@/modules/identity/domain/types';
+import { assertActiveSession } from './auth';
 
 interface TenantMembershipRow {
   role: string;
@@ -13,7 +14,12 @@ export async function getTenantRole(
   db: DbClient,
   tenantId: UUID,
   userId: UUID,
+  sessionVersion?: number,
 ): Promise<TenantRole | null> {
+  if (sessionVersion !== undefined) {
+    await assertActiveSession(db, { tenantId, userId, sessionVersion });
+  }
+
   const { rows } = await db.query<TenantMembershipRow>(
     `SELECT role
      FROM tenant_memberships

@@ -11,12 +11,13 @@ export async function resolveProjectSetupActorRole(
   tenantId: UUID,
   projectId: UUID,
   userId: UUID,
+  sessionVersion?: number,
 ): Promise<ProjectSetupActorRole> {
-  const tenantRole = await getTenantRole(db, tenantId, userId);
+  const tenantRole = await getTenantRole(db, tenantId, userId, sessionVersion);
   const actorRole =
     tenantRole === 'TENANT_ADMIN'
       ? 'TENANT_ADMIN'
-      : await getProjectRole(db, tenantId, projectId, userId);
+      : await getProjectRole(db, tenantId, projectId, userId, sessionVersion);
   if (actorRole !== 'PROJECT_ADMIN' && actorRole !== 'TENANT_ADMIN') {
     throw new ForbiddenError('Only PROJECT_ADMIN or TENANT_ADMIN may manage the AOR setup surface');
   }

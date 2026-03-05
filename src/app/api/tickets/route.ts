@@ -10,6 +10,8 @@ import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
 import { withTransaction } from '@/lib/with-transaction';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
+import { withRequestCorrelation } from '@/lib/correlation';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { resolveVisibility } from '@/lib/resolve-visibility';
@@ -26,10 +28,12 @@ const VALID_VARIANTS: WorkflowVariant[] = ['STANDARD_APPROVAL', 'DIRECT_ASSIGNME
 const VALID_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
 
 export async function POST(req: NextRequest) {
-  try {
-    const auth = requireAuth(req);
-    const body = await req.json() as unknown;
-    const b = body as Record<string, unknown>;
+  return withRequestCorrelation(req, async () => {
+    try {
+      const auth = requireAuth(req);
+      const idempotencyKey = requireIdempotencyKey(req);
+      const body = await req.json() as unknown;
+      const b = body as Record<string, unknown>;
 
     if (
       !body || typeof body !== 'object' ||
@@ -82,7 +86,13 @@ export async function POST(req: NextRequest) {
     }
 
     const ticketRepo = new TicketRepository();
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
+    const actorRole = await getProjectRole(
+      pool,
+      auth.tenantId,
+      projectId as UUID,
+      auth.userId,
+      auth.sessionVersion,
+    );
     const projectStatus = await ticketRepo.findProjectStatus(pool, auth.tenantId, projectId as UUID);
     if (!projectStatus) {
       throw new NotFoundError('Project not found');
@@ -105,27 +115,40 @@ export async function POST(req: NextRequest) {
         throw new ValidationError('assignedPartyChiefId is required for direct-assignment tickets');
       }
 
-      const directTicket = await withTransaction((client) =>
-        createDirectAssignmentTicket(ticketRepo, client, {
-          tenantId: auth.tenantId,
-          projectId: projectId as UUID,
-          aorNodeId: aorNodeId as UUID,
-          requesterId: requesterId as UUID,
-          actorId: auth.userId,
-          actorRole,
-          assignedPartyChiefId: assignedPartyChiefId as UUID,
-          assignedInstrumentManId: typeof assignedInstrumentManId === 'string'
-            ? assignedInstrumentManId as UUID
-            : null,
-          departmentId: typeof departmentId === 'string' ? departmentId as UUID : undefined,
-          ticketType,
-          craft,
-          description,
-          requestedDate: parsedDate,
-        }),
+      const result = await withTransaction((client) =>
+        executeIdempotentHttpMutation(
+          client,
+          {
+            tenantId: auth.tenantId,
+            actorId: auth.userId,
+            endpoint: 'POST:/api/tickets',
+            idempotencyKey,
+          },
+          body,
+          async () => {
+            const directTicket = await createDirectAssignmentTicket(ticketRepo, client, {
+              tenantId: auth.tenantId,
+              projectId: projectId as UUID,
+              aorNodeId: aorNodeId as UUID,
+              requesterId: requesterId as UUID,
+              actorId: auth.userId,
+              actorRole,
+              assignedPartyChiefId: assignedPartyChiefId as UUID,
+              assignedInstrumentManId: typeof assignedInstrumentManId === 'string'
+                ? assignedInstrumentManId as UUID
+                : null,
+              departmentId: typeof departmentId === 'string' ? departmentId as UUID : undefined,
+              ticketType,
+              craft,
+              description,
+              requestedDate: parsedDate,
+            });
+            return { status: 201, body: { ticket: directTicket } };
+          },
+        ),
       );
 
-      return NextResponse.json({ ticket: directTicket }, { status: 201 });
+      return NextResponse.json(result.body, { status: result.status });
     }
 
     if (actorRole !== 'REQUESTER') {
@@ -164,71 +187,106 @@ export async function POST(req: NextRequest) {
         throw new ValidationError('departmentId must reference a department in this project');
       }
 
-      const ticket = await withTransaction((client) =>
-        createTicket(ticketRepo, client, {
-          tenantId: auth.tenantId,
-          projectId: projectId as UUID,
-          aorNodeId: aorNodeId as UUID,
-          departmentId: department.id,
-          companyId: companyInfo.companyId,
-          requesterId: auth.userId,
-          ticketType,
-          workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
-          craft,
-          description,
-          requestedDate: parsedDate,
-        }),
+      const result = await withTransaction((client) =>
+        executeIdempotentHttpMutation(
+          client,
+          {
+            tenantId: auth.tenantId,
+            actorId: auth.userId,
+            endpoint: 'POST:/api/tickets',
+            idempotencyKey,
+          },
+          body,
+          async () => {
+            const ticket = await createTicket(ticketRepo, client, {
+              tenantId: auth.tenantId,
+              projectId: projectId as UUID,
+              aorNodeId: aorNodeId as UUID,
+              departmentId: department.id,
+              companyId: companyInfo.companyId,
+              requesterId: auth.userId,
+              ticketType,
+              workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
+              craft,
+              description,
+              requestedDate: parsedDate,
+            });
+            return { status: 201, body: { ticket } };
+          },
+        ),
       );
 
-      return NextResponse.json({ ticket }, { status: 201 });
+      return NextResponse.json(result.body, { status: result.status });
     }
 
-    const ticket = await withTransaction((client) =>
-      createTicket(ticketRepo, client, {
-        tenantId: auth.tenantId,
-        projectId: projectId as UUID,
-        aorNodeId: aorNodeId as UUID,
-        companyId: companyInfo.companyId,
-        requesterId: auth.userId,
-        ticketType,
-        workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
-        craft,
-        description,
-        requestedDate: parsedDate,
-      }),
+    const result = await withTransaction((client) =>
+      executeIdempotentHttpMutation(
+        client,
+        {
+          tenantId: auth.tenantId,
+          actorId: auth.userId,
+          endpoint: 'POST:/api/tickets',
+          idempotencyKey,
+        },
+        body,
+        async () => {
+          const ticket = await createTicket(ticketRepo, client, {
+            tenantId: auth.tenantId,
+            projectId: projectId as UUID,
+            aorNodeId: aorNodeId as UUID,
+            companyId: companyInfo.companyId,
+            requesterId: auth.userId,
+            ticketType,
+            workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
+            craft,
+            description,
+            requestedDate: parsedDate,
+          });
+          return { status: 201, body: { ticket } };
+        },
+      ),
     );
 
-    return NextResponse.json({ ticket }, { status: 201 });
-  } catch (err) {
-    return errorResponse(err);
-  }
+      return NextResponse.json(result.body, { status: result.status });
+    } catch (err) {
+      return errorResponse(err);
+    }
+  });
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const auth = requireAuth(req);
-    const { searchParams } = new URL(req.url);
-    const projectId = searchParams.get('projectId');
-    if (!projectId) throw new ValidationError('projectId query parameter is required');
+  return withRequestCorrelation(req, async () => {
+    try {
+      const auth = requireAuth(req);
+      const { searchParams } = new URL(req.url);
+      const projectId = searchParams.get('projectId');
+      if (!projectId) throw new ValidationError('projectId query parameter is required');
 
-    const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10), 200);
-    const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10), 0);
+      const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10), 200);
+      const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10), 0);
 
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
-    const visibility = await resolveVisibility(
-      pool, auth.tenantId, projectId as UUID, auth.userId, actorRole,
-    );
+      const actorRole = await getProjectRole(
+        pool,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+      );
+      const visibility = await resolveVisibility(
+        pool, auth.tenantId, projectId as UUID, auth.userId, actorRole,
+      );
 
-    const ticketRepo = new TicketRepository();
-    const page = await ticketRepo.list(pool, auth.tenantId, {
-      projectId: projectId as UUID,
-      visibility,
-      limit,
-      offset,
-    });
+      const ticketRepo = new TicketRepository();
+      const page = await ticketRepo.list(pool, auth.tenantId, {
+        projectId: projectId as UUID,
+        visibility,
+        limit,
+        offset,
+      });
 
-    return NextResponse.json(page);
-  } catch (err) {
-    return errorResponse(err);
-  }
+      return NextResponse.json(page);
+    } catch (err) {
+      return errorResponse(err);
+    }
+  });
 }

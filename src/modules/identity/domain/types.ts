@@ -32,6 +32,8 @@ export interface User {
   email: string;
   name: string;
   authMethod: AuthMethod;
+  sessionVersion?: number;
+  deactivatedAt?: Date | null;
   createdAt: Date;
 }
 

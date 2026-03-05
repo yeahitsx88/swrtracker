@@ -52,7 +52,23 @@ export async function performTransition(
         ? repo.findById(db, tenantId, ticketId, options.visibility)
         : repo.findByIdInternal(db, tenantId, ticketId)
     ),
-    patchTicket: (nextPatch) => repo.patchTicket(db, tenantId, ticketId, nextPatch as TicketStatusPatch),
-    buildResult: (ticket) => ({ ...ticket, ...patch, status: to, updatedAt: new Date() }),
+    patchTicket: (nextPatch, expected) =>
+      repo.patchTicket(
+        db,
+        tenantId,
+        ticketId,
+        nextPatch as TicketStatusPatch,
+        {
+          expectedStatus: expected.status,
+          expectedRowVersion: expected.rowVersion,
+        },
+      ),
+    buildResult: (ticket) => ({
+      ...ticket,
+      ...patch,
+      status: to,
+      rowVersion: (ticket.rowVersion ?? 0) + 1,
+      updatedAt: new Date(),
+    }),
   });
 }

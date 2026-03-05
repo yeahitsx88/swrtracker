@@ -39,6 +39,9 @@ export async function rejectPcStatus(
     status: 'IN_PROGRESS',
     pendingPcOutcome: null,
     pendingPcReason: null,
+  }, {
+    expectedStatus: ticket.status,
+    expectedRowVersion: ticket.rowVersion,
   });
 
   if (params.actorRole !== 'PARTY_CHIEF') {
@@ -67,6 +70,7 @@ export async function rejectPcStatus(
     status: 'IN_PROGRESS',
     pendingPcOutcome: null,
     pendingPcReason: null,
+    rowVersion: (ticket.rowVersion ?? 0) + 1,
     updatedAt: new Date(),
   };
 }

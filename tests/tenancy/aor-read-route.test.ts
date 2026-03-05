@@ -23,6 +23,7 @@ function makeDeps(overrides?: Partial<AorReadRouteDeps>): AorReadRouteDeps {
     requireAuth: () => ({
       tenantId,
       userId: actorId,
+      sessionVersion: 1,
     }),
     getProjectRole: async () => 'REQUESTER',
     queryLevels: async () => ([

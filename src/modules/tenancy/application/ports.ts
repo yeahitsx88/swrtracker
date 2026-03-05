@@ -132,11 +132,13 @@ export interface ITenancyRepository {
   // Project memberships
   saveMembership(db: DbClient, membership: {
     id: UUID;
+    tenantId: UUID;
     projectId: UUID;
     userId: UUID;
     role: string;
     createdAt: Date;
   }): Promise<void>;
+  bumpUserSessionVersion?(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
 
   // Priority whitelist
   saveWhitelistEntry(db: DbClient, entry: PriorityWhitelistEntry): Promise<void>;

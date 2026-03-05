@@ -40,6 +40,9 @@ export async function approvePcStatus(
     pendingPcOutcome: null,
     pendingPcReason: null,
     completedAt: finalStatus === 'COMPLETED' ? new Date() : undefined,
+  }, {
+    expectedStatus: ticket.status,
+    expectedRowVersion: ticket.rowVersion,
   });
 
   if (params.actorRole !== 'PARTY_CHIEF') {
@@ -86,6 +89,7 @@ export async function approvePcStatus(
     pendingPcOutcome: null,
     pendingPcReason: null,
     completedAt: finalStatus === 'COMPLETED' ? new Date() : ticket.completedAt,
+    rowVersion: (ticket.rowVersion ?? 0) + 1,
     updatedAt: new Date(),
   };
 }

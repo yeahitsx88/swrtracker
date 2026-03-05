@@ -37,7 +37,7 @@ export async function POST(
     }
 
     const { userId, role } = body as { userId: string; role: ProjectRole };
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
     const repo = new TenancyRepository();
     await addProjectMember(repo, pool, {

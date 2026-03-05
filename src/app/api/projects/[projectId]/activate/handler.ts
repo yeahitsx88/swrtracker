@@ -72,6 +72,7 @@ export async function handlePostProjectActivation(
       auth.tenantId,
       projectId as UUID,
       auth.userId,
+      auth.sessionVersion,
     );
     const repo = deps.createRepo();
 

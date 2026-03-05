@@ -26,6 +26,9 @@ async function main(): Promise<void> {
     warning_count: result.warningCount,
     unlocked_count: result.unlockedCount,
     vacancy_count: result.vacancyCount,
+    orphan_reassigned_count: result.orphanReassignedCount,
+    orphan_escalated_count: result.orphanEscalatedCount,
+    orphan_unresolved_count: result.orphanUnresolvedCount,
   });
 }
 

@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {
   dispatchApproverTimeoutNotifications,
   dispatchDailyVacancyNotifications,
+  dispatchOrphanWorkflowRecovery,
   type ApproverTimeoutCandidate,
   type INotificationRepository,
   type INotificationTransport,
   type NotificationMessage,
+  type OrphanWorkflowCandidate,
   type VacancyEscalationCandidate,
 } from '@/modules/notification/application';
 import {
@@ -73,6 +75,8 @@ function makeRepo(overrides?: Partial<INotificationRepository>): INotificationRe
   return {
     listApproverTimeoutCandidates: async () => [],
     listVacancyEscalationCandidates: async () => [],
+    listOrphanWorkflowCandidates: async () => [],
+    reassignOrphanWorkflowTicket: async () => false,
     ...overrides,
   };
 }
@@ -91,6 +95,33 @@ function makeDb(onQuery?: (sql: string, params?: unknown[]) => void): DbClient {
       onQuery?.(sql, params);
       return { rows: [] };
     },
+  };
+}
+
+function makeOrphanCandidate(overrides?: Partial<OrphanWorkflowCandidate>): OrphanWorkflowCandidate {
+  return {
+    tenantId,
+    projectId,
+    ticketId,
+    ticketNumber: 'U1-0007',
+    rowVersion: 3,
+    orphanedAt: new Date('2026-03-04T00:00:00Z'),
+    assignedPartyChiefId: 'pc-1' as UUID,
+    assignedInstrumentManId: null,
+    surveyLeadId: 'lead-1' as UUID,
+    assignedPartyChiefOrphaned: true,
+    assignedInstrumentManOrphaned: false,
+    surveyLeadOrphaned: true,
+    fallbackProjectAdminId: 'project-admin-1' as UUID,
+    escalationRecipients: [
+      {
+        userId: 'tenant-admin-1' as UUID,
+        email: 'tenant-admin@example.com',
+        name: 'Tenant Admin',
+      },
+    ],
+    hasEscalationSignal: false,
+    ...overrides,
   };
 }
 
@@ -242,6 +273,111 @@ test('dispatchDailyVacancyNotifications does not send before the role threshold 
   assert.equal(sent.length, 0);
 });
 
+test('dispatchOrphanWorkflowRecovery reassigns orphaned tickets to project-admin fallback and appends audit event', async () => {
+  const sent: NotificationMessage[] = [];
+  const auditEvents: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
+  let reassignCalls = 0;
+  const db = makeDb((sql, params) => {
+    if (/INSERT INTO ticket_events/.test(sql)) {
+      auditEvents.push({
+        eventType: String(params?.[4]),
+        payload: JSON.parse(String(params?.[5])) as Record<string, unknown>,
+      });
+    }
+  });
+
+  const summary = await dispatchOrphanWorkflowRecovery(
+    makeRepo({
+      listOrphanWorkflowCandidates: async () => [makeOrphanCandidate()],
+      reassignOrphanWorkflowTicket: async () => {
+        reassignCalls += 1;
+        return true;
+      },
+    }),
+    makeTransport(sent),
+    db,
+    {
+      actorId: workerActorId,
+      now: new Date('2026-03-04T12:00:00Z'),
+    },
+  );
+
+  assert.equal(reassignCalls, 1);
+  assert.equal(summary.reassignedCount, 1);
+  assert.equal(summary.escalatedCount, 0);
+  assert.equal(summary.unresolvedCount, 0);
+  assert.equal(sent.length, 0);
+  assert.equal(auditEvents.length, 1);
+  assert.equal(auditEvents[0]?.eventType, 'ticket.assigned');
+  assert.equal(auditEvents[0]?.payload.reason, 'OFFBOARDING_ORPHAN_RECOVERY');
+});
+
+test('dispatchOrphanWorkflowRecovery escalates unresolved orphaned tickets after SLA', async () => {
+  const sent: NotificationMessage[] = [];
+  const auditEvents: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
+  const db = makeDb((sql, params) => {
+    if (/INSERT INTO ticket_events/.test(sql)) {
+      auditEvents.push({
+        eventType: String(params?.[4]),
+        payload: JSON.parse(String(params?.[5])) as Record<string, unknown>,
+      });
+    }
+  });
+
+  const summary = await dispatchOrphanWorkflowRecovery(
+    makeRepo({
+      listOrphanWorkflowCandidates: async () => [
+        makeOrphanCandidate({
+          fallbackProjectAdminId: null,
+          orphanedAt: new Date('2026-03-04T02:00:00Z'),
+          hasEscalationSignal: false,
+        }),
+      ],
+    }),
+    makeTransport(sent),
+    db,
+    {
+      actorId: workerActorId,
+      now: new Date('2026-03-04T08:30:00Z'),
+    },
+  );
+
+  assert.equal(summary.reassignedCount, 0);
+  assert.equal(summary.unresolvedCount, 1);
+  assert.equal(summary.escalatedCount, 1);
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0]?.kind, 'workflow.orphan_escalation');
+  assert.equal(auditEvents.length, 1);
+  assert.equal(auditEvents[0]?.eventType, 'ticket.unassigned');
+});
+
+test('dispatchOrphanWorkflowRecovery does not escalate unresolved orphaned tickets before SLA', async () => {
+  const sent: NotificationMessage[] = [];
+
+  const summary = await dispatchOrphanWorkflowRecovery(
+    makeRepo({
+      listOrphanWorkflowCandidates: async () => [
+        makeOrphanCandidate({
+          fallbackProjectAdminId: null,
+          orphanedAt: new Date('2026-03-04T07:00:00Z'),
+          hasEscalationSignal: false,
+        }),
+      ],
+    }),
+    makeTransport(sent),
+    makeDb(),
+    {
+      actorId: workerActorId,
+      now: new Date('2026-03-04T08:30:00Z'),
+    },
+  );
+
+  assert.equal(summary.reassignedCount, 0);
+  assert.equal(summary.unresolvedCount, 1);
+  assert.equal(summary.escalatedCount, 0);
+  assert.equal(sent.length, 0);
+});
+
 test('CallbackNotificationTransport delegates to the provided callback', async () => {
   const sent: NotificationMessage[] = [];
   const transport = new CallbackNotificationTransport(async (message) => {
@@ -346,4 +482,48 @@ test('NotificationRepository maps vacancy escalation rows into candidates', asyn
   assert.equal(candidates[0]?.projectName, 'Alpha Build');
   assert.equal(candidates[0]?.role, 'SURVEY_MANAGER');
   assert.equal(candidates[0]?.recipients.length, 2);
+});
+
+test('NotificationRepository maps orphan workflow rows into candidates', async () => {
+  const repo = new NotificationRepository();
+  const db: DbClient = {
+    query: async <T extends object>(sql: string) => {
+      assert.match(sql, /FROM tickets t/);
+      return {
+        rows: [
+          {
+            tenant_id: tenantId,
+            project_id: projectId,
+            ticket_id: ticketId,
+            ticket_number: 'U1-0007',
+            row_version: 4,
+            orphaned_at: '2026-03-04T00:00:00Z',
+            assigned_party_chief_id: 'pc-1',
+            assigned_instrument_man_id: null,
+            survey_lead_id: 'lead-1',
+            assigned_party_chief_orphaned: true,
+            assigned_instrument_man_orphaned: false,
+            survey_lead_orphaned: true,
+            fallback_project_admin_id: 'project-admin-1',
+            escalation_recipients: [
+              {
+                userId: 'tenant-admin-1',
+                email: 'tenant-admin@example.com',
+                name: 'Tenant Admin',
+              },
+            ],
+            has_escalation_signal: false,
+          },
+        ] as T[],
+      };
+    },
+  };
+
+  const candidates = await repo.listOrphanWorkflowCandidates(db);
+
+  assert.equal(candidates.length, 1);
+  assert.equal(candidates[0]?.rowVersion, 4);
+  assert.equal(candidates[0]?.assignedPartyChiefOrphaned, true);
+  assert.equal(candidates[0]?.fallbackProjectAdminId, 'project-admin-1');
+  assert.equal(candidates[0]?.escalationRecipients.length, 1);
 });

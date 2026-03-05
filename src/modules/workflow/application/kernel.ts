@@ -11,6 +11,7 @@ export interface WorkflowKernelTicket {
   tenantId: UUID;
   workflowVariant: WorkflowVariant;
   status: TicketStatus;
+  rowVersion?: number;
 }
 
 export interface WorkflowKernelTransitionPatch {
@@ -29,7 +30,10 @@ export interface WorkflowKernelCommand<TTicket extends WorkflowKernelTicket> {
   eventType: AuditEventType;
   eventPayload?: Record<string, unknown>;
   readTicket: () => Promise<TTicket | null>;
-  patchTicket: (patch: WorkflowKernelTransitionPatch) => Promise<void>;
+  patchTicket: (
+    patch: WorkflowKernelTransitionPatch,
+    expected: { status: TicketStatus; rowVersion?: number },
+  ) => Promise<void>;
   buildResult: (ticket: TTicket) => TTicket;
 }
 
@@ -55,7 +59,13 @@ export async function executeWorkflowTransition<TTicket extends WorkflowKernelTi
     assertWorkflowActorHasRole(command.actorRole, command.permittedRoles);
     assertValidTransition(ticket.workflowVariant, ticket.status, command.to);
 
-    await command.patchTicket({ ...command.patch, status: command.to });
+    await command.patchTicket(
+      { ...command.patch, status: command.to },
+      {
+        status: ticket.status,
+        rowVersion: (ticket as unknown as { rowVersion?: number }).rowVersion,
+      },
+    );
     await appendAuditEvent(db, {
       ticketId: command.ticketId,
       tenantId: command.tenantId,

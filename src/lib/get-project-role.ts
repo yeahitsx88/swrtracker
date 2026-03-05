@@ -5,6 +5,7 @@
 import { ForbiddenError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
+import { assertActiveSession } from './auth';
 
 interface MembershipRow {
   role: string;
@@ -15,7 +16,12 @@ export async function getProjectRole(
   tenantId: UUID,
   projectId: UUID,
   userId: UUID,
+  sessionVersion?: number,
 ): Promise<ProjectRole> {
+  if (sessionVersion !== undefined) {
+    await assertActiveSession(db, { tenantId, userId, sessionVersion });
+  }
+
   const { rows } = await db.query<MembershipRow>(
     `SELECT role
      FROM project_memberships pm

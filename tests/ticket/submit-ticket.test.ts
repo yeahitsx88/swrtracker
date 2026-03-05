@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ValidationError } from '@/shared/errors';
+import { ConflictError, ValidationError } from '@/shared/errors';
 import { createTicket } from '@/modules/ticket/application/create-ticket';
 import { submitTicket } from '@/modules/ticket/application/submit-ticket';
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
@@ -236,4 +236,34 @@ test('submitTicket still enforces the 48-hour rule before allocating a number', 
 
   assert.equal(nextSequenceCalls, 0);
   assert.equal(findAorNodeCodeCalls, 0);
+});
+
+test('submitTicket returns deterministic stale-state conflict when draft changed concurrently', async () => {
+  const repo = makeRepo({
+    findByIdInternal: async () => makeDraftTicket({
+      rowVersion: 3,
+    }),
+    patchTicket: async () => {
+      throw new ConflictError(
+        'Ticket changed since it was loaded. Refresh and retry your action.',
+        'WORKFLOW_STALE_STATE',
+      );
+    },
+  });
+
+  const db: DbClient = {
+    query: async () => ({ rows: [] }),
+  };
+
+  await assert.rejects(
+    () => submitTicket(repo, db, {
+      tenantId,
+      ticketId,
+      actorId: requesterId,
+      actorRole: 'REQUESTER',
+    }),
+    (err: unknown) =>
+      err instanceof ConflictError &&
+      err.code === 'WORKFLOW_STALE_STATE',
+  );
 });

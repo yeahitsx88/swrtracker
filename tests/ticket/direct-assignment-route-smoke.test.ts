@@ -21,11 +21,17 @@ type PoolLike = {
   }>;
 };
 
-function makeRequest(url: string, token: string, body?: JsonObject): NextRequest {
+function makeRequest(
+  url: string,
+  token: string,
+  body?: JsonObject,
+  idempotencyKey = 'test-idempotency-key',
+): NextRequest {
   return new NextRequest(url, {
     method: 'POST',
     headers: {
       cookie: `${COOKIE_NAME}=${token}`,
+      'idempotency-key': idempotencyKey,
       ...(body ? { 'content-type': 'application/json' } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
@@ -60,6 +66,11 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
 
   let currentTicket: Ticket | null = null;
   let nextSequence = 7;
+  const idempotencyRows = new Map<string, {
+    requestHash: string;
+    responseStatus: number | null;
+    responseBody: unknown;
+  }>();
 
   const pool = getPool() as unknown as PoolLike;
   const originalQuery = pool.query;
@@ -81,6 +92,9 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
   const originalFindPartyChiefForInstrumentMan = TicketRepository.prototype.findPartyChiefForInstrumentMan;
 
   pool.query = async (sql: string, params?: unknown[]) => {
+    if (/FROM users/.test(sql)) {
+      return { rows: [{ session_version: 1, deactivated_at: null }] };
+    }
     if (/SELECT project_id FROM tickets/.test(sql)) {
       return { rows: currentTicket ? [{ project_id: currentTicket.projectId }] : [] };
     }
@@ -92,7 +106,46 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
     return { rows: [] };
   };
   pool.connect = async () => ({
-    query: async () => ({ rows: [] }),
+    query: async (sql: string, params?: unknown[]) => {
+      if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql.trim())) {
+        return { rows: [] };
+      }
+      if (/INSERT INTO api_idempotency/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        if (idempotencyRows.has(key)) {
+          return { rows: [] };
+        }
+        idempotencyRows.set(key, {
+          requestHash: params?.[4] as string,
+          responseStatus: null,
+          responseBody: null,
+        });
+        return { rows: [{ idempotency_key: params?.[3] }] };
+      }
+      if (/SELECT request_hash, response_status, response_body/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        const row = idempotencyRows.get(key);
+        if (!row) return { rows: [] };
+        return {
+          rows: [{
+            request_hash: row.requestHash,
+            response_status: row.responseStatus,
+            response_body: row.responseBody,
+          }],
+        };
+      }
+      if (/UPDATE api_idempotency/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        const row = idempotencyRows.get(key);
+        if (row) {
+          row.responseStatus = params?.[4] as number;
+          row.responseBody = JSON.parse(params?.[5] as string);
+          idempotencyRows.set(key, row);
+        }
+        return { rows: [] };
+      }
+      return { rows: [] };
+    },
     release: () => undefined,
   });
 
@@ -142,7 +195,7 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
       craft: 'Civil',
       description: 'Urgent direct assignment',
       requestedDate: new Date(Date.now() + (60 * 60 * 1000)).toISOString(),
-    }));
+    }, 'idem-create-1'));
     assert.equal(createResponse.status, 201);
     const created = await readJson(createResponse);
     const ticketId = (created.ticket as JsonObject).id as string;
@@ -152,7 +205,7 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
       makeRequest(`http://localhost/api/tickets/${ticketId}/assign`, managerToken, {
         assignedPartyChiefId: secondPcId,
         assignedInstrumentManId: instrumentManId,
-      }),
+      }, 'idem-assign-1'),
       { params: Promise.resolve({ ticketId }) },
     );
     assert.equal(assignResponse.status, 200);
@@ -170,7 +223,7 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
     const fieldCancelResponse = await fieldCancelRoute(
       makeRequest(`http://localhost/api/tickets/${ticketId}/field-cancel`, instrumentManToken, {
         reason: 'Unsafe conditions',
-      }),
+      }, 'idem-field-cancel-1'),
       { params: Promise.resolve({ ticketId }) },
     );
     assert.equal(fieldCancelResponse.status, 200);

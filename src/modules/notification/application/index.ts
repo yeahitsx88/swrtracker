@@ -38,6 +38,24 @@ export interface VacancyEscalationCandidate {
   recipients: NotificationRecipient[];
 }
 
+export interface OrphanWorkflowCandidate {
+  tenantId: UUID;
+  projectId: UUID;
+  ticketId: UUID;
+  ticketNumber: string | null;
+  rowVersion: number;
+  orphanedAt: Date;
+  assignedPartyChiefId: UUID | null;
+  assignedInstrumentManId: UUID | null;
+  surveyLeadId: UUID | null;
+  assignedPartyChiefOrphaned: boolean;
+  assignedInstrumentManOrphaned: boolean;
+  surveyLeadOrphaned: boolean;
+  fallbackProjectAdminId: UUID | null;
+  escalationRecipients: NotificationRecipient[];
+  hasEscalationSignal: boolean;
+}
+
 export interface INotificationRepository {
   listApproverTimeoutCandidates(
     db: DbClient,
@@ -47,12 +65,28 @@ export interface INotificationRepository {
     db: DbClient,
     now: Date,
   ): Promise<VacancyEscalationCandidate[]>;
+  listOrphanWorkflowCandidates(
+    db: DbClient,
+  ): Promise<OrphanWorkflowCandidate[]>;
+  reassignOrphanWorkflowTicket(
+    db: DbClient,
+    params: {
+      tenantId: UUID;
+      ticketId: UUID;
+      expectedRowVersion: number;
+      fallbackProjectAdminId: UUID;
+      assignedPartyChiefOrphaned: boolean;
+      assignedInstrumentManOrphaned: boolean;
+      surveyLeadOrphaned: boolean;
+    },
+  ): Promise<boolean>;
 }
 
 export type NotificationKind =
   | 'approver.timeout_warning'
   | 'approver.timeout_unlocked'
-  | 'vacancy.daily_admin_alert';
+  | 'vacancy.daily_admin_alert'
+  | 'workflow.orphan_escalation';
 
 export interface NotificationMessage {
   kind: NotificationKind;
@@ -76,6 +110,7 @@ export interface ApproverTimeoutDispatchSummary {
 
 const APPROVER_TIMEOUT_WARNING_HOURS = 18;
 const APPROVER_TIMEOUT_UNLOCKED_HOURS = 24;
+const ORPHAN_REASSIGNMENT_SLA_HOURS = 4;
 
 const VACANCY_ESCALATION_HOURS: Record<VacancyEscalationRole, number> = {
   SURVEY_MANAGER: 24,
@@ -225,6 +260,110 @@ export async function dispatchDailyVacancyNotifications(
   }
 
   return { sentCount };
+}
+
+export interface OrphanWorkflowRecoverySummary {
+  reassignedCount: number;
+  escalatedCount: number;
+  unresolvedCount: number;
+}
+
+export async function dispatchOrphanWorkflowRecovery(
+  repo: INotificationRepository,
+  transport: INotificationTransport,
+  db: DbClient,
+  params: {
+    actorId: UUID;
+    now?: Date;
+  },
+): Promise<OrphanWorkflowRecoverySummary> {
+  const now = params.now ?? new Date();
+  const candidates = await repo.listOrphanWorkflowCandidates(db);
+  const summary: OrphanWorkflowRecoverySummary = {
+    reassignedCount: 0,
+    escalatedCount: 0,
+    unresolvedCount: 0,
+  };
+
+  for (const candidate of candidates) {
+    if (candidate.fallbackProjectAdminId) {
+      const reassigned = await repo.reassignOrphanWorkflowTicket(db, {
+        tenantId: candidate.tenantId,
+        ticketId: candidate.ticketId,
+        expectedRowVersion: candidate.rowVersion,
+        fallbackProjectAdminId: candidate.fallbackProjectAdminId,
+        assignedPartyChiefOrphaned: candidate.assignedPartyChiefOrphaned,
+        assignedInstrumentManOrphaned: candidate.assignedInstrumentManOrphaned,
+        surveyLeadOrphaned: candidate.surveyLeadOrphaned,
+      });
+
+      if (!reassigned) {
+        continue;
+      }
+
+      await appendAuditEvent(db, {
+        ticketId: candidate.ticketId,
+        tenantId: candidate.tenantId,
+        actorId: params.actorId,
+        eventType: 'ticket.assigned',
+        payload: {
+          reason: 'OFFBOARDING_ORPHAN_RECOVERY',
+          fallbackProjectAdminId: candidate.fallbackProjectAdminId,
+          previousAssignedPartyChiefId: candidate.assignedPartyChiefId,
+          previousAssignedInstrumentManId: candidate.assignedInstrumentManId,
+          previousSurveyLeadId: candidate.surveyLeadId,
+          assignedPartyChiefOrphaned: candidate.assignedPartyChiefOrphaned,
+          assignedInstrumentManOrphaned: candidate.assignedInstrumentManOrphaned,
+          surveyLeadOrphaned: candidate.surveyLeadOrphaned,
+        },
+      });
+
+      summary.reassignedCount += 1;
+      continue;
+    }
+
+    summary.unresolvedCount += 1;
+    const hoursElapsed = getElapsedHours(now, candidate.orphanedAt);
+    if (hoursElapsed < ORPHAN_REASSIGNMENT_SLA_HOURS || candidate.hasEscalationSignal) {
+      continue;
+    }
+
+    const recipients = dedupeRecipients(candidate.escalationRecipients);
+    if (recipients.length === 0) {
+      continue;
+    }
+
+    await transport.send({
+      kind: 'workflow.orphan_escalation',
+      tenantId: candidate.tenantId,
+      projectId: candidate.projectId,
+      ticketId: candidate.ticketId,
+      recipients,
+      subject: `Orphaned workflow escalation for ${describeTicket(candidate)}`,
+      body: `${describeTicket(candidate)} remains orphaned for ${hoursElapsed} hours with no active project-admin fallback.`,
+      metadata: {
+        ticketId: candidate.ticketId,
+        ticketNumber: candidate.ticketNumber,
+        hoursElapsed,
+        slaHours: ORPHAN_REASSIGNMENT_SLA_HOURS,
+      },
+    });
+
+    await appendAuditEvent(db, {
+      ticketId: candidate.ticketId,
+      tenantId: candidate.tenantId,
+      actorId: params.actorId,
+      eventType: 'ticket.unassigned',
+      payload: {
+        reason: 'OFFBOARDING_ORPHAN_ESCALATION',
+        hoursElapsed,
+      },
+    });
+
+    summary.escalatedCount += 1;
+  }
+
+  return summary;
 }
 
 function getElapsedHours(now: Date, startedAt: Date): number {

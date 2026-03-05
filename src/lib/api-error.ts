@@ -5,6 +5,8 @@
  * Never let unknown errors propagate to Next.js unhandled.
  */
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
+import { getCorrelationId } from './correlation';
 import {
   ValidationError,
   UnauthorizedError,
@@ -24,6 +26,15 @@ const HTTP_STATUS: Record<AppError['type'], number> = {
   InternalError:     500,
 };
 
+const DEFAULT_CODE: Record<AppError['type'], string> = {
+  ValidationError: 'VALIDATION_ERROR',
+  UnauthorizedError: 'AUTH_UNAUTHORIZED',
+  ForbiddenError: 'AUTH_FORBIDDEN',
+  NotFoundError: 'NOT_FOUND',
+  ConflictError: 'CONFLICT',
+  InternalError: 'INTERNAL_ERROR',
+};
+
 function isAppError(err: unknown): err is AppError {
   return (
     err instanceof ValidationError  ||
@@ -36,14 +47,30 @@ function isAppError(err: unknown): err is AppError {
 }
 
 export function errorResponse(err: unknown): NextResponse {
+  const correlationId = getCorrelationId() ?? randomUUID();
+
   if (isAppError(err)) {
     return NextResponse.json(
-      { error: { type: err.type, message: err.message } },
+      {
+        error: {
+          type: err.type,
+          code: err.code ?? DEFAULT_CODE[err.type],
+          message: err.message,
+          correlationId,
+        },
+      },
       { status: HTTP_STATUS[err.type] },
     );
   }
   return NextResponse.json(
-    { error: { type: 'InternalError', message: 'An unexpected error occurred' } },
+    {
+      error: {
+        type: 'InternalError',
+        code: DEFAULT_CODE.InternalError,
+        message: 'An unexpected error occurred',
+        correlationId,
+      },
+    },
     { status: 500 },
   );
 }

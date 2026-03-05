@@ -106,3 +106,79 @@ test('executeWorkflowTransition rejects invalid state changes', async () => {
     ConflictError,
   );
 });
+
+test('executeWorkflowTransition returns deterministic stale-state conflicts', async () => {
+  await assert.rejects(
+    () =>
+      executeWorkflowTransition<KernelTicket>(db, {
+        tenantId,
+        ticketId,
+        actorId,
+        actorRole: 'SURVEY_MANAGER',
+        permittedRoles: ['SURVEY_MANAGER'],
+        to: 'APPROVED',
+        patch: {},
+        eventType: 'ticket.approved',
+        readTicket: async () => ({
+          id: ticketId,
+          tenantId,
+          workflowVariant: 'STANDARD_APPROVAL',
+          status: 'SUBMITTED',
+          rowVersion: 4,
+        }),
+        patchTicket: async () => {
+          throw new ConflictError(
+            'Ticket changed since it was loaded. Refresh and retry your action.',
+            'WORKFLOW_STALE_STATE',
+          );
+        },
+        buildResult: (ticket) => ticket,
+      }),
+    (err: unknown) =>
+      err instanceof ConflictError &&
+      err.code === 'WORKFLOW_STALE_STATE',
+  );
+});
+
+test('executeWorkflowTransition does not append audit event when stale-state conflict occurs', async () => {
+  let auditInsertCount = 0;
+  const auditDb: DbClient = {
+    query: async (queryText: string) => {
+      if (queryText.includes('INSERT INTO ticket_events')) {
+        auditInsertCount += 1;
+      }
+      return { rows: [] };
+    },
+  };
+
+  await assert.rejects(
+    () =>
+      executeWorkflowTransition<KernelTicket>(auditDb, {
+        tenantId,
+        ticketId,
+        actorId,
+        actorRole: 'SURVEY_MANAGER',
+        permittedRoles: ['SURVEY_MANAGER'],
+        to: 'APPROVED',
+        patch: {},
+        eventType: 'ticket.approved',
+        readTicket: async () => ({
+          id: ticketId,
+          tenantId,
+          workflowVariant: 'STANDARD_APPROVAL',
+          status: 'SUBMITTED',
+          rowVersion: 1,
+        }),
+        patchTicket: async () => {
+          throw new ConflictError(
+            'Ticket changed since it was loaded. Refresh and retry your action.',
+            'WORKFLOW_STALE_STATE',
+          );
+        },
+        buildResult: (ticket) => ticket,
+      }),
+    ConflictError,
+  );
+
+  assert.equal(auditInsertCount, 0);
+});

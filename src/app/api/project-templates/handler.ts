@@ -37,7 +37,7 @@ export async function handleGetProjectTemplates(
 ) {
   try {
     const auth = deps.requireAuth(req);
-    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = deps.createRepo();
     const templates = await listProjectTemplates(repo, pool, {
       tenantId: auth.tenantId,
@@ -74,7 +74,7 @@ export async function handlePostProjectTemplates(
       );
     }
 
-    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = deps.createRepo();
     const template = await createProjectTemplate(repo, pool, {
       tenantId: auth.tenantId,

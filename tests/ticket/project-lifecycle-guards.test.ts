@@ -102,6 +102,7 @@ function makeRequest(token: string, body: JsonObject): NextRequest {
     headers: {
       cookie: `${COOKIE_NAME}=${token}`,
       'content-type': 'application/json',
+      'idempotency-key': 'project-lifecycle-idempotency-key',
     },
     body: JSON.stringify(body),
   });
@@ -174,15 +175,62 @@ test('POST /api/tickets blocks direct-assignment creation while the project is i
   const originalQuery = pool.query;
   const originalConnect = pool.connect;
   const originalFindProjectStatus = TicketRepository.prototype.findProjectStatus;
+  const idempotencyRows = new Map<string, {
+    requestHash: string;
+    responseStatus: number | null;
+    responseBody: unknown;
+  }>();
 
   pool.query = async (sql: string, params?: unknown[]) => {
+    if (/FROM users/.test(sql)) {
+      return { rows: [{ session_version: 1, deactivated_at: null }] };
+    }
     if (/SELECT role\s+FROM project_memberships/.test(sql)) {
       return { rows: [{ role: params?.[1] === managerId ? 'SURVEY_MANAGER' : 'REQUESTER' }] };
     }
     return { rows: [] };
   };
   pool.connect = async () => ({
-    query: async () => ({ rows: [] }),
+    query: async (sql: string, params?: unknown[]) => {
+      if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql.trim())) {
+        return { rows: [] };
+      }
+      if (/INSERT INTO api_idempotency/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        if (idempotencyRows.has(key)) {
+          return { rows: [] };
+        }
+        idempotencyRows.set(key, {
+          requestHash: params?.[4] as string,
+          responseStatus: null,
+          responseBody: null,
+        });
+        return { rows: [{ idempotency_key: params?.[3] }] };
+      }
+      if (/SELECT request_hash, response_status, response_body/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        const row = idempotencyRows.get(key);
+        if (!row) return { rows: [] };
+        return {
+          rows: [{
+            request_hash: row.requestHash,
+            response_status: row.responseStatus,
+            response_body: row.responseBody,
+          }],
+        };
+      }
+      if (/UPDATE api_idempotency/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        const row = idempotencyRows.get(key);
+        if (row) {
+          row.responseStatus = params?.[4] as number;
+          row.responseBody = JSON.parse(params?.[5] as string);
+          idempotencyRows.set(key, row);
+        }
+        return { rows: [] };
+      }
+      return { rows: [] };
+    },
     release: () => undefined,
   });
   TicketRepository.prototype.findProjectStatus = async () => 'SETUP';
@@ -218,15 +266,62 @@ test('POST /api/tickets blocks requester draft creation on archived projects', a
   const originalQuery = pool.query;
   const originalConnect = pool.connect;
   const originalFindProjectStatus = TicketRepository.prototype.findProjectStatus;
+  const idempotencyRows = new Map<string, {
+    requestHash: string;
+    responseStatus: number | null;
+    responseBody: unknown;
+  }>();
 
   pool.query = async (sql: string) => {
+    if (/FROM users/.test(sql)) {
+      return { rows: [{ session_version: 1, deactivated_at: null }] };
+    }
     if (/SELECT role\s+FROM project_memberships/.test(sql)) {
       return { rows: [{ role: 'REQUESTER' }] };
     }
     return { rows: [] };
   };
   pool.connect = async () => ({
-    query: async () => ({ rows: [] }),
+    query: async (sql: string, params?: unknown[]) => {
+      if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql.trim())) {
+        return { rows: [] };
+      }
+      if (/INSERT INTO api_idempotency/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        if (idempotencyRows.has(key)) {
+          return { rows: [] };
+        }
+        idempotencyRows.set(key, {
+          requestHash: params?.[4] as string,
+          responseStatus: null,
+          responseBody: null,
+        });
+        return { rows: [{ idempotency_key: params?.[3] }] };
+      }
+      if (/SELECT request_hash, response_status, response_body/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        const row = idempotencyRows.get(key);
+        if (!row) return { rows: [] };
+        return {
+          rows: [{
+            request_hash: row.requestHash,
+            response_status: row.responseStatus,
+            response_body: row.responseBody,
+          }],
+        };
+      }
+      if (/UPDATE api_idempotency/.test(sql)) {
+        const key = `${params?.[0]}|${params?.[1]}|${params?.[2]}|${params?.[3]}`;
+        const row = idempotencyRows.get(key);
+        if (row) {
+          row.responseStatus = params?.[4] as number;
+          row.responseBody = JSON.parse(params?.[5] as string);
+          idempotencyRows.set(key, row);
+        }
+        return { rows: [] };
+      }
+      return { rows: [] };
+    },
     release: () => undefined,
   });
   TicketRepository.prototype.findProjectStatus = async () => 'ARCHIVED';

@@ -137,6 +137,7 @@ function makeDeps(repo: ITenancyRepository): ProjectActivationRouteDeps {
     requireAuth: () => ({
       tenantId,
       userId: actorId,
+      sessionVersion: 1,
     }),
     resolveProjectSetupActorRole: async () => 'PROJECT_ADMIN',
     createRepo: () => repo,
@@ -158,6 +159,7 @@ function makeArchiveDeps(
     requireAuth: () => ({
       tenantId,
       userId: actorId,
+      sessionVersion: 1,
     }),
     getTenantRole: async () => tenantRole,
     createRepo: () => repo,

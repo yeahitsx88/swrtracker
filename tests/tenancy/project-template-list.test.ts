@@ -111,6 +111,7 @@ function makeDeps(
     requireAuth: () => ({
       tenantId,
       userId: actorId,
+      sessionVersion: 1,
     }),
     getTenantRole: async () => actorRole,
     createRepo: () => repo,

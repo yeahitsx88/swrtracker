@@ -2067,3 +2067,189 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: replaced chaos report with a complete 4-week multi-tenant simulation summary including scenario A-E coverage, required KPI tables, and severity-sorted findings with repro steps and error/action trails where applicable
 - Known gap queued for later batches: simulation remains modeled/offline; no executable chaos harness yet drives these scenarios end-to-end against a live deployment
 - Production behavior changed: no
+
+### 2026-03-05 - Batch 53
+- Intent: establish Phase 4 hardening pipeline control document and complete Phase A intake/spec handoff for Step 1 security boundary work
+- Files touched:
+  - `HARDENING_PIPELINE.md` (new)
+  - `CODEX.md`
+- Behavior added: introduced a sequential multi-engineer hardening pipeline spec with global invariants, workstream gates, intake-derived success criteria, and a strict Step 1 (Security Boundary) SPEC/HANDOFF contract including implementation/test/acceptance boundaries
+- Known gap queued for later batches: authoritative source filenames requested for intake (`SWRTracker_Phase4_Executive_Summary.md`, `SWRTracker_Hardening_Roadmap.md`) were not found in repository or git history; intake currently anchored to existing Phase 4 artifacts (`CHAOS_REPORT.md`, stress audit, `PHASE4_STATUS.md`)
+- Production behavior changed: no
+
+### 2026-03-05 - Batch 54
+- Intent: re-run Phase A intake/spec handoff using newly added authoritative sources and tighten Step 1 handoff contracts
+- Files touched:
+  - `HARDENING_PIPELINE.md`
+  - `CODEX.md`
+- Behavior added:
+  - updated intake to use `SWRTracker_Phase4_Executive_Summary.md` and `SWRTracker_Hardening_Roadmap.md` as primary authority, with in-repo stress artifacts as supporting evidence
+  - aligned pipeline sequencing to roadmap phases and clarified Step 1 mapping to Roadmap Phase 1 deliverables
+  - upgraded Step 1 handoff to explicitly include `Contract Notes`, `PR Checklist`, and `Edge-Case Additions` sections while preserving strict stop-the-line contract-revision rules
+- Known gap queued for later batches: none new; remaining implementation gaps are intentionally deferred to sequential Phase B execution
+- Production behavior changed: no
+
+### 2026-03-05 - Batch 55
+- Intent: execute Phase B Step 1 (Security Boundary) from hardening pipeline handoff with tenant mutation guards, immediate session revocation plumbing, and regression coverage
+- Files touched:
+  - `db/migrations/016_session_version_hardening.sql` (new)
+  - `src/shared/errors.ts`
+  - `src/lib/api-error.ts`
+  - `src/lib/auth.ts`
+  - `src/lib/get-tenant-role.ts`
+  - `src/lib/get-project-role.ts`
+  - `src/lib/ticket-route-helpers.ts`
+  - `src/modules/identity/domain/types.ts`
+  - `src/modules/identity/infrastructure/user.repository.ts`
+  - `src/modules/identity/application/authenticate.ts`
+  - `src/modules/tenancy/application/ports.ts`
+  - `src/modules/tenancy/application/add-project-member.ts`
+  - `src/modules/tenancy/application/tenant-memberships.ts`
+  - `src/modules/tenancy/infrastructure/tenancy.repository.ts`
+  - `src/app/api/companies/route.ts`
+  - `src/app/api/projects/route.ts`
+  - `src/app/api/tenant-memberships/route.ts`
+  - `src/app/api/tickets/route.ts`
+  - `src/app/api/ops/diagnostics/handler.ts`
+  - `src/app/api/project-templates/handler.ts`
+  - `src/app/api/project-templates/[templateId]/route.ts`
+  - `src/app/api/projects/[projectId]/members/route.ts`
+  - `src/app/api/projects/[projectId]/whitelist/route.ts`
+  - `src/app/api/projects/[projectId]/aor/shared.ts`
+  - `src/app/api/projects/[projectId]/aor/route.ts`
+  - `src/app/api/projects/[projectId]/aor/read-handler.ts`
+  - `src/app/api/projects/[projectId]/aor/assignments/handler.ts`
+  - `src/app/api/projects/[projectId]/departments/handler.ts`
+  - `src/app/api/projects/[projectId]/departments/[departmentId]/titles/handler.ts`
+  - `src/app/api/projects/[projectId]/departments/[departmentId]/members/handler.ts`
+  - `src/app/api/projects/[projectId]/activate/handler.ts`
+  - `src/app/api/projects/[projectId]/archive/handler.ts`
+  - `tests/identity/session-auth.test.ts` (new)
+  - `tests/lib/get-tenant-role.test.ts`
+  - `tests/tenancy/add-project-member-security.test.ts` (new)
+  - `tests/ops/diagnostics-route.test.ts`
+  - `tests/tenancy/aor-assignment-route.test.ts`
+  - `tests/tenancy/aor-read-route.test.ts`
+  - `tests/tenancy/department-memberships.test.ts`
+  - `tests/tenancy/department-route.test.ts`
+  - `tests/tenancy/department-titles.test.ts`
+  - `tests/tenancy/project-activation.test.ts`
+  - `tests/tenancy/project-template-list.test.ts`
+  - `tests/ticket/direct-assignment-route-smoke.test.ts`
+  - `tests/ticket/project-lifecycle-guards.test.ts`
+  - `HARDENING_PIPELINE.md`
+  - `CODEX.md`
+- Behavior added:
+  - enforced tenant-boundary checks for project membership and tenant membership mutations with explicit security error code `SEC_TENANT_BOUNDARY_VIOLATION`
+  - added `users.session_version` schema support and session-version bump on tenant/project role mutations to invalidate stale privileged sessions
+  - added active-session validation (`sessionVersion` + `deactivated_at`) to auth/role resolution path for immediate revocation semantics
+  - extended API error model to include machine-readable `code` and `correlationId`
+  - added Step 1 regression tests for cross-tenant mutation blocking plus session revocation edge cases
+- Known gap queued for later batches:
+  - not all authenticated read-only routes are forced through explicit active-session checks yet; high-risk mutation and role-gated paths are covered in this step
+  - idempotency, concurrency 409 determinism, and orphan workflow remediations remain deferred to Steps 2-4 by design
+- Production behavior changed: yes
+
+### 2026-03-05 - Batch 56
+- Intent: execute Phase B Step 2 (Concurrency/State Machine) with optimistic locking, deterministic stale-state conflicts, and regression coverage
+- Files touched:
+  - `db/migrations/017_ticket_row_version_concurrency.sql` (new)
+  - `src/modules/ticket/application/ports.ts`
+  - `src/modules/ticket/domain/types.ts`
+  - `src/modules/ticket/infrastructure/ticket.repository.ts`
+  - `src/modules/workflow/application/kernel.ts`
+  - `src/modules/ticket/application/shared.ts`
+  - `src/modules/ticket/application/assign-ticket.ts`
+  - `src/modules/ticket/application/approve-pc-status.ts`
+  - `src/modules/ticket/application/reject-pc-status.ts`
+  - `src/modules/ticket/application/submit-ticket.ts`
+  - `src/modules/ticket/application/request-survey-cancel.ts`
+  - `tests/workflow/kernel.test.ts`
+  - `tests/ticket/perform-transition.test.ts`
+  - `tests/ticket/submit-ticket.test.ts`
+  - `HARDENING_PIPELINE.md`
+  - `CODEX.md`
+- Behavior added:
+  - added `tickets.row_version` optimistic concurrency primitive and increment-on-write semantics
+  - transition write paths now apply expected status and expected row-version guards at the repository layer
+  - stale transitions now fail deterministically with `WORKFLOW_STALE_STATE` instead of ambiguous outcomes
+  - workflow kernel/shared transition helpers and direct transition use-cases now forward expected-state guards consistently
+  - regression tests now verify stale-state conflicts and confirm rejected stale writes do not append audit events
+- Known gap queued for later batches:
+  - idempotency keys/duplicate suppression and structured duplicate-response semantics are intentionally deferred to Step 3 scope
+- Production behavior changed: yes
+
+### 2026-03-05 - Batch 57
+- Intent: execute Phase B Step 3 (Idempotency/API Reliability) with persisted idempotency keys, duplicate suppression, and structured duplicate-conflict semantics
+- Files touched:
+  - `db/migrations/018_api_idempotency_ledger.sql` (new)
+  - `src/lib/idempotency.ts` (new)
+  - `src/app/api/tickets/route.ts`
+  - `src/app/api/tickets/[ticketId]/assign/route.ts`
+  - `src/app/api/tickets/[ticketId]/requester-cancel/route.ts`
+  - `src/app/api/tickets/[ticketId]/field-cancel/route.ts`
+  - `src/app/api/tickets/[ticketId]/survey-cancel/route.ts`
+  - `tests/lib/idempotency.test.ts` (new)
+  - `tests/ticket/idempotency-routes.test.ts` (new)
+  - `tests/ticket/direct-assignment-route-smoke.test.ts`
+  - `tests/ticket/project-lifecycle-guards.test.ts`
+  - `HARDENING_PIPELINE.md`
+  - `CODEX.md`
+- Behavior added:
+  - create/assign/cancel mutations now require `Idempotency-Key` and persist scoped request hashes + committed responses
+  - duplicate keyed retries now replay cached success responses without running mutation logic a second time
+  - same-key/different-payload reuse now returns deterministic `409 IDEMPOTENCY_KEY_REUSE_MISMATCH`
+  - idempotency in-progress and validation failures now return structured machine-readable codes
+  - idempotency replay/mismatch/in-progress paths emit structured observability events
+- Known gap queued for later batches:
+  - idempotency ledger retention/TTL cleanup is still deferred (P1 operational backlog)
+- Production behavior changed: yes
+
+### 2026-03-05 - Batch 58
+- Intent: execute Phase B Step 4 (Workflow Integrity/Offboarding) with orphaned-workflow detection, deterministic reassignment, and SLA escalation
+- Files touched:
+  - `src/modules/notification/application/index.ts`
+  - `src/modules/notification/application/worker.ts`
+  - `src/modules/notification/infrastructure/index.ts`
+  - `src/workers/notification-worker.ts`
+  - `tests/notification/timeout-and-vacancy.test.ts`
+  - `tests/notification/worker-cycle.test.ts`
+  - `HARDENING_PIPELINE.md`
+  - `CODEX.md`
+- Behavior added:
+  - notification repository now detects active tickets whose assigned owners are deactivated (workflow orphans)
+  - worker cycle now performs deterministic orphan recovery by reassigning to active `PROJECT_ADMIN` fallback with row-version guard
+  - unresolved orphaned tickets now trigger SLA-based escalation notifications (`workflow.orphan_escalation`)
+  - orphan reassignment/escalation append audit signals using existing event contracts (`ticket.assigned`, `ticket.unassigned`)
+  - worker outputs and logs now include orphan recovery counters (`orphanReassignedCount`, `orphanEscalatedCount`, `orphanUnresolvedCount`)
+- Known gap queued for later batches:
+  - fallback hierarchy is currently `PROJECT_ADMIN` only; role-aware multi-tier fallback preferences remain a P1 enhancement
+- Production behavior changed: yes
+
+### 2026-03-05 - Batch 59
+- Intent: execute Phase B Step 5 (Observability/Chaos Certification) with correlation-ID propagation, hardening diagnostics metrics, and final certification reporting
+- Files touched:
+  - `src/lib/correlation.ts` (new)
+  - `src/lib/observability.ts`
+  - `src/lib/api-error.ts`
+  - `src/app/api/tickets/route.ts`
+  - `src/app/api/tickets/[ticketId]/assign/route.ts`
+  - `src/app/api/tickets/[ticketId]/requester-cancel/route.ts`
+  - `src/app/api/tickets/[ticketId]/field-cancel/route.ts`
+  - `src/app/api/tickets/[ticketId]/survey-cancel/route.ts`
+  - `src/app/api/ops/diagnostics/route.ts`
+  - `src/app/api/ops/diagnostics/handler.ts`
+  - `src/modules/notification/application/worker.ts`
+  - `tests/lib/correlation.test.ts` (new)
+  - `tests/ops/diagnostics-route.test.ts`
+  - `HARDENING_PIPELINE.md`
+  - `CODEX.md`
+- Behavior added:
+  - critical hardening routes now run inside request correlation context and emit `x-correlation-id` response headers
+  - structured API errors now reuse request correlation context for `error.correlationId`
+  - structured logs now include `correlation_id`, including notification worker runs (seeded by runId)
+  - ops diagnostics now exposes additive hardening metrics (`orphanWorkflowCandidates`, `idempotencyLedger24h`)
+  - certification report added to hardening pipeline with explicit pass/fail metrics tied to Phase 4 objectives
+- Known gap queued for later batches:
+  - full-route correlation wrapping is intentionally focused on critical hardening paths; secondary read-only routes can be migrated in a follow-up observability sweep
+- Production behavior changed: yes

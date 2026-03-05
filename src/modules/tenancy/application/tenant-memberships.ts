@@ -32,6 +32,7 @@ export async function upsertTenantMembership(
     createdAt: new Date(),
   };
   await repo.saveTenantMembership(db, membership);
+  await repo.bumpUserSessionVersion?.(db, params.tenantId, params.userId);
   return membership;
 }
 
@@ -46,4 +47,5 @@ export async function removeTenantMembership(
 ): Promise<void> {
   assertTenantAdmin(params.actorRole);
   await repo.deleteTenantMembership(db, params.tenantId, params.userId);
+  await repo.bumpUserSessionVersion?.(db, params.tenantId, params.userId);
 }

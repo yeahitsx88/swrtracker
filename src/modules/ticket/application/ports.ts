@@ -32,6 +32,11 @@ export interface TicketStatusPatch {
   prioritySetReason?:       string | null;
 }
 
+export interface PatchTicketOptions {
+  expectedStatus?: TicketStatus;
+  expectedRowVersion?: number;
+}
+
 /**
  * Role-based visibility options for list/findById queries.
  * The repository applies the correct filter based on the actor's role.
@@ -113,7 +118,13 @@ export interface ITicketRepository {
   ): Promise<boolean>;
 
   /** Patch ticket status + associated timestamp / field changes. */
-  patchTicket(db: DbClient, tenantId: UUID, ticketId: UUID, patch: TicketStatusPatch): Promise<void>;
+  patchTicket(
+    db: DbClient,
+    tenantId: UUID,
+    ticketId: UUID,
+    patch: TicketStatusPatch,
+    options?: PatchTicketOptions,
+  ): Promise<void>;
 
   /** Paginated list, always scoped to tenantId + visibility rules. */
   list(db: DbClient, tenantId: UUID, opts: ListTicketsOptions): Promise<Page<Ticket>>;

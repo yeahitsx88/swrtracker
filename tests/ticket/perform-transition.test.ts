@@ -10,7 +10,7 @@ const tenantId = 'tenant-1' as UUID;
 const ticketId = 'ticket-1' as UUID;
 const actorId = 'actor-1' as UUID;
 
-function makeTicket(): Ticket {
+function makeTicket(overrides?: Partial<Ticket>): Ticket {
   const now = new Date('2026-03-04T12:00:00Z');
 
   return {
@@ -50,6 +50,7 @@ function makeTicket(): Ticket {
     prioritySetReason: null,
     createdAt: now,
     updatedAt: now,
+    ...overrides,
   };
 }
 
@@ -169,4 +170,38 @@ test('performTransition falls back to internal reads when visibility is absent',
   assert.equal(result.status, 'APPROVED');
   assert.equal(dbCalls.length, 1);
   assert.match(dbCalls[0]?.sql ?? '', /INSERT INTO ticket_events/);
+});
+
+test('performTransition forwards expected status and row version to patchTicket', async () => {
+  let expectedStatus: string | undefined;
+  let expectedRowVersion: number | undefined;
+
+  const repo = makeRepo({
+    findByIdInternal: async () => makeTicket({
+      status: 'SUBMITTED',
+      rowVersion: 9,
+    }),
+    patchTicket: async (_db, _tenantId, _ticketId, _patch, options) => {
+      expectedStatus = options?.expectedStatus;
+      expectedRowVersion = options?.expectedRowVersion;
+    },
+  });
+
+  const db: DbClient = {
+    query: async () => ({ rows: [] }),
+  };
+
+  await performTransition(db, repo, {
+    tenantId,
+    ticketId,
+    actorId,
+    actorRole: 'SURVEY_MANAGER',
+    permittedRoles: ['SURVEY_MANAGER'],
+    to: 'APPROVED',
+    patch: { approvedAt: new Date('2026-03-04T13:00:00Z') },
+    eventType: 'ticket.approved',
+  });
+
+  assert.equal(expectedStatus, 'SUBMITTED');
+  assert.equal(expectedRowVersion, 9);
 });

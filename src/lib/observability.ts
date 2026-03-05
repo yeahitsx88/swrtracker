@@ -1,4 +1,5 @@
 import type { UUID } from '@/shared/types';
+import { getCorrelationId } from './correlation';
 
 type LogLevel = 'INFO' | 'ERROR';
 
@@ -11,6 +12,7 @@ interface LogContext {
 }
 
 function emit(level: LogLevel, message: string, context: LogContext): void {
+  const correlationId = getCorrelationId();
   const payload = {
     level,
     message,
@@ -19,6 +21,7 @@ function emit(level: LogLevel, message: string, context: LogContext): void {
     tenant_id: context.tenantId ?? null,
     ticket_id: context.ticketId ?? null,
     actor_id: context.actorId ?? null,
+    correlation_id: correlationId,
     ...context,
   };
 

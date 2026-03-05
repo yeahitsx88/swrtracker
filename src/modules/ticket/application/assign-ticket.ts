@@ -45,6 +45,9 @@ export async function assignTicket(
       assignedPartyChiefId: params.assignedPartyChiefId,
       assignedInstrumentManId: params.assignedInstrumentManId,
       surveyLeadId: params.surveyLeadId,
+    }, {
+      expectedStatus: ticket.status,
+      expectedRowVersion: ticket.rowVersion,
     });
     await appendAuditEvent(db, {
       ticketId: params.ticketId,
@@ -63,6 +66,7 @@ export async function assignTicket(
       assignedPartyChiefId: params.assignedPartyChiefId,
       assignedInstrumentManId: params.assignedInstrumentManId,
       surveyLeadId: params.surveyLeadId,
+      rowVersion: (ticket.rowVersion ?? 0) + 1,
       updatedAt: new Date(),
     };
   }

@@ -39,7 +39,7 @@ export async function getTicketRouteContext(
   const projectId = rows[0].project_id as UUID;
 
   const actorRole = await getProjectRole(
-    pool, auth.tenantId, projectId, auth.userId,
+    pool, auth.tenantId, projectId, auth.userId, auth.sessionVersion,
   );
 
   const visibility = await resolveVisibility(

@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       throw new ValidationError('userId and role (TENANT_ADMIN|BILLING_VIEWER) are required');
     }
 
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = new TenancyRepository();
     const membership = await upsertTenantMembership(repo, pool, {
       tenantId: auth.tenantId,
@@ -58,7 +58,7 @@ export async function DELETE(req: NextRequest) {
       throw new ValidationError('userId is required');
     }
 
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = new TenancyRepository();
     await removeTenantMembership(repo, pool, {
       tenantId: auth.tenantId,

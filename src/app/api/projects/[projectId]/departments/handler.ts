@@ -52,6 +52,7 @@ export async function handlePostDepartments(
       auth.tenantId,
       projectId as UUID,
       auth.userId,
+      auth.sessionVersion,
     );
     await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
@@ -86,6 +87,7 @@ export async function handleGetDepartments(
       auth.tenantId,
       projectId as UUID,
       auth.userId,
+      auth.sessionVersion,
     );
     const repo = deps.createRepo();
 

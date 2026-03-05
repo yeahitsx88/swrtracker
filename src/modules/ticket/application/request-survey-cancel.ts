@@ -75,6 +75,9 @@ export async function requestSurveyCancel(
     surveyCancelRequestedRole: params.actorRole,
     surveyCancelReason: params.reason,
     surveyCancelRequestedAt: new Date(),
+  }, {
+    expectedStatus: ticket.status,
+    expectedRowVersion: ticket.rowVersion,
   });
 
   await appendAuditEvent(db, {
@@ -94,6 +97,7 @@ export async function requestSurveyCancel(
     surveyCancelRequestedRole: params.actorRole,
     surveyCancelReason: params.reason,
     surveyCancelRequestedAt: new Date(),
+    rowVersion: (ticket.rowVersion ?? 0) + 1,
     updatedAt: new Date(),
   };
 }

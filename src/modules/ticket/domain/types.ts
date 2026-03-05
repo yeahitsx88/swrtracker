@@ -52,6 +52,7 @@ export interface Ticket {
   priority: TicketPriority;
   prioritySetBy: UUID | null;
   prioritySetReason: string | null;
+  rowVersion?: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       crewBuild,
       templateId,
     } = body as { name: string; crewBuild?: CrewBuild; templateId?: string | null };
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = new TenancyRepository();
     const project = await createProject(repo, pool, {
       tenantId: auth.tenantId,

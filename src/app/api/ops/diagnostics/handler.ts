@@ -29,6 +29,8 @@ export interface OpsDiagnosticsDeps {
   countDelayedActive: (tenantId: UUID) => Promise<number>;
   countApproverTimeoutCandidates: (tenantId: UUID) => Promise<number>;
   countVacancyEscalations: (tenantId: UUID) => Promise<number>;
+  countOrphanWorkflowCandidates: (tenantId: UUID) => Promise<number>;
+  countIdempotencyLedger24h: (tenantId: UUID) => Promise<number>;
   listRecentJobRuns: (tenantId: UUID) => Promise<JobRunRow[]>;
   listRecentJobFailures: (tenantId: UUID) => Promise<JobRunRow[]>;
 }
@@ -116,6 +118,44 @@ const defaultDeps: OpsDiagnosticsDeps = {
     );
     return Number(rows[0]?.count ?? '0');
   },
+  countOrphanWorkflowCandidates: async (tenantId) => {
+    const { rows } = await pool.query<CountRow>(
+      `SELECT COUNT(*)::text AS count
+       FROM tickets t
+       JOIN projects p
+         ON p.id = t.project_id
+        AND p.tenant_id = t.tenant_id
+       LEFT JOIN users pc
+         ON pc.id = t.assigned_party_chief_id
+        AND pc.tenant_id = t.tenant_id
+       LEFT JOIN users im
+         ON im.id = t.assigned_instrument_man_id
+        AND im.tenant_id = t.tenant_id
+       LEFT JOIN users sl
+         ON sl.id = t.survey_lead_id
+        AND sl.tenant_id = t.tenant_id
+       WHERE t.tenant_id = $1
+         AND p.status = 'ACTIVE'
+         AND t.status IN ('ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'DELAYED')
+         AND (
+           (t.assigned_party_chief_id IS NOT NULL AND pc.deactivated_at IS NOT NULL) OR
+           (t.assigned_instrument_man_id IS NOT NULL AND im.deactivated_at IS NOT NULL) OR
+           (t.survey_lead_id IS NOT NULL AND sl.deactivated_at IS NOT NULL)
+         )`,
+      [tenantId],
+    );
+    return Number(rows[0]?.count ?? '0');
+  },
+  countIdempotencyLedger24h: async (tenantId) => {
+    const { rows } = await pool.query<CountRow>(
+      `SELECT COUNT(*)::text AS count
+       FROM api_idempotency
+       WHERE tenant_id = $1
+         AND created_at >= NOW() - interval '24 hours'`,
+      [tenantId],
+    );
+    return Number(rows[0]?.count ?? '0');
+  },
   listRecentJobRuns: async (tenantId) => {
     const { rows } = await pool.query<JobRunRow>(
       `SELECT id, job_name, status, started_at::text, finished_at::text, error_message, details
@@ -147,7 +187,7 @@ export async function handleGetOpsDiagnostics(
 ) {
   try {
     const auth = deps.requireAuth(req);
-    const tenantRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId);
+    const tenantRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     if (tenantRole !== 'TENANT_ADMIN') {
       throw new ForbiddenError('Only TENANT_ADMIN can access operational diagnostics');
     }
@@ -158,6 +198,8 @@ export async function handleGetOpsDiagnostics(
       delayedActiveCount,
       approverTimeoutCandidates,
       vacancyEscalations,
+      orphanWorkflowCandidates,
+      idempotencyLedger24h,
       recentJobRuns,
       recentJobFailures,
     ] = await Promise.all([
@@ -166,6 +208,8 @@ export async function handleGetOpsDiagnostics(
       deps.countDelayedActive(auth.tenantId),
       deps.countApproverTimeoutCandidates(auth.tenantId),
       deps.countVacancyEscalations(auth.tenantId),
+      deps.countOrphanWorkflowCandidates(auth.tenantId),
+      deps.countIdempotencyLedger24h(auth.tenantId),
       deps.listRecentJobRuns(auth.tenantId),
       deps.listRecentJobFailures(auth.tenantId),
     ]);
@@ -189,6 +233,10 @@ export async function handleGetOpsDiagnostics(
       notificationBacklog: {
         approverTimeoutCandidates,
         vacancyEscalations,
+      },
+      hardeningMetrics: {
+        orphanWorkflowCandidates,
+        idempotencyLedger24h,
       },
       jobRuns: {
         recent: recentJobRuns,

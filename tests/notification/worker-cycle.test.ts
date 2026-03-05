@@ -33,6 +33,8 @@ test('runNotificationWorkerCycle records a successful worker run', async () => {
   const repo: INotificationRepository = {
     listApproverTimeoutCandidates: async () => [],
     listVacancyEscalationCandidates: async () => [],
+    listOrphanWorkflowCandidates: async () => [],
+    reassignOrphanWorkflowTicket: async () => false,
   };
   const transport: INotificationTransport = {
     send: async () => undefined,
@@ -51,6 +53,9 @@ test('runNotificationWorkerCycle records a successful worker run', async () => {
   assert.equal(result.warningCount, 0);
   assert.equal(result.unlockedCount, 0);
   assert.equal(result.vacancyCount, 0);
+  assert.equal(result.orphanReassignedCount, 0);
+  assert.equal(result.orphanEscalatedCount, 0);
+  assert.equal(result.orphanUnresolvedCount, 0);
   assert.equal(runRepo.starts, 1);
   assert.equal(runRepo.successes, 1);
   assert.equal(runRepo.failures, 0);
@@ -72,6 +77,8 @@ test('runNotificationWorkerCycle records a failed worker run', async () => {
       },
     ],
     listVacancyEscalationCandidates: async () => [],
+    listOrphanWorkflowCandidates: async () => [],
+    reassignOrphanWorkflowTicket: async () => false,
   };
   const transport: INotificationTransport = {
     send: async () => {

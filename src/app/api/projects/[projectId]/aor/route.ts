@@ -38,6 +38,7 @@ export async function POST(
       auth.tenantId,
       projectId as UUID,
       auth.userId,
+      auth.sessionVersion,
     );
     await assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
 

@@ -10,10 +10,12 @@ import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus, TicketType
 import type { ProjectStatus } from '@/modules/tenancy/domain/types';
 import type {
   ITicketRepository,
+  PatchTicketOptions,
   TicketStatusPatch,
   ListTicketsOptions,
   VisibilityScope,
 } from '../application/ports';
+import { ConflictError } from '@/shared/errors';
 
 // ---------------------------------------------------------------------------
 // Row mapper
@@ -54,6 +56,7 @@ interface TicketRow {
   priority: string;
   priority_set_by: string | null;
   priority_set_reason: string | null;
+  row_version?: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -94,6 +97,7 @@ function rowToTicket(r: TicketRow): Ticket {
     priority:                r.priority as Ticket['priority'],
     prioritySetBy:           r.priority_set_by as UUID | null,
     prioritySetReason:       r.priority_set_reason,
+    rowVersion:              r.row_version ?? 0,
     createdAt:               r.created_at,
     updatedAt:               r.updated_at,
   };
@@ -382,8 +386,9 @@ export class TicketRepository implements ITicketRepository {
     tenantId: UUID,
     ticketId: UUID,
     patch: TicketStatusPatch,
+    options?: PatchTicketOptions,
   ): Promise<void> {
-    const cols: string[] = ['status = $3', 'updated_at = NOW()'];
+    const cols: string[] = ['status = $3', 'updated_at = NOW()', 'row_version = COALESCE(row_version, 0) + 1'];
     const vals: unknown[] = [ticketId, tenantId, patch.status];
     let idx = 4;
 
@@ -413,10 +418,28 @@ export class TicketRepository implements ITicketRepository {
     maybe('priority_set_by',            patch.prioritySetBy);
     maybe('priority_set_reason',        patch.prioritySetReason);
 
-    await db.query(
-      `UPDATE tickets SET ${cols.join(', ')} WHERE id = $1 AND tenant_id = $2`,
+    let where = 'id = $1 AND tenant_id = $2';
+
+    if (options?.expectedStatus) {
+      where += ` AND status = $${idx++}`;
+      vals.push(options.expectedStatus);
+    }
+    if (options?.expectedRowVersion !== undefined) {
+      where += ` AND COALESCE(row_version, 0) = $${idx++}`;
+      vals.push(options.expectedRowVersion);
+    }
+
+    const { rows } = await db.query<{ id: string }>(
+      `UPDATE tickets SET ${cols.join(', ')} WHERE ${where} RETURNING id`,
       vals,
     );
+
+    if (rows.length === 0 && (options?.expectedStatus || options?.expectedRowVersion !== undefined)) {
+      throw new ConflictError(
+        'Ticket changed since it was loaded. Refresh and retry your action.',
+        'WORKFLOW_STALE_STATE',
+      );
+    }
   }
 
   async list(db: DbClient, tenantId: UUID, opts: ListTicketsOptions): Promise<Page<Ticket>> {

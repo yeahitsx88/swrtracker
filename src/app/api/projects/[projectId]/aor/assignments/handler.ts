@@ -55,8 +55,9 @@ async function resolveActorRole(
   tenantId: UUID,
   projectId: UUID,
   userId: UUID,
+  sessionVersion: number,
 ): Promise<ProjectSetupActorRole> {
-  return deps.resolveProjectSetupActorRole(pool, tenantId, projectId, userId);
+  return deps.resolveProjectSetupActorRole(pool, tenantId, projectId, userId, sessionVersion);
 }
 
 export async function handlePostAorAssignments(
@@ -74,6 +75,7 @@ export async function handlePostAorAssignments(
       auth.tenantId,
       projectId as UUID,
       auth.userId,
+      auth.sessionVersion,
     );
     await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
@@ -149,6 +151,7 @@ export async function handleDeleteAorAssignments(
       auth.tenantId,
       projectId as UUID,
       auth.userId,
+      auth.sessionVersion,
     );
     await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();

@@ -24,7 +24,7 @@ import type {
   ProjectActivationReadinessSnapshot,
   ProjectTemplateListItem,
 } from '../application/ports';
-import { ConflictError } from '@/shared/errors';
+import { ConflictError, ForbiddenError } from '@/shared/errors';
 
 export class TenancyRepository implements ITenancyRepository {
   private async assertProjectNotArchived(
@@ -410,6 +410,20 @@ export class TenancyRepository implements ITenancyRepository {
   }
 
   async saveTenantMembership(db: DbClient, membership: TenantMembership): Promise<void> {
+    const { rows: userRows } = await db.query<{ tenant_id: string }>(
+      `SELECT tenant_id
+       FROM users
+       WHERE id = $1
+       LIMIT 1`,
+      [membership.userId],
+    );
+    if (userRows[0]?.tenant_id !== membership.tenantId) {
+      throw new ForbiddenError(
+        'Tenant membership mutation violates tenant boundary',
+        'SEC_TENANT_BOUNDARY_VIOLATION',
+      );
+    }
+
     await db.query(
       `INSERT INTO tenant_memberships (id, tenant_id, user_id, role, created_at)
        VALUES ($1, $2, $3, $4, $5)
@@ -425,6 +439,20 @@ export class TenancyRepository implements ITenancyRepository {
   }
 
   async deleteTenantMembership(db: DbClient, tenantId: UUID, userId: UUID): Promise<void> {
+    const { rows: userRows } = await db.query<{ tenant_id: string }>(
+      `SELECT tenant_id
+       FROM users
+       WHERE id = $1
+       LIMIT 1`,
+      [userId],
+    );
+    if (userRows[0]?.tenant_id !== tenantId) {
+      throw new ForbiddenError(
+        'Tenant membership mutation violates tenant boundary',
+        'SEC_TENANT_BOUNDARY_VIOLATION',
+      );
+    }
+
     await db.query(
       `DELETE FROM tenant_memberships
        WHERE tenant_id = $1 AND user_id = $2`,
@@ -931,23 +959,55 @@ export class TenancyRepository implements ITenancyRepository {
 
   async saveMembership(
     db: DbClient,
-    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
+    membership: { id: UUID; tenantId: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
   ): Promise<void> {
-    const { rows } = await db.query<{ tenant_id: string }>(
+    const { rows: projectRows } = await db.query<{ tenant_id: string }>(
       `SELECT tenant_id
        FROM projects
        WHERE id = $1
        LIMIT 1`,
       [membership.projectId],
     );
-    if (rows[0]) {
-      await this.assertProjectNotArchived(db, rows[0].tenant_id as UUID, membership.projectId);
+    const { rows: userRows } = await db.query<{ tenant_id: string }>(
+      `SELECT tenant_id
+       FROM users
+       WHERE id = $1
+       LIMIT 1`,
+      [membership.userId],
+    );
+
+    const projectTenantId = projectRows[0]?.tenant_id as UUID | undefined;
+    const userTenantId = userRows[0]?.tenant_id as UUID | undefined;
+
+    if (
+      !projectTenantId ||
+      !userTenantId ||
+      projectTenantId !== membership.tenantId ||
+      userTenantId !== membership.tenantId
+    ) {
+      throw new ForbiddenError(
+        'Project membership mutation violates tenant boundary',
+        'SEC_TENANT_BOUNDARY_VIOLATION',
+      );
     }
+
+    await this.assertProjectNotArchived(db, membership.tenantId, membership.projectId);
+
     await db.query(
       `INSERT INTO project_memberships (id, project_id, user_id, role, created_at)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role`,
       [membership.id, membership.projectId, membership.userId, membership.role, membership.createdAt],
+    );
+  }
+
+  async bumpUserSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void> {
+    await db.query(
+      `UPDATE users
+       SET session_version = COALESCE(session_version, 1) + 1
+       WHERE tenant_id = $1
+         AND id = $2`,
+      [tenantId, userId],
     );
   }
 

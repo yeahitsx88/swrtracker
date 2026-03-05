@@ -64,7 +64,7 @@ export async function handleGetAor(
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
 
-    await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId);
+    await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId, auth.sessionVersion);
 
     const levels = await deps.queryLevels(auth.tenantId, projectUuid);
     const nodes = await deps.queryNodes(auth.tenantId, projectUuid);

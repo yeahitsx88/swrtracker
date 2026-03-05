@@ -33,7 +33,7 @@ export async function handlePostProjectArchive(
   try {
     const auth = deps.requireAuth(req);
     const { projectId } = await params;
-    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = deps.createRepo();
 
     const project = await deps.withTransaction((client) =>

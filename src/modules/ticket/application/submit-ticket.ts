@@ -122,6 +122,9 @@ export async function submitTicket(
     priority: resolvedPriority,
     ticketNumber,
     submittedAt,
+  }, {
+    expectedStatus: ticket.status,
+    expectedRowVersion: ticket.rowVersion,
   });
 
   await appendAuditEvent(db, {
@@ -149,6 +152,7 @@ export async function submitTicket(
     priority: resolvedPriority,
     ticketNumber,
     submittedAt,
+    rowVersion: (ticket.rowVersion ?? 0) + 1,
     updatedAt: new Date(),
   };
 }

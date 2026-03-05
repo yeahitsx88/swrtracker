@@ -14,13 +14,15 @@ function makeRequest(): NextRequest {
 
 function makeDeps(overrides?: Partial<OpsDiagnosticsDeps>): OpsDiagnosticsDeps {
   return {
-    requireAuth: () => ({ tenantId, userId: actorId }),
+    requireAuth: () => ({ tenantId, userId: actorId, sessionVersion: 1 }),
     getTenantRole: async () => 'TENANT_ADMIN',
     countStaleSubmitted: async () => 3,
     countStalePcApproval: async () => 2,
     countDelayedActive: async () => 1,
     countApproverTimeoutCandidates: async () => 4,
     countVacancyEscalations: async () => 5,
+    countOrphanWorkflowCandidates: async () => 2,
+    countIdempotencyLedger24h: async () => 7,
     listRecentJobRuns: async () => [],
     listRecentJobFailures: async () => [],
     ...overrides,
@@ -33,9 +35,12 @@ test('handleGetOpsDiagnostics returns workflow and worker diagnostics for tenant
   const json = await response.json() as {
     workflowHealth: { staleSubmittedCount: number };
     notificationBacklog: { vacancyEscalations: number };
+    hardeningMetrics: { orphanWorkflowCandidates: number; idempotencyLedger24h: number };
   };
   assert.equal(json.workflowHealth.staleSubmittedCount, 3);
   assert.equal(json.notificationBacklog.vacancyEscalations, 5);
+  assert.equal(json.hardeningMetrics.orphanWorkflowCandidates, 2);
+  assert.equal(json.hardeningMetrics.idempotencyLedger24h, 7);
 });
 
 test('handleGetOpsDiagnostics rejects non-tenant-admin actors', async () => {

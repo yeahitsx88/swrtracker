@@ -46,7 +46,7 @@ export async function PATCH(
       );
     }
 
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = new TenancyRepository();
     const template = await updateProjectTemplate(repo, pool, {
       tenantId: auth.tenantId,
@@ -72,7 +72,7 @@ export async function DELETE(
   try {
     const auth = requireAuth(req);
     const { templateId } = await params;
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId);
+    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = new TenancyRepository();
     await deleteProjectTemplate(repo, pool, {
       tenantId: auth.tenantId,
