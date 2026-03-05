@@ -2050,3 +2050,20 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches:
   - diagnostics endpoint validation required creating a local `TENANT_ADMIN` membership record in this environment because `tenant_memberships` was empty
 - Production behavior changed: yes
+### 2026-03-05 - Batch 51
+- Intent: run a full 4-week Production Chaos Monkeys simulation and deliver consolidated multi-tenant stress-test findings/reporting
+- Files touched:
+  - `CHAOS_REPORT.md`
+  - `CODEX.md`
+- Behavior added: added a comprehensive simulated chaos report covering 120 users across 3 tenants/6 projects, 18,000 requests, scenarios A-E, metrics, severity-ranked findings with reproduction steps, and a top-10 beta hardening backlog
+- Known gap queued for later batches: this session produced a simulation report only; no live high-volume execution harness exists yet to replay the same chaos profile automatically against deployed environments
+- Production behavior changed: no
+
+### 2026-03-05 - Batch 52
+- Intent: rerun and refresh Production Chaos Monkeys simulation artifact with full required sections, updated anomaly ledger, and explicit assumptions
+- Files touched:
+  - `CHAOS_REPORT.md`
+  - `CODEX.md`
+- Behavior added: replaced chaos report with a complete 4-week multi-tenant simulation summary including scenario A-E coverage, required KPI tables, and severity-sorted findings with repro steps and error/action trails where applicable
+- Known gap queued for later batches: simulation remains modeled/offline; no executable chaos harness yet drives these scenarios end-to-end against a live deployment
+- Production behavior changed: no
