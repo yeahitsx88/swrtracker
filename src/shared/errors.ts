@@ -54,6 +54,16 @@ export class ConflictError extends Error {
   }
 }
 
+export class RateLimitError extends Error {
+  readonly type = 'RateLimitError' as const;
+  readonly code?: string;
+  constructor(message = 'Too many requests', code?: string) {
+    super(message);
+    this.name = 'RateLimitError';
+    this.code = code;
+  }
+}
+
 export class InternalError extends Error {
   readonly type = 'InternalError' as const;
   readonly code?: string;
@@ -70,4 +80,5 @@ export type AppError =
   | ForbiddenError
   | NotFoundError
   | ConflictError
+  | RateLimitError
   | InternalError;

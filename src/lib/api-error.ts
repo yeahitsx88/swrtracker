@@ -13,6 +13,7 @@ import {
   ForbiddenError,
   NotFoundError,
   ConflictError,
+  RateLimitError,
   InternalError,
   type AppError,
 } from '@/shared/errors';
@@ -23,6 +24,7 @@ const HTTP_STATUS: Record<AppError['type'], number> = {
   ForbiddenError:    403,
   NotFoundError:     404,
   ConflictError:     409,
+  RateLimitError:    429,
   InternalError:     500,
 };
 
@@ -32,6 +34,7 @@ const DEFAULT_CODE: Record<AppError['type'], string> = {
   ForbiddenError: 'AUTH_FORBIDDEN',
   NotFoundError: 'NOT_FOUND',
   ConflictError: 'CONFLICT',
+  RateLimitError: 'RATE_LIMITED',
   InternalError: 'INTERNAL_ERROR',
 };
 
@@ -42,6 +45,7 @@ function isAppError(err: unknown): err is AppError {
     err instanceof ForbiddenError    ||
     err instanceof NotFoundError     ||
     err instanceof ConflictError     ||
+    err instanceof RateLimitError    ||
     err instanceof InternalError
   );
 }
@@ -50,6 +54,7 @@ export function errorResponse(err: unknown): NextResponse {
   const correlationId = getCorrelationId() ?? randomUUID();
 
   if (isAppError(err)) {
+    const status = HTTP_STATUS[err.type];
     return NextResponse.json(
       {
         error: {
@@ -57,9 +62,10 @@ export function errorResponse(err: unknown): NextResponse {
           code: err.code ?? DEFAULT_CODE[err.type],
           message: err.message,
           correlationId,
+          status,
         },
       },
-      { status: HTTP_STATUS[err.type] },
+      { status },
     );
   }
   return NextResponse.json(
@@ -69,6 +75,7 @@ export function errorResponse(err: unknown): NextResponse {
         code: DEFAULT_CODE.InternalError,
         message: 'An unexpected error occurred',
         correlationId,
+        status: 500,
       },
     },
     { status: 500 },

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
-import { UnauthorizedError } from '@/shared/errors';
+import { RateLimitError, UnauthorizedError } from '@/shared/errors';
 import {
   handlePostLogin,
   type LoginRouteDeps,
@@ -11,6 +11,7 @@ import {
   type RegisterRouteDeps,
 } from '@/app/api/auth/register/handler';
 import type { IUserRepository } from '@/modules/identity/application/ports';
+import type { LoginRateLimiter } from '@/modules/identity/application/login-rate-limit';
 import type { User, UserWithCredentials } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
 
@@ -67,9 +68,16 @@ function makeRegisterDeps(overrides?: Partial<RegisterRouteDeps>): RegisterRoute
 }
 
 function makeLoginDeps(overrides?: Partial<LoginRouteDeps>): LoginRouteDeps {
+  const rateLimiter: LoginRateLimiter = {
+    assertCanAttempt: async () => undefined,
+    recordFailure: async () => undefined,
+    clearFailures: async () => undefined,
+  };
+
   return {
     db,
     createRepo: () => makeRepo(),
+    createRateLimiter: () => rateLimiter,
     authenticateUser: async () => ({
       user: makeUser(),
       token: 'test-jwt-token',
@@ -131,30 +139,50 @@ test('handlePostRegister returns 400 for invalid payload', async () => {
 });
 
 test('handlePostLogin returns 200 and sets session cookie', async () => {
+  let cleared = false;
   const response = await handlePostLogin(
     makeRequest('http://localhost/api/auth/login', {
       tenantId,
       email: 'field.user@example.com',
       password: 'strong-password',
     }),
-    makeLoginDeps(),
+    makeLoginDeps({
+      createRateLimiter: () => ({
+        assertCanAttempt: async () => undefined,
+        recordFailure: async () => undefined,
+        clearFailures: async () => {
+          cleared = true;
+        },
+      }),
+    }),
   );
 
   assert.equal(response.status, 200);
   const json = await response.json() as { user: User };
   assert.equal(json.user.id, userId);
+  assert.equal(cleared, true);
   const setCookie = response.headers.get('set-cookie') ?? '';
   assert.match(setCookie, /swr_session=/);
 });
 
 test('handlePostLogin returns 401 for unauthorized credentials', async () => {
+  let recorded = false;
   const response = await handlePostLogin(
     makeRequest('http://localhost/api/auth/login', {
       tenantId,
-      email: 'field.user@example.com',
+      email: ' Field.User@Example.com ',
       password: 'wrong-password',
     }),
     makeLoginDeps({
+      createRateLimiter: () => ({
+        assertCanAttempt: async () => undefined,
+        recordFailure: async (_db, scope) => {
+          recorded = true;
+          assert.equal(scope.tenantId, tenantId);
+          assert.equal(scope.email, 'field.user@example.com');
+        },
+        clearFailures: async () => undefined,
+      }),
       authenticateUser: async () => {
         throw new UnauthorizedError('Invalid email or password');
       },
@@ -162,4 +190,28 @@ test('handlePostLogin returns 401 for unauthorized credentials', async () => {
   );
 
   assert.equal(response.status, 401);
+  assert.equal(recorded, true);
+});
+
+test('handlePostLogin returns 429 when login attempts are rate limited', async () => {
+  const response = await handlePostLogin(
+    makeRequest('http://localhost/api/auth/login', {
+      tenantId,
+      email: 'field.user@example.com',
+      password: 'strong-password',
+    }),
+    makeLoginDeps({
+      createRateLimiter: () => ({
+        assertCanAttempt: async () => {
+          throw new RateLimitError('Too many login attempts. Try again later.', 'AUTH_RATE_LIMITED');
+        },
+        recordFailure: async () => undefined,
+        clearFailures: async () => undefined,
+      }),
+    }),
+  );
+
+  assert.equal(response.status, 429);
+  const json = await response.json() as { error: { code: string } };
+  assert.equal(json.error.code, 'AUTH_RATE_LIMITED');
 });

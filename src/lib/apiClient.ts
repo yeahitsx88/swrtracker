@@ -53,7 +53,13 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
 
   if (!response.ok) {
     if (isApiErrorPayload(payload)) {
-      throw new ApiClientError(payload.error.type, payload.error.message, response.status);
+      throw new ApiClientError(
+        payload.error.type,
+        payload.error.message,
+        response.status,
+        payload.error.code,
+        payload.error.correlationId,
+      );
     }
     if (typeof payload === 'string' && payload.trim()) {
       throw new ApiClientError('InternalError', payload.trim(), response.status);
