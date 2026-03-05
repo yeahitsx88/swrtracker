@@ -2,6 +2,7 @@
  * Notification infrastructure — candidate queries and transport adapter.
  */
 import type { DbClient, UUID } from '@/shared/types';
+import type { IEmailTransport } from '@/lib/email';
 import type {
   ApproverTimeoutCandidate,
   INotificationRepository,
@@ -170,6 +171,33 @@ export class CallbackNotificationTransport implements INotificationTransport {
 
   async send(message: NotificationMessage): Promise<void> {
     await this.callback(message);
+  }
+}
+
+export class EmailNotificationTransport implements INotificationTransport {
+  constructor(private readonly emailTransport: IEmailTransport) {}
+
+  async send(message: NotificationMessage): Promise<void> {
+    const recipients = message.recipients
+      .map((recipient) => recipient.email)
+      .filter((email, index, all) => all.indexOf(email) === index);
+
+    if (recipients.length === 0) {
+      return;
+    }
+
+    await this.emailTransport.send({
+      to: recipients,
+      subject: message.subject,
+      text: message.body,
+      metadata: {
+        kind: message.kind,
+        tenantId: message.tenantId,
+        projectId: message.projectId,
+        ticketId: message.ticketId ?? null,
+        ...message.metadata,
+      },
+    });
   }
 }
 

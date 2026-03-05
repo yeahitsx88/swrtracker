@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: pnpm start
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+
+  notification-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: pnpm worker:notifications
+    env_file:
+      - .env
+    restart: unless-stopped

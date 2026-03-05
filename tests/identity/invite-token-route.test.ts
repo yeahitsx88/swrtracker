@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import {
   handleGetInviteToken,
   type InviteTokenRouteDeps,
-} from '@/app/api/auth/invite/[token]/route';
+} from '@/app/api/auth/invite/[token]/handler';
 
 const validNow = new Date('2026-03-04T12:00:00Z').getTime();
 

@@ -10,7 +10,7 @@ import type {
 import {
   handleGetProjectTemplates,
   type ProjectTemplatesRouteDeps,
-} from '@/app/api/project-templates/route';
+} from '@/app/api/project-templates/handler';
 import type {
   AorAssignment,
   AorLevel,

@@ -1877,6 +1877,17 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added: invite continuation now forwards `inviteToken`; registration locks invite-prefilled tenant/email fields and shows explicit guidance that company ID is still required
 - Known gap queued for later batches: anonymous tenant/company lookup endpoints are not available, so non-invite registration still requires manual tenant/company IDs
 - Production behavior changed: yes
+
+### 2026-03-04 - Batch 45
+- Intent: provide a quick local preview page that renders the requester dashboard styling without requiring live backend data
+- Files touched:
+  - `src/app/preview/page.tsx`
+- Behavior added:
+  - introduced `/preview` so stakeholders can open the existing ticket cards, badges, and navigation shell with canned tickets before the API is wired up
+  - added descriptive copy that explains the page uses static data and serves as a brand/style check for fonts, colors, and layout elements
+- Known gap queued for later batches:
+  - the preview still relies on hardcoded ticket records; linking it to real tenant/project data and navigation flows remains future work
+- Production behavior changed: no
 ### 2026-03-04 - Batch 41
 - Intent: sync Phase 3 status tracking with current validated baseline and delivered authentication UX hardening
 - Files touched:
@@ -1923,4 +1934,119 @@ Track Codex-authored remediation batches with a compact, append-only record.
   - `CODEX.md`
 - Behavior added: forgot-password now creates expiring one-time reset tokens for LOCAL users and reset-password consumes valid tokens to rotate password hash; UI now supports reset request and reset completion; middleware allows unauthenticated access to `/reset-password`
 - Known gap queued for later batches: reset-link delivery transport is environment-dependent (debug token is exposed only outside production), so production mail transport integration can be layered without changing API contracts
+- Production behavior changed: yes
+### 2026-03-04 - Batch 46
+- Intent: start Phase 4 with Milestone 0 architecture review artifacts and execution tracker setup under the Lead Agent plan
+- Files touched:
+  - `PHASE4_STATUS.md`
+  - `CODEX.md`
+- Behavior added: added Phase 4 milestone tracker with baseline validation status, architecture validation summary, dependency map, and phased execution breakdown for Milestones 1-8
+- Known gap queued for later batches: `pnpm tsc --noEmit` is currently blocked by pre-existing Next.js route helper exports (`handlePostLogin`, `handlePostRegister`, `resolveProjectSetupActorRole`) violating route-module export constraints
+- Production behavior changed: no
+### 2026-03-04 - Batch 47
+- Intent: clear the Phase 4 typecheck blocker by removing invalid named exports from Next.js route modules while preserving injectable handler test coverage
+- Files touched:
+  - `src/app/api/auth/login/route.ts`
+  - `src/app/api/auth/login/handler.ts` (new)
+  - `src/app/api/auth/register/route.ts`
+  - `src/app/api/auth/register/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/aor/route.ts`
+  - `src/app/api/projects/[projectId]/aor/read-handler.ts` (new)
+  - `src/app/api/projects/[projectId]/aor/shared.ts` (new)
+  - `src/app/api/projects/[projectId]/activate/route.ts`
+  - `src/app/api/projects/[projectId]/aor/assignments/route.ts`
+  - `src/app/api/projects/[projectId]/departments/route.ts`
+  - `src/app/api/projects/[projectId]/departments/[departmentId]/titles/route.ts`
+  - `src/app/api/projects/[projectId]/departments/[departmentId]/members/route.ts`
+  - `tests/identity/auth-routes.test.ts`
+  - `tests/tenancy/aor-read-route.test.ts`
+  - `CODEX.md`
+- Behavior added: route modules now export only allowed Next route symbols, while route handlers/shared setup guards moved to sibling modules for reuse and direct test injection
+- Known gap queued for later batches: none discovered in this slice
+- Production behavior changed: no
+### 2026-03-04 - Batch 48
+- Intent: execute and close Phase 4 milestones (workflow kernel isolation, worker/runtime readiness, observability, diagnostics, and regression expansion)
+- Files touched:
+  - `src/modules/workflow/application/kernel.ts` (new)
+  - `src/modules/workflow/application/index.ts` (new)
+  - `src/modules/ticket/application/shared.ts`
+  - `src/modules/notification/application/worker.ts` (new)
+  - `src/modules/notification/infrastructure/job-run.repository.ts` (new)
+  - `src/modules/notification/infrastructure/index.ts`
+  - `src/lib/email.ts` (new)
+  - `src/lib/observability.ts` (new)
+  - `src/workers/notification-worker.ts` (new)
+  - `src/workers/notification-worker-loop.ts` (new)
+  - `src/app/api/auth/forgot-password/route.ts`
+  - `src/app/api/ops/diagnostics/handler.ts` (new)
+  - `src/app/api/ops/diagnostics/route.ts` (new)
+  - `src/app/api/health/route.ts`
+  - `db/migrations/015_background_job_runs.sql` (new)
+  - `package.json`
+  - `Dockerfile` (new)
+  - `.dockerignore` (new)
+  - `docker-compose.yml` (new)
+  - `DEPLOYMENT.md` (new)
+  - `src/app/preview/page.tsx` (deleted)
+  - `tests/identity/password-reset-routes.test.ts`
+  - `tests/notification/worker-cycle.test.ts` (new)
+  - `tests/ops/diagnostics-route.test.ts` (new)
+  - `tests/workflow/kernel.test.ts` (new)
+  - `PHASE4_STATUS.md`
+  - `CODEX.md`
+- Behavior added:
+  - centralized workflow transition execution under a workflow-kernel application module used by ticket transition helpers
+  - introduced stateless notification worker cycle orchestration with persisted run outcomes in `background_job_runs`
+  - added transport-abstracted email dispatch and wired forgot-password token delivery + notification email transport
+  - added deploy/runtime assets for single-command container startup (`docker compose up --build`) with dedicated web + worker services
+  - introduced structured JSON observability logging carrying `tenant_id`, `ticket_id`, `actor_id`, and `event_type`
+  - expanded regression coverage for workflow kernel transitions, notification worker cycle behavior, diagnostics route authorization/shape, and password-reset email dispatch hook
+  - retired preview/mock-only UI route and added tenant-admin operational diagnostics API surface
+- Known gap queued for later batches:
+  - worker persistence migration (`015_background_job_runs.sql`) was added but not executed in this session (requires database migration run in target environment)
+- Production behavior changed: yes
+### 2026-03-05 - Batch 49
+- Intent: execute post-Phase-4 immediate operational checks (migrate, compose startup, health/diagnostics verification) and unblock newly surfaced Next route export violations
+- Files touched:
+  - `.env` (created from `.env.local` to satisfy compose `env_file` contract)
+  - `src/app/api/auth/forgot-password/handler.ts` (new)
+  - `src/app/api/auth/forgot-password/route.ts`
+  - `src/app/api/auth/reset-password/handler.ts` (new)
+  - `src/app/api/auth/reset-password/route.ts`
+  - `src/app/api/auth/invite/[token]/handler.ts` (new)
+  - `src/app/api/auth/invite/[token]/route.ts`
+  - `tests/identity/password-reset-routes.test.ts`
+  - `tests/identity/invite-token-route.test.ts`
+  - `CODEX.md`
+- Behavior added:
+  - applied migration `015_background_job_runs.sql` successfully using `.env.local`
+  - split additional auth route helper exports into handler modules to satisfy Next route export constraints in production builds
+  - kept local validation green after adjustments (`pnpm tsc --noEmit`, `pnpm test`)
+- Known gap queued for later batches:
+  - `docker compose up --build -d` still fails because additional route modules export non-Next symbols (project templates, project activation/archive, AOR assignments, departments, department titles/members, ticket attachments)
+  - `/api/health` and `/api/ops/diagnostics` runtime verification in containers is blocked until those route-export violations are fully normalized
+- Production behavior changed: yes
+### 2026-03-05 - Batch 50
+- Intent: recover broken route-handler split, unblock containerized production build, and execute immediate operational checks from exit brief
+- Files touched:
+  - `src/app/api/projects/[projectId]/activate/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/archive/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/aor/assignments/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/departments/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/departments/[departmentId]/titles/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/departments/[departmentId]/members/handler.ts` (new)
+  - `src/app/api/tickets/[ticketId]/attachments/handler.ts` (new)
+  - `src/app/(auth)/login/page.tsx`
+  - `src/app/(auth)/register/page.tsx`
+  - `src/app/(auth)/reset-password/page.tsx`
+  - `.env`
+  - `CODEX.md`
+- Behavior added:
+  - restored missing API handler modules so route wrappers compile and tests can import handler exports again
+  - aligned setup-role helper imports to shared AOR module (`aor/shared`) to keep Next route modules thin
+  - wrapped auth pages using `useSearchParams()` in `Suspense` to satisfy Next.js prerender/build requirements in containerized production builds
+  - configured compose runtime DB host for containers (`host.docker.internal`) so app health checks can reach Postgres
+  - completed immediate operational checks: `docker compose up --build -d` succeeds, `/api/health` returns 200, and `/api/ops/diagnostics` returns 200 with TENANT_ADMIN cookie auth
+- Known gap queued for later batches:
+  - diagnostics endpoint validation required creating a local `TENANT_ADMIN` membership record in this environment because `tenant_memberships` was empty
 - Production behavior changed: yes

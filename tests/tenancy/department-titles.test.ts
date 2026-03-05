@@ -8,7 +8,7 @@ import {
   handleGetDepartmentTitles,
   handlePostDepartmentTitles,
   type DepartmentTitlesRouteDeps,
-} from '@/app/api/projects/[projectId]/departments/[departmentId]/titles/route';
+} from '@/app/api/projects/[projectId]/departments/[departmentId]/titles/handler';
 import type { ITenancyRepository } from '@/modules/tenancy/application/ports';
 import type {
   AorAssignment,

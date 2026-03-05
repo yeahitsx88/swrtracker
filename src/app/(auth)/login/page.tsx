@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input } from '@/components/ui';
 import { Field } from '@/components/forms';
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading login form...</div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tenantId, setTenantId] = useState(searchParams.get('tenantId') ?? '');

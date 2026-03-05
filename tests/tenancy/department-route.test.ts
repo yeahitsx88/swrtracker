@@ -6,7 +6,7 @@ import {
   handleGetDepartments,
   handlePostDepartments,
   type DepartmentsRouteDeps,
-} from '@/app/api/projects/[projectId]/departments/route';
+} from '@/app/api/projects/[projectId]/departments/handler';
 import type { ITenancyRepository } from '@/modules/tenancy/application/ports';
 import type {
   AorAssignment,

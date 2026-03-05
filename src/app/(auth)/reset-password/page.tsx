@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading reset form...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const [token, setToken] = useState(searchParams.get('token') ?? '');
   const [newPassword, setNewPassword] = useState('');

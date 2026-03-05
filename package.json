@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "worker:notifications:once": "tsx src/workers/notification-worker.ts",
+    "worker:notifications": "tsx src/workers/notification-worker-loop.ts",
     "test": "node --import tsx --test --test-isolation=none tests/**/*.test.ts",
     "db:migrate": "tsx --env-file=.env db/migrate.ts"
   },

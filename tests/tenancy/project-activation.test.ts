@@ -14,11 +14,11 @@ import type {
 import {
   handlePostProjectActivation,
   type ProjectActivationRouteDeps,
-} from '@/app/api/projects/[projectId]/activate/route';
+} from '@/app/api/projects/[projectId]/activate/handler';
 import {
   handlePostProjectArchive,
   type ProjectArchiveRouteDeps,
-} from '@/app/api/projects/[projectId]/archive/route';
+} from '@/app/api/projects/[projectId]/archive/handler';
 import type {
   AorAssignment,
   AorLevel,

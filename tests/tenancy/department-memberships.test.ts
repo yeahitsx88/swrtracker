@@ -9,7 +9,7 @@ import {
   handlePatchDepartmentMembers,
   handlePostDepartmentMembers,
   type DepartmentMembersRouteDeps,
-} from '@/app/api/projects/[projectId]/departments/[departmentId]/members/route';
+} from '@/app/api/projects/[projectId]/departments/[departmentId]/members/handler';
 import type { ITenancyRepository } from '@/modules/tenancy/application/ports';
 import type {
   AorAssignment,

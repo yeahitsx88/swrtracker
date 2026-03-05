@@ -4,60 +4,21 @@
  * Phase 2 AOR setup surface:
  * - kind=LEVEL creates an AOR level
  * - kind=NODE creates an AOR node
- *
- * Current route authorization is PROJECT_ADMIN-only because the workspace does
- * not currently expose a tenant-admin role resolver.
  */
 import { NextResponse, type NextRequest } from 'next/server';
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
+import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
-import { getProjectRole } from '@/lib/get-project-role';
-import { getTenantRole } from '@/lib/get-tenant-role';
 import { withTransaction } from '@/lib/with-transaction';
 import { createAorLevel } from '@/modules/tenancy/application/create-aor-level';
 import { createAorNode } from '@/modules/tenancy/application/create-aor-node';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
-import type { DbClient, UUID } from '@/shared/types';
+import type { UUID } from '@/shared/types';
+import { handleGetAor } from './read-handler';
+import { assertProjectSetupMutable, resolveProjectSetupActorRole } from './shared';
 
 export const dynamic = 'force-dynamic';
-
-export type ProjectSetupActorRole = 'PROJECT_ADMIN' | 'TENANT_ADMIN';
-
-export async function resolveProjectSetupActorRole(
-  db: DbClient,
-  tenantId: UUID,
-  projectId: UUID,
-  userId: UUID,
-): Promise<ProjectSetupActorRole> {
-  const tenantRole = await getTenantRole(db, tenantId, userId);
-  const actorRole =
-    tenantRole === 'TENANT_ADMIN'
-      ? 'TENANT_ADMIN'
-      : await getProjectRole(db, tenantId, projectId, userId);
-  if (actorRole !== 'PROJECT_ADMIN' && actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only PROJECT_ADMIN or TENANT_ADMIN may manage the AOR setup surface');
-  }
-  return actorRole;
-}
-
-export async function assertProjectSetupMutable(
-  db: DbClient,
-  tenantId: UUID,
-  projectId: UUID,
-): Promise<void> {
-  const project = await new TenancyRepository().findProjectById(db, tenantId, projectId);
-  if (!project) {
-    throw new NotFoundError('Project not found');
-  }
-  if (project.status === 'ACTIVE') {
-    throw new ConflictError('Project setup is locked after activation');
-  }
-  if (project.status === 'ARCHIVED') {
-    throw new ConflictError('Archived projects are read-only');
-  }
-}
 
 export async function POST(
   req: NextRequest,
@@ -139,92 +100,6 @@ export async function POST(
     }
 
     throw new ValidationError('kind must be LEVEL or NODE');
-  } catch (err) {
-    return errorResponse(err);
-  }
-}
-
-interface AorLevelRow {
-  id: string;
-  depth: number;
-  label: string;
-}
-
-interface AorNodeRow {
-  id: string;
-  level_id: string;
-  parent_id: string | null;
-  name: string;
-  code: string;
-}
-
-export interface AorReadRouteDeps {
-  requireAuth: typeof requireAuth;
-  getProjectRole: typeof getProjectRole;
-  queryLevels: (tenantId: UUID, projectId: UUID) => Promise<AorLevelRow[]>;
-  queryNodes: (tenantId: UUID, projectId: UUID) => Promise<AorNodeRow[]>;
-}
-
-const defaultAorReadDeps: AorReadRouteDeps = {
-  requireAuth,
-  getProjectRole,
-  queryLevels: async (tenantId, projectId) => {
-    const levelsResult = await pool.query<AorLevelRow>(
-      `SELECT id, depth, label
-       FROM aor_levels
-       WHERE tenant_id = $1
-         AND project_id = $2
-       ORDER BY depth ASC`,
-      [tenantId, projectId],
-    );
-
-    return levelsResult.rows;
-  },
-  queryNodes: async (tenantId, projectId) => {
-    const nodesResult = await pool.query<AorNodeRow>(
-      `SELECT id, level_id, parent_id, name, code
-       FROM aor_nodes
-       WHERE tenant_id = $1
-         AND project_id = $2
-         AND retired_at IS NULL
-       ORDER BY name ASC`,
-      [tenantId, projectId],
-    );
-
-    return nodesResult.rows;
-  },
-};
-
-export async function handleGetAor(
-  req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-  deps: AorReadRouteDeps = defaultAorReadDeps,
-) {
-  try {
-    const auth = deps.requireAuth(req);
-    const { projectId } = await params;
-    const projectUuid = projectId as UUID;
-
-    // Membership gate only; visibility details stay in backend ticket queries.
-    await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId);
-
-    const levels = await deps.queryLevels(auth.tenantId, projectUuid);
-    const nodes = await deps.queryNodes(auth.tenantId, projectUuid);
-
-    return NextResponse.json({
-      levels: levels.map((level) => ({
-        id: level.id,
-        depth: level.depth,
-        label: level.label,
-      })),
-      nodes: nodes.map((node) => ({
-        id: node.id,
-        levelId: node.level_id,
-        parentId: node.parent_id,
-        name: node.name,
-        code: node.code,
-      })),
-    });
   } catch (err) {
     return errorResponse(err);
   }

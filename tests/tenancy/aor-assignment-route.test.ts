@@ -6,7 +6,7 @@ import {
   handleDeleteAorAssignments,
   handlePostAorAssignments,
   type AorAssignmentsRouteDeps,
-} from '@/app/api/projects/[projectId]/aor/assignments/route';
+} from '@/app/api/projects/[projectId]/aor/assignments/handler';
 import type { ITenancyRepository } from '@/modules/tenancy/application/ports';
 import type {
   AorAssignment,

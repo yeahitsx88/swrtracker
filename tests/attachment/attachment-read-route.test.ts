@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import {
   handleGetTicketAttachments,
   type TicketAttachmentsGetRouteDeps,
-} from '@/app/api/tickets/[ticketId]/attachments/route';
+} from '@/app/api/tickets/[ticketId]/attachments/handler';
 import type { ITicketRepository, VisibilityScope } from '@/modules/ticket/application/ports';
 import type { Ticket } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';

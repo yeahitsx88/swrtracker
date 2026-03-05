@@ -5,11 +5,11 @@ import { ValidationError } from '@/shared/errors';
 import {
   handlePostForgotPassword,
   type ForgotPasswordRouteDeps,
-} from '@/app/api/auth/forgot-password/route';
+} from '@/app/api/auth/forgot-password/handler';
 import {
   handlePostResetPassword,
   type ResetPasswordRouteDeps,
-} from '@/app/api/auth/reset-password/route';
+} from '@/app/api/auth/reset-password/handler';
 import type { IPasswordResetRepository } from '@/modules/identity/application/password-reset';
 import type { DbClient } from '@/shared/types';
 
@@ -40,6 +40,8 @@ function makeForgotDeps(overrides?: Partial<ForgotPasswordRouteDeps>): ForgotPas
     requestPasswordReset: async () => ({ resetToken: 'debug-token' }),
     withTransaction: async (fn) => fn(db),
     includeDebugToken: () => true,
+    sendResetEmail: async () => undefined,
+    resolveAppBaseUrl: () => 'http://localhost:3000',
     ...overrides,
   };
 }
@@ -94,6 +96,24 @@ test('handlePostForgotPassword returns 400 for invalid payload', async () => {
   );
 
   assert.equal(response.status, 400);
+});
+
+test('handlePostForgotPassword sends reset email only when token is generated', async () => {
+  let sendCount = 0;
+  const response = await handlePostForgotPassword(
+    makeRequest('http://localhost/api/auth/forgot-password', {
+      tenantId: 'tenant-1',
+      email: 'field.user@example.com',
+    }),
+    makeForgotDeps({
+      requestPasswordReset: async () => ({ resetToken: 'email-token' }),
+      sendResetEmail: async () => {
+        sendCount += 1;
+      },
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(sendCount, 1);
 });
 
 test('handlePostResetPassword returns success for valid token and password', async () => {

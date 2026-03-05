@@ -1,12 +1,12 @@
 /**
  * Shared helpers for ticket use cases.
- * performTransition is the single chokepoint for all state changes —
- * it calls assertValidTransition, patches the DB, and logs the audit event
- * atomically within the caller's transaction.
+ * performTransition delegates to the workflow kernel so transition rules,
+ * role gating, and audit emission remain centralized.
  */
-import { ForbiddenError, NotFoundError } from '@/shared/errors';
-import { assertValidTransition } from '@/modules/workflow/domain/transitions';
-import { appendAuditEvent } from '@/modules/audit/application/index';
+import {
+  executeWorkflowTransition,
+  assertWorkflowActorHasRole,
+} from '@/modules/workflow/application';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { AuditEventType } from '@/modules/audit/domain/types';
@@ -17,11 +17,7 @@ export function assertActorHasRole(
   actorRole: ProjectRole,
   permittedRoles: readonly ProjectRole[],
 ): void {
-  if (!permittedRoles.includes(actorRole)) {
-    throw new ForbiddenError(
-      `This action requires one of: ${permittedRoles.join(', ')}`,
-    );
-  }
+  assertWorkflowActorHasRole(actorRole, permittedRoles);
 }
 
 export async function performTransition(
@@ -41,24 +37,22 @@ export async function performTransition(
   },
 ): Promise<Ticket> {
   const { tenantId, ticketId, actorId, actorRole, permittedRoles, to, patch, eventType } = options;
-
-  const ticket = options.visibility
-    ? await repo.findById(db, tenantId, ticketId, options.visibility)
-    : await repo.findByIdInternal(db, tenantId, ticketId);
-  if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
-
-  assertActorHasRole(actorRole, permittedRoles);
-  assertValidTransition(ticket.workflowVariant, ticket.status, to);
-
-  await repo.patchTicket(db, tenantId, ticketId, { ...patch, status: to });
-  await appendAuditEvent(db, {
-    ticketId,
+  return executeWorkflowTransition(db, {
     tenantId,
+    ticketId,
     actorId,
+    actorRole,
+    permittedRoles,
+    to,
+    patch,
     eventType,
-    payload: options.eventPayload ?? {},
+    eventPayload: options.eventPayload,
+    readTicket: () => (
+      options.visibility
+        ? repo.findById(db, tenantId, ticketId, options.visibility)
+        : repo.findByIdInternal(db, tenantId, ticketId)
+    ),
+    patchTicket: (nextPatch) => repo.patchTicket(db, tenantId, ticketId, nextPatch as TicketStatusPatch),
+    buildResult: (ticket) => ({ ...ticket, ...patch, status: to, updatedAt: new Date() }),
   });
-
-  // Return ticket with updated status applied
-  return { ...ticket, ...patch, status: to, updatedAt: new Date() };
 }

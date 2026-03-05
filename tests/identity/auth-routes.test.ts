@@ -5,11 +5,11 @@ import { UnauthorizedError } from '@/shared/errors';
 import {
   handlePostLogin,
   type LoginRouteDeps,
-} from '@/app/api/auth/login/route';
+} from '@/app/api/auth/login/handler';
 import {
   handlePostRegister,
   type RegisterRouteDeps,
-} from '@/app/api/auth/register/route';
+} from '@/app/api/auth/register/handler';
 import type { IUserRepository } from '@/modules/identity/application/ports';
 import type { User, UserWithCredentials } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';

@@ -5,7 +5,7 @@ import { ForbiddenError } from '@/shared/errors';
 import {
   handleGetAor,
   type AorReadRouteDeps,
-} from '@/app/api/projects/[projectId]/aor/route';
+} from '@/app/api/projects/[projectId]/aor/read-handler';
 import type { UUID } from '@/shared/types';
 
 const tenantId = 'tenant-1' as UUID;
