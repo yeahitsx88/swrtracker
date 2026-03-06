@@ -17,6 +17,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
+  inviteToken?: string;
 }
 
 export interface AuthResponse {

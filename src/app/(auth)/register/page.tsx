@@ -47,6 +47,7 @@ function RegisterForm() {
         name: name.trim(),
         email: email.trim(),
         password,
+        inviteToken: inviteToken?.trim() || undefined,
       });
       setSuccess('Registration complete. Sign in with your new credentials.');
       router.push(`/login?tenantId=${encodeURIComponent(tenantId.trim())}&email=${encodeURIComponent(email.trim())}`);

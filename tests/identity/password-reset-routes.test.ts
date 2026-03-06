@@ -31,6 +31,7 @@ function makeRepo(): IPasswordResetRepository {
     markPasswordResetTokenUsed: async () => undefined,
     markActivePasswordResetTokensUsedForUser: async () => undefined,
     updatePasswordHash: async () => undefined,
+    bumpSessionVersion: async () => undefined,
   };
 }
 

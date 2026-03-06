@@ -53,6 +53,7 @@ function makeRepo(overrides?: Partial<IPasswordResetRepository>): IPasswordReset
     markPasswordResetTokenUsed: async () => undefined,
     markActivePasswordResetTokensUsedForUser: async () => undefined,
     updatePasswordHash: async () => undefined,
+    bumpSessionVersion: async () => undefined,
     ...overrides,
   };
 }
@@ -115,6 +116,7 @@ test('resetPassword consumes token and updates password hash', async () => {
   const used: UUID[] = [];
   const updatedHashes: string[] = [];
   const revokedForUser: Array<{ tenantId: UUID; userId: UUID }> = [];
+  const sessionRevocations: Array<{ tenantId: UUID; userId: UUID }> = [];
   const repo = makeRepo({
     findActivePasswordResetTokenByHash: async () => makeResetToken(),
     markPasswordResetTokenUsed: async (_db, tokenId) => {
@@ -125,6 +127,9 @@ test('resetPassword consumes token and updates password hash', async () => {
     },
     updatePasswordHash: async (_db, _tenantId, _userId, passwordHash) => {
       updatedHashes.push(passwordHash);
+    },
+    bumpSessionVersion: async (_db, tid, uid) => {
+      sessionRevocations.push({ tenantId: tid, userId: uid });
     },
   });
 
@@ -137,6 +142,7 @@ test('resetPassword consumes token and updates password hash', async () => {
   assert.equal(used.length, 1);
   assert.equal(revokedForUser.length, 1);
   assert.equal(updatedHashes.length, 1);
+  assert.deepEqual(sessionRevocations, [{ tenantId, userId }]);
   const hashMatches = await bcrypt.compare('new-strong-password', updatedHashes[0] ?? '');
   assert.equal(hashMatches, true);
 });

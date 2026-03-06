@@ -32,6 +32,12 @@ function makeRepo(overrides?: Partial<IUserRepository>): IUserRepository {
     findByEmail: async () => null,
     findById: async () => null,
     isDomainAllowed: async () => true,
+    isCompanyInTenant: async () => true,
+    listRegisterableProjectIds: async () => [],
+    saveProjectMembership: async () => undefined,
+    findActiveInviteByToken: async () => null,
+    markInviteAccepted: async () => undefined,
+    bumpSessionVersion: async () => undefined,
     save: async () => undefined,
     ...overrides,
   };
@@ -48,8 +54,8 @@ test('createUser hashes password and persists LOCAL user credentials', async () 
   const user = await createUser(repo, db, {
     tenantId,
     companyId,
-    email: 'field.user@example.com',
-    name: 'Field User',
+    email: ' Field.User@Example.com ',
+    name: ' Field User ',
     password: 'strong-password',
   });
 
@@ -57,6 +63,7 @@ test('createUser hashes password and persists LOCAL user credentials', async () 
   assert.equal(saved[0]?.authMethod, 'LOCAL');
   assert.equal(saved[0]?.passwordHash === 'strong-password', false);
   assert.equal(saved[0]?.email, 'field.user@example.com');
+  assert.equal(saved[0]?.name, 'Field User');
   assert.equal(user.email, 'field.user@example.com');
   assert.equal('passwordHash' in user, false);
 });

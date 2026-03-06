@@ -14,5 +14,17 @@ export interface IUserRepository {
   findById(db: DbClient, tenantId: UUID, userId: UUID): Promise<User | null>;
   /** Checks whether an email's domain is in the allowed_domains table for this tenant. */
   isDomainAllowed(db: DbClient, tenantId: UUID, email: string): Promise<boolean>;
+  isCompanyInTenant(db: DbClient, tenantId: UUID, companyId: UUID): Promise<boolean>;
+  listRegisterableProjectIds(db: DbClient, tenantId: UUID): Promise<UUID[]>;
+  saveProjectMembership(
+    db: DbClient,
+    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
+  ): Promise<void>;
+  findActiveInviteByToken(
+    db: DbClient,
+    token: string,
+  ): Promise<{ tenantId: UUID; projectId: UUID; email: string; role: string } | null>;
+  markInviteAccepted(db: DbClient, token: string, acceptedAt: Date): Promise<void>;
+  bumpSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
   save(db: DbClient, user: UserWithCredentials): Promise<void>;
 }

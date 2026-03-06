@@ -46,6 +46,12 @@ function makeRepo(overrides?: Partial<IUserRepository>): IUserRepository {
     findByEmail: async () => null,
     findById: async () => null,
     isDomainAllowed: async () => true,
+    isCompanyInTenant: async () => true,
+    listRegisterableProjectIds: async () => ['project-1' as UUID],
+    saveProjectMembership: async () => undefined,
+    findActiveInviteByToken: async () => null,
+    markInviteAccepted: async () => undefined,
+    bumpSessionVersion: async () => undefined,
     save: async (_db: DbClient, _user: UserWithCredentials) => undefined,
     ...overrides,
   };
@@ -87,6 +93,7 @@ function makeLoginDeps(overrides?: Partial<LoginRouteDeps>): LoginRouteDeps {
 }
 
 test('handlePostRegister returns 201 with mapped user payload', async () => {
+  const memberships: Array<{ projectId: UUID; userId: UUID; role: string }> = [];
   const response = await handlePostRegister(
     makeRequest('http://localhost/api/auth/register', {
       tenantId,
@@ -95,7 +102,15 @@ test('handlePostRegister returns 201 with mapped user payload', async () => {
       password: 'strong-password',
       name: 'Field User',
     }),
-    makeRegisterDeps(),
+    makeRegisterDeps({
+      createRepo: () =>
+        makeRepo({
+          listRegisterableProjectIds: async () => ['project-1' as UUID, 'project-2' as UUID],
+          saveProjectMembership: async (_db, membership) => {
+            memberships.push(membership);
+          },
+        }),
+    }),
   );
 
   assert.equal(response.status, 201);
@@ -103,6 +118,13 @@ test('handlePostRegister returns 201 with mapped user payload', async () => {
   assert.equal(json.user.id, userId);
   assert.equal(json.user.tenantId, tenantId);
   assert.equal(json.user.email, 'field.user@example.com');
+  assert.deepEqual(
+    memberships.map(({ projectId, userId: memberUserId, role }) => ({ projectId, userId: memberUserId, role })),
+    [
+      { projectId: 'project-1' as UUID, userId, role: 'REQUESTER' },
+      { projectId: 'project-2' as UUID, userId, role: 'REQUESTER' },
+    ],
+  );
 });
 
 test('handlePostRegister returns 403 when email domain is not allowed', async () => {
@@ -123,6 +145,101 @@ test('handlePostRegister returns 403 when email domain is not allowed', async ()
   );
 
   assert.equal(response.status, 403);
+});
+
+test('handlePostRegister rejects company ids outside the tenant', async () => {
+  const response = await handlePostRegister(
+    makeRequest('http://localhost/api/auth/register', {
+      tenantId,
+      companyId,
+      email: 'field.user@example.com',
+      password: 'strong-password',
+      name: 'Field User',
+    }),
+    makeRegisterDeps({
+      createRepo: () =>
+        makeRepo({
+          isCompanyInTenant: async () => false,
+        }),
+    }),
+  );
+
+  assert.equal(response.status, 400);
+  const json = await response.json() as { error: { message: string } };
+  assert.equal(json.error.message, 'companyId must reference a company in this tenant');
+});
+
+test('handlePostRegister honors active invite tokens and marks them accepted', async () => {
+  const memberships: Array<{ projectId: UUID; role: string }> = [];
+  let acceptedToken: string | null = null;
+
+  const response = await handlePostRegister(
+    makeRequest('http://localhost/api/auth/register', {
+      tenantId,
+      companyId,
+      email: 'Invited.User@Example.com',
+      password: 'strong-password',
+      name: 'Invited User',
+      inviteToken: 'invite-token-1',
+    }),
+    makeRegisterDeps({
+      createRepo: () =>
+        makeRepo({
+          isDomainAllowed: async () => false,
+          findActiveInviteByToken: async () => ({
+            tenantId,
+            projectId: 'project-7' as UUID,
+            email: 'invited.user@example.com',
+            role: 'SURVEY_MANAGER',
+          }),
+          saveProjectMembership: async (_db, membership) => {
+            memberships.push({ projectId: membership.projectId, role: membership.role });
+          },
+          markInviteAccepted: async (_db, token) => {
+            acceptedToken = token;
+          },
+        }),
+      createUser: async (_repo, _db, params) =>
+        makeUser({
+          tenantId: params.tenantId,
+          companyId: params.companyId,
+          email: params.email,
+          name: params.name,
+        }),
+    }),
+  );
+
+  assert.equal(response.status, 201);
+  const json = await response.json() as { user: User };
+  assert.equal(json.user.email, 'invited.user@example.com');
+  assert.deepEqual(memberships, [{ projectId: 'project-7' as UUID, role: 'SURVEY_MANAGER' }]);
+  assert.equal(acceptedToken, 'invite-token-1');
+});
+
+test('handlePostRegister normalizes email before creating the user', async () => {
+  let capturedEmail = '';
+
+  const response = await handlePostRegister(
+    makeRequest('http://localhost/api/auth/register', {
+      tenantId,
+      companyId,
+      email: ' Mixed.Case@Example.com ',
+      password: 'strong-password',
+      name: 'Field User',
+    }),
+    makeRegisterDeps({
+      createUser: async (_repo, _db, params) => {
+        capturedEmail = params.email;
+        return makeUser({
+          email: params.email,
+          name: params.name,
+        });
+      },
+    }),
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(capturedEmail, 'mixed.case@example.com');
 });
 
 test('handlePostRegister returns 400 for invalid payload', async () => {

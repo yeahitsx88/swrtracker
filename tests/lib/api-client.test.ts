@@ -35,6 +35,42 @@ test('apiClient forwards method/body/query and parses success payloads', { concu
   }
 });
 
+test('apiClient adds Idempotency-Key headers for idempotent ticket mutations', { concurrency: false }, async () => {
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    requests.push({ url: String(input), init });
+    return new Response(JSON.stringify({ ticket: { id: 'ticket-1' } }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }) as typeof fetch;
+
+  try {
+    await apiClient.createTicket({
+      projectId: 'project-1',
+      aorNodeId: 'aor-1',
+      ticketType: 'LAYOUT',
+      craft: 'Survey',
+      fieldContact: 'Crew Lead',
+      fieldChannel: 'CH-1',
+      description: 'Need a layout',
+      requestedDate: '2026-03-05T00:00:00.000Z',
+    });
+    await apiClient.requesterCancel('ticket-1');
+
+    assert.equal(requests.length, 2);
+    for (const request of requests) {
+      const headers = new Headers(request.init?.headers);
+      const key = headers.get('Idempotency-Key');
+      assert.equal(typeof key, 'string');
+      assert.notEqual(key, '');
+    }
+  } finally {
+    restoreFetch();
+  }
+});
+
 test('apiClient throws typed ApiClientError when backend returns api error payload', { concurrency: false }, async () => {
   globalThis.fetch = (async () =>
     new Response(

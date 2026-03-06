@@ -47,6 +47,7 @@ export interface IPasswordResetRepository {
     userId: UUID,
     passwordHash: string,
   ): Promise<void>;
+  bumpSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
 }
 
 export interface RequestPasswordResetParams {
@@ -127,6 +128,7 @@ export async function resetPassword(
     resetToken.userId,
     passwordHash,
   );
+  await repo.bumpSessionVersion(db, resetToken.tenantId, resetToken.userId);
 }
 
 export function hashPasswordResetToken(token: string): string {

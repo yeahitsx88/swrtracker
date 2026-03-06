@@ -21,6 +21,7 @@ import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
+  headers?: Record<string, string>;
 }
 
 function withQuery(path: string, params: Record<string, string | number | undefined>): string {
@@ -33,12 +34,24 @@ function withQuery(path: string, params: Record<string, string | number | undefi
   return queryString ? `${path}?${queryString}` : path;
 }
 
+function createIdempotencyKey(): string {
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi?.randomUUID) {
+    return cryptoApi.randomUUID();
+  }
+  return `idemp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers = {
+    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(options.headers ?? {}),
+  };
   const response = await fetch(path, {
     method: options.method ?? 'GET',
     credentials: 'include',
     cache: 'no-store',
-    headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: Object.keys(headers).length > 0 ? headers : undefined,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
@@ -107,7 +120,11 @@ export const apiClient = {
   },
 
   createTicket(input: CreateTicketRequest): Promise<TicketResponse> {
-    return apiRequest<TicketResponse>('/api/tickets', { method: 'POST', body: input });
+    return apiRequest<TicketResponse>('/api/tickets', {
+      method: 'POST',
+      body: input,
+      headers: { 'Idempotency-Key': createIdempotencyKey() },
+    });
   },
 
   submitTicket(ticketId: string, departmentId?: string): Promise<TicketResponse> {
@@ -136,6 +153,7 @@ export const apiClient = {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-cancel`, {
       method: 'POST',
       body: reason ? { reason } : {},
+      headers: { 'Idempotency-Key': createIdempotencyKey() },
     });
   },
 
@@ -155,7 +173,10 @@ export const apiClient = {
   },
 
   requesterCancel(ticketId: string): Promise<TicketResponse> {
-    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/requester-cancel`, { method: 'POST' });
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/requester-cancel`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': createIdempotencyKey() },
+    });
   },
 
   listAorTree(projectId: string): Promise<AorTreeResponse> {

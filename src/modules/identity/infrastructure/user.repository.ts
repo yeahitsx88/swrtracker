@@ -67,7 +67,7 @@ export class UserRepository implements IUserRepository {
     const { rows } = await db.query<DbRow>(
       `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, session_version, deactivated_at, created_at
        FROM users
-       WHERE tenant_id = $1 AND email = $2
+       WHERE tenant_id = $1 AND LOWER(email) = LOWER($2)
        LIMIT 1`,
       [tenantId, email],
     );
@@ -101,6 +101,88 @@ export class UserRepository implements IUserRepository {
       [tenantId, domain],
     );
     return rows[0]?.exists === true;
+  }
+
+  async isCompanyInTenant(db: DbClient, tenantId: UUID, companyId: UUID): Promise<boolean> {
+    const { rows } = await db.query<{ exists: boolean }>(
+      `SELECT EXISTS (
+         SELECT 1 FROM companies
+         WHERE tenant_id = $1
+           AND id = $2
+       ) AS exists`,
+      [tenantId, companyId],
+    );
+    return rows[0]?.exists === true;
+  }
+
+  async listRegisterableProjectIds(db: DbClient, tenantId: UUID): Promise<UUID[]> {
+    const { rows } = await db.query<{ id: string }>(
+      `SELECT id
+       FROM projects
+       WHERE tenant_id = $1
+         AND status <> 'ARCHIVED'
+       ORDER BY created_at ASC`,
+      [tenantId],
+    );
+    return rows.map((row) => row.id as UUID);
+  }
+
+  async saveProjectMembership(
+    db: DbClient,
+    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
+  ): Promise<void> {
+    await db.query(
+      `INSERT INTO project_memberships (id, project_id, user_id, role, created_at)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (project_id, user_id) DO UPDATE
+       SET role = EXCLUDED.role`,
+      [
+        membership.id,
+        membership.projectId,
+        membership.userId,
+        membership.role,
+        membership.createdAt,
+      ],
+    );
+  }
+
+  async findActiveInviteByToken(
+    db: DbClient,
+    token: string,
+  ): Promise<{ tenantId: UUID; projectId: UUID; email: string; role: string } | null> {
+    const { rows } = await db.query<{
+      tenant_id: string;
+      project_id: string;
+      email: string;
+      role: string;
+    }>(
+      `SELECT tenant_id, project_id, email, role
+       FROM invites
+       WHERE token = $1
+         AND accepted_at IS NULL
+         AND canceled_at IS NULL
+         AND expires_at > NOW()
+       LIMIT 1`,
+      [token],
+    );
+
+    if (!rows[0]) return null;
+    return {
+      tenantId: rows[0].tenant_id as UUID,
+      projectId: rows[0].project_id as UUID,
+      email: rows[0].email,
+      role: rows[0].role,
+    };
+  }
+
+  async markInviteAccepted(db: DbClient, token: string, acceptedAt: Date): Promise<void> {
+    await db.query(
+      `UPDATE invites
+       SET accepted_at = $2
+       WHERE token = $1
+         AND accepted_at IS NULL`,
+      [token, acceptedAt],
+    );
   }
 
   async save(db: DbClient, user: UserWithCredentials): Promise<void> {
@@ -206,6 +288,16 @@ export class UserRepository implements IUserRepository {
        WHERE tenant_id = $1
          AND id = $2`,
       [tenantId, userId, passwordHash],
+    );
+  }
+
+  async bumpSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void> {
+    await db.query(
+      `UPDATE users
+       SET session_version = COALESCE(session_version, 1) + 1
+       WHERE tenant_id = $1
+         AND id = $2`,
+      [tenantId, userId],
     );
   }
 }
