@@ -23,6 +23,8 @@ function makeTicket(): Ticket {
     workflowVariant: 'STANDARD_APPROVAL',
     status: 'DRAFT',
     craft: 'Civil',
+    fieldContact: 'Foreman A',
+    fieldChannel: 'CH-11',
     description: 'Repository save test',
     requestedDate: new Date('2026-03-08T12:00:00Z'),
     submittedAt: null,
@@ -62,6 +64,6 @@ test('TicketRepository.save includes a placeholder for every ticket column value
   const repo = new TicketRepository();
   await repo.save(db, makeTicket());
 
-  assert.match(capturedSql, /\$36\b/);
-  assert.equal(capturedParams.length, 36);
+  assert.match(capturedSql, /\$38\b/);
+  assert.equal(capturedParams.length, 38);
 });

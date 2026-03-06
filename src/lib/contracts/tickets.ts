@@ -33,6 +33,8 @@ export interface TicketRecord {
   workflowVariant: WorkflowVariant;
   status: TicketStatus;
   craft: string;
+  fieldContact: string | null;
+  fieldChannel: string | null;
   description: string;
   requestedDate: string;
   submittedAt: string | null;
@@ -72,6 +74,8 @@ export interface CreateTicketRequest {
   aorNodeId: string;
   ticketType: TicketType;
   craft: string;
+  fieldContact: string;
+  fieldChannel: string;
   description: string;
   requestedDate: string;
   departmentId?: string;

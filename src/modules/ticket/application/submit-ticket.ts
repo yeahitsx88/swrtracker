@@ -1,6 +1,6 @@
 /**
  * SubmitTicket — Variant 1 only (DRAFT → SUBMITTED).
- * Enforces the 48-hour minimum notice rule (CLAUDE.md §4 and §6).
+ * Enforces project-configured minimum lead-time notice at submit time.
  * Only the ticket's own REQUESTER may submit.
  */
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
@@ -10,8 +10,10 @@ import { appendAuditEvent } from '@/modules/audit/application/index';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { assertActorHasRole } from './shared';
-
-const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
+import {
+  doesRequestedDateMeetLeadTime,
+  normalizeProjectLeadTimeConfig,
+} from '../domain/lead-time-policy';
 
 export async function submitTicket(
   repo: ITicketRepository,
@@ -29,7 +31,7 @@ export async function submitTicket(
     throw new ForbiddenError('Only REQUESTER may submit a ticket');
   }
 
-  // Fetch ticket first to enforce the 48-hour rule
+  // Fetch ticket first to enforce submit-time lead-time policy
   const ticket = params.visibility
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
@@ -53,10 +55,15 @@ export async function submitTicket(
     throw new ConflictError('Archived projects are read-only');
   }
 
-  const now = Date.now();
-  if (ticket.requestedDate.getTime() < now + FORTY_EIGHT_HOURS_MS) {
+  const leadTimeConfigRaw = repo.findProjectLeadTimeConfig
+    ? await repo.findProjectLeadTimeConfig(db, params.tenantId, ticket.projectId)
+    : null;
+  const leadTimeConfig = normalizeProjectLeadTimeConfig(leadTimeConfigRaw);
+
+  if (!doesRequestedDateMeetLeadTime(ticket.requestedDate, new Date(), leadTimeConfig)) {
+    const dayLabel = leadTimeConfig.leadTimeDays === 1 ? 'day' : 'days';
     throw new ValidationError(
-      'Requested date must be at least 48 hours from now (CLAUDE.md §4 — The 48-Hour Rule)',
+      `Requested date must be at least ${leadTimeConfig.leadTimeDays} ${dayLabel} from now`,
     );
   }
 

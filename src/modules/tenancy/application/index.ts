@@ -40,3 +40,7 @@ export {
   upsertTenantMembership,
   removeTenantMembership,
 } from './tenant-memberships';
+export {
+  getProjectRequestConfig,
+  updateProjectRequestConfig,
+} from './project-request-config';

@@ -193,6 +193,8 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
       assignedInstrumentManId: instrumentManId,
       ticketType: 'LAYOUT',
       craft: 'Civil',
+      fieldContact: 'Foreman A',
+      fieldChannel: 'CH-11',
       description: 'Urgent direct assignment',
       requestedDate: new Date(Date.now() + (60 * 60 * 1000)).toISOString(),
     }, 'idem-create-1'));

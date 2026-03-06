@@ -13,7 +13,9 @@ export function TicketDetails({ ticket }: TicketDetailsProps) {
         <StatusBadge status={ticket.status} />
       </div>
       <p className="muted">Type: {ticket.ticketType}</p>
-      <p className="muted">Craft: {ticket.craft}</p>
+      <p className="muted">Craft / Discipline: {ticket.craft}</p>
+      <p className="muted">Field Contact: {ticket.fieldContact ?? '-'}</p>
+      <p className="muted">Phone / Radio Channel: {ticket.fieldChannel ?? '-'}</p>
       <p className="muted">Priority: {ticket.priority}</p>
       <p className="muted">Requested Date: {new Date(ticket.requestedDate).toLocaleDateString()}</p>
       <p>{ticket.description}</p>

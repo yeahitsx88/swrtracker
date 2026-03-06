@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import type { DbClient, UUID, Page } from '@/shared/types';
 import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus, TicketType, WorkflowVariant } from '../domain/types';
 import type { ProjectStatus } from '@/modules/tenancy/domain/types';
+import type { ProjectLeadTimeConfig } from '../domain/lead-time-policy';
 import type {
   ITicketRepository,
   PatchTicketOptions,
@@ -37,6 +38,8 @@ interface TicketRow {
   workflow_variant: string;
   status: string;
   craft: string;
+  field_contact: string | null;
+  field_channel: string | null;
   description: string;
   requested_date: Date;
   submitted_at: Date | null;
@@ -78,6 +81,8 @@ function rowToTicket(r: TicketRow): Ticket {
     workflowVariant:         r.workflow_variant as WorkflowVariant,
     status:                  r.status as TicketStatus,
     craft:                   r.craft,
+    fieldContact:            r.field_contact,
+    fieldChannel:            r.field_channel,
     description:             r.description,
     requestedDate:           r.requested_date,
     submittedAt:             r.submitted_at,
@@ -247,7 +252,7 @@ export class TicketRepository implements ITicketRepository {
         id, tenant_id, project_id, aor_node_id, department_id, company_id,
         ticket_number, ticket_type,
         requester_id, assigned_party_chief_id, assigned_instrument_man_id, survey_lead_id,
-        workflow_variant, status, craft, description, requested_date,
+        workflow_variant, status, craft, field_contact, field_channel, description, requested_date,
         submitted_at, approved_at, assigned_at, started_at,
         pending_pc_outcome, pending_pc_reason,
         survey_cancel_requested_by, survey_cancel_requested_role, survey_cancel_reason, survey_cancel_requested_at,
@@ -256,15 +261,15 @@ export class TicketRepository implements ITicketRepository {
         created_at, updated_at
       ) VALUES (
         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-        $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
-        $24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36
+        $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,
+        $26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38
       )`,
       [
         ticket.id, ticket.tenantId, ticket.projectId, ticket.aorNodeId,
         ticket.departmentId, ticket.companyId, ticket.ticketNumber, ticket.ticketType,
         ticket.requesterId, ticket.assignedPartyChiefId, ticket.assignedInstrumentManId,
         ticket.surveyLeadId,
-        ticket.workflowVariant, ticket.status, ticket.craft, ticket.description,
+        ticket.workflowVariant, ticket.status, ticket.craft, ticket.fieldContact, ticket.fieldChannel, ticket.description,
         ticket.requestedDate,
         ticket.submittedAt, ticket.approvedAt, ticket.assignedAt,
         ticket.startedAt, ticket.pendingPcOutcome, ticket.pendingPcReason,
@@ -547,5 +552,28 @@ export class TicketRepository implements ITicketRepository {
       [tenantId, projectId],
     );
     return rows[0]?.status ?? null;
+  }
+
+  async findProjectLeadTimeConfig(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+  ): Promise<ProjectLeadTimeConfig | null> {
+    const { rows } = await db.query<{
+      lead_time_enforcement_enabled: boolean;
+      lead_time_days: number;
+    }>(
+      `SELECT lead_time_enforcement_enabled, lead_time_days
+       FROM projects
+       WHERE tenant_id = $1
+         AND id = $2
+       LIMIT 1`,
+      [tenantId, projectId],
+    );
+    if (!rows[0]) return null;
+    return {
+      enforcementEnabled: rows[0].lead_time_enforcement_enabled,
+      leadTimeDays: rows[0].lead_time_days,
+    };
   }
 }

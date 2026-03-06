@@ -26,6 +26,8 @@ export interface CreateTicketParams {
   ticketType:      TicketType;
   workflowVariant: WorkflowVariant;
   craft:           string;
+  fieldContact?:   string | null;
+  fieldChannel?:   string | null;
   description:     string;
   requestedDate:   Date;
   parentTicketId?: UUID;
@@ -73,6 +75,8 @@ export async function createTicket(
     workflowVariant:        params.workflowVariant,
     status:                 'DRAFT',
     craft:                  params.craft,
+    fieldContact:           params.fieldContact ?? null,
+    fieldChannel:           params.fieldChannel ?? null,
     description:            params.description,
     requestedDate:          params.requestedDate,
     submittedAt:            null,

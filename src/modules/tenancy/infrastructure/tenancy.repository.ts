@@ -6,6 +6,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type {
   Tenant,
   Project,
+  ProjectRequestConfig,
   ProjectTemplate,
   TenantMembership,
   Company,
@@ -141,6 +142,51 @@ export class TenancyRepository implements ITenancyRepository {
       archivedAt: r.archived_at,
       archivedBy: r.archived_by as UUID | null,
     };
+  }
+
+  async findProjectRequestConfig(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+  ): Promise<ProjectRequestConfig | null> {
+    const { rows } = await db.query<{
+      lead_time_enforcement_enabled: boolean;
+      lead_time_days: number;
+    }>(
+      `SELECT lead_time_enforcement_enabled, lead_time_days
+       FROM projects
+       WHERE tenant_id = $1
+         AND id = $2
+       LIMIT 1`,
+      [tenantId, projectId],
+    );
+    if (!rows[0]) return null;
+    return {
+      leadTimeEnforcementEnabled: rows[0].lead_time_enforcement_enabled,
+      leadTimeDays: rows[0].lead_time_days,
+    };
+  }
+
+  async updateProjectRequestConfig(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    config: ProjectRequestConfig,
+  ): Promise<void> {
+    await this.assertProjectNotArchived(db, tenantId, projectId);
+    await db.query(
+      `UPDATE projects
+       SET lead_time_enforcement_enabled = $3,
+           lead_time_days = $4
+       WHERE tenant_id = $1
+         AND id = $2`,
+      [
+        tenantId,
+        projectId,
+        config.leadTimeEnforcementEnabled,
+        config.leadTimeDays,
+      ],
+    );
   }
 
   async getProjectActivationReadiness(

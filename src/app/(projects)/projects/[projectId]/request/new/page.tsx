@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
-import type { TicketType, UploadAttachmentRequest } from '@/lib/contracts';
+import type { ProjectRequestConfig, TicketType, UploadAttachmentRequest } from '@/lib/contracts';
 import { AorNodePicker } from '@/components/aor';
 import { Field, Stepper } from '@/components/forms';
 import { AttachmentUploader } from '@/components/tickets';
@@ -20,8 +20,9 @@ import {
 
 const STEP_TITLES = ['AOR', 'Type', 'Date', 'Details', 'Attachments', 'Review'];
 const TICKET_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
+const CRAFT_OPTIONS = ['Civil', 'Structural', 'Mechanical', 'Electrical', 'Instrumentation', 'Survey', 'Other'];
 
-function nextDateString(daysAhead: number): string {
+function dateStringFromNow(daysAhead: number): string {
   const date = new Date();
   date.setDate(date.getDate() + daysAhead);
   return date.toISOString().slice(0, 10);
@@ -35,8 +36,15 @@ export default function NewRequestPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [aorNodeId, setAorNodeId] = useState('');
   const [ticketType, setTicketType] = useState<TicketType>('LAYOUT');
-  const [requestedDate, setRequestedDate] = useState(nextDateString(3));
-  const [craft, setCraft] = useState('');
+  const [requestConfig, setRequestConfig] = useState<ProjectRequestConfig>({
+    leadTimeEnforcementEnabled: true,
+    leadTimeDays: 2,
+  });
+  const [requestedDate, setRequestedDate] = useState(dateStringFromNow(2));
+  const [craft, setCraft] = useState(CRAFT_OPTIONS[0] ?? 'Civil');
+  const [customCraft, setCustomCraft] = useState('');
+  const [fieldContact, setFieldContact] = useState('');
+  const [fieldChannel, setFieldChannel] = useState('');
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<UploadAttachmentRequest[]>([]);
   const [aorLevels, setAorLevels] = useState<Array<{ id: string; depth: number; label: string }>>([]);
@@ -46,31 +54,62 @@ export default function NewRequestPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loadingAor, setLoadingAor] = useState(true);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  const minRequestedDate = useMemo(() => {
+    if (!requestConfig.leadTimeEnforcementEnabled) {
+      return dateStringFromNow(0);
+    }
+    return dateStringFromNow(requestConfig.leadTimeDays);
+  }, [requestConfig.leadTimeDays, requestConfig.leadTimeEnforcementEnabled]);
+
+  const resolvedCraft = useMemo(
+    () => (craft === 'Other' ? customCraft.trim() : craft.trim()),
+    [craft, customCraft],
+  );
 
   useEffect(() => {
     let active = true;
-    async function loadAor() {
+    async function loadSetupData() {
       setLoadingAor(true);
+      setLoadingConfig(true);
       setError(null);
       try {
-        const response = await apiClient.listAorTree(projectId);
+        const [aorResponse, configResponse] = await Promise.all([
+          apiClient.listAorTree(projectId),
+          apiClient.getProjectRequestConfig(projectId),
+        ]);
         if (!active) return;
-        setAorLevels(response.levels);
-        setAorNodes(response.nodes);
+        setAorLevels(aorResponse.levels);
+        setAorNodes(aorResponse.nodes);
+        setRequestConfig(configResponse.config);
       } catch (err) {
         if (!active) return;
-        setError(getErrorMessage(err, 'Unable to load AOR tree. You can still enter node ID manually.'));
+        setError(getErrorMessage(err, 'Unable to load request setup data.'));
       } finally {
-        if (active) setLoadingAor(false);
+        if (active) {
+          setLoadingAor(false);
+          setLoadingConfig(false);
+        }
       }
     }
 
-    void loadAor();
+    void loadSetupData();
     return () => {
       active = false;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    if (!requestedDate) {
+      setRequestedDate(minRequestedDate);
+      return;
+    }
+    if (requestConfig.leadTimeEnforcementEnabled && requestedDate < minRequestedDate) {
+      setRequestedDate(minRequestedDate);
+    }
+  }, [minRequestedDate, requestConfig.leadTimeEnforcementEnabled, requestedDate]);
 
   const stagedAttachmentsSummary = useMemo(
     () => attachments.map((item) => `${item.filename} (${item.sizeBytes} bytes)`),
@@ -86,14 +125,22 @@ export default function NewRequestPage() {
       case 2:
         return Boolean(requestedDate);
       case 3:
-        return Boolean(craft.trim() && description.trim());
+        return Boolean(resolvedCraft && fieldContact.trim() && fieldChannel.trim() && description.trim());
       default:
         return true;
     }
-  }, [activeStep, aorNodeId, craft, description, requestedDate, ticketType]);
+  }, [activeStep, aorNodeId, description, fieldChannel, fieldContact, requestedDate, resolvedCraft, ticketType]);
 
   async function handleSubmit() {
-    if (!aorNodeId || !ticketType || !requestedDate || !craft.trim() || !description.trim()) {
+    if (
+      !aorNodeId ||
+      !ticketType ||
+      !requestedDate ||
+      !resolvedCraft ||
+      !fieldContact.trim() ||
+      !fieldChannel.trim() ||
+      !description.trim()
+    ) {
       setError('Complete all required fields before submission.');
       return;
     }
@@ -107,7 +154,9 @@ export default function NewRequestPage() {
         projectId,
         aorNodeId: aorNodeId.trim(),
         ticketType,
-        craft: craft.trim(),
+        craft: resolvedCraft,
+        fieldContact: fieldContact.trim(),
+        fieldChannel: fieldChannel.trim(),
         description: description.trim(),
         requestedDate: new Date(requestedDate).toISOString(),
       });
@@ -156,15 +205,44 @@ export default function NewRequestPage() {
         );
       case 2:
         return (
-          <Field label="Requested Date">
-            <Input type="date" value={requestedDate} onChange={(event) => setRequestedDate(event.target.value)} />
-          </Field>
+          <div className="stack">
+            <Field label="Requested Date">
+              <Input
+                type="date"
+                min={requestConfig.leadTimeEnforcementEnabled ? minRequestedDate : undefined}
+                value={requestedDate}
+                onChange={(event) => setRequestedDate(event.target.value)}
+              />
+            </Field>
+            <p className="muted">
+              {loadingConfig
+                ? 'Loading request date policy...'
+                : requestConfig.leadTimeEnforcementEnabled
+                  ? `Lead-time policy enabled: minimum ${requestConfig.leadTimeDays} day(s) ahead.`
+                  : 'Lead-time policy disabled for this project.'}
+            </p>
+          </div>
         );
       case 3:
         return (
           <div className="stack">
-            <Field label="Craft">
-              <Input value={craft} onChange={(event) => setCraft(event.target.value)} />
+            <Field label="Craft / Discipline">
+              <Select value={craft} onChange={(event) => setCraft(event.target.value)}>
+                {CRAFT_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </Select>
+            </Field>
+            {craft === 'Other' ? (
+              <Field label="Custom Craft / Discipline">
+                <Input value={customCraft} onChange={(event) => setCustomCraft(event.target.value)} />
+              </Field>
+            ) : null}
+            <Field label="Field Contact">
+              <Input value={fieldContact} onChange={(event) => setFieldContact(event.target.value)} />
+            </Field>
+            <Field label="Phone / Radio Channel">
+              <Input value={fieldChannel} onChange={(event) => setFieldChannel(event.target.value)} />
             </Field>
             <Field label="Description">
               <Textarea value={description} onChange={(event) => setDescription(event.target.value)} />
@@ -195,7 +273,9 @@ export default function NewRequestPage() {
             <p className="muted">AOR Node: {aorNodeId || '-'}</p>
             <p className="muted">Type: {ticketType}</p>
             <p className="muted">Requested Date: {requestedDate}</p>
-            <p className="muted">Craft: {craft || '-'}</p>
+            <p className="muted">Craft / Discipline: {resolvedCraft || '-'}</p>
+            <p className="muted">Field Contact: {fieldContact || '-'}</p>
+            <p className="muted">Phone / Radio Channel: {fieldChannel || '-'}</p>
             <p className="muted">Description: {description || '-'}</p>
             <p className="muted">Attachments: {attachments.length}</p>
           </div>

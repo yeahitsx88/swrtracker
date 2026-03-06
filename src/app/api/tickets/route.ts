@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
       typeof b.aorNodeId !== 'string' ||
       typeof b.ticketType !== 'string' ||
       typeof b.craft !== 'string' ||
+      typeof b.fieldContact !== 'string' ||
+      typeof b.fieldChannel !== 'string' ||
       typeof b.description !== 'string' ||
       typeof b.requestedDate !== 'string' ||
       (b.workflowVariant !== undefined && (
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
       !VALID_TYPES.includes(b.ticketType as TicketType)
     ) {
       throw new ValidationError(
-        'projectId, aorNodeId, ticketType, craft, description, requestedDate are required',
+        'projectId, aorNodeId, ticketType, craft, fieldContact, fieldChannel, description, requestedDate are required',
       );
     }
 
@@ -64,6 +66,8 @@ export async function POST(req: NextRequest) {
       departmentId,
       ticketType,
       craft,
+      fieldContact,
+      fieldChannel,
       description,
       requestedDate,
     } = b as {
@@ -76,9 +80,29 @@ export async function POST(req: NextRequest) {
       departmentId?: string;
       ticketType: TicketType;
       craft: string;
+      fieldContact: string;
+      fieldChannel: string;
       description: string;
       requestedDate: string;
     };
+
+    const normalizedCraft = craft.trim();
+    const normalizedFieldContact = fieldContact.trim();
+    const normalizedFieldChannel = fieldChannel.trim();
+    const normalizedDescription = description.trim();
+
+    if (!normalizedCraft) {
+      throw new ValidationError('craft is required');
+    }
+    if (!normalizedFieldContact) {
+      throw new ValidationError('fieldContact is required');
+    }
+    if (!normalizedFieldChannel) {
+      throw new ValidationError('fieldChannel is required');
+    }
+    if (!normalizedDescription) {
+      throw new ValidationError('description is required');
+    }
 
     const parsedDate = new Date(requestedDate);
     if (isNaN(parsedDate.getTime())) {
@@ -139,8 +163,10 @@ export async function POST(req: NextRequest) {
                 : null,
               departmentId: typeof departmentId === 'string' ? departmentId as UUID : undefined,
               ticketType,
-              craft,
-              description,
+              craft: normalizedCraft,
+              fieldContact: normalizedFieldContact,
+              fieldChannel: normalizedFieldChannel,
+              description: normalizedDescription,
               requestedDate: parsedDate,
             });
             return { status: 201, body: { ticket: directTicket } };
@@ -207,8 +233,10 @@ export async function POST(req: NextRequest) {
               requesterId: auth.userId,
               ticketType,
               workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
-              craft,
-              description,
+              craft: normalizedCraft,
+              fieldContact: normalizedFieldContact,
+              fieldChannel: normalizedFieldChannel,
+              description: normalizedDescription,
               requestedDate: parsedDate,
             });
             return { status: 201, body: { ticket } };
@@ -238,8 +266,10 @@ export async function POST(req: NextRequest) {
             requesterId: auth.userId,
             ticketType,
             workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
-            craft,
-            description,
+            craft: normalizedCraft,
+            fieldContact: normalizedFieldContact,
+            fieldChannel: normalizedFieldChannel,
+            description: normalizedDescription,
             requestedDate: parsedDate,
           });
           return { status: 201, body: { ticket } };

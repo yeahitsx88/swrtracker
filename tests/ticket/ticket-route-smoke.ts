@@ -174,6 +174,8 @@ async function main(): Promise<void> {
       aorNodeId: ids.aorNode,
       ticketType: 'LAYOUT',
       craft: 'Civil',
+      fieldContact: 'Foreman A',
+      fieldChannel: 'CH-11',
       description: 'Smoke test ticket',
       requestedDate: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
     }));

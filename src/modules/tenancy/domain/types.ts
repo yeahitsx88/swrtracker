@@ -31,6 +31,11 @@ export interface Project {
   archivedBy?: UUID | null;
 }
 
+export interface ProjectRequestConfig {
+  leadTimeEnforcementEnabled: boolean;
+  leadTimeDays: number;
+}
+
 export interface ProjectTemplate {
   id: UUID;
   tenantId: UUID;

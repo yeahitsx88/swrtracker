@@ -2253,3 +2253,54 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches:
   - full-route correlation wrapping is intentionally focused on critical hardening paths; secondary read-only routes can be migrated in a follow-up observability sweep
 - Production behavior changed: yes
+### 2026-03-05 - Batch 60
+- Intent: close Zachry form capability gaps by adding per-project lead-time configuration, server-enforced configurable submit validation, requester/admin UI updates, and coordination-field persistence without regressing attachments.
+- Files touched:
+  - `db/migrations/020_project_request_config_and_ticket_coordination.sql` (new)
+  - `src/modules/ticket/domain/lead-time-policy.ts` (new)
+  - `src/modules/ticket/domain/types.ts`
+  - `src/modules/ticket/application/ports.ts`
+  - `src/modules/ticket/application/submit-ticket.ts`
+  - `src/modules/ticket/application/create-ticket.ts`
+  - `src/modules/ticket/application/create-direct-assignment-ticket.ts`
+  - `src/modules/ticket/infrastructure/ticket.repository.ts`
+  - `src/modules/tenancy/application/project-request-config.ts` (new)
+  - `src/modules/tenancy/application/index.ts`
+  - `src/modules/tenancy/domain/types.ts`
+  - `src/modules/tenancy/infrastructure/tenancy.repository.ts`
+  - `src/app/api/projects/[projectId]/request-config/handler.ts` (new)
+  - `src/app/api/projects/[projectId]/request-config/route.ts` (new)
+  - `src/app/api/tickets/route.ts`
+  - `src/lib/contracts/projects.ts` (new)
+  - `src/lib/contracts/tickets.ts`
+  - `src/lib/contracts/index.ts`
+  - `src/lib/apiClient.ts`
+  - `src/app/(projects)/projects/[projectId]/request/new/page.tsx`
+  - `src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx`
+  - `src/components/tickets/ticket-details.tsx`
+  - `tests/ticket/lead-time-policy.test.ts` (new)
+  - `tests/tenancy/project-request-config.test.ts` (new)
+  - `tests/tenancy/project-request-config-route.test.ts` (new)
+  - `tests/attachment/attachment-read-route.test.ts`
+  - `tests/ticket/submit-ticket.test.ts`
+  - `tests/ticket/ticket-repository-save.test.ts`
+  - `tests/ticket/idempotency-routes.test.ts`
+  - `tests/ticket/project-lifecycle-guards.test.ts`
+  - `tests/ticket/direct-assignment-route-smoke.test.ts`
+  - `tests/ticket/ticket-route-smoke.ts`
+  - `docs/worklogs/IMPLEMENTATION_SPINE.md` (new)
+  - `docs/worklogs/GAP_CLOSURE_WORKLOG.md` (new)
+  - `docs/worklogs/LEAD_DECISION_LOG.md` (new)
+  - `docs/worklogs/EDGE_CASE_REGISTER.md` (new)
+  - `docs/worklogs/EXEC_SUMMARY.md` (new)
+  - `docs/CODEX.md`
+- Behavior added:
+  - project-level request policy controls now support enabling/disabling lead-time enforcement and setting lead-time days per project
+  - submit-ticket validation now uses project configuration (server-authoritative) instead of a hard-coded 48-hour window
+  - requester ticket creation now requires and persists `fieldContact` + `fieldChannel`; ticket details display both fields
+  - requester UI date picker now applies configured min-date when enforcement is enabled; admin UI can view/update project request configuration
+  - API contracts and client methods now include project request-config retrieval/update and expanded create-ticket payload fields
+- Known gap queued for later batches:
+  - add explicit timezone/day-boundary hardening tests for submit-time lead-time checks
+  - add max-length constraints for `fieldContact`/`fieldChannel` at API/domain boundaries
+- Production behavior changed: yes

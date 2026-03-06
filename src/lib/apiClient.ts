@@ -15,10 +15,11 @@ import type {
   TicketResponse,
   UploadAttachmentRequest,
 } from '@/lib/contracts';
+import type { ProjectRequestConfig, ProjectRequestConfigResponse } from '@/lib/contracts/projects';
 import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
 }
 
@@ -159,6 +160,17 @@ export const apiClient = {
 
   listAorTree(projectId: string): Promise<AorTreeResponse> {
     return apiRequest<AorTreeResponse>(`/api/projects/${projectId}/aor`);
+  },
+
+  getProjectRequestConfig(projectId: string): Promise<ProjectRequestConfigResponse> {
+    return apiRequest<ProjectRequestConfigResponse>(`/api/projects/${projectId}/request-config`);
+  },
+
+  updateProjectRequestConfig(projectId: string, input: ProjectRequestConfig): Promise<ProjectRequestConfigResponse> {
+    return apiRequest<ProjectRequestConfigResponse>(`/api/projects/${projectId}/request-config`, {
+      method: 'PATCH',
+      body: input,
+    });
   },
 
   listAttachments(ticketId: string): Promise<AttachmentsListResponse> {

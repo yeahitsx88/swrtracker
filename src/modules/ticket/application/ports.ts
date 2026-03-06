@@ -6,6 +6,7 @@ import type { DbClient, UUID, Page } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus } from '../domain/types';
 import type { ProjectStatus } from '@/modules/tenancy/domain/types';
+import type { ProjectLeadTimeConfig } from '../domain/lead-time-policy';
 
 export interface TicketStatusPatch {
   status:                   TicketStatus;
@@ -154,4 +155,9 @@ export interface ITicketRepository {
   ): Promise<UUID[]>;
 
   findProjectStatus(db: DbClient, tenantId: UUID, projectId: UUID): Promise<ProjectStatus | null>;
+  findProjectLeadTimeConfig?(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+  ): Promise<ProjectLeadTimeConfig | null>;
 }

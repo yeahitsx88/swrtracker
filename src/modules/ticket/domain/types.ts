@@ -31,6 +31,8 @@ export interface Ticket {
   workflowVariant: WorkflowVariant;
   status: TicketStatus;
   craft: string;
+  fieldContact?: string | null;
+  fieldChannel?: string | null;
   description: string;
   requestedDate: Date;
   submittedAt: Date | null;

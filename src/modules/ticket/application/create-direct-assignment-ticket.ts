@@ -25,6 +25,8 @@ export interface CreateDirectAssignmentTicketParams {
   departmentId?:           UUID;
   ticketType:              TicketType;
   craft:                   string;
+  fieldContact?:           string | null;
+  fieldChannel?:           string | null;
   description:             string;
   requestedDate:           Date;
 }
@@ -122,6 +124,8 @@ export async function createDirectAssignmentTicket(
     workflowVariant:         'DIRECT_ASSIGNMENT',
     status:                  'ASSIGNED',
     craft:                   params.craft,
+    fieldContact:            params.fieldContact ?? null,
+    fieldChannel:            params.fieldChannel ?? null,
     description:             params.description,
     requestedDate:           params.requestedDate,
     submittedAt:             null,

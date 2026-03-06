@@ -45,6 +45,8 @@ function makeDraftTicket(overrides?: Partial<Ticket>): Ticket {
     workflowVariant: 'STANDARD_APPROVAL',
     status: 'DRAFT',
     craft: 'Civil',
+    fieldContact: 'Foreman A',
+    fieldChannel: 'CH-11',
     description: 'Lifecycle guard test ticket',
     requestedDate: new Date(Date.now() + (72 * 60 * 60 * 1000)),
     submittedAt: null,
@@ -92,6 +94,10 @@ function makeRepo(overrides?: Partial<ITicketRepository>): ITicketRepository {
     findUserEmail: async () => 'requester@example.com',
     findPartyChiefForInstrumentMan: async () => null,
     findAorNodeIdsForUser: async () => [],
+    findProjectLeadTimeConfig: async () => ({
+      enforcementEnabled: true,
+      leadTimeDays: 2,
+    }),
     ...overrides,
   };
 }
@@ -244,6 +250,8 @@ test('POST /api/tickets blocks direct-assignment creation while the project is i
       assignedPartyChiefId: 'pc-1',
       ticketType: 'LAYOUT',
       craft: 'Civil',
+      fieldContact: 'Foreman A',
+      fieldChannel: 'CH-11',
       description: 'Urgent direct assignment',
       requestedDate: new Date(Date.now() + (60 * 60 * 1000)).toISOString(),
     }));
@@ -332,6 +340,8 @@ test('POST /api/tickets blocks requester draft creation on archived projects', a
       aorNodeId: 'aor-node-1',
       ticketType: 'LAYOUT',
       craft: 'Civil',
+      fieldContact: 'Foreman A',
+      fieldChannel: 'CH-11',
       description: 'Requester draft',
       requestedDate: new Date(Date.now() + (72 * 60 * 60 * 1000)).toISOString(),
     }));

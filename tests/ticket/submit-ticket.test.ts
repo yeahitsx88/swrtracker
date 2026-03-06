@@ -33,6 +33,8 @@ function makeDraftTicket(overrides?: Partial<Ticket>): Ticket {
     workflowVariant: 'STANDARD_APPROVAL',
     status: 'DRAFT',
     craft: 'Civil',
+    fieldContact: 'Foreman A',
+    fieldChannel: 'CH-11',
     description: 'Draft ticket',
     requestedDate: seventyTwoHoursFromNow(),
     submittedAt: null,
@@ -79,6 +81,10 @@ function makeRepo(overrides?: Partial<ITicketRepository>): ITicketRepository {
     findUserEmail: async () => null,
     findPartyChiefForInstrumentMan: async () => null,
     findAorNodeIdsForUser: async () => [],
+    findProjectLeadTimeConfig: async () => ({
+      enforcementEnabled: true,
+      leadTimeDays: 2,
+    }),
     ...overrides,
   };
 }
@@ -202,13 +208,17 @@ test('submitTicket assigns ticketNumber when the draft is submitted', async () =
   assert.match(dbCalls[0] ?? '', /INSERT INTO ticket_events/);
 });
 
-test('submitTicket still enforces the 48-hour rule before allocating a number', async () => {
+test('submitTicket enforces configured lead-time before allocating a number', async () => {
   let nextSequenceCalls = 0;
   let findAorNodeCodeCalls = 0;
 
   const repo = makeRepo({
     findByIdInternal: async () => makeDraftTicket({
-      requestedDate: new Date(Date.now() + (47 * 60 * 60 * 1000)),
+      requestedDate: new Date(Date.now() + (36 * 60 * 60 * 1000)),
+    }),
+    findProjectLeadTimeConfig: async () => ({
+      enforcementEnabled: true,
+      leadTimeDays: 2,
     }),
     nextSequence: async () => {
       nextSequenceCalls += 1;
@@ -236,6 +246,31 @@ test('submitTicket still enforces the 48-hour rule before allocating a number', 
 
   assert.equal(nextSequenceCalls, 0);
   assert.equal(findAorNodeCodeCalls, 0);
+});
+
+test('submitTicket skips lead-time validation when enforcement is disabled', async () => {
+  const repo = makeRepo({
+    findByIdInternal: async () => makeDraftTicket({
+      requestedDate: new Date(Date.now() + (6 * 60 * 60 * 1000)),
+    }),
+    findProjectLeadTimeConfig: async () => ({
+      enforcementEnabled: false,
+      leadTimeDays: 10,
+    }),
+  });
+
+  const db: DbClient = {
+    query: async () => ({ rows: [] }),
+  };
+
+  const result = await submitTicket(repo, db, {
+    tenantId,
+    ticketId,
+    actorId: requesterId,
+    actorRole: 'REQUESTER',
+  });
+
+  assert.equal(result.status, 'SUBMITTED');
 });
 
 test('submitTicket returns deterministic stale-state conflict when draft changed concurrently', async () => {

@@ -116,6 +116,8 @@ function makeDirectAssignmentTicket(overrides?: Partial<Ticket>): Ticket {
     workflowVariant: 'DIRECT_ASSIGNMENT',
     status: 'ASSIGNED',
     craft: 'Civil',
+    fieldContact: 'Foreman A',
+    fieldChannel: 'CH-11',
     description: 'direct assignment',
     requestedDate: new Date(Date.now() + (72 * 60 * 60 * 1000)),
     submittedAt: null,
@@ -186,6 +188,8 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
       aorNodeId: 'aor-node-1',
       ticketType: 'LAYOUT',
       craft: 'Civil',
+      fieldContact: 'Foreman A',
+      fieldChannel: 'CH-11',
       description: 'Retry-safe create',
       requestedDate: new Date(Date.now() + (72 * 60 * 60 * 1000)).toISOString(),
     };
@@ -252,6 +256,8 @@ test('POST /api/tickets rejects same key with different payload', async () => {
       aorNodeId: 'aor-node-1',
       ticketType: 'LAYOUT',
       craft: 'Civil',
+      fieldContact: 'Foreman A',
+      fieldChannel: 'CH-11',
       description: 'First payload',
       requestedDate: new Date(Date.now() + (72 * 60 * 60 * 1000)).toISOString(),
     };

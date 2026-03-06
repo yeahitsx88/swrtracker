@@ -180,3 +180,30 @@ test('handleGetTicketAttachments returns 404 when ticket is not visible', async 
 
   assert.equal(response.status, 404);
 });
+
+test('handleGetTicketAttachments allows survey manager visibility for attachment metadata access', async () => {
+  const managerId = 'manager-1' as UUID;
+  const response = await handleGetTicketAttachments(
+    makeRequest(),
+    { params: Promise.resolve({ ticketId }) },
+    makeDeps({
+      getTicketRouteContext: async () => ({
+        tenantId,
+        ticketId,
+        actorId: managerId,
+        actorRole: 'SURVEY_MANAGER',
+        projectId,
+        visibility: {
+          actorId: managerId,
+          actorRole: 'SURVEY_MANAGER',
+          companyId: 'company-1' as UUID,
+          companyType: 'GC',
+        },
+      }),
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  const json = await response.json() as { attachments: Array<{ id: string }> };
+  assert.equal(json.attachments.length, 2);
+});
