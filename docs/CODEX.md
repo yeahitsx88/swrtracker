@@ -2304,3 +2304,10 @@ Track Codex-authored remediation batches with a compact, append-only record.
   - add explicit timezone/day-boundary hardening tests for submit-time lead-time checks
   - add max-length constraints for `fieldContact`/`fieldChannel` at API/domain boundaries
 - Production behavior changed: yes
+
+### 2026-09-24 — ADCQ-260923-001 requirements record
+- Intent: record the user-approved product-rule replacement and selected `phase5` continuation baseline in product-owned decision and requirements sources.
+- Files touched: `docs/REQUIREMENTS_ADCQ-260923-001.md`, `docs/worklogs/LEAD_DECISION_LOG.md`, `docs/CLAUDE.md`, `docs/PROJECT_VISION_v2.md`, `docs/README.md`, `docs/CODEX.md`.
+- Behavior added/changed: documentation authority and provenance only; no runtime or schema change.
+- Known gaps queued: detailed design decisions, historical-data compatibility, isolated database lifecycle verification, and pilot acceptance.
+- Production behavior changed: no.

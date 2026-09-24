@@ -57,5 +57,7 @@ Modules: Identity, Tenancy, Ticket, Workflow, Attachment, Notification, Reportin
 
 ## Documentation
 
-- **CLAUDE.md** — implementation source of truth, architecture decisions, data model, workflow rules
+- **CLAUDE.md** — implementation and architecture reference for rules unaffected by the approved realignment
 - **PROJECT_VISION_v2.md** — product and business narrative
+- **REQUIREMENTS_ADCQ-260923-001.md** — approved SWRTracker product-rule replacement and open design decisions
+- **worklogs/LEAD_DECISION_LOG.md** — product decision provenance, including ADCQ-260923-001 Decision 9

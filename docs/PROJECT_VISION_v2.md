@@ -1,9 +1,7 @@
 # Field Survey Support Ticketing Platform
 ## Project Vision & Architecture — v2 (Living Document)
 
-> This document supersedes the original PDF vision document (v1).
-> CLAUDE.md is the implementation source of truth. This document provides the product/business narrative.
-> When the two conflict, CLAUDE.md wins.
+> This document superseded the original PDF vision document (v1). It is retained as historical product narrative. [REQUIREMENTS_ADCQ-260923-001.md](REQUIREMENTS_ADCQ-260923-001.md) governs approved realignment rules, including same-SWR resubmission and direct Instrument Man completion. `CLAUDE.md` remains the implementation/architecture reference for unaffected decisions. Conflicting role, workflow, intake, date, priority, and commercialization statements below are pre-realignment proposals.
 
 ---
 

@@ -1,7 +1,6 @@
 # CLAUDE.md — Field Survey Support Ticketing Platform
 
-> This file is the source of truth for all AI-assisted development on this project.
-> Read it in full before making any changes. Do not deviate from these decisions without explicit instruction.
+> Read this file in full before making changes. The approved product rules in [REQUIREMENTS_ADCQ-260923-001.md](REQUIREMENTS_ADCQ-260923-001.md) and Decision 9 in [LEAD_DECISION_LOG.md](worklogs/LEAD_DECISION_LOG.md) supersede conflicting product behavior below. This file remains the implementation and architecture reference for unaffected decisions; conflicting workflow, role, intake, date, and priority passages describe the pre-realignment design until revised. Do not treat existing code as proof of requirement approval.
 
 ---
 
