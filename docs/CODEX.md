@@ -2311,3 +2311,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added/changed: documentation authority and provenance only; no runtime or schema change.
 - Known gaps queued: detailed design decisions, historical-data compatibility, isolated database lifecycle verification, and pilot acceptance.
 - Production behavior changed: no.
+
+### 2026-09-24 — ADCQ-260923-001 Gate A baseline
+- Intent: make the supported Node 22 toolchain reproducible and contain the old route smoke test before any new workflow or migration work.
+- Files touched: `.node-version`, `package.json`, `pnpm-workspace.yaml`, `Dockerfile`, `scripts/run-tests.ts`, `tests/ticket/ticket-route-smoke.ts`, `docs/BASELINE_TESTING.md`, `docs/README.md`, `docs/CODEX.md`.
+- Behavior added/changed: dependency build scripts are explicitly allowed for the declared native packages; `pnpm test` runs the existing suite in one process on Node 22; `pnpm smoke:ticket` requires an explicitly identified disposable database, uses a pinned client for fixture setup, and leaves deletion to disposal of the temporary cluster. No product workflow, schema, or API behavior changed.
+- Validation: clean Node 22.23.3/pnpm 11.19.0 install, TypeScript, 216/216 tests, and Next build passed. PostgreSQL 15.19 applied migrations 001–021 to an empty temporary database and skipped them on rerun. The contained route smoke passed through assignment with persisted state and audit events; the missing-guard run failed before mutation.
+- Known gaps queued: no Amelia workflow replay, historical-data compatibility, real external identities, email delivery, attachment bytes, reporting, deployment inventory, Docker image build, or pilot acceptance.
+- Production behavior changed: no.

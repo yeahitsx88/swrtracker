@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import { Pool } from 'pg';
 import { NextRequest } from 'next/server';
 import * as authModule from '@/lib/auth';
@@ -20,7 +21,7 @@ const submitTicketRoute = submitRouteModule.POST;
 const approveTicketRoute = approveRouteModule.POST;
 const assignTicketRoute = assignRouteModule.POST;
 
-function getRequiredEnv(name: 'DATABASE_URL' | 'JWT_SECRET'): string {
+function getRequiredEnv(name: 'DATABASE_URL' | 'JWT_SECRET' | 'SWR_SMOKE_DATA_DIR'): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is required to run pnpm smoke:ticket`);
@@ -33,6 +34,7 @@ function makeRequest(url: string, token: string, body?: JsonObject): NextRequest
     method: 'POST',
     headers: {
       cookie: `${COOKIE_NAME}=${token}`,
+      'idempotency-key': randomUUID(),
       ...(body ? { 'content-type': 'application/json' } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
@@ -56,54 +58,19 @@ async function parseResponse(label: string, response: Response): Promise<JsonObj
   return json ?? {};
 }
 
-async function cleanupSmokeData(pool: Pool): Promise<void> {
-  const { rows: tenantRows } = await pool.query<{ id: string }>(
-    `SELECT id FROM tenants WHERE name LIKE 'Smoke Tenant smoke-%'`,
-  );
-  const { rows: projectRows } = await pool.query<{ id: string }>(
-    `SELECT id FROM projects WHERE name LIKE 'Smoke Project smoke-%'`,
-  );
-
-  const tenantIds = tenantRows.map((row) => row.id);
-  const projectIds = projectRows.map((row) => row.id);
-
-  if (tenantIds.length === 0 && projectIds.length === 0) {
-    return;
+async function assertDisposableDatabase(pool: Pool): Promise<void> {
+  if (process.env.SWR_SMOKE_DISPOSABLE_DB !== '1') {
+    throw new Error('SWR_SMOKE_DISPOSABLE_DB=1 is required');
   }
 
-  await pool.query('BEGIN');
-  try {
-    if (tenantIds.length > 0) {
-      await pool.query('DELETE FROM ticket_events WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-      await pool.query('DELETE FROM cad_work WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-      await pool.query('DELETE FROM tickets WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-      await pool.query('DELETE FROM aor_assignments WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-      await pool.query('DELETE FROM aor_nodes WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-      await pool.query('DELETE FROM aor_levels WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-    }
-
-    if (projectIds.length > 0) {
-      await pool.query('DELETE FROM project_memberships WHERE project_id = ANY($1::uuid[])', [projectIds]);
-      await pool.query('DELETE FROM ticket_sequences WHERE project_id = ANY($1::uuid[])', [projectIds]);
-    }
-
-    if (tenantIds.length > 0) {
-      await pool.query('DELETE FROM users WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-      await pool.query('DELETE FROM companies WHERE tenant_id = ANY($1::uuid[])', [tenantIds]);
-    }
-
-    if (projectIds.length > 0) {
-      await pool.query('DELETE FROM projects WHERE id = ANY($1::uuid[])', [projectIds]);
-    }
-
-    if (tenantIds.length > 0) {
-      await pool.query('DELETE FROM tenants WHERE id = ANY($1::uuid[])', [tenantIds]);
-    }
-
-    await pool.query('COMMIT');
-  } catch (error) {
-    await pool.query('ROLLBACK');
-    throw error;
+  const expectedDataDir = realpathSync(getRequiredEnv('SWR_SMOKE_DATA_DIR'));
+  const { rows } = await pool.query<{ name: string; data_dir: string }>(
+    `SELECT current_database() AS name, current_setting('data_directory') AS data_dir`,
+  );
+  const actual = rows[0];
+  if (!actual || !/^swr_smoke_test_[a-z0-9_]+$/.test(actual.name) ||
+      realpathSync(actual.data_dir) !== expectedDataDir) {
+    throw new Error('Smoke test requires an explicitly identified disposable database cluster');
   }
 }
 
@@ -120,51 +87,64 @@ async function main(): Promise<void> {
     requester: randomUUID(),
     manager: randomUUID(),
     partyChief: randomUUID(),
+    department: randomUUID(),
     aorLevel: randomUUID(),
     aorNode: randomUUID(),
   };
 
   try {
-    await cleanupSmokeData(pool);
+    await assertDisposableDatabase(pool);
 
-    await pool.query('BEGIN');
-    await pool.query(
-      'INSERT INTO tenants (id, name) VALUES ($1, $2)',
-      [ids.tenant, `Smoke Tenant ${suffix}`],
-    );
-    await pool.query(
-      'INSERT INTO companies (id, tenant_id, name, type) VALUES ($1, $2, $3, $4)',
-      [ids.company, ids.tenant, `Smoke GC ${suffix}`, 'GC'],
-    );
-    await pool.query(
-      'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
-      [ids.requester, ids.tenant, ids.company, `requester-${suffix}@example.com`, 'Smoke Requester', 'LOCAL'],
-    );
-    await pool.query(
-      'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
-      [ids.manager, ids.tenant, ids.company, `manager-${suffix}@example.com`, 'Smoke Manager', 'LOCAL'],
-    );
-    await pool.query(
-      'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
-      [ids.partyChief, ids.tenant, ids.company, `pc-${suffix}@example.com`, 'Smoke Party Chief', 'LOCAL'],
-    );
-    await pool.query(
-      'INSERT INTO projects (id, tenant_id, name, status) VALUES ($1, $2, $3, $4)',
-      [ids.project, ids.tenant, `Smoke Project ${suffix}`, 'ACTIVE'],
-    );
-    await pool.query(
-      'INSERT INTO project_memberships (project_id, user_id, role) VALUES ($1, $2, $3), ($1, $4, $5), ($1, $6, $7)',
-      [ids.project, ids.requester, 'REQUESTER', ids.manager, 'SURVEY_MANAGER', ids.partyChief, 'PARTY_CHIEF'],
-    );
-    await pool.query(
-      'INSERT INTO aor_levels (id, project_id, tenant_id, depth, label) VALUES ($1, $2, $3, $4, $5)',
-      [ids.aorLevel, ids.project, ids.tenant, 0, 'AREA'],
-    );
-    await pool.query(
-      'INSERT INTO aor_nodes (id, project_id, tenant_id, level_id, parent_id, name, code) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [ids.aorNode, ids.project, ids.tenant, ids.aorLevel, null, 'Smoke AOR', 'SMK'],
-    );
-    await pool.query('COMMIT');
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(
+        'INSERT INTO tenants (id, name) VALUES ($1, $2)',
+        [ids.tenant, `Smoke Tenant ${suffix}`],
+      );
+      await client.query(
+        'INSERT INTO companies (id, tenant_id, name, type) VALUES ($1, $2, $3, $4)',
+        [ids.company, ids.tenant, `Smoke GC ${suffix}`, 'GC'],
+      );
+      await client.query(
+        'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
+        [ids.requester, ids.tenant, ids.company, `requester-${suffix}@example.com`, 'Smoke Requester', 'LOCAL'],
+      );
+      await client.query(
+        'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
+        [ids.manager, ids.tenant, ids.company, `manager-${suffix}@example.com`, 'Smoke Manager', 'LOCAL'],
+      );
+      await client.query(
+        'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
+        [ids.partyChief, ids.tenant, ids.company, `pc-${suffix}@example.com`, 'Smoke Party Chief', 'LOCAL'],
+      );
+      await client.query(
+        'INSERT INTO projects (id, tenant_id, name, status) VALUES ($1, $2, $3, $4)',
+        [ids.project, ids.tenant, `Smoke Project ${suffix}`, 'ACTIVE'],
+      );
+      await client.query(
+        'INSERT INTO project_memberships (project_id, user_id, role) VALUES ($1, $2, $3), ($1, $4, $5), ($1, $6, $7)',
+        [ids.project, ids.requester, 'REQUESTER', ids.manager, 'SURVEY_MANAGER', ids.partyChief, 'PARTY_CHIEF'],
+      );
+      await client.query(
+        'INSERT INTO aor_levels (id, project_id, tenant_id, depth, label) VALUES ($1, $2, $3, $4, $5)',
+        [ids.aorLevel, ids.project, ids.tenant, 0, 'AREA'],
+      );
+      await client.query(
+        'INSERT INTO aor_nodes (id, project_id, tenant_id, level_id, parent_id, name, code) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [ids.aorNode, ids.project, ids.tenant, ids.aorLevel, null, 'Smoke AOR', 'SMK'],
+      );
+      await client.query(
+        'INSERT INTO departments (id, project_id, tenant_id, name, manager_title, created_by) VALUES ($1, $2, $3, $4, $5, $6)',
+        [ids.department, ids.project, ids.tenant, 'Smoke Department', 'Smoke Manager', ids.manager],
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
 
     const requesterToken = signToken(ids.requester as UUID, ids.tenant as UUID);
     const managerToken = signToken(ids.manager as UUID, ids.tenant as UUID);
@@ -172,6 +152,7 @@ async function main(): Promise<void> {
     const createRes = await createTicketRoute(makeRequest('http://localhost/api/tickets', requesterToken, {
       projectId: ids.project,
       aorNodeId: ids.aorNode,
+      departmentId: ids.department,
       ticketType: 'LAYOUT',
       craft: 'Civil',
       fieldContact: 'Foreman A',
@@ -240,11 +221,9 @@ async function main(): Promise<void> {
       events: eventRows.map((row) => row.event_type),
     }, null, 2));
   } finally {
-    try {
-      await cleanupSmokeData(pool);
-    } finally {
-      await pool.end();
-    }
+    // The entire dedicated database is disposed of after the run. Do not
+    // delete rows from a shared cluster based on names or other loose filters.
+    await pool.end();
   }
 }
 

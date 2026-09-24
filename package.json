@@ -2,13 +2,15 @@
   "name": "swrtracker",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.19.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "worker:notifications:once": "tsx src/workers/notification-worker.ts",
     "worker:notifications": "tsx src/workers/notification-worker-loop.ts",
-    "test": "node --import tsx --test --test-isolation=none tests/**/*.test.ts",
+    "test": "node --import tsx --test scripts/run-tests.ts",
+    "smoke:ticket": "node --import tsx tests/ticket/ticket-route-smoke.ts",
     "db:migrate": "tsx --env-file=.env db/migrate.ts"
   },
   "dependencies": {
@@ -18,9 +20,6 @@
     "pg": "^8.13.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["bcrypt", "esbuild", "sharp"]
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
