@@ -92,3 +92,24 @@ pnpm smoke:capabilities
 The smoke creates a sample Amelia request with an urgent reason, writes and hashes a PDF instruction, seals instruction uploads at submission, approves and assigns the SWR, writes JPEG field evidence as the assigned Instrument Man, completes the work, reads both stored files byte for byte, reconciles the project measures, renders four requester message previews, and captures their durable outbox state. The guard run without `SWR_B3_DISPOSABLE_DB=1` fails before fixture creation.
 
 Observed B3 checks on Node 22.23.3: TypeScript passed; 223 tests passed; migrations 001–023 applied and then skipped cleanly on rerun; the guarded capability smoke passed; and the Next production build passed. Local storage and message capture are private-beta implementations. Organization-owned storage, backup and restore, malware policy, real email delivery, representative historical-data replay, and pilot acceptance remain separate gates.
+
+## Gate B4 device-local private beta
+
+`pnpm beta:setup` creates a dedicated PostgreSQL cluster, attachment root, generated JWT secret, and seed data under `.data/beta/`. It applies migrations 001–023 and creates six sample identities plus five representative Amelia SWRs. A second setup run must skip every applied migration and the existing seed without replacing the beta dataset. `pnpm beta:start` starts the local database and Next server on `127.0.0.1:3000`; `Ctrl-C` or `pnpm beta:stop` stops the database.
+
+Observed B4 checks:
+
+| Check | Observed |
+|---|---|
+| First setup | PostgreSQL 15 cluster initialized; migrations 001–023 applied; six users and five SWRs seeded |
+| Setup rerun | All 23 migrations skipped; existing Amelia seed skipped; database stopped cleanly |
+| Health and authentication | Health returned `db: connected`; Lead, requester, company authority, and Project IT logins succeeded |
+| Seeded workflow | Five visible statuses: submitted, approved, in progress, completed, and returned for correction |
+| Access boundaries | Requester saw three own SWRs; company authority saw all five company SWRs; cross-requester read returned 404 and edit returned 403 |
+| Project IT | Project administrator saw all five project SWRs after the full-project visibility correction |
+| Measures | Four open, one approved without Instrument Man, one overdue Need-By, one completed; Area/status groups reconciled |
+| Local messages | Twelve queued messages captured through the preview API |
+| Shutdown | Next stopped and `pg_ctl status` confirmed no beta server running |
+| Regression gate | Node 22.23.3 TypeScript passed; 224 tests passed; Next production build passed |
+
+The persistent `.data/beta/` dataset remains on the device for the user's private walkthrough and is ignored by Git. The runbook is `docs/AMELIA_PRIVATE_BETA.md`. These checks do not establish hosted operations, real mail, organization-owned file recovery, real-user onboarding, SharePoint import, or Amelia field-pilot acceptance.

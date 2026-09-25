@@ -148,6 +148,7 @@ function buildVisibilityClause(
 
   switch (actorRole) {
     // Full project visibility — no additional WHERE clause
+    case 'PROJECT_ADMIN':
     case 'SURVEY_MANAGER':
     case 'CAD_LEAD':
     case 'CAD_TECHNICIAN':

@@ -61,4 +61,5 @@ Modules: Identity, Tenancy, Ticket, Workflow, Attachment, Notification, Reportin
 - **PROJECT_VISION_v2.md** — product and business narrative
 - **REQUIREMENTS_ADCQ-260923-001.md** — approved SWRTracker product-rule replacement and open design decisions
 - **BASELINE_TESTING.md** — Node 22 and disposable PostgreSQL baseline commands and Gate A evidence
+- **AMELIA_PRIVATE_BETA.md** — device-local setup, sample accounts, role walkthrough, and beta boundaries
 - **worklogs/LEAD_DECISION_LOG.md** — product decision provenance, including ADCQ-260923-001 Decision 9

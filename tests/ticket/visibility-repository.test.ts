@@ -88,6 +88,38 @@ test('TicketRepository.list does not add company isolation for non-subcontractor
   assert.deepEqual(queries[1]?.params, [tenantId, projectId, actorId, 25, 0]);
 });
 
+test('TicketRepository.list gives PROJECT_ADMIN full project visibility', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const repo = new TicketRepository();
+
+  const db: DbClient = {
+    query: async <T extends object>(sql: string, params?: unknown[]) => {
+      queries.push({ sql, params });
+      return /COUNT\(\*\)/.test(sql)
+        ? rowsResult([{ total: '0' }] as unknown as T[])
+        : rowsResult([] as T[]);
+    },
+  };
+
+  await repo.list(db, tenantId, {
+    projectId,
+    visibility: {
+      actorId,
+      actorRole: 'PROJECT_ADMIN',
+      companyId,
+      companyType: 'GC',
+    },
+    limit: 25,
+    offset: 0,
+  });
+
+  assert.equal(queries.length, 2);
+  assert.doesNotMatch(queries[0]?.sql ?? '', /AND 1 = 0/);
+  assert.deepEqual(queries[0]?.params, [tenantId, projectId]);
+  assert.doesNotMatch(queries[1]?.sql ?? '', /AND 1 = 0/);
+  assert.deepEqual(queries[1]?.params, [tenantId, projectId, 25, 0]);
+});
+
 test('resolveVisibility adds department and AOR scope for DEPARTMENT_LEAD', async () => {
   const originalFindUserCompanyInfo = TicketRepository.prototype.findUserCompanyInfo;
   const originalFindRequesterDepartmentMembership = TicketRepository.prototype.findRequesterDepartmentMembership;
