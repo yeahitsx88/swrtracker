@@ -65,8 +65,9 @@ export async function GET(req: NextRequest) {
     const token = req.nextUrl.searchParams.get('token');
     const repo = new InviteRepository();
     if (token) {
+      const auth = req.cookies.get(COOKIE_NAME)?.value ? await requireAuth(req) : null;
       const invite = await withTransaction(db => inspectInvite(repo, db, parseUuid(token, 'token')));
-      return NextResponse.json({ invite }, { headers: NO_STORE });
+      return NextResponse.json({ invite, signedIn: Boolean(auth) }, { headers: NO_STORE });
     }
     const auth = await requireAuth(req);
     const projectId = parseUuid(req.nextUrl.searchParams.get('projectId') ?? '', 'projectId');
