@@ -327,3 +327,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: Phase 3 requester UI still needs to consume this endpoint; registration/login UX and draft/submission views remain to be built.
 - Production behavior changed: yes.
 - Module boundary deviation: one request-options API route and focused integration test accompany the Tenancy module change.
+
+### 2026-09-25 - Batch 8 (Requester entry and drafts UI)
+- Intent: make the Phase 3 requester intake usable from a mobile browser.
+- Files touched: `src/app/page.tsx`, `src/app/layout.tsx`, `src/app/globals.css`, `src/app/ui/`, `src/app/login/`, `src/app/drafts/`, `src/app/project/[projectId]/request/`, `src/modules/ticket/application/submit-ticket.ts`, `tests/ticket/request-ui.test.ts`, `CODEX.md`.
+- Behavior added: sign-in with a bounded local return path, responsive request form, explicit partial draft saving, paginated draft listing, resume, soft deletion, submit-time validation and numbered confirmation. Date entry handles input events and local-time conversion; validation feedback receives focus. Removed an internal spec reference from the user-facing notice error.
+- Verification: baseline 132 database tests passed; final suite passed 134 with 2 dedicated-URL skips against configured `survey_dev`; production build and TypeScript passed. Browser verification on a disposable database on the configured PostgreSQL server covered login, partial save, resume, invalid 48-hour notice, successful submission, and deletion. Database readback confirmed one submitted numbered ticket, one soft-deleted unnumbered draft, and matching audit events. Disposable database removed.
+- Known gap queued for later batches: submitted-ticket list/detail, attachments, rejection resubmission, registration/invite entry, and sign-out navigation. Organization ID currently comes from the project link or administrator; a refreshed submitted draft URL currently reports that the draft is no longer editable.
+- Production behavior changed: yes.
+- Module boundary deviation: requester web pages and shared styles accompany the Ticket UI work; existing Identity and Tenancy APIs are consumed without business-rule duplication.

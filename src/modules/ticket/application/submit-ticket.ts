@@ -47,7 +47,7 @@ export async function submitTicket(
   const now = Date.now();
   if (ticket.requestedDate.getTime() < now + FORTY_EIGHT_HOURS_MS) {
     throw new ValidationError(
-      'Requested date must be at least 48 hours from now (CLAUDE.md §4 — The 48-Hour Rule)',
+      'Requested date must be at least 48 hours from now.',
     );
   }
 
