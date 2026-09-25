@@ -23,6 +23,7 @@ import type {
   ProjectRequestConfig,
   ProjectRequestConfigResponse,
   ProjectMembersResponse,
+  ProjectCompanyAccessResponse,
   ProjectListResponse,
 } from '@/lib/contracts/projects';
 import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
@@ -131,6 +132,28 @@ export const apiClient = {
 
   listProjectMembers(projectId: string): Promise<ProjectMembersResponse> {
     return apiRequest<ProjectMembersResponse>(`/api/projects/${projectId}/members`);
+  },
+
+  getProjectCompanyAccess(projectId: string): Promise<ProjectCompanyAccessResponse> {
+    return apiRequest<ProjectCompanyAccessResponse>(`/api/projects/${projectId}/company-authority`);
+  },
+
+  createRequesterInvite(projectId: string, input: { companyId: string; email: string }): Promise<{ inviteToken: string }> {
+    return apiRequest<{ inviteToken: string }>(`/api/projects/${projectId}/invites`, {
+      method: 'POST', body: input,
+    });
+  },
+
+  grantCompanyAuthority(projectId: string, userId: string): Promise<{ grant: { id: string } }> {
+    return apiRequest<{ grant: { id: string } }>(`/api/projects/${projectId}/company-authority`, {
+      method: 'POST', body: { userId },
+    });
+  },
+
+  revokeCompanyAuthority(projectId: string, grantId: string): Promise<{ success: boolean }> {
+    return apiRequest<{ success: boolean }>(`/api/projects/${projectId}/company-authority/${grantId}`, {
+      method: 'DELETE',
+    });
   },
 
   getTicket(ticketId: string): Promise<TicketResponse> {

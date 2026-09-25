@@ -9,6 +9,24 @@ import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> },
+) {
+  try {
+    const auth = requireAuth(req);
+    const { projectId } = await params;
+    const repo = new CompanyAccessRepository();
+    const overview = await withTransaction(async (db) => {
+      await assertAccessAdministrator(db, auth, projectId as UUID);
+      return repo.listProjectCompanyAccess(db, auth.tenantId, projectId as UUID);
+    });
+    return NextResponse.json(overview);
+  } catch (err) {
+    return errorResponse(err);
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },

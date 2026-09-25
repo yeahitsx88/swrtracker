@@ -55,6 +55,25 @@ export interface ProjectMembersResponse {
   members: ProjectMemberRecord[];
 }
 
+export interface ProjectCompanyAccessResponse {
+  companies: Array<{ id: string; name: string }>;
+  requesters: Array<{
+    userId: string;
+    name: string;
+    email: string;
+    companyId: string;
+    companyName: string;
+    authorityGrantId: string | null;
+  }>;
+  pendingInvites: Array<{
+    id: string;
+    email: string;
+    companyId: string;
+    companyName: string;
+    expiresAt: string;
+  }>;
+}
+
 export interface ProjectMembershipRecord {
   id: string;
   name: string;

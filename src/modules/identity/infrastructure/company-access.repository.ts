@@ -8,7 +8,95 @@ export interface CompanyAuthorityGrant {
   userId: UUID;
 }
 
+export interface ProjectCompanyAccessOverview {
+  companies: Array<{ id: UUID; name: string }>;
+  requesters: Array<{
+    userId: UUID;
+    name: string;
+    email: string;
+    companyId: UUID;
+    companyName: string;
+    authorityGrantId: UUID | null;
+  }>;
+  pendingInvites: Array<{
+    id: UUID;
+    email: string;
+    companyId: UUID;
+    companyName: string;
+    expiresAt: string;
+  }>;
+}
+
 export class CompanyAccessRepository {
+  async listProjectCompanyAccess(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+  ): Promise<ProjectCompanyAccessOverview> {
+    const companiesResult = await db.query<{ id: string; name: string }>(
+      `SELECT c.id, c.name
+         FROM companies c
+         WHERE c.tenant_id = $1 AND c.type = 'SUBCONTRACTOR'
+           AND EXISTS (
+             SELECT 1 FROM projects p
+             WHERE p.id = $2 AND p.tenant_id = c.tenant_id AND p.status <> 'ARCHIVED'
+           )
+         ORDER BY LOWER(c.name), c.id`,
+      [tenantId, projectId],
+    );
+    const requestersResult = await db.query<{
+      user_id: string; name: string; email: string; company_id: string;
+      company_name: string; authority_grant_id: string | null;
+    }>(
+      `SELECT u.id AS user_id, u.name, u.email, c.id AS company_id,
+                c.name AS company_name, cag.id AS authority_grant_id
+         FROM project_memberships pm
+         JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
+         JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
+         JOIN companies c ON c.id = u.company_id AND c.tenant_id = u.tenant_id
+         LEFT JOIN company_authority_grants cag
+           ON cag.tenant_id = p.tenant_id AND cag.project_id = p.id
+          AND cag.company_id = c.id AND cag.user_id = u.id AND cag.revoked_at IS NULL
+         WHERE pm.project_id = $2 AND pm.role = 'REQUESTER'
+           AND p.status <> 'ARCHIVED' AND u.deactivated_at IS NULL
+           AND c.type = 'SUBCONTRACTOR'
+         ORDER BY LOWER(c.name), LOWER(u.name), u.id`,
+      [tenantId, projectId],
+    );
+    const invitesResult = await db.query<{
+      id: string; email: string; company_id: string; company_name: string; expires_at: Date | string;
+    }>(
+      `SELECT i.id, i.email, c.id AS company_id, c.name AS company_name, i.expires_at
+         FROM invites i
+         JOIN companies c ON c.id = i.company_id AND c.tenant_id = i.tenant_id
+         JOIN projects p ON p.id = i.project_id AND p.tenant_id = i.tenant_id
+         WHERE i.tenant_id = $1 AND i.project_id = $2 AND i.role = 'REQUESTER'
+           AND i.accepted_at IS NULL AND i.canceled_at IS NULL AND i.expires_at > NOW()
+           AND c.type = 'SUBCONTRACTOR' AND p.status <> 'ARCHIVED'
+         ORDER BY i.created_at DESC, i.id`,
+      [tenantId, projectId],
+    );
+
+    return {
+      companies: companiesResult.rows.map((row) => ({ id: row.id as UUID, name: row.name })),
+      requesters: requestersResult.rows.map((row) => ({
+        userId: row.user_id as UUID,
+        name: row.name,
+        email: row.email,
+        companyId: row.company_id as UUID,
+        companyName: row.company_name,
+        authorityGrantId: row.authority_grant_id as UUID | null,
+      })),
+      pendingInvites: invitesResult.rows.map((row) => ({
+        id: row.id as UUID,
+        email: row.email,
+        companyId: row.company_id as UUID,
+        companyName: row.company_name,
+        expiresAt: new Date(row.expires_at).toISOString(),
+      })),
+    };
+  }
+
   async createRequesterInvite(
     db: DbClient,
     params: { tenantId: UUID; projectId: UUID; companyId: UUID; email: string; invitedBy: UUID; expiresAt: Date },

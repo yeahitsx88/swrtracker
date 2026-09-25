@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
+import { SubcontractorAccess } from './subcontractor-access';
 
 export default function AdminProjectPage() {
   const params = useParams<{ projectId: string }>();
@@ -68,49 +69,52 @@ export default function AdminProjectPage() {
   }
 
   return (
-    <Card
-      title="Project Request Configuration"
-      description="Manage per-project lead-time policy for requester submissions."
-    >
-      <div className="stack">
-        {error ? <ErrorBanner message={error} /> : null}
-        {success ? <SuccessBanner message={success} /> : null}
-        {loading ? <p className="muted">Loading project configuration...</p> : null}
-        {!loading ? (
-          <>
-            <label className="row" style={{ alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="checkbox"
-                checked={leadTimeEnforcementEnabled}
-                onChange={(event) => setLeadTimeEnforcementEnabled(event.target.checked)}
-              />
-              <span>Enable lead-time enforcement for requester submit</span>
-            </label>
-            <Field label="Lead-Time Days">
-              <Input
-                type="number"
-                min={1}
-                max={30}
-                value={String(leadTimeDays)}
-                onChange={(event) => setLeadTimeDays(Number(event.target.value || 0))}
-              />
-            </Field>
-            <p className="muted">When enabled, requested date must be at least this many days from submit time.</p>
-            <Field label="Maximum Files per SWR (blank for no count cap)">
-              <Input
-                type="number"
-                min={1}
-                max={100}
-                value={maxAttachmentsPerTicket === null ? '' : String(maxAttachmentsPerTicket)}
-                onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
-              />
-            </Field>
-            <Button disabled={saving} onClick={() => void saveConfig()}>
-              {saving ? 'Saving...' : 'Save Configuration'}
-            </Button>
-          </>
-        ) : null}
-      </div>
-    </Card>
+    <div className="stack">
+      <Card
+        title="Project Request Configuration"
+        description="Manage per-project requester submission and attachment policy."
+      >
+        <div className="stack">
+          {error ? <ErrorBanner message={error} /> : null}
+          {success ? <SuccessBanner message={success} /> : null}
+          {loading ? <p className="muted">Loading project configuration...</p> : null}
+          {!loading ? (
+            <>
+              <label className="row" style={{ alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={leadTimeEnforcementEnabled}
+                  onChange={(event) => setLeadTimeEnforcementEnabled(event.target.checked)}
+                />
+                <span>Enable lead-time enforcement for requester submit</span>
+              </label>
+              <Field label="Lead-Time Days">
+                <Input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={String(leadTimeDays)}
+                  onChange={(event) => setLeadTimeDays(Number(event.target.value || 0))}
+                />
+              </Field>
+              <p className="muted">When enabled, requested date must be at least this many days from submit time.</p>
+              <Field label="Maximum Files per SWR (blank for no count cap)">
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={maxAttachmentsPerTicket === null ? '' : String(maxAttachmentsPerTicket)}
+                  onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
+                />
+              </Field>
+              <Button disabled={saving} onClick={() => void saveConfig()}>
+                {saving ? 'Saving...' : 'Save Configuration'}
+              </Button>
+            </>
+          ) : null}
+        </div>
+      </Card>
+      <SubcontractorAccess projectId={projectId} />
+    </div>
   );
 }
