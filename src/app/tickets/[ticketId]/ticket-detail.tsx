@@ -19,6 +19,8 @@ const typeLabels: Record<string, string> = {
   LAYOUT: 'Field layout', CHECK_OUT: 'Equipment check-out', AS_BUILT: 'As-built survey',
   TOPO: 'Topographic survey', PERMIT: 'Permit survey',
 };
+const cadLabels = { NOT_REQUIRED: 'Not required', NOT_STARTED: 'Not started',
+  IN_PROGRESS: 'In progress', QA_PENDING: 'Awaiting CAD review', COMPLETE: 'Complete' };
 
 export function TicketDetail({ ticketId }: { ticketId: string }) {
   const [ticket, setTicket] = useState<RequestTicket | null>(null);
@@ -56,6 +58,11 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       {ticket.rejectionReason && <section className="notice warning"><h2>Reason for rejection</h2><p className="description">{ticket.rejectionReason}</p></section>}
       {ticket.delayedReason && <section className="notice warning"><h2>Delay information</h2><p className="description">{ticket.delayedReason}</p></section>}
       {ticket.cancelReason && <section className="notice"><h2>Cancellation information</h2><p className="description">{ticket.cancelReason}</p></section>}
+      <section className="panel"><h2>CAD work</h2>
+        {ticket.cad ? <><p>{cadLabels[ticket.cad.status]}</p>
+          {ticket.cad.completedAt && <p>Completed: {new Date(ticket.cad.completedAt).toLocaleString()}</p>}</>
+          : <p>No CAD work record is available for this request.</p>}
+      </section>
       {(ticket.partyChiefName || ticket.instrumentManName || ticket.superintendentName) && <section className="panel"><h2>Assigned crew</h2>
         <dl className="details">{ticket.partyChiefName && <div><dt>Party Chief</dt><dd>{ticket.partyChiefName}</dd></div>}
           {ticket.instrumentManName && <div><dt>Instrument Man</dt><dd>{ticket.instrumentManName}</dd></div>}

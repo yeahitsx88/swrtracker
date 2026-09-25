@@ -20,6 +20,8 @@ import { canReassignSuperintendent } from '@/modules/ticket/application/superint
 import { getFieldActions } from '@/modules/ticket/application/field-actions';
 import { getSurveyCancelActions } from '@/modules/ticket/application/survey-cancel-actions';
 import { getPriorityActions } from '@/modules/ticket/application/priority-actions';
+import { getCadSummary } from '@/modules/ticket/application/cad-summary';
+import { CadSummaryRepository } from '@/modules/ticket/infrastructure/cad-summary.repository';
 import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
 import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
 import { recordApproverTimeoutSignals } from
@@ -56,8 +58,11 @@ export async function GET(
     const fieldActions = await getFieldActions(repo, pool, ticket, ctx.visibility);
     const surveyCancelActions = await getSurveyCancelActions(repo, pool, ticket, ctx.visibility);
     const priorityActions = await getPriorityActions(repo, pool, ticket, ctx.visibility);
+    const cad = await getCadSummary(repo, new CadSummaryRepository(), pool, {
+      tenantId: ctx.tenantId, ticketId: ctx.ticketId, actor: ctx.visibility,
+    });
     return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, reassignment, superintendentReassignment, fieldActions, surveyCancelActions, priorityActions,
-      displayStatus: statusLabel(ticket.status) } });
+      cad, displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);
   }

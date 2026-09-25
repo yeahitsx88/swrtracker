@@ -561,3 +561,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: remaining role surfaces (help flags, CAD and administration) and responsive visual QA; outstanding Slim/Superintendent crew-reassignment browser branches.
 - Production behavior changed: no.
 - Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 35 (CAD status visibility)
+- Intent: expose the existing CAD sub-track record as the foundation for CAD workflow surfaces.
+- Files touched: src/modules/ticket/application/cad-summary.ts, src/modules/ticket/infrastructure/cad-summary.repository.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/ticket-detail.tsx, tests/ticket/cad-summary.test.ts, CODEX.md.
+- Behavior added: authorized ticket details show the recorded CAD status and completion date. The service establishes ticket visibility before querying tenant/ticket-scoped CAD data. Missing legacy records are explicitly displayed; duplicate records raise a conflict instead of selecting an arbitrary result. No CAD mutation rules introduced.
+- Verification: baseline TypeScript and 134 standard tests passed. Final TypeScript, production build and whitespace checks passed; standard suite passed 135 with 30 database skips; PostgreSQL suite passed 163 with 2 dedicated-URL skips. New tests cover visibility before data retrieval, scope propagation, missing/duplicate records, infrastructure errors, and real PostgreSQL tenant/ticket isolation with completion timestamps.
+- Known gap queued for later batches: CAD assignment, status changes and QA sign-off; CAD browser acceptance, remaining role surfaces and responsive visual QA.
+- Production behavior changed: yes (read-only CAD summary).
+- Module boundary deviation: Ticket application/infrastructure and one detail API route plus ticket web/shared response types. No migration. Concurrent sample/configuration changes excluded.
