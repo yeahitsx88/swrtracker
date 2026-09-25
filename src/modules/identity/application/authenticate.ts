@@ -41,12 +41,14 @@ export async function authenticateUser(
   const passwordMatch = await bcrypt.compare(params.password, hashToCompare);
 
   // Reject: user not found, wrong password, or SSO user (passwordHash is null)
-  if (!userWithCreds || !userWithCreds.passwordHash || !passwordMatch) {
+  if (!userWithCreds || !userWithCreds.passwordHash || !passwordMatch ||
+      userWithCreds.deactivatedAt) {
     throw new UnauthorizedError(INVALID_CREDENTIALS);
   }
 
-  const token = signToken(userWithCreds.id, userWithCreds.tenantId);
-  const { passwordHash: _, ...user } = userWithCreds;
+  const token = signToken(userWithCreds.id, userWithCreds.tenantId,
+    userWithCreds.sessionVersion);
+  const { passwordHash: _, sessionVersion: _v, deactivatedAt: _d, ...user } = userWithCreds;
 
   return { user, token };
 }

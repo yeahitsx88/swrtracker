@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
-import { ForbiddenError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
-import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
 import type { ITenancyRepository } from './ports';
 
 export interface AddProjectMemberParams {
@@ -9,7 +9,7 @@ export interface AddProjectMemberParams {
   projectId:  UUID;
   userId:     UUID;
   role:       ProjectRole;
-  actorRole:  ProjectRole | 'TENANT_ADMIN';
+  actorRole:  ProjectRole | TenantRole;
 }
 
 export async function addProjectMember(
@@ -17,12 +17,19 @@ export async function addProjectMember(
   db: DbClient,
   params: AddProjectMemberParams,
 ): Promise<void> {
-  if (params.actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can add project members');
+  if (params.actorRole !== 'TENANT_ADMIN' && params.actorRole !== 'PROJECT_ADMIN') {
+    throw new ForbiddenError('Project configuration administrator required');
+  }
+  const project = await repo.findProjectById(db, params.tenantId, params.projectId);
+  if (!project) throw new NotFoundError('Project not found');
+  if (project.status === 'ARCHIVED') throw new ConflictError('Project is archived');
+  if (params.actorRole === 'PROJECT_ADMIN' && project.status !== 'SETUP') {
+    throw new ForbiddenError('PROJECT_ADMIN may add project members during SETUP only');
   }
 
   await repo.saveMembership(db, {
     id:        randomUUID() as UUID,
+    tenantId:  params.tenantId,
     projectId: params.projectId,
     userId:    params.userId,
     role:      params.role,

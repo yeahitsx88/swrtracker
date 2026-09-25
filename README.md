@@ -33,6 +33,15 @@ pnpm install
 pnpm dev
 ```
 
+Run `pnpm worker:notifications` for email delivery, `pnpm worker:drafts` for
+daily draft expiry, 30-day purge, and attachment cleanup, and
+`pnpm worker:signals` for the 30-minute stuck Party Chief approval scan. Set
+`ATTACHMENT_STORAGE_ROOT` to an absolute persistent volume path before running
+the attachment API or draft worker. Configure `INVITE_BASE_URL` and SMTP
+settings for invitation and ticket email delivery. See `.env.example` for the
+required variables. All workers need `DATABASE_URL` and run as separate
+processes alongside the web app.
+
 ## Architecture
 
 Modular monolith. Single deployable application with strict internal module boundaries.

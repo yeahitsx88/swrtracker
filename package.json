@@ -6,18 +6,31 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "db:migrate": "tsx --env-file=.env db/migrate.ts"
+    "db:migrate": "node --env-file=.env --import tsx db/migrate.ts",
+    "db:bootstrap-admin": "node --import tsx db/bootstrap-admin.ts",
+    "worker:notifications": "node --import tsx src/modules/notification/worker.ts",
+    "worker:drafts": "node --import tsx src/modules/ticket/worker-draft-maintenance.ts",
+    "worker:signals": "node --import tsx src/modules/ticket/worker-timeout-signals.ts",
+    "tsc": "tsc",
+    "test": "node --import tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
-    "next": "^15.1.7",
+    "next": "^15.5.26",
     "pg": "^8.13.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["bcrypt", "esbuild", "sharp"]
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "esbuild",
+      "sharp"
+    ],
+    "overrides": {
+      "postcss": "8.5.28"
+    }
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -26,7 +39,7 @@
     "@types/pg": "^8.11.11",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.3"
   }
 }

@@ -516,7 +516,7 @@ UNIQUE (tenant_id, project_id, email) on priority_whitelist
 - `password_hash` is nullable — do not assume it is always set
 - AOR visibility queries must traverse the node tree downward from the assigned node — a user assigned to a parent node sees all tickets at that node and all descendants
 - `closed_at` timestamp column is removed; `canceled_at` covers all cancellation paths; `completed_at` is the terminal success timestamp
-- Draft tickets are soft-deleted, never hard-deleted — `draft_deleted_at` is set, `draft_deleted_reason` records why
+- Draft tickets are soft-deleted first — `draft_deleted_at` is set and `draft_deleted_reason` records why; the Section 20 daily job permanently deletes drafts after the 30-day recovery window (owner decision, 2026-09-25).
 - All draft queries must filter `draft_deleted_at IS NULL` unless the caller is `PROJECT_ADMIN` performing a recovery operation (draft recovery is PROJECT_ADMIN, not TENANT_ADMIN)
 - `ticket_number` is **not** assigned until `DRAFT → SUBMITTED` transition — drafts have no human-readable number
 - `survey_superintendent_id` on the ticket is a snapshot, not a live FK resolution — it is the Superintendent responsible at assignment time; corrections require Survey Manager manual update
@@ -531,6 +531,7 @@ UNIQUE (tenant_id, project_id, email) on priority_whitelist
 
 ```
 DRAFT
+CREATED
 SUBMITTED
 APPROVED
 REJECTED
@@ -565,7 +566,7 @@ Any active status → SURVEY_CANCELED      (Path C — survey-side, approval cha
 ```
 
 - 48-hour minimum notice enforced at the `DRAFT → SUBMITTED` transition; the clock starts at submit time, not draft creation time
-- DRAFT is only valid in Variant 1 — Variant 2 starts at ASSIGNED (no requester-facing draft step)
+- DRAFT is only valid in Variant 1 — Variant 2 starts at CREATED and awaits crew assignment (no requester-facing draft step)
 - `ticket_number` is assigned at the `DRAFT → SUBMITTED` transition, not at draft creation
 - REJECTED requires rejection_reason before transition completes
 - "Active status" for cancellation purposes means any status except COMPLETED, REQUESTER_CANCELED, FIELD_CANCELED, SURVEY_CANCELED
@@ -588,8 +589,7 @@ Any active status → REQUESTER_CANCELED   (Path A — requester, immediate)
 Any active status → SURVEY_CANCELED      (Path C — survey-side, approval chain applies)
 ```
 
-- No approval gate — auto-proceeds to ASSIGNED immediately
-- Survey Manager assigns crew immediately
+- No approval gate — remains CREATED until the Survey Manager assigns crew
 
 ### Transition Rules
 
@@ -641,8 +641,8 @@ FSS-[NODE_CODE]-[ZERO_PADDED_SEQUENCE]
 Example: FSS-U1-00247
 ```
 - `NODE_CODE` is the `code` slug on the `aor_nodes` table for the node the ticket is filed against
-- Sequence is per-project, increments on every ticket creation regardless of status
-- Assigned at creation and is immutable — rejected and canceled tickets keep their number permanently
+- Sequence is per-project; Standard Approval drafts claim it on `DRAFT → SUBMITTED`, while Direct Assignment tickets claim it at creation
+- Once assigned, the number is immutable — rejected and canceled tickets keep their number permanently
 - Resubmissions after rejection receive a **new number** but carry `parent_ticket_id`
 - The ticket number is what users reference in conversations, emails, and on site
 
@@ -679,7 +679,7 @@ Example: FSS-U1-00247
 
 RBAC is enforced at the **application/use-case layer**, not just the route.
 
-> **Pending Owner Decision:** Role enum rename — `DISCIPLINE_MANAGER` → `DEPARTMENT_MANAGER` and `DISCIPLINE_LEAD` → `DEPARTMENT_LEAD`. Recommendation: rename since the codebase is pre-v1 and no external consumers exist. Requires explicit owner decision before migration.
+> **Owner decision (2026-09-25):** Use `DEPARTMENT_MANAGER` and `DEPARTMENT_LEAD` in the role enum. The prior `DISCIPLINE_*` names are retired.
 
 **Crew Build Configurations:** Three staffing configurations determine which survey hierarchy tiers are present and which workflow gates apply. Set at project creation and stored on `projects.crew_build`. Locked after SETUP → ACTIVE.
 
@@ -931,6 +931,7 @@ Log at every meaningful state transition. Structured format only.
 - `approver.timeout_warning_sent` (18-hour nudge sent to Survey Manager; ticket_id, hours_elapsed in payload)
 - `approver.timeout_unlocked` (24-hour escalation sent to Survey Manager; ticket_id, hours_elapsed in payload)
 - `ticket.priority_downgrade_confirmed` (SURVEY_MANAGER lowered a HIGH ticket; confirmation recorded; reason required)
+- `ticket.priority_lowered` (SURVEY_MANAGER lowered a non-HIGH ticket; reason recorded)
 
 *CAD sub-track*
 - `cad.status_changed` (any cad_status transition, actor recorded)
@@ -977,6 +978,7 @@ Log at every meaningful state transition. Structured format only.
 - `ticket.pc_approval_stuck` (background job detected 4+ hours in PENDING_PC_APPROVAL)
 
 *Acting grants and vacancy*
+- `acting_designee.changed` (project_id, role, previous_user_id, designated_user_id, actor_id)
 - `acting_grant.issued` (user_id, role, trigger, cascade_level, scope)
 - `acting_grant.confirmed` (confirmed_by, acting_user_id)
 - `acting_grant.overridden` (overridden_by, replacement_user_id)
@@ -1119,9 +1121,9 @@ If a task touches any of the above, stop and confirm with the project owner befo
 - Migration replacing `areas`/`subareas`/`area_memberships` with `aor_levels`/`aor_nodes`/`aor_assignments`
 - `SURVEY_LEAD` → `SURVEY_MANAGER` rename in role enum and all use-cases
 - `is_priority` boolean → `priority` enum column on tickets
-- Full status enum updated to include: `PENDING_PC_APPROVAL`, `DELAYED`, `REQUESTER_CANCELED`, `FIELD_CANCELED`, `SURVEY_CANCELED`; remove `CLOSED` and `CANCEL_REQUESTED`/`CANCEL_APPROVED`/`CANCEL_REJECTED`
+- Full status enum updated to include: `CREATED` (Direct Assignment before crew assignment), `PENDING_PC_APPROVAL`, `DELAYED`, `REQUESTER_CANCELED`, `FIELD_CANCELED`, `SURVEY_CANCELED`; remove `CLOSED` and `CANCEL_REQUESTED`/`CANCEL_APPROVED`/`CANCEL_REJECTED`. The CREATED choice was confirmed by the owner on 2026-09-25.
 - `SURVEY_SUPERINTENDENT`, `DEPARTMENT_MANAGER`, `DEPARTMENT_LEAD`, `SUBCONTRACTS_COORDINATOR`, `PROJECT_ADMIN` added to role enum (visibility scoping logic can land in Phase 3)
-- **Pending owner decision before Phase 2 migration:** role enum rename `DISCIPLINE_MANAGER` → `DEPARTMENT_MANAGER` and `DISCIPLINE_LEAD` → `DEPARTMENT_LEAD` (see §7 note)
+- Role enum names `DEPARTMENT_MANAGER` and `DEPARTMENT_LEAD` were confirmed by the owner on 2026-09-25 (see §7 note)
 - `departments`, `department_memberships`, `department_titles` tables added in Phase 2 migration (replaces discipline system entirely — single batch migration)
 - `acting_grants` and `project_templates` tables added in Phase 2 migration
 - `APPROVER` role enum value removed
@@ -1277,7 +1279,7 @@ The `project.activated` audit event includes `readiness_check_results` (summary 
 | 10 | Project Admin / Survey Manager | Configures acting designees | Step 8 complete |
 | 11 | TENANT_ADMIN or Project Admin | Activates project (readiness gate runs) | All hard requirements met |
 
-**Note:** During SETUP, PROJECT_ADMIN may exercise TENANT_ADMIN setup functions for that project (template selection, domain configuration, user invitations). This elevated authority expires when the project transitions to ACTIVE.
+**Note:** During SETUP, PROJECT_ADMIN may exercise project-scoped setup functions (template selection and user invitations). Tenant-wide allowed-domain configuration remains TENANT_ADMIN-only, as confirmed by the owner on 2026-09-25; a project admin cannot change a domain that authorizes tenant-wide self-registration. The SETUP delegation expires when the project transitions to ACTIVE.
 
 ### Resubmission Flow (Rejected Tickets)
 

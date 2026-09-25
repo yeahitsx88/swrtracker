@@ -14,5 +14,6 @@ export interface Attachment {
   /** Key in object storage — never a public URL. */
   storageKey: string;
   sizeBytes: number;
+  ticketStatusAtUpload: string;
   createdAt: Date;
 }

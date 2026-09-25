@@ -9,8 +9,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { NotFoundError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { pool } from '@/lib/db';
-import { getTicketRouteContext } from '@/lib/ticket-route-helpers';
+import { getTicketReadContext } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { statusLabel } from '@/modules/ticket/domain/status-label';
+import { recordApproverTimeoutSignals } from
+  '@/modules/ticket/infrastructure/timeout-signal.repository';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,13 +23,17 @@ export async function GET(
 ) {
   try {
     const { ticketId } = await params;
-    const ctx  = await getTicketRouteContext(req, ticketId);
+    const ctx  = await getTicketReadContext(req, ticketId);
     const repo = new TicketRepository();
 
     const ticket = await repo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
     if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
+    if (ticket.status === 'SUBMITTED') {
+      await recordApproverTimeoutSignals(pool, ctx.tenantId, [ticket.id]);
+    }
 
-    return NextResponse.json({ ticket });
+    return NextResponse.json({ ticket: { ...ticket,
+      displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);
   }

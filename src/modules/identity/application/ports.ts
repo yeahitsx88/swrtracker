@@ -13,6 +13,8 @@ export interface IUserRepository {
   findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null>;
   findById(db: DbClient, tenantId: UUID, userId: UUID): Promise<User | null>;
   /** Checks whether an email's domain is in the allowed_domains table for this tenant. */
-  isDomainAllowed(db: DbClient, tenantId: UUID, email: string): Promise<boolean>;
+  isDomainAllowed(db: DbClient, tenantId: UUID, companyId: UUID, email: string): Promise<boolean>;
+  /** Bind a self-registrant's selected company to the same tenant. */
+  isCompanyInTenant(db: DbClient, tenantId: UUID, companyId: UUID): Promise<boolean>;
   save(db: DbClient, user: UserWithCredentials): Promise<void>;
 }

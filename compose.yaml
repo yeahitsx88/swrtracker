@@ -1,0 +1,30 @@
+x-app: &app
+  image: swrtracker:phase2
+  build: .
+  env_file: .env
+
+services:
+  web:
+    <<: *app
+    command: ["pnpm", "start"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - attachments:/app/attachments
+
+  notifications:
+    <<: *app
+    command: ["pnpm", "worker:notifications"]
+
+  drafts:
+    <<: *app
+    command: ["pnpm", "worker:drafts"]
+    volumes:
+      - attachments:/app/attachments
+
+  signals:
+    <<: *app
+    command: ["pnpm", "worker:signals"]
+
+volumes:
+  attachments:

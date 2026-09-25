@@ -1,9 +1,9 @@
 /**
  * RejectTicket — SUBMITTED → REJECTED.
  * Requires a written rejection reason before the transition completes.
- * Permitted actor: APPROVER.
+ * Permitted actor: SURVEY_MANAGER.
  */
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
@@ -30,9 +30,16 @@ export async function rejectTicket(
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['APPROVER'],
+    permittedRoles: ['SURVEY_MANAGER'],
+    authorizeTicket: (ticket) => {
+      if (ticket.requesterId === params.actorId ||
+          ticket.surveyLeadId === params.actorId ||
+          ticket.surveyManagerId === params.actorId) {
+        throw new ForbiddenError('Cannot reject your own ticket');
+      }
+    },
     to:             'REJECTED',
-    patch:          { rejectionReason: params.rejectionReason },
+    patch:          { rejectionReason: params.rejectionReason, rejectedAt: new Date() },
     eventType:      'ticket.rejected',
     eventPayload:   { rejectionReason: params.rejectionReason },
   });

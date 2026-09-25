@@ -3,7 +3,7 @@
  * Implemented by infrastructure/ticket.repository.ts.
  */
 import type { DbClient, UUID, Page } from '@/shared/types';
-import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
 import type { Ticket, TicketStatus } from '../domain/types';
 
 export interface TicketStatusPatch {
@@ -14,11 +14,36 @@ export interface TicketStatusPatch {
   startedAt?:               Date | null;
   completedAt?:             Date | null;
   closedAt?:                Date | null;
+  canceledAt?:              Date | null;
   rejectionReason?:         string | null;
+  rejectedAt?:              Date | null;
   assignedPartyChiefId?:    UUID | null;
   assignedInstrumentManId?: UUID | null;
   surveyLeadId?:            UUID | null;
-  isPriority?:              boolean;
+  surveySuperintendentId?:  UUID | null;
+  surveyManagerId?:         UUID | null;
+  pendingFieldStatus?:      Ticket['pendingFieldStatus'];
+  pendingFieldReason?:      string | null;
+  pendingFieldInitiatedBy?: UUID | null;
+  delayedReason?:           string | null;
+  cancelReason?:            string | null;
+  cancelInitiatedBy?:       UUID | null;
+  cancelInitiatedAt?:       Date | null;
+  cancelInitiatorRole?:     string | null;
+  cancelApprovedBy?:       UUID | null;
+  priority?:                Ticket['priority'];
+  prioritySetBy?:           UUID | null;
+  prioritySetReason?:       string | null;
+  departmentId?:           UUID | null;
+  ticketNumber?:           string | null;
+  ticketType?:             Ticket['ticketType'];
+  aorNodeId?:              UUID | null;
+  craft?:                  string | null;
+  description?:            string | null;
+  requestedDate?:          Date | null;
+  draftLastSavedAt?:       Date | null;
+  draftDeletedAt?:         Date | null;
+  draftDeletedReason?:     Ticket['draftDeletedReason'];
   priorityElevatedBy?:      UUID | null;
   priorityElevatedReason?:  string | null;
 }
@@ -29,11 +54,12 @@ export interface TicketStatusPatch {
  */
 export interface VisibilityScope {
   actorId:   UUID;
-  actorRole: ProjectRole;
+  actorRole: ProjectRole | TenantRole;
   /** The actor's company_id — used for SUBCONTRACTOR isolation on top of role scoping. */
   companyId: UUID;
-  /** Area IDs the actor may see — only required/used for AREA_VIEWER role. */
-  areaIds?:  UUID[];
+  companyType: 'GC' | 'SUBCONTRACTOR' | 'OWNER_REP';
+  /** Assigned AOR nodes and descendants for AOR-scoped roles. */
+  aorNodeIds?: UUID[];
   /**
    * The Party Chief ID the actor reports to — required for INSTRUMENT_MAN role
    * so the repository can filter to that Party Chief's tickets.
@@ -49,6 +75,14 @@ export interface ListTicketsOptions {
 }
 
 export interface ITicketRepository {
+  /** Return the build only for an active project in this tenant. */
+  findActiveProjectCrewBuild(db: DbClient, tenantId: UUID, projectId: UUID):
+    Promise<'FULL' | 'MEDIUM' | 'SLIM' | null>;
+  /** Validate that an assignee has the required role on this tenant's project. */
+  isProjectAssignee(
+    db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID,
+    role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN',
+  ): Promise<boolean>;
   /** Returns null if ticket doesn't exist or actor cannot see it under visibility rules. */
   findById(db: DbClient, tenantId: UUID, ticketId: UUID, visibility: VisibilityScope): Promise<Ticket | null>;
 
@@ -72,8 +106,26 @@ export interface ITicketRepository {
    */
   nextSequence(db: DbClient, projectId: UUID): Promise<number>;
 
-  /** Fetch the area code string for ticket number generation. */
-  findAreaCode(db: DbClient, tenantId: UUID, areaId: UUID): Promise<string | null>;
+  /** Validate all creation relationships and return the AOR code for numbering. */
+  findCreationAorCode(db: DbClient, params: {
+    tenantId: UUID; projectId: UUID; aorNodeId: UUID;
+    companyId: UUID; requesterId: UUID;
+    allowRetired?: boolean;
+  }): Promise<string | null>;
+  findRejectedParent(db: DbClient, tenantId: UUID, projectId: UUID,
+    requesterId: UUID, parentTicketId: UUID): Promise<Ticket | null>;
+  isDraftOwnerAllowed(db: DbClient, tenantId: UUID, projectId: UUID,
+    requesterId: UUID, companyId: UUID): Promise<boolean>;
+  listDrafts(db: DbClient, tenantId: UUID, requesterId: UUID,
+    limit: number, offset: number): Promise<Page<Ticket>>;
+  listDeletedDrafts(db: DbClient, tenantId: UUID, projectId: UUID,
+    actorId: UUID, limit: number, offset: number): Promise<Page<Ticket>>;
+  findStaleDraftsForExpiry(db: DbClient, tenantId: UUID, limit: number): Promise<Ticket[]>;
+  findDraftsForPurge(db: DbClient, tenantId: UUID, limit: number): Promise<Ticket[]>;
+  purgeDraft(db: DbClient, tenantId: UUID, ticketId: UUID): Promise<void>;
+  resolveCreationDepartment(db: DbClient, params: {
+    tenantId: UUID; projectId: UUID; requesterId: UUID; selectedDepartmentId?: UUID;
+  }): Promise<{ departmentId: UUID; priority: Ticket['priority'] } | null>;
 
   /** Patch ticket status + associated timestamp / field changes. */
   patchTicket(db: DbClient, tenantId: UUID, ticketId: UUID, patch: TicketStatusPatch): Promise<void>;
@@ -84,7 +136,7 @@ export interface ITicketRepository {
   /** Look up the company_id and company type for a user (for visibility scoping). */
   findUserCompanyInfo(
     db: DbClient, tenantId: UUID, userId: UUID,
-  ): Promise<{ companyId: UUID; companyType: string } | null>;
+  ): Promise<{ companyId: UUID; companyType: 'GC' | 'SUBCONTRACTOR' | 'OWNER_REP' } | null>;
 
   /** Look up the email of a user (for whitelist check at ticket creation). */
   findUserEmail(db: DbClient, tenantId: UUID, userId: UUID): Promise<string | null>;
@@ -98,10 +150,15 @@ export interface ITicketRepository {
   ): Promise<UUID | null>;
 
   /**
-   * Find all area IDs assigned to a user via area_memberships.
-   * Used for AREA_VIEWER visibility scoping.
+   * Find assigned AOR nodes and descendants for an AOR-scoped user.
    */
-  findAreaIdsForUser(
-    db: DbClient, projectId: UUID, userId: UUID,
+  findAorNodeIdsForUser(
+    db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID,
   ): Promise<UUID[]>;
+  /** Include retired ticket nodes when checking an active survey role's AOR. */
+  isAorNodeInSurveyRoleScope(db: DbClient, tenantId: UUID,
+    projectId: UUID, userId: UUID, aorNodeId: UUID,
+    role: 'SURVEY_SUPERINTENDENT' | 'PARTY_CHIEF'): Promise<boolean>;
+  findResponsibleSuperintendent(db: DbClient, tenantId: UUID, projectId: UUID,
+    aorNodeId: UUID): Promise<UUID | null>;
 }

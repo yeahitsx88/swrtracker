@@ -2,17 +2,15 @@
  * POST /api/tickets/[ticketId]/assign
  *
  * APPROVED → ASSIGNED (Variant 1) | CREATED → ASSIGNED (Variant 2).
- * Permitted actor: SURVEY_LEAD.
- * assignedPartyChiefId is required; assignedInstrumentManId is optional.
+ * Survey Manager or AOR-scoped Superintendent may assign. Crew shape follows project build.
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { pool } from '@/lib/db';
+import { parseUuid } from '@/lib/parse-uuid';
 import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { assignTicket } from '@/modules/ticket/application/assign-ticket';
-import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,13 +24,24 @@ export async function POST(
     const body = await req.json() as unknown;
     const b    = body as Record<string, unknown>;
 
-    if (!body || typeof body !== 'object' || typeof b.assignedPartyChiefId !== 'string') {
-      throw new ValidationError('assignedPartyChiefId is required');
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      throw new ValidationError('Assignment body is required');
     }
+    if (b.assignedPartyChiefId !== undefined && b.assignedPartyChiefId !== null &&
+        typeof b.assignedPartyChiefId !== 'string') {
+      throw new ValidationError('assignedPartyChiefId must be a UUID');
+    }
+    if (b.assignedInstrumentManId !== undefined && b.assignedInstrumentManId !== null &&
+        typeof b.assignedInstrumentManId !== 'string') {
+      throw new ValidationError('assignedInstrumentManId must be a UUID');
+    }
+
+    const assignedPartyChiefId = typeof b.assignedPartyChiefId === 'string'
+      ? parseUuid(b.assignedPartyChiefId, 'assignedPartyChiefId') : null;
 
     const assignedInstrumentManId =
       typeof b.assignedInstrumentManId === 'string'
-        ? b.assignedInstrumentManId as UUID
+        ? parseUuid(b.assignedInstrumentManId, 'assignedInstrumentManId')
         : null;
 
     const repo   = new TicketRepository();
@@ -42,9 +51,8 @@ export async function POST(
         ticketId:                ctx.ticketId,
         actorId:                 ctx.actorId,
         actorRole:               ctx.actorRole,
-        assignedPartyChiefId:    b.assignedPartyChiefId as UUID,
+        assignedPartyChiefId,
         assignedInstrumentManId,
-        surveyLeadId:            ctx.actorId,
       }),
     );
 

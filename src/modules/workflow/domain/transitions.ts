@@ -20,11 +20,12 @@ export type TicketStatus =
   | 'CREATED'            // Variant 2 only — equivalent of submitted
   | 'ASSIGNED'           // Both variants — crew assigned
   | 'IN_PROGRESS'        // Both variants — work underway
-  | 'COMPLETED'          // Both variants — work done; awaiting Survey Lead close-out
-  | 'CLOSED'             // Both variants — terminal state; performed by SURVEY_LEAD
-  | 'CANCEL_REQUESTED'   // Both variants — cancellation initiated
-  | 'CANCEL_APPROVED'    // Both variants — cancellation confirmed
-  | 'CANCEL_REJECTED';   // Both variants — cancellation denied
+  | 'PENDING_PC_APPROVAL' // Instrument Man report awaiting field lead approval
+  | 'DELAYED'
+  | 'FIELD_CANCELED'
+  | 'COMPLETED'          // Both variants — terminal success state
+  | 'REQUESTER_CANCELED' // Requester self-cancellation (current Path A)
+  | 'SURVEY_CANCELED';   // Survey-side cancellation (current Path C)
 
 // ---------------------------------------------------------------------------
 // Permitted transitions per variant
@@ -32,39 +33,36 @@ export type TicketStatus =
 
 /**
  * Variant 1 — Standard Approval
- * DRAFT → SUBMITTED → APPROVED → ASSIGNED → IN_PROGRESS → COMPLETED → CLOSED
- *                   ↘ REJECTED
- * ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
- *                                         → CANCEL_REJECTED
- * REJECTED → APPROVED  (APPROVER only — rejection_overridden; handled at application layer)
- * COMPLETED → CLOSED   (SURVEY_LEAD only — enforced at application layer)
+ * DRAFT → SUBMITTED → APPROVED → ASSIGNED → IN_PROGRESS
+ *                   ↘ REJECTED                         → PENDING_PC_APPROVAL → COMPLETED
+ * REJECTED → APPROVED is restricted to SURVEY_MANAGER in the use case.
+ * Active tickets may be requester-canceled.
  */
 const STANDARD_APPROVAL_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
     ['DRAFT',            new Set<TicketStatus>(['SUBMITTED'])],
-    ['SUBMITTED',        new Set<TicketStatus>(['APPROVED', 'REJECTED'])],
-    ['APPROVED',         new Set<TicketStatus>(['ASSIGNED'])],
-    ['REJECTED',         new Set<TicketStatus>(['APPROVED'])],  // rejection_overridden path
-    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'CANCEL_REQUESTED'])],
-    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'CANCEL_REQUESTED'])],
-    ['COMPLETED',        new Set<TicketStatus>(['CLOSED'])],
-    ['CANCEL_REQUESTED', new Set<TicketStatus>(['CANCEL_APPROVED', 'CANCEL_REJECTED'])],
+    ['SUBMITTED',        new Set<TicketStatus>(['APPROVED', 'REJECTED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['APPROVED',         new Set<TicketStatus>(['ASSIGNED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['REJECTED',         new Set<TicketStatus>(['APPROVED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['IN_PROGRESS',      new Set<TicketStatus>(['PENDING_PC_APPROVAL', 'COMPLETED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['PENDING_PC_APPROVAL', new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'FIELD_CANCELED', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['DELAYED',          new Set<TicketStatus>(['IN_PROGRESS', 'PENDING_PC_APPROVAL', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
   ]);
 
 /**
  * Variant 2 — Direct Assignment
- * CREATED → ASSIGNED → IN_PROGRESS → COMPLETED → CLOSED
- * ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
- *                                         → CANCEL_REJECTED
- * COMPLETED → CLOSED   (SURVEY_LEAD only — enforced at application layer)
+ * CREATED → ASSIGNED → IN_PROGRESS → PENDING_PC_APPROVAL → COMPLETED
+ * Active tickets may be requester-canceled. Direct completion from IN_PROGRESS
+ * is permitted only when no Instrument Man is assigned, enforced by the use case.
  */
 const DIRECT_ASSIGNMENT_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
-    ['CREATED',          new Set<TicketStatus>(['ASSIGNED'])],
-    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'CANCEL_REQUESTED'])],
-    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'CANCEL_REQUESTED'])],
-    ['COMPLETED',        new Set<TicketStatus>(['CLOSED'])],
-    ['CANCEL_REQUESTED', new Set<TicketStatus>(['CANCEL_APPROVED', 'CANCEL_REJECTED'])],
+    ['CREATED',          new Set<TicketStatus>(['ASSIGNED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['IN_PROGRESS',      new Set<TicketStatus>(['PENDING_PC_APPROVAL', 'COMPLETED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['PENDING_PC_APPROVAL', new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'FIELD_CANCELED', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['DELAYED',          new Set<TicketStatus>(['IN_PROGRESS', 'PENDING_PC_APPROVAL', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
   ]);
 
 // ---------------------------------------------------------------------------

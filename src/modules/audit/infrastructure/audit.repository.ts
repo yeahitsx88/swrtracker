@@ -34,3 +34,15 @@ export async function appendAuditEvent(
     ],
   );
 }
+
+export async function appendSystemAuditEvent(db: DbClient, event: {
+  ticketId: UUID; tenantId: UUID; eventType: AuditEventType;
+  payload: Record<string, unknown>;
+}): Promise<void> {
+  await db.query(
+    `INSERT INTO ticket_events (id,ticket_id,tenant_id,actor_id,event_type,payload,created_at)
+     VALUES ($1,$2,$3,NULL,$4,$5,NOW())`,
+    [randomUUID() as UUID, event.ticketId, event.tenantId,
+      event.eventType, JSON.stringify(event.payload)],
+  );
+}

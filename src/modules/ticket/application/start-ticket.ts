@@ -1,12 +1,14 @@
 /**
  * StartTicket — ASSIGNED → IN_PROGRESS.
- * Permitted actors: PARTY_CHIEF, INSTRUMENT_MAN, SURVEY_LEAD.
+ * Assigned Party Chief or Instrument Man, or project Survey Manager. Slim Build
+ * tickets have no Party Chief, so the assigned Instrument Man starts work.
  * Requester is notified on this event (CLAUDE.md §9).
  */
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository } from './ports';
+import { ForbiddenError } from '@/shared/errors';
 import { performTransition } from './shared';
 
 export async function startTicket(
@@ -24,7 +26,13 @@ export async function startTicket(
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_LEAD'],
+    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_MANAGER'],
+    authorizeTicket: (ticket) => {
+      if (params.actorRole === 'PARTY_CHIEF' && ticket.assignedPartyChiefId !== params.actorId ||
+          params.actorRole === 'INSTRUMENT_MAN' && ticket.assignedInstrumentManId !== params.actorId) {
+        throw new ForbiddenError('You are not assigned to this ticket');
+      }
+    },
     to:             'IN_PROGRESS',
     patch:          { startedAt: new Date() },
     eventType:      'ticket.in_progress',

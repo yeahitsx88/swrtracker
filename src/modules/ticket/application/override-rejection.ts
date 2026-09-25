@@ -1,10 +1,10 @@
 /**
  * OverrideRejection — REJECTED → APPROVED (CLAUDE.md §6 Permitted Non-Standard Transition).
- * Available to APPROVER role only.
+ * Available to SURVEY_MANAGER role only.
  * Covers the case where a requester contacts an Approver directly after rejection.
  * A written reason is required. Logged as ticket.rejection_overridden.
  */
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
@@ -31,7 +31,14 @@ export async function overrideRejection(
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['APPROVER'],
+    permittedRoles: ['SURVEY_MANAGER'],
+    authorizeTicket: (ticket) => {
+      if (ticket.requesterId === params.actorId ||
+          ticket.surveyLeadId === params.actorId ||
+          ticket.surveyManagerId === params.actorId) {
+        throw new ForbiddenError('Cannot approve your own ticket');
+      }
+    },
     to:             'APPROVED',
     patch:          { approvedAt: new Date(), rejectionReason: null },
     eventType:      'ticket.rejection_overridden',

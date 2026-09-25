@@ -18,6 +18,8 @@ interface DbRow {
   auth_method: string;
   name: string;
   created_at: Date;
+  session_version: number;
+  deactivated_at: Date | null;
 }
 
 function rowToUserWithCreds(row: DbRow): UserWithCredentials {
@@ -29,6 +31,8 @@ function rowToUserWithCreds(row: DbRow): UserWithCredentials {
     name:         row.name,
     authMethod:   row.auth_method as AuthMethod,
     passwordHash: row.password_hash,
+    sessionVersion: row.session_version,
+    deactivatedAt: row.deactivated_at,
     createdAt:    row.created_at,
   };
 }
@@ -48,9 +52,10 @@ function rowToUser(row: DbRow): User {
 export class UserRepository implements IUserRepository {
   async findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null> {
     const { rows } = await db.query<DbRow>(
-      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, created_at
+      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name,
+         created_at, session_version, deactivated_at
        FROM users
-       WHERE tenant_id = $1 AND email = $2
+       WHERE tenant_id = $1 AND LOWER(email) = LOWER($2)
        LIMIT 1`,
       [tenantId, email],
     );
@@ -59,7 +64,8 @@ export class UserRepository implements IUserRepository {
 
   async findById(db: DbClient, tenantId: UUID, userId: UUID): Promise<User | null> {
     const { rows } = await db.query<DbRow>(
-      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, created_at
+      `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name,
+         created_at, session_version, deactivated_at
        FROM users
        WHERE tenant_id = $1 AND id = $2
        LIMIT 1`,
@@ -72,16 +78,24 @@ export class UserRepository implements IUserRepository {
    * Returns true if the domain part of `email` matches a row in allowed_domains
    * for this tenant. Case-insensitive match against the stored domain.
    */
-  async isDomainAllowed(db: DbClient, tenantId: UUID, email: string): Promise<boolean> {
+  async isDomainAllowed(db: DbClient, tenantId: UUID, companyId: UUID, email: string): Promise<boolean> {
     const domain = email.split('@')[1]?.toLowerCase() ?? '';
     if (!domain) return false;
 
     const { rows } = await db.query<{ exists: boolean }>(
       `SELECT EXISTS (
          SELECT 1 FROM allowed_domains
-         WHERE tenant_id = $1 AND LOWER(domain) = $2
+         WHERE tenant_id = $1 AND company_id = $2 AND LOWER(domain) = $3
        ) AS exists`,
-      [tenantId, domain],
+      [tenantId, companyId, domain],
+    );
+    return rows[0]?.exists === true;
+  }
+
+  async isCompanyInTenant(db: DbClient, tenantId: UUID, companyId: UUID): Promise<boolean> {
+    const { rows } = await db.query<{ exists: boolean }>(
+      `SELECT EXISTS (SELECT 1 FROM companies WHERE tenant_id = $1 AND id = $2) AS exists`,
+      [tenantId, companyId],
     );
     return rows[0]?.exists === true;
   }

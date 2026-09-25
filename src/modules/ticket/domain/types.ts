@@ -14,34 +14,54 @@ export interface Ticket {
   id: UUID;
   tenantId: UUID;
   projectId: UUID;
-  areaId: UUID;
-  subareaId: UUID;
+  areaId: UUID | null;
+  subareaId: UUID | null;
+  aorNodeId: UUID | null;
+  departmentId: UUID | null;
   companyId: UUID;
-  /** Human-readable number, e.g. FSS-U1-00247. Immutable after creation. */
-  ticketNumber: string;
-  ticketType: TicketType;
+  /** Assigned at DRAFT → SUBMITTED or direct-ticket creation; immutable thereafter. */
+  ticketNumber: string | null;
+  ticketType: TicketType | null;
   requesterId: UUID;
   /** Required — one Party Chief per ticket. */
   assignedPartyChiefId: UUID | null;
   /** Optional — Survey Lead may explicitly assign any Instrument Man in the project. */
   assignedInstrumentManId: UUID | null;
   surveyLeadId: UUID | null;
+  surveySuperintendentId: UUID | null;
+  surveyManagerId: UUID | null;
   workflowVariant: WorkflowVariant;
   status: TicketStatus;
-  craft: string;
-  description: string;
-  requestedDate: Date;
+  craft: string | null;
+  description: string | null;
+  requestedDate: Date | null;
+  draftLastSavedAt: Date | null;
+  draftDeletedAt: Date | null;
+  draftDeletedReason: 'REQUESTER_DELETED' | 'USER_DEACTIVATED' | 'AUTO_EXPIRED' | null;
   submittedAt: Date | null;
   approvedAt: Date | null;
   assignedAt: Date | null;
   startedAt: Date | null;
   completedAt: Date | null;
   closedAt: Date | null;
+  canceledAt: Date | null;
+  pendingFieldStatus: 'COMPLETED' | 'DELAYED' | 'FIELD_CANCELED' | null;
+  pendingFieldReason: string | null;
+  pendingFieldInitiatedBy: UUID | null;
+  delayedReason: string | null;
+  cancelReason: string | null;
+  cancelInitiatedBy: UUID | null;
+  cancelInitiatedAt: Date | null;
+  cancelInitiatorRole: string | null;
+  cancelApprovedBy: UUID | null;
   /** Required when status is REJECTED. */
   rejectionReason: string | null;
+  rejectedAt: Date | null;
   /** Set on resubmission after rejection — links to the rejected ticket. */
   parentTicketId: UUID | null;
-  isPriority: boolean;
+  priority: 'HIGH' | 'MED_HIGH' | 'MEDIUM' | 'NORMAL';
+  prioritySetBy: UUID | null;
+  prioritySetReason: string | null;
   /** Set only on Path B manual elevation. */
   priorityElevatedBy: UUID | null;
   /** Required when priorityElevatedBy is set. */

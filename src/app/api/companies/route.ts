@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth } from '@/lib/auth';
+import { requireTenantAdmin } from '@/lib/get-tenant-role';
 import { pool } from '@/lib/db';
 import { createCompany } from '@/modules/tenancy/application/create-company';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
@@ -17,7 +18,7 @@ const VALID_TYPES: CompanyType[] = ['GC', 'SUBCONTRACTOR', 'OWNER_REP'];
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const body = await req.json() as unknown;
 
     if (!body || typeof body !== 'object' ||
@@ -28,8 +29,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, type } = body as { name: string; type: CompanyType };
+    const actorRole = await requireTenantAdmin(pool, auth.tenantId, auth.userId);
     const repo = new TenancyRepository();
-    const company = await createCompany(repo, pool, { tenantId: auth.tenantId, name, type });
+    const company = await createCompany(repo, pool, { tenantId: auth.tenantId, name, type, actorRole });
     return NextResponse.json({ company }, { status: 201 });
   } catch (err) {
     return errorResponse(err);

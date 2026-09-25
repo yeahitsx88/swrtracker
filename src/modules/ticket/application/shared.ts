@@ -4,7 +4,7 @@
  * it calls assertValidTransition, patches the DB, and logs the audit event
  * atomically within the caller's transaction.
  */
-import { ForbiddenError, NotFoundError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import { assertValidTransition } from '@/modules/workflow/domain/transitions';
 import { appendAuditEvent } from '@/modules/audit/application/index';
 import type { DbClient, UUID } from '@/shared/types';
@@ -37,6 +37,8 @@ export async function performTransition(
     patch:          Omit<TicketStatusPatch, 'status'>;
     eventType:      AuditEventType;
     eventPayload?:  Record<string, unknown>;
+    additionalEventType?: AuditEventType;
+    authorizeTicket?: (ticket: Ticket) => void;
   },
 ): Promise<Ticket> {
   const { tenantId, ticketId, actorId, actorRole, permittedRoles, to, patch, eventType } = options;
@@ -45,7 +47,11 @@ export async function performTransition(
   if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
 
   assertActorHasRole(actorRole, permittedRoles);
+  options.authorizeTicket?.(ticket);
   assertValidTransition(ticket.workflowVariant, ticket.status, to);
+  if (!(await repo.findActiveProjectCrewBuild(db, tenantId, ticket.projectId))) {
+    throw new ConflictError('Ticket project is not active');
+  }
 
   await repo.patchTicket(db, tenantId, ticketId, { ...patch, status: to });
   await appendAuditEvent(db, {
@@ -55,6 +61,13 @@ export async function performTransition(
     eventType,
     payload: options.eventPayload ?? {},
   });
+  if (options.additionalEventType) {
+    await appendAuditEvent(db, {
+      ticketId, tenantId, actorId,
+      eventType: options.additionalEventType,
+      payload: options.eventPayload ?? {},
+    });
+  }
 
   // Return ticket with updated status applied
   return { ...ticket, ...patch, status: to, updatedAt: new Date() };

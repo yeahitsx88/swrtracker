@@ -8,9 +8,10 @@
  * because it must coordinate across Identity, Ticket, and Tenancy modules.
  */
 import type { DbClient, UUID } from '@/shared/types';
-import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { ForbiddenError } from '@/shared/errors';
 
 const repo = new TicketRepository();
 
@@ -28,12 +29,16 @@ export async function resolveVisibility(
   tenantId: UUID,
   projectId: UUID,
   actorId: UUID,
-  actorRole: ProjectRole,
+  actorRole: ProjectRole | TenantRole,
 ): Promise<VisibilityScope> {
   const companyInfo = await repo.findUserCompanyInfo(db, tenantId, actorId);
-  const companyId = (companyInfo?.companyId ?? '') as UUID;
+  if (!companyInfo) throw new ForbiddenError('User company is not valid for this tenant');
 
-  const scope: VisibilityScope = { actorId, actorRole, companyId };
+  const scope: VisibilityScope = {
+    actorId, actorRole,
+    companyId: companyInfo.companyId,
+    companyType: companyInfo.companyType,
+  };
 
   if (actorRole === 'INSTRUMENT_MAN') {
     const partyChiefId = await repo.findPartyChiefForInstrumentMan(
@@ -42,9 +47,11 @@ export async function resolveVisibility(
     scope.partyChiefId = partyChiefId ?? undefined;
   }
 
-  if (actorRole === 'AREA_VIEWER') {
-    const areaIds = await repo.findAreaIdsForUser(db, projectId, actorId);
-    scope.areaIds = areaIds;
+  if (actorRole === 'AREA_VIEWER' || actorRole === 'SURVEY_SUPERINTENDENT' ||
+      actorRole === 'DEPARTMENT_LEAD') {
+    scope.aorNodeIds = await repo.findAorNodeIdsForUser(
+      db, tenantId, projectId, actorId,
+    );
   }
 
   return scope;

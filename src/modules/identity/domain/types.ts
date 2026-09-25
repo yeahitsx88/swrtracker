@@ -7,15 +7,19 @@ import type { UUID } from '@/shared/types';
 export type TenantRole = 'TENANT_ADMIN' | 'BILLING_VIEWER';
 
 export type ProjectRole =
+  | 'PROJECT_ADMIN'
   | 'REQUESTER'
-  | 'APPROVER'
-  | 'SURVEY_LEAD'
+  | 'SURVEY_MANAGER'
+  | 'SURVEY_SUPERINTENDENT'
   | 'PARTY_CHIEF'
   | 'INSTRUMENT_MAN'
   | 'CAD_TECHNICIAN'
   | 'CAD_LEAD'
   | 'VIEWER'
-  | 'AREA_VIEWER';
+  | 'AREA_VIEWER'
+  | 'DEPARTMENT_MANAGER'
+  | 'DEPARTMENT_LEAD'
+  | 'SUBCONTRACTS_COORDINATOR';
 
 export type Role = TenantRole | ProjectRole;
 
@@ -35,6 +39,8 @@ export interface User {
 export interface UserWithCredentials extends User {
   /** Nullable — null for SSO users. */
   passwordHash: string | null;
+  sessionVersion: number;
+  deactivatedAt: Date | null;
 }
 
 export interface ProjectMembership {

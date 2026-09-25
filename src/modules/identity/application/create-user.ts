@@ -10,7 +10,7 @@
  */
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { ConflictError } from '@/shared/errors';
+import { ConflictError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { User, UserWithCredentials } from '../domain/types';
 import type { IUserRepository } from './ports';
@@ -30,6 +30,9 @@ export async function createUser(
   db: DbClient,
   params: CreateUserParams,
 ): Promise<User> {
+  if (!(await repo.isCompanyInTenant(db, params.tenantId, params.companyId))) {
+    throw new ValidationError('companyId is not valid for this tenant');
+  }
   const existing = await repo.findByEmail(db, params.tenantId, params.email);
   if (existing) {
     throw new ConflictError(`Email ${params.email} is already registered in this tenant`);
@@ -44,12 +47,14 @@ export async function createUser(
     email:        params.email,
     name:         params.name,
     authMethod:   'LOCAL',
+    sessionVersion: 0,
+    deactivatedAt: null,
     passwordHash,
     createdAt:    new Date(),
   };
 
   await repo.save(db, userWithCreds);
 
-  const { passwordHash: _, ...user } = userWithCreds;
+  const { passwordHash: _, sessionVersion: _v, deactivatedAt: _d, ...user } = userWithCreds;
   return user;
 }

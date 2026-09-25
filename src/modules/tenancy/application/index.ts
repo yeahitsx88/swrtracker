@@ -7,8 +7,6 @@ export type {
   Tenant,
   Project,
   Company,
-  Area,
-  Subarea,
   PriorityWhitelistEntry,
   CompanyType,
   ProjectStatus,
