@@ -51,6 +51,10 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       {ticket.rejectionReason && <section className="notice warning"><h2>Reason for rejection</h2><p className="description">{ticket.rejectionReason}</p></section>}
       {ticket.delayedReason && <section className="notice warning"><h2>Delay information</h2><p className="description">{ticket.delayedReason}</p></section>}
       {ticket.cancelReason && <section className="notice"><h2>Cancellation information</h2><p className="description">{ticket.cancelReason}</p></section>}
+      {(ticket.partyChiefName || ticket.instrumentManName) && <section className="panel"><h2>Assigned crew</h2>
+        <dl className="details">{ticket.partyChiefName && <div><dt>Party Chief</dt><dd>{ticket.partyChiefName}</dd></div>}
+          {ticket.instrumentManName && <div><dt>Instrument Man</dt><dd>{ticket.instrumentManName}</dd></div>}</dl>
+      </section>}
       <ReviewActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onReviewed={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <AssignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onAssigned={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <RequesterActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onCanceled={() => setRevision(value => value + 1)} />

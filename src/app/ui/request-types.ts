@@ -20,6 +20,8 @@ export interface RequestTicket extends RequestDraft {
   projectName: string;
   locationName: string | null;
   departmentName: string | null;
+  partyChiefName: string | null;
+  instrumentManName: string | null;
   submittedAt: string | null;
   rejectionReason: string | null;
   delayedReason: string | null;

@@ -71,7 +71,14 @@ test('request options require active requester membership and include only activ
       const labelContext = { tenantId: tenant, projectId: project, aorNodeId: retired, departmentId: department };
       assert.deepEqual(await getTicketLabels(labelRepo, db, labelContext), {
         projectName: 'Site A', locationName: 'West / Old Unit', departmentName: 'Civil',
+        partyChiefName: null, instrumentManName: null,
       });
+      const crewContext = { ...labelContext, partyChiefId: admin, instrumentManId: requester };
+      const crewLabels = await getTicketLabels(labelRepo, db, crewContext);
+      assert.equal(crewLabels.partyChiefName, 'Admin');
+      assert.equal(crewLabels.instrumentManName, 'Requester');
+      await assert.rejects(getTicketLabels(labelRepo, db, { ...crewContext, partyChiefId: foreignUser }), NotFoundError);
+      await assert.rejects(getTicketLabels(labelRepo, db, { ...crewContext, instrumentManId: foreignUser }), NotFoundError);
       await assert.rejects(getTicketLabels(labelRepo, db,
         { ...labelContext, tenantId: foreignTenant }), NotFoundError);
       await assert.rejects(getTicketLabels(labelRepo, db,
@@ -90,6 +97,8 @@ test('request options require active requester membership and include only activ
         { tenantId: tenant, projectId: project, requesterId: requester }), NotFoundError);
       await db.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1", [project]);
       assert.equal((await getTicketLabels(labelRepo, db, labelContext)).locationName, 'West / Old Unit');
+      // Historical assignments retain names after deactivation and project archival.
+      assert.equal((await getTicketLabels(labelRepo, db, crewContext)).instrumentManName, 'Requester');
     } finally {
       await db.query('ROLLBACK');
       await db.end();

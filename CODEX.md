@@ -426,3 +426,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: assigned-crew name display, reassignment, and field execution controls remain. Full shares the Medium picker shape and is covered by existing assignment tests; Full/Superintendent browser scenarios and responsive visual QA remain for later acceptance.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application capability, one detail API route, and ticket web/shared types; no migration or assignment mutation policy changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 20 (Assigned crew details)
+- Intent: show assigned personnel by name on ticket details.
+- Files touched: src/modules/tenancy/application/ticket-labels.ts, src/modules/tenancy/infrastructure/ticket-labels.repository.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/ticket-detail.tsx, tests/tenancy/request-options.test.ts, CODEX.md.
+- Behavior added: authorized ticket reads resolve assigned Party Chief and Instrument Man names within the ticket tenant, and render an Assigned crew section. Missing roles remain omitted for Slim and optional IM assignments. Historical names remain available after personnel deactivation or project archival; foreign-tenant or missing referenced users fail closed. No current membership requirement is imposed on historical crew references.
+- Verification: baseline and final TypeScript and standard tests passed. Final standard suite passed 119 with 28 database skips; PostgreSQL suite passed 145 with 2 dedicated-URL skips. Production build and whitespace checks passed. Extended real database label coverage verifies assigned names, absent assignments, cross-tenant user rejection and historical deactivated-user names on archived projects. Browser rendering of this small detail addition remains unverified.
+- Known gap queued for later batches: reassignment and field execution controls remain next.
+- Production behavior changed: yes.
+- Module boundary deviation: Tenancy label service plus one authorized detail route and its web/shared response types; no migration or workflow mutation change. Concurrent sample/configuration changes excluded.

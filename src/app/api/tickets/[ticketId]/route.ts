@@ -36,6 +36,7 @@ export async function GET(
     const labels = await getTicketLabels(new TicketLabelsRepository(), pool, {
       tenantId: ctx.tenantId, projectId: ticket.projectId,
       aorNodeId: ticket.aorNodeId, departmentId: ticket.departmentId,
+      partyChiefId: ticket.assignedPartyChiefId, instrumentManId: ticket.assignedInstrumentManId,
     });
     if (ticket.status === 'SUBMITTED') {
       await recordApproverTimeoutSignals(pool, ctx.tenantId, [ticket.id]);
