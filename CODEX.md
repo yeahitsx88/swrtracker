@@ -498,3 +498,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: browser acceptance and responsive QA; separate Superintendent-of-record replacement and remaining role surfaces.
 - Production behavior changed: yes.
 - Module boundary deviation: one detail API route and ticket web/shared response types; application authority and mutation policies unchanged. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 28 (Crew reassignment browser acceptance)
+- Intent: verify the published reassignment controls against a disposable PostgreSQL fixture through the production browser UI.
+- Files touched: CODEX.md.
+- Behavior verified: Party Chief sees a fixed chief and selectable project IMs; unchanged crew and missing reason are rejected. Successful IM swap refreshes assigned names while retaining the pending delay report. Manager can replace the chief, retains selection through an empty search, and saves with the pending report intact.
+- Verification: database assertions confirmed replacement chief/IM, unchanged PENDING_PC_APPROVAL, pending DELAYED report, reason and original reporter, exactly one ticket.im_reassigned and one ticket.unassigned/ticket.assigned pair with expected actors. TypeScript and standard suite passed (128 pass, 28 database skips). Production code unchanged from Batch 27's passing build and 154 PostgreSQL tests. No preview stall occurred in this run. Disposable database, fixture files and browser tab removed; preview stopped.
+- Known gap queued for later batches: Superintendent and Slim UI acceptance, responsive visual QA, Superintendent-of-record replacement, override rejection and remaining role surfaces.
+- Production behavior changed: no.
+- Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
