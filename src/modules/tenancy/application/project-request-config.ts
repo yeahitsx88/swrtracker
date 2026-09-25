@@ -5,6 +5,7 @@ import type { Project, ProjectRequestConfig } from '../domain/types';
 
 const MIN_LEAD_TIME_DAYS = 1;
 const MAX_LEAD_TIME_DAYS = 30;
+const MAX_ATTACHMENTS_PER_TICKET = 100;
 
 interface ProjectRequestConfigRepository {
   findProjectById(db: DbClient, tenantId: UUID, projectId: UUID): Promise<Project | null>;
@@ -57,6 +58,7 @@ export async function getProjectRequestConfig(
     return {
       leadTimeEnforcementEnabled: true,
       leadTimeDays: 2,
+      maxAttachmentsPerTicket: null,
     };
   }
   return config;
@@ -72,10 +74,17 @@ export async function updateProjectRequestConfig(
     actorTenantRole: TenantRole | null;
     leadTimeEnforcementEnabled: boolean;
     leadTimeDays: number;
+    maxAttachmentsPerTicket?: number | null;
   },
 ): Promise<ProjectRequestConfig> {
   assertConfigAdmin(params.actorProjectRole, params.actorTenantRole);
   assertLeadTimeDays(params.leadTimeDays);
+  const maxAttachmentsPerTicket = params.maxAttachmentsPerTicket ?? null;
+  if (maxAttachmentsPerTicket !== null &&
+      (!Number.isInteger(maxAttachmentsPerTicket) || maxAttachmentsPerTicket < 1 ||
+       maxAttachmentsPerTicket > MAX_ATTACHMENTS_PER_TICKET)) {
+    throw new ValidationError(`maxAttachmentsPerTicket must be null or an integer between 1 and ${MAX_ATTACHMENTS_PER_TICKET}`);
+  }
 
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);
   if (!project) {
@@ -85,9 +94,9 @@ export async function updateProjectRequestConfig(
   const config: ProjectRequestConfig = {
     leadTimeEnforcementEnabled: params.leadTimeEnforcementEnabled,
     leadTimeDays: params.leadTimeDays,
+    maxAttachmentsPerTicket,
   };
 
   await repo.updateProjectRequestConfig(db, params.tenantId, params.projectId, config);
   return config;
 }
-

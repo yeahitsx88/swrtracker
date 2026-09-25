@@ -75,3 +75,20 @@ SWR_B2_DISPOSABLE_DB=1 SWR_B2_DATA_DIR="$SWR_TEST_CLUSTER_DIR/data" pnpm smoke:w
 The smoke creates randomized Amelia fixtures and exercises submit, approval, optional Party Chief assignment, Party Chief assignment of an Instrument Man, start, inability validation, same-record return, requester correction, resubmission, independent priority and Need-By revision, direct Instrument Man assignment, and direct completion. It proves the SWR number and first-submitted timestamp survive a return, and checks one return cycle, three assignment-history rows, one Need-By revision, and twelve requester or field-team outbox records. Dispose of the whole temporary cluster after the run.
 
 Observed B2 checks on Node 22.23.3: TypeScript passed; 222 tests passed; the workflow smoke passed against migrations 001–023; and the Next production build passed. This gate validates backend workflow and durable local notification inputs. Attachment bytes, message-preview UI, operational queues, KPI screens, private-beta packaging, and a representative historical-data replay remain outside B2.
+
+## Gate B3 local capabilities
+
+The B3 capability smoke uses a disposable database named exactly `swr_b3_test` and a separate disposable file root. It verifies both paths before creating fixtures:
+
+```sh
+export DATABASE_URL="postgresql://$(id -un)@localhost:55486/swr_b3_test?host=$SWR_TEST_CLUSTER_DIR"
+export SWR_ATTACHMENT_ROOT="$SWR_TEST_FILE_DIR"
+SWR_B3_DISPOSABLE_DB=1 \
+SWR_B3_DATA_DIR="$SWR_TEST_CLUSTER_DIR/data" \
+SWR_B3_STORAGE_DIR="$SWR_TEST_FILE_DIR" \
+pnpm smoke:capabilities
+```
+
+The smoke creates a sample Amelia request with an urgent reason, writes and hashes a PDF instruction, seals instruction uploads at submission, approves and assigns the SWR, writes JPEG field evidence as the assigned Instrument Man, completes the work, reads both stored files byte for byte, reconciles the project measures, renders four requester message previews, and captures their durable outbox state. The guard run without `SWR_B3_DISPOSABLE_DB=1` fails before fixture creation.
+
+Observed B3 checks on Node 22.23.3: TypeScript passed; 223 tests passed; migrations 001–023 applied and then skipped cleanly on rerun; the guarded capability smoke passed; and the Next production build passed. Local storage and message capture are private-beta implementations. Organization-owned storage, backup and restore, malware policy, real email delivery, representative historical-data replay, and pilot acceptance remain separate gates.

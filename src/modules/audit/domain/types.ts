@@ -11,6 +11,7 @@ export type AuditEventType =
   | 'ticket.requester_fields_updated'
   | 'ticket.submitted'
   | 'ticket.resubmitted'
+  | 'ticket.urgent_request_submitted'
   | 'ticket.approved'
   | 'ticket.returned_for_correction'
   | 'ticket.field_inability_reported'

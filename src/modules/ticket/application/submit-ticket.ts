@@ -1,6 +1,6 @@
 /**
  * SubmitTicket — Variant 1 only (DRAFT → SUBMITTED).
- * Enforces project-configured minimum lead-time notice at submit time.
+ * Requires an urgent reason when the requested date misses the configured lead-time notice.
  * Only the ticket's own REQUESTER may submit.
  */
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
@@ -26,6 +26,7 @@ export async function submitTicket(
     actorId:   UUID;
     actorRole: ProjectRole;
     departmentId?: UUID;
+    urgentReason?: string;
     visibility?: VisibilityScope;
   },
 ): Promise<Ticket> {
@@ -66,7 +67,9 @@ export async function submitTicket(
     : null;
   const leadTimeConfig = normalizeProjectLeadTimeConfig(leadTimeConfigRaw);
 
-  if (!doesRequestedDateMeetLeadTime(ticket.requestedDate, new Date(), leadTimeConfig)) {
+  const missesLeadTime = !doesRequestedDateMeetLeadTime(ticket.requestedDate, new Date(), leadTimeConfig);
+  const urgentReason = params.urgentReason?.trim() ?? '';
+  if (missesLeadTime && !urgentReason) {
     const dayLabel = leadTimeConfig.leadTimeDays === 1 ? 'day' : 'days';
     throw new ValidationError(
       `Requested date must be at least ${leadTimeConfig.leadTimeDays} ${dayLabel} from now`,
@@ -154,8 +157,19 @@ export async function submitTicket(
     tenantId:  params.tenantId,
     actorId:   params.actorId,
     eventType: isResubmission ? 'ticket.resubmitted' : 'ticket.submitted',
-    payload:   { ticketNumber, departmentId: resolvedDepartmentId, priority: resolvedPriority, returnCycle: ticket.returnCycle ?? 0 },
+    payload:   { ticketNumber, departmentId: resolvedDepartmentId, priority: resolvedPriority,
+      returnCycle: ticket.returnCycle ?? 0, urgentReason: missesLeadTime ? urgentReason : null },
   });
+
+  if (missesLeadTime) {
+    await appendAuditEvent(db, {
+      ticketId: params.ticketId,
+      tenantId: params.tenantId,
+      actorId: params.actorId,
+      eventType: 'ticket.urgent_request_submitted',
+      payload: { requestedDate: ticket.requestedDate.toISOString(), leadTimeDays: leadTimeConfig.leadTimeDays, reason: urgentReason },
+    });
+  }
 
   if (isResubmission) {
     await db.query(
@@ -179,7 +193,7 @@ export async function submitTicket(
     ticketId: params.ticketId,
     requesterId: ticket.requesterId,
     eventType: isResubmission ? 'RESUBMITTED' : 'SUBMITTED',
-    payload: { ticketNumber, returnCycle: ticket.returnCycle ?? 0 },
+    payload: { ticketNumber, returnCycle: ticket.returnCycle ?? 0, urgentReason: missesLeadTime ? urgentReason : null },
     idempotencyKey: `${params.ticketId}:submit:${ticket.returnCycle ?? 0}`,
   });
 

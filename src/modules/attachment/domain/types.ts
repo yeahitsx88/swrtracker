@@ -9,7 +9,12 @@ export interface AttachmentObjectMetadata {
   mimeType: string;
   storageKey: string;
   sizeBytes: number;
+  purpose: AttachmentPurpose;
+  returnCycle: number;
+  contentSha256: string;
 }
+
+export type AttachmentPurpose = 'REQUEST_INSTRUCTION' | 'FIELD_SUPPORT';
 
 export interface Attachment {
   id: UUID;
@@ -21,5 +26,8 @@ export interface Attachment {
   /** Key in object storage — never a public URL. */
   storageKey: string;
   sizeBytes: number;
+  purpose: AttachmentPurpose;
+  returnCycle: number;
+  contentSha256: string;
   createdAt: Date;
 }

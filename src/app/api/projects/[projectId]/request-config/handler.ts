@@ -92,8 +92,9 @@ export async function handlePatchProjectRequestConfig(
       typeof body !== 'object' ||
       typeof body.leadTimeEnforcementEnabled !== 'boolean' ||
       typeof body.leadTimeDays !== 'number'
+      || !(body.maxAttachmentsPerTicket === null || typeof body.maxAttachmentsPerTicket === 'number')
     ) {
-      throw new ValidationError('leadTimeEnforcementEnabled (boolean) and leadTimeDays (number) are required');
+      throw new ValidationError('leadTimeEnforcementEnabled, leadTimeDays, and maxAttachmentsPerTicket are required');
     }
 
     const { tenantRole, projectRole } = await resolveActorRoles(
@@ -113,6 +114,7 @@ export async function handlePatchProjectRequestConfig(
         actorTenantRole: tenantRole,
         leadTimeEnforcementEnabled: body.leadTimeEnforcementEnabled as boolean,
         leadTimeDays: body.leadTimeDays as number,
+        maxAttachmentsPerTicket: body.maxAttachmentsPerTicket as number | null,
       }),
     );
 
@@ -121,4 +123,3 @@ export async function handlePatchProjectRequestConfig(
     return errorResponse(err);
   }
 }
-

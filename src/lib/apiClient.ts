@@ -16,12 +16,19 @@ import type {
   UploadAttachmentRequest,
   UpdateRequesterTicketRequest,
 } from '@/lib/contracts';
-import type { ProjectRequestConfig, ProjectRequestConfigResponse } from '@/lib/contracts/projects';
+import type {
+  AmeliaMetricsResponse,
+  LocalNotificationPreviewResponse,
+  ProjectRequestConfig,
+  ProjectRequestConfigResponse,
+  ProjectMembersResponse,
+} from '@/lib/contracts/projects';
 import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
+  formData?: FormData;
   headers?: Record<string, string>;
 }
 
@@ -45,7 +52,7 @@ function createIdempotencyKey(): string {
 
 async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = {
-    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(options.body && !options.formData ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers ?? {}),
   };
   const response = await fetch(path, {
@@ -53,7 +60,7 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
     credentials: 'include',
     cache: 'no-store',
     headers: Object.keys(headers).length > 0 ? headers : undefined,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: options.formData ?? (options.body ? JSON.stringify(options.body) : undefined),
   });
 
   const text = await response.text();
@@ -116,6 +123,10 @@ export const apiClient = {
     );
   },
 
+  listProjectMembers(projectId: string): Promise<ProjectMembersResponse> {
+    return apiRequest<ProjectMembersResponse>(`/api/projects/${projectId}/members`);
+  },
+
   getTicket(ticketId: string): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}`);
   },
@@ -136,11 +147,30 @@ export const apiClient = {
     });
   },
 
-  submitTicket(ticketId: string, departmentId?: string): Promise<TicketResponse> {
+  submitTicket(ticketId: string, departmentId?: string, urgentReason?: string): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/submit`, {
       method: 'POST',
-      body: departmentId ? { departmentId } : {},
+      body: { ...(departmentId ? { departmentId } : {}), ...(urgentReason ? { urgentReason } : {}) },
       headers: { 'Idempotency-Key': createIdempotencyKey() },
+    });
+  },
+
+  approveTicket(ticketId: string): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/approve`, {
+      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+    });
+  },
+
+  assignTicket(ticketId: string, assignedPartyChiefId: string | null, assignedInstrumentManId: string | null): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/assign`, {
+      method: 'POST', body: { assignedPartyChiefId, assignedInstrumentManId },
+      headers: { 'Idempotency-Key': createIdempotencyKey() },
+    });
+  },
+
+  surveyCancel(ticketId: string, reason: string): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/survey-cancel`, {
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
     });
   },
 
@@ -247,14 +277,31 @@ export const apiClient = {
     });
   },
 
+  getProjectMetrics(projectId: string): Promise<AmeliaMetricsResponse> {
+    return apiRequest<AmeliaMetricsResponse>(`/api/projects/${projectId}/metrics`);
+  },
+
+  listLocalNotificationPreviews(projectId: string): Promise<LocalNotificationPreviewResponse> {
+    return apiRequest<LocalNotificationPreviewResponse>(`/api/projects/${projectId}/notifications`);
+  },
+
+  operateLocalNotificationPreview(projectId: string, action: 'capture' | 'retry-failed'): Promise<{ updatedCount: number }> {
+    return apiRequest<{ updatedCount: number }>(`/api/projects/${projectId}/notifications`, {
+      method: 'POST', body: { action },
+    });
+  },
+
   listAttachments(ticketId: string): Promise<AttachmentsListResponse> {
     return apiRequest<AttachmentsListResponse>(`/api/tickets/${ticketId}/attachments`);
   },
 
   uploadAttachment(ticketId: string, input: UploadAttachmentRequest): Promise<AttachmentResponse> {
+    const formData = new FormData();
+    formData.set('file', input.file);
+    formData.set('purpose', input.purpose);
     return apiRequest<AttachmentResponse>(`/api/tickets/${ticketId}/attachments`, {
       method: 'POST',
-      body: input,
+      formData,
     });
   },
 };

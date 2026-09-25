@@ -13,6 +13,7 @@ export default function AdminProjectPage() {
 
   const [leadTimeEnforcementEnabled, setLeadTimeEnforcementEnabled] = useState(true);
   const [leadTimeDays, setLeadTimeDays] = useState(2);
+  const [maxAttachmentsPerTicket, setMaxAttachmentsPerTicket] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function AdminProjectPage() {
         if (!active) return;
         setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);
         setLeadTimeDays(response.config.leadTimeDays);
+        setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
       } catch (err) {
         if (!active) return;
         setError(getErrorMessage(err, 'Unable to load project request configuration.'));
@@ -52,9 +54,11 @@ export default function AdminProjectPage() {
       const response = await apiClient.updateProjectRequestConfig(projectId, {
         leadTimeEnforcementEnabled,
         leadTimeDays,
+        maxAttachmentsPerTicket,
       });
       setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);
       setLeadTimeDays(response.config.leadTimeDays);
+      setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
       setSuccess('Project request configuration updated.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to update project request configuration.'));
@@ -92,6 +96,15 @@ export default function AdminProjectPage() {
               />
             </Field>
             <p className="muted">When enabled, requested date must be at least this many days from submit time.</p>
+            <Field label="Maximum Files per SWR (blank for no count cap)">
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={maxAttachmentsPerTicket === null ? '' : String(maxAttachmentsPerTicket)}
+                onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
+              />
+            </Field>
             <Button disabled={saving} onClick={() => void saveConfig()}>
               {saving ? 'Saving...' : 'Save Configuration'}
             </Button>

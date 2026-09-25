@@ -39,8 +39,10 @@ export default function NewRequestPage() {
   const [requestConfig, setRequestConfig] = useState<ProjectRequestConfig>({
     leadTimeEnforcementEnabled: true,
     leadTimeDays: 2,
+    maxAttachmentsPerTicket: null,
   });
   const [requestedDate, setRequestedDate] = useState(dateStringFromNow(2));
+  const [urgentReason, setUrgentReason] = useState('');
   const [craft, setCraft] = useState(CRAFT_OPTIONS[0] ?? 'Civil');
   const [customCraft, setCustomCraft] = useState('');
   const [fieldContact, setFieldContact] = useState('');
@@ -106,13 +108,10 @@ export default function NewRequestPage() {
       setRequestedDate(minRequestedDate);
       return;
     }
-    if (requestConfig.leadTimeEnforcementEnabled && requestedDate < minRequestedDate) {
-      setRequestedDate(minRequestedDate);
-    }
   }, [minRequestedDate, requestConfig.leadTimeEnforcementEnabled, requestedDate]);
 
   const stagedAttachmentsSummary = useMemo(
-    () => attachments.map((item) => `${item.filename} (${item.sizeBytes} bytes)`),
+    () => attachments.map((item) => `${item.file.name} (${item.file.size} bytes)`),
     [attachments],
   );
 
@@ -166,7 +165,7 @@ export default function NewRequestPage() {
         await apiClient.uploadAttachment(ticketId, attachment);
       }
 
-      const submitted = await apiClient.submitTicket(ticketId);
+      const submitted = await apiClient.submitTicket(ticketId, undefined, urgentReason.trim() || undefined);
       setSuccess(`Ticket ${submitted.ticket.ticketNumber ?? submitted.ticket.id} submitted.`);
       router.push(`/projects/${projectId}/tickets/${ticketId}`);
     } catch (err) {
@@ -209,7 +208,6 @@ export default function NewRequestPage() {
             <Field label="Requested Date">
               <Input
                 type="date"
-                min={requestConfig.leadTimeEnforcementEnabled ? minRequestedDate : undefined}
                 value={requestedDate}
                 onChange={(event) => setRequestedDate(event.target.value)}
               />
@@ -221,6 +219,11 @@ export default function NewRequestPage() {
                   ? `Lead-time policy enabled: minimum ${requestConfig.leadTimeDays} day(s) ahead.`
                   : 'Lead-time policy disabled for this project.'}
             </p>
+            {requestConfig.leadTimeEnforcementEnabled && requestedDate < minRequestedDate ? (
+              <Field label="Urgent Request Reason">
+                <Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} required />
+              </Field>
+            ) : null}
           </div>
         );
       case 3:
@@ -252,8 +255,9 @@ export default function NewRequestPage() {
       case 4:
         return (
           <div className="stack">
-            <p className="muted">Optional: stage attachment metadata now; files upload after ticket draft is created.</p>
+            <p className="muted">Optional: stage request files now; files upload after the SWR draft is created.</p>
             <AttachmentUploader
+              instructionMode
               onUpload={async (payload) => {
                 setAttachments((current) => [...current, payload]);
               }}

@@ -152,8 +152,9 @@ export class TenancyRepository implements ITenancyRepository {
     const { rows } = await db.query<{
       lead_time_enforcement_enabled: boolean;
       lead_time_days: number;
+      max_attachments_per_ticket: number | null;
     }>(
-      `SELECT lead_time_enforcement_enabled, lead_time_days
+      `SELECT lead_time_enforcement_enabled, lead_time_days, max_attachments_per_ticket
        FROM projects
        WHERE tenant_id = $1
          AND id = $2
@@ -164,6 +165,7 @@ export class TenancyRepository implements ITenancyRepository {
     return {
       leadTimeEnforcementEnabled: rows[0].lead_time_enforcement_enabled,
       leadTimeDays: rows[0].lead_time_days,
+      maxAttachmentsPerTicket: rows[0].max_attachments_per_ticket,
     };
   }
 
@@ -177,7 +179,8 @@ export class TenancyRepository implements ITenancyRepository {
     await db.query(
       `UPDATE projects
        SET lead_time_enforcement_enabled = $3,
-           lead_time_days = $4
+           lead_time_days = $4,
+           max_attachments_per_ticket = $5
        WHERE tenant_id = $1
          AND id = $2`,
       [
@@ -185,6 +188,7 @@ export class TenancyRepository implements ITenancyRepository {
         projectId,
         config.leadTimeEnforcementEnabled,
         config.leadTimeDays,
+        config.maxAttachmentsPerTicket ?? null,
       ],
     );
   }

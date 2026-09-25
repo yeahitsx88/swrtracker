@@ -34,7 +34,7 @@ export default function CrewApprovalsPage() {
   }, [projectId]);
 
   const pendingApprovals = useMemo(
-    () => tickets.filter((ticket) => ticket.status === 'PENDING_PC_APPROVAL'),
+    () => tickets.filter((ticket) => ticket.status === 'PENDING_FIELD_VALIDATION' || ticket.status === 'PENDING_PC_APPROVAL'),
     [tickets],
   );
 
@@ -69,12 +69,25 @@ export default function CrewApprovalsPage() {
           <section key={ticket.id} className="panel">
             <div className="stack">
               <TicketCard ticket={ticket} detailHref={`/projects/${projectId}/tickets/${ticket.id}`} />
-              <ApprovalActions
-                ticket={ticket}
-                busy={busyTicketId === ticket.id}
-                onApprove={(id) => runAction(id, () => apiClient.approvePcStatus(id).then(() => undefined))}
-                onReject={(id, reason) => runAction(id, () => apiClient.rejectPcStatus(id, reason).then(() => undefined))}
-              />
+              {ticket.status === 'PENDING_FIELD_VALIDATION' ? (
+                <div className="row">
+                  <Button disabled={busyTicketId === ticket.id} onClick={() => {
+                    const reason = window.prompt('Validated return reason');
+                    if (reason?.trim()) void runAction(ticket.id, () => apiClient.validateFieldInability(ticket.id, reason).then(() => undefined));
+                  }}>Validate and Return</Button>
+                  <Button variant="secondary" disabled={busyTicketId === ticket.id} onClick={() => {
+                    const reason = window.prompt('Reason to reject the inability report');
+                    if (reason?.trim()) void runAction(ticket.id, () => apiClient.rejectFieldInability(ticket.id, reason).then(() => undefined));
+                  }}>Reject and Resume</Button>
+                </div>
+              ) : (
+                <ApprovalActions
+                  ticket={ticket}
+                  busy={busyTicketId === ticket.id}
+                  onApprove={(id) => runAction(id, () => apiClient.approvePcStatus(id).then(() => undefined))}
+                  onReject={(id, reason) => runAction(id, () => apiClient.rejectPcStatus(id, reason).then(() => undefined))}
+                />
+              )}
             </div>
           </section>
         ))}

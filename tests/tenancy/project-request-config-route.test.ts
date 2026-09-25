@@ -84,6 +84,7 @@ test('handlePatchProjectRequestConfig returns 403 for non-admin actor', async ()
     body: JSON.stringify({
       leadTimeEnforcementEnabled: true,
       leadTimeDays: 5,
+      maxAttachmentsPerTicket: 12,
     }),
   });
 
@@ -107,6 +108,7 @@ test('handlePatchProjectRequestConfig updates config for project admin', async (
     body: JSON.stringify({
       leadTimeEnforcementEnabled: false,
       leadTimeDays: 10,
+      maxAttachmentsPerTicket: 12,
     }),
   });
 
@@ -150,10 +152,12 @@ test('handlePatchProjectRequestConfig updates config for project admin', async (
     config: {
       leadTimeEnforcementEnabled: boolean;
       leadTimeDays: number;
+      maxAttachmentsPerTicket: number | null;
     };
   };
   assert.equal(json.config.leadTimeEnforcementEnabled, false);
   assert.equal(json.config.leadTimeDays, 10);
+  assert.equal(json.config.maxAttachmentsPerTicket, 12);
   assert.equal(updates.length, 1);
 });
 

@@ -9,7 +9,8 @@ interface CrewWorkActionsProps {
   onStart: (ticketId: string) => Promise<void>;
   onSubmitComplete: (ticketId: string) => Promise<void>;
   onDelay: (ticketId: string, reason: string) => Promise<void>;
-  onFieldCancel: (ticketId: string, reason?: string) => Promise<void>;
+  onReportInability: (ticketId: string, reason: string) => Promise<void>;
+  onFlagStopWork: (ticketId: string, reason: string) => Promise<void>;
   onRestartDelay: (ticketId: string) => Promise<void>;
 }
 
@@ -19,7 +20,8 @@ export function CrewWorkActions({
   onStart,
   onSubmitComplete,
   onDelay,
-  onFieldCancel,
+  onReportInability,
+  onFlagStopWork,
   onRestartDelay,
 }: CrewWorkActionsProps) {
   if (ticket.status === 'ASSIGNED') {
@@ -30,7 +32,7 @@ export function CrewWorkActions({
     return (
       <div className="row">
         <Button disabled={busy} onClick={() => void onSubmitComplete(ticket.id)}>
-          Submit Complete
+          Complete Work
         </Button>
         <Button
           variant="secondary"
@@ -48,11 +50,21 @@ export function CrewWorkActions({
           variant="danger"
           disabled={busy}
           onClick={() => {
-            const reason = window.prompt('Field cancel reason (optional)');
-            void onFieldCancel(ticket.id, reason ?? undefined);
+            const reason = window.prompt('Why is the work unable to be performed?');
+            if (reason?.trim()) void onReportInability(ticket.id, reason);
           }}
         >
-          Field Cancel
+          Report Unable to Perform
+        </Button>
+        <Button
+          variant="danger"
+          disabled={busy}
+          onClick={() => {
+            const reason = window.prompt('Why should this SWR be permanently stopped?');
+            if (reason?.trim()) void onFlagStopWork(ticket.id, reason);
+          }}
+        >
+          Flag Stop Work
         </Button>
       </div>
     );
@@ -66,11 +78,11 @@ export function CrewWorkActions({
           variant="danger"
           disabled={busy}
           onClick={() => {
-            const reason = window.prompt('Field cancel reason (optional)');
-            void onFieldCancel(ticket.id, reason ?? undefined);
+            const reason = window.prompt('Why should this SWR be permanently stopped?');
+            if (reason?.trim()) void onFlagStopWork(ticket.id, reason);
           }}
         >
-          Field Cancel
+          Flag Stop Work
         </Button>
       </div>
     );

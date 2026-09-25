@@ -75,7 +75,8 @@ export default function CrewWorkPage() {
                 onStart={(id) => runAction(id, () => apiClient.startTicket(id).then(() => undefined))}
                 onSubmitComplete={(id) => runAction(id, () => apiClient.completeTicket(id).then(() => undefined))}
                 onDelay={(id, reason) => runAction(id, () => apiClient.delayTicket(id, reason).then(() => undefined))}
-                onFieldCancel={(id, reason) => runAction(id, () => apiClient.requestFieldCancel(id, reason).then(() => undefined))}
+                onReportInability={(id, reason) => runAction(id, () => apiClient.reportFieldInability(id, reason).then(() => undefined))}
+                onFlagStopWork={(id, reason) => runAction(id, () => apiClient.surveyCancel(id, reason).then(() => undefined))}
                 onRestartDelay={(id) => runAction(id, () => apiClient.restartDelayedTicket(id).then(() => undefined))}
               />
             </div>

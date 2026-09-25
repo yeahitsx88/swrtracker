@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
 import {
   handleGetTicketAttachments,
+  handleDownloadTicketAttachment,
+  type TicketAttachmentDownloadDeps,
   type TicketAttachmentsGetRouteDeps,
 } from '@/app/api/tickets/[ticketId]/attachments/handler';
 import type { ITicketRepository, VisibilityScope } from '@/modules/ticket/application/ports';
@@ -120,6 +122,9 @@ function makeDeps(overrides?: Partial<TicketAttachmentsGetRouteDeps>): TicketAtt
         mime_type: 'image/jpeg',
         storage_key: 'attachments/ticket-1/photo-2.jpg',
         size_bytes: 1000,
+        purpose: 'FIELD_SUPPORT',
+        return_cycle: 1,
+        content_sha256: 'a'.repeat(64),
         created_at: new Date('2026-03-04T12:05:00Z'),
       },
       {
@@ -131,6 +136,9 @@ function makeDeps(overrides?: Partial<TicketAttachmentsGetRouteDeps>): TicketAtt
         mime_type: 'image/jpeg',
         storage_key: 'attachments/ticket-1/photo-1.jpg',
         size_bytes: 900,
+        purpose: 'REQUEST_INSTRUCTION',
+        return_cycle: 0,
+        content_sha256: 'b'.repeat(64),
         created_at: new Date('2026-03-04T12:00:00Z'),
       },
     ]),
@@ -156,6 +164,7 @@ test('handleGetTicketAttachments returns mapped attachment metadata', async () =
       mimeType: string;
       sizeBytes: number;
       createdAt: string;
+      downloadUrl: string;
     }>;
   };
 
@@ -163,6 +172,7 @@ test('handleGetTicketAttachments returns mapped attachment metadata', async () =
   assert.equal(json.attachments[0]?.id, 'attachment-2');
   assert.equal(json.attachments[0]?.ticketId, ticketId);
   assert.equal(json.attachments[0]?.createdAt, '2026-03-04T12:05:00.000Z');
+  assert.equal(json.attachments[0]?.downloadUrl, `/api/tickets/${ticketId}/attachments/attachment-2`);
   assert.equal('storageKey' in json.attachments[0]!, false);
 });
 
@@ -206,4 +216,32 @@ test('handleGetTicketAttachments allows survey manager visibility for attachment
   assert.equal(response.status, 200);
   const json = await response.json() as { attachments: Array<{ id: string }> };
   assert.equal(json.attachments.length, 2);
+});
+
+test('attachment download checks ticket visibility, streams bytes, and records the download', async () => {
+  const auditSql: string[] = [];
+  const deps: TicketAttachmentDownloadDeps = {
+    getTicketRouteContext: makeDeps().getTicketRouteContext,
+    createTicketRepo: () => makeTicketRepo(),
+    findAttachment: async () => ({
+      id: 'attachment-1', ticket_id: ticketId, tenant_id: tenantId, uploaded_by: actorId,
+      filename: 'layout.pdf', mime_type: 'application/pdf', storage_key: `${tenantId}/${ticketId}/file-1`,
+      size_bytes: 9, purpose: 'REQUEST_INSTRUCTION', return_cycle: 0,
+      content_sha256: 'a'.repeat(64), created_at: new Date('2026-03-04T12:00:00Z'),
+    }),
+    createStorage: () => ({ read: async () => Buffer.from('pdf bytes') }),
+    withTransaction: async (fn) => fn({
+      query: async (sql: string) => { auditSql.push(sql); return { rows: [] }; },
+    }),
+  };
+  const response = await handleDownloadTicketAttachment(
+    makeRequest(),
+    { params: Promise.resolve({ ticketId, attachmentId: 'attachment-1' }) },
+    deps,
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'application/pdf');
+  assert.match(response.headers.get('content-disposition') ?? '', /layout\.pdf/);
+  assert.equal(await response.text(), 'pdf bytes');
+  assert.ok(auditSql.some((sql) => /ticket_events/.test(sql)));
 });

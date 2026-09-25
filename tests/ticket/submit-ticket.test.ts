@@ -274,6 +274,24 @@ test('submitTicket skips lead-time validation when enforcement is disabled', asy
   assert.equal(result.status, 'SUBMITTED');
 });
 
+test('submitTicket accepts short-notice work with a recorded urgent reason', async () => {
+  const events: string[] = [];
+  const repo = makeRepo({
+    findByIdInternal: async () => makeDraftTicket({ requestedDate: new Date(Date.now() + 6 * 60 * 60 * 1000) }),
+    findProjectLeadTimeConfig: async () => ({ enforcementEnabled: true, leadTimeDays: 2 }),
+  });
+  const db: DbClient = { query: async (sql, params) => {
+    if (/ticket_events/.test(sql)) events.push(String(params?.[4]));
+    return { rows: [] };
+  } };
+  const result = await submitTicket(repo, db, {
+    tenantId, ticketId, actorId: requesterId, actorRole: 'REQUESTER',
+    urgentReason: 'Field crew is blocked without this layout',
+  });
+  assert.equal(result.status, 'SUBMITTED');
+  assert.ok(events.includes('ticket.urgent_request_submitted'));
+});
+
 test('submitTicket returns deterministic stale-state conflict when draft changed concurrently', async () => {
   const repo = makeRepo({
     findByIdInternal: async () => makeDraftTicket({

@@ -7,7 +7,8 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { AttachmentRecord, TicketRecord } from '@/lib/contracts';
 import { AttachmentList, AttachmentUploader, TicketDetails } from '@/components/tickets';
-import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
+import { Button, Card, ErrorBanner, Input, SuccessBanner, Textarea } from '@/components/ui';
+import { Field } from '@/components/forms';
 
 const TERMINAL_UPLOAD_BLOCK_STATUSES = new Set([
   'COMPLETED',
@@ -27,6 +28,13 @@ export default function TicketDetailPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submittingDraft, setSubmittingDraft] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editCraft, setEditCraft] = useState('');
+  const [editFieldContact, setEditFieldContact] = useState('');
+  const [editFieldChannel, setEditFieldChannel] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editRequestedDate, setEditRequestedDate] = useState('');
+  const [urgentReason, setUrgentReason] = useState('');
 
   const uploadsDisabled = !ticket || TERMINAL_UPLOAD_BLOCK_STATUSES.has(ticket.status);
 
@@ -39,6 +47,11 @@ export default function TicketDetailPage() {
         apiClient.listAttachments(ticketId),
       ]);
       setTicket(ticketResponse.ticket);
+      setEditCraft(ticketResponse.ticket.craft);
+      setEditFieldContact(ticketResponse.ticket.fieldContact ?? '');
+      setEditFieldChannel(ticketResponse.ticket.fieldChannel ?? '');
+      setEditDescription(ticketResponse.ticket.description);
+      setEditRequestedDate(ticketResponse.ticket.requestedDate.slice(0, 10));
       setAttachments(attachmentsResponse.attachments);
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load ticket details.'));
@@ -56,13 +69,29 @@ export default function TicketDetailPage() {
     setSuccess(null);
     setSubmittingDraft(true);
     try {
-      const response = await apiClient.submitTicket(ticketId);
+      const response = await apiClient.submitTicket(ticketId, undefined, urgentReason.trim() || undefined);
       setTicket(response.ticket);
       setSuccess('Draft submitted successfully.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to submit draft.'));
     } finally {
       setSubmittingDraft(false);
+    }
+  }
+
+  async function saveCorrection() {
+    setSaving(true); setError(null); setSuccess(null);
+    try {
+      const response = await apiClient.updateRequesterTicket(ticketId, {
+        craft: editCraft, fieldContact: editFieldContact, fieldChannel: editFieldChannel,
+        description: editDescription, requestedDate: new Date(editRequestedDate).toISOString(),
+      });
+      setTicket(response.ticket);
+      setSuccess('Requester fields saved. Review attachments, then submit for fresh approval.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Unable to save requester changes.'));
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -81,13 +110,27 @@ export default function TicketDetailPage() {
               Refresh
             </Button>
           </div>
-          {ticket?.status === 'DRAFT' ? (
+          {ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION' ? (
             <Button disabled={submittingDraft} onClick={() => void submitDraft()}>
-              {submittingDraft ? 'Submitting...' : 'Submit Draft'}
+              {submittingDraft ? 'Submitting...' : ticket.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
             </Button>
           ) : null}
         </div>
       </Card>
+
+      {ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION' ? (
+        <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
+          <div className="stack">
+            <Field label="Craft / Discipline"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
+            <Field label="Field Contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
+            <Field label="Phone / Radio Channel"><Input value={editFieldChannel} onChange={(event) => setEditFieldChannel(event.target.value)} /></Field>
+            <Field label="Need-By Date"><Input type="date" value={editRequestedDate} onChange={(event) => setEditRequestedDate(event.target.value)} /></Field>
+            <Field label="Description"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
+            <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
+            <Button disabled={saving} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : 'Save Changes'}</Button>
+          </div>
+        </Card>
+      ) : null}
 
       <Card title="Attachments" description="Uploads are disabled in terminal ticket states on this UI.">
         <div className="stack">
@@ -96,6 +139,7 @@ export default function TicketDetailPage() {
           ) : null}
           <AttachmentUploader
             disabled={uploadsDisabled}
+            instructionMode={ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION'}
             onUpload={async (payload) => {
               setError(null);
               setSuccess(null);

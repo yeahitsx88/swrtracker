@@ -34,6 +34,7 @@ export interface Project {
 export interface ProjectRequestConfig {
   leadTimeEnforcementEnabled: boolean;
   leadTimeDays: number;
+  maxAttachmentsPerTicket?: number | null;
 }
 
 export interface ProjectTemplate {

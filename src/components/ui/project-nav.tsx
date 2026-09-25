@@ -13,6 +13,7 @@ const tabs: Array<{ label: string; href: (projectId: string) => string }> = [
   { label: 'My Requests', href: (projectId) => `/projects/${projectId}/my-requests` },
   { label: 'Drafts', href: (projectId) => `/projects/${projectId}/drafts` },
   { label: 'Crew Work', href: (projectId) => `/projects/${projectId}/crew/work` },
+  { label: 'Survey Operations', href: (projectId) => `/projects/${projectId}/survey/operations` },
   { label: 'PC Approvals', href: (projectId) => `/projects/${projectId}/crew/approvals` },
   { label: 'Admin', href: (projectId) => `/projects/${projectId}/admin` },
 ];

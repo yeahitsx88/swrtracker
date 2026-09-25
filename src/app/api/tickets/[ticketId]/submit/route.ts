@@ -23,18 +23,25 @@ export async function POST(
     const departmentId = (body && typeof body === 'object' && 'departmentId' in body)
       ? (body as { departmentId?: unknown }).departmentId
       : undefined;
+    const urgentReason = (body && typeof body === 'object' && 'urgentReason' in body)
+      ? (body as { urgentReason?: unknown }).urgentReason
+      : undefined;
     if (departmentId !== undefined && typeof departmentId !== 'string') {
       throw new ValidationError('departmentId must be a string when provided');
+    }
+    if (urgentReason !== undefined && typeof urgentReason !== 'string') {
+      throw new ValidationError('urgentReason must be a string when provided');
     }
     const result = await withTransaction((client) => executeIdempotentHttpMutation(
       client,
       { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/submit`, idempotencyKey },
-      { ticketId, departmentId: departmentId ?? null },
+      { ticketId, departmentId: departmentId ?? null, urgentReason: urgentReason ?? null },
       async () => ({
         status: 200,
         body: { ticket: await submitTicket(repo, client, {
           ...ctx,
           departmentId: departmentId as UUID | undefined,
+          urgentReason: urgentReason as string | undefined,
         }) },
       }),
     ));

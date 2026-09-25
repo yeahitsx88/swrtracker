@@ -109,7 +109,11 @@ export interface AttachmentRecord {
   filename: string;
   mimeType: string;
   sizeBytes: number;
+  purpose: 'REQUEST_INSTRUCTION' | 'FIELD_SUPPORT';
+  returnCycle: number;
+  contentSha256: string;
   createdAt: string;
+  downloadUrl: string;
 }
 
 export interface AttachmentResponse {
@@ -121,10 +125,8 @@ export interface AttachmentsListResponse {
 }
 
 export interface UploadAttachmentRequest {
-  filename: string;
-  mimeType: string;
-  storageKey: string;
-  sizeBytes: number;
+  file: File;
+  purpose: 'REQUEST_INSTRUCTION' | 'FIELD_SUPPORT';
 }
 
 export interface AorLevelRecord {
