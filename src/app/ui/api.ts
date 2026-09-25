@@ -21,6 +21,6 @@ export function errorMessage(error: unknown): string {
 
 export function safeReturnPath(value?: string): string {
   if (value === '/drafts' || value === '/') return value;
-  return value && /^\/project\/[a-f0-9-]{36}\/request(?:\?draft=[a-f0-9-]{36})?$/i.test(value)
+  return value && /^(?:\/project\/[a-f0-9-]{36}\/(?:requests|request(?:\?draft=[a-f0-9-]{36})?)|\/tickets\/[a-f0-9-]{36})$/i.test(value)
     ? value : '/drafts';
 }

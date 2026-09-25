@@ -8,6 +8,8 @@ import { getRequestOptions } from
   '@/modules/tenancy/application/request-options';
 import { RequestOptionsRepository } from
   '@/modules/tenancy/infrastructure/request-options.repository';
+import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
+import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
 
 const id = () => randomUUID() as UUID;
 
@@ -65,6 +67,16 @@ test('request options require active requester membership and include only activ
       ]);
       assert.deepEqual(options.departments.map(item => item.name), ['Civil', 'QA']);
 
+      const labelRepo = new TicketLabelsRepository();
+      const labelContext = { tenantId: tenant, projectId: project, aorNodeId: retired, departmentId: department };
+      assert.deepEqual(await getTicketLabels(labelRepo, db, labelContext), {
+        projectName: 'Site A', locationName: 'West / Old Unit', departmentName: 'Civil',
+      });
+      await assert.rejects(getTicketLabels(labelRepo, db,
+        { ...labelContext, tenantId: foreignTenant }), NotFoundError);
+      await assert.rejects(getTicketLabels(labelRepo, db,
+        { ...labelContext, projectId: foreignProject }), NotFoundError);
+
       for (const params of [
         { tenantId: tenant, projectId: project, requesterId: admin },
         { tenantId: tenant, projectId: archived, requesterId: requester },
@@ -76,6 +88,8 @@ test('request options require active requester membership and include only activ
       await db.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1', [requester]);
       await assert.rejects(getRequestOptions(repo, db,
         { tenantId: tenant, projectId: project, requesterId: requester }), NotFoundError);
+      await db.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1", [project]);
+      assert.equal((await getTicketLabels(labelRepo, db, labelContext)).locationName, 'West / Old Unit');
     } finally {
       await db.query('ROLLBACK');
       await db.end();

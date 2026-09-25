@@ -1,0 +1,53 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { api, ApiError, errorMessage } from '@/app/ui/api';
+import { Shell } from '@/app/ui/shell';
+import type { RequestTicket } from '@/app/ui/request-types';
+
+const typeLabels: Record<string, string> = {
+  LAYOUT: 'Field layout', CHECK_OUT: 'Equipment check-out', AS_BUILT: 'As-built survey',
+  TOPO: 'Topographic survey', PERMIT: 'Permit survey',
+};
+
+export function TicketDetail({ ticketId }: { ticketId: string }) {
+  const [ticket, setTicket] = useState<RequestTicket | null>(null);
+  const [error, setError] = useState('');
+  const [authNeeded, setAuthNeeded] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let current = true; setLoading(true); setError('');
+    api<{ ticket: RequestTicket }>(`/api/tickets/${ticketId}`).then(result => {
+      if (current) { setTicket(result.ticket); setAuthNeeded(false); }
+    }).catch(cause => {
+      if (current) { setTicket(null); setError(errorMessage(cause)); setAuthNeeded(cause instanceof ApiError && cause.status === 401); }
+    }).finally(() => { if (current) setLoading(false); });
+    return () => { current = false; };
+  }, [ticketId, revision]);
+  return <Shell projectId={ticket?.projectId} signedIn={Boolean(ticket)}>
+    <p className="eyebrow">{ticket?.projectName ?? 'Survey support'}</p>
+    <h1>{ticket?.ticketNumber ?? 'Request details'}</h1>
+    {loading && <p role="status">Loading request…</p>}
+    {error && <div className="notice error" role="alert">{error}
+      {authNeeded && <p><Link href={`/login?next=${encodeURIComponent(`/tickets/${ticketId}`)}`}>Sign in to view this request</Link></p>}</div>}
+    {ticket && !loading && <>
+      <span className="pill">{ticket.displayStatus}</span>
+      <section className="panel"><h2>{ticket.craft || 'Work details'}</h2>
+        <dl className="details"><div><dt>Location</dt><dd>{ticket.locationName ?? 'Not selected'}</dd></div>
+          <div><dt>Request type</dt><dd>{ticket.ticketType ? typeLabels[ticket.ticketType] : 'Not selected'}</dd></div>
+          <div><dt>Department</dt><dd>{ticket.departmentName ?? 'Not selected'}</dd></div>
+          <div><dt>Requested for</dt><dd>{ticket.requestedDate ? new Date(ticket.requestedDate).toLocaleString() : 'Not selected'}</dd></div>
+          <div><dt>Submitted</dt><dd>{ticket.submittedAt ? new Date(ticket.submittedAt).toLocaleString() : 'Not submitted'}</dd></div></dl>
+        <h2>Description</h2><p className="description">{ticket.description || 'No description yet.'}</p>
+      </section>
+      {ticket.rejectionReason && <section className="notice warning"><h2>Reason for rejection</h2><p className="description">{ticket.rejectionReason}</p></section>}
+      {ticket.delayedReason && <section className="notice warning"><h2>Delay information</h2><p className="description">{ticket.delayedReason}</p></section>}
+      {ticket.cancelReason && <section className="notice"><h2>Cancellation information</h2><p className="description">{ticket.cancelReason}</p></section>}
+      <div className="actions"><button className="secondary" onClick={() => setRevision(value => value + 1)}>Refresh status</button>
+        {ticket.status === 'DRAFT' && <Link className="button" href={`/project/${ticket.projectId}/request?draft=${ticket.id}`}>Continue draft</Link>}
+        <Link href={`/project/${ticket.projectId}/requests`}>Project requests</Link></div>
+    </>}
+  </Shell>;
+}

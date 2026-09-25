@@ -12,6 +12,8 @@ import { pool } from '@/lib/db';
 import { getTicketReadContext } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { statusLabel } from '@/modules/ticket/domain/status-label';
+import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
+import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
 import { recordApproverTimeoutSignals } from
   '@/modules/ticket/infrastructure/timeout-signal.repository';
 
@@ -28,11 +30,15 @@ export async function GET(
 
     const ticket = await repo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
     if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
+    const labels = await getTicketLabels(new TicketLabelsRepository(), pool, {
+      tenantId: ctx.tenantId, projectId: ticket.projectId,
+      aorNodeId: ticket.aorNodeId, departmentId: ticket.departmentId,
+    });
     if (ticket.status === 'SUBMITTED') {
       await recordApproverTimeoutSignals(pool, ctx.tenantId, [ticket.id]);
     }
 
-    return NextResponse.json({ ticket: { ...ticket,
+    return NextResponse.json({ ticket: { ...ticket, ...labels,
       displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);

@@ -33,7 +33,7 @@ export default function DraftsPage() {
     } catch (cause) { setError(errorMessage(cause)); setAuthNeeded(cause instanceof ApiError && cause.status === 401); }
     finally { setBusy(false); }
   }
-  return <Shell><p className="eyebrow">Your workspace</p><h1>Drafts</h1>
+  return <Shell signedIn={Boolean(page)}><p className="eyebrow">Your workspace</p><h1>Drafts</h1>
     <p className="muted">Finish a saved request before sending it to the survey team. Drafts expire after seven days without a save.</p>
     {error && <div className="notice error" role="alert">{error}{authNeeded && <p><Link href="/login?next=%2Fdrafts">Sign in to see your drafts</Link></p>}</div>}
     {!page && !error && <p role="status">Loading drafts…</p>}

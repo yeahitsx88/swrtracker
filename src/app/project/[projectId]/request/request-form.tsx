@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import type { RequestOptions } from '@/modules/tenancy/application/request-options';
 import { api, ApiError, errorMessage, jsonBody } from '@/app/ui/api';
 import { localDateTime, type RequestDraft } from '@/app/ui/request-types';
@@ -12,6 +13,7 @@ const empty = { aorNodeId: '', departmentId: '', ticketType: '', craft: '', desc
 export function RequestForm({ projectId, draftId, tenantId }: {
   projectId: string; draftId?: string; tenantId?: string;
 }) {
+  const router = useRouter();
   const [options, setOptions] = useState<RequestOptions | null>(null);
   const [fields, setFields] = useState(empty);
   const [error, setError] = useState('');
@@ -34,12 +36,14 @@ export function RequestForm({ projectId, draftId, tenantId }: {
     let current = true;
     async function load() {
       try {
-        const data = await api<RequestOptions>(`/api/projects/${projectId}/request-options`);
         const draft = draftId
           ? (await api<{ ticket: RequestDraft }>(`/api/tickets/${draftId}`)).ticket : null;
-        if (draft && (draft.projectId !== projectId || draft.status !== 'DRAFT')) {
+        if (draft && draft.projectId !== projectId) {
           throw new Error('This request is not an editable draft for this project.');
         }
+        if (!current) return;
+        if (draft && draft.status !== 'DRAFT') { router.replace(`/tickets/${draft.id}`); return; }
+        const data = await api<RequestOptions>(`/api/projects/${projectId}/request-options`);
         if (!current) return;
         setOptions(data);
         setFields(draft ? {
@@ -53,7 +57,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
     }
     void load();
     return () => { current = false; };
-  }, [projectId, draftId]);
+  }, [projectId, draftId, router]);
 
   function edit(key: keyof typeof empty, value: string) {
     setFields(prior => ({ ...prior, [key]: value })); setMessage('');
@@ -75,6 +79,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
       if (submit) {
         const response = await api<{ ticket: RequestDraft }>(`/api/tickets/${result.ticket.id}/submit`, jsonBody({}));
         setSubmitted(response.ticket.ticketNumber);
+        router.replace(`/tickets/${response.ticket.id}`);
       } else setMessage('Draft saved. You can find it in Drafts.');
     } catch (cause) {
       setError(errorMessage(cause)); setAuthNeeded(cause instanceof ApiError && cause.status === 401);
@@ -84,7 +89,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
 
   function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); void save(true); }
   const missingLocation = fields.aorNodeId && options && !options.aorNodes.some(node => node.id === fields.aorNodeId);
-  return <Shell><p className="eyebrow">{options?.project.name ?? 'Survey support'}</p>
+  return <Shell projectId={projectId} signedIn={Boolean(options)}><p className="eyebrow">{options?.project.name ?? 'Survey support'}</p>
     <h1>{submitted ? 'Request submitted' : draftId ? 'Continue your request' : 'New survey request'}</h1>
     {submitted ? <div className="panel" role="status" ref={feedback} tabIndex={-1}><span className="pill">Pending Review</span>
       <h2>{submitted}</h2><p>Your request has been sent to the survey team for review.</p>

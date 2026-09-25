@@ -8,6 +8,10 @@ test('login return path preserves request drafts and rejects external destinatio
   const draft = request + '?draft=abcdefab-1234-1234-1234-123456789abc';
   assert.equal(safeReturnPath(request), request);
   assert.equal(safeReturnPath(draft), draft);
+  const detail = '/tickets/12345678-1234-1234-1234-123456789abc';
+  const list = '/project/12345678-1234-1234-1234-123456789abc/requests';
+  assert.equal(safeReturnPath(detail), detail);
+  assert.equal(safeReturnPath(list), list);
   for (const input of ['https://example.test', '//example.test', '/\\example.test',
     '/login?next=https://example.test', request + '?next=https://example.test']) {
     assert.equal(safeReturnPath(input), '/drafts');

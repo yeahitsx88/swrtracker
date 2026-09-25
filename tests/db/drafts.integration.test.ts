@@ -52,14 +52,17 @@ test('PostgreSQL partial draft save, isolated listing, submit-time number, and r
           companyType: 'GC' } })).total, 0);
       await assert.rejects(submitTicket(repo, db, { tenantId, ticketId: draft.id,
         actorId: requesterId, actorRole: 'REQUESTER' }));
-      await saveDraft(repo, db, { ...ctx, ticketId: draft.id,
+      const requestedDate = new Date(Date.now() + 72 * 60 * 60 * 1000);
+      const saved = await saveDraft(repo, db, { ...ctx, ticketId: draft.id,
         fields: { aorNodeId: nodeId, departmentId, ticketType: 'LAYOUT',
           craft: 'Pipe', description: 'Layout',
-          requestedDate: new Date(Date.now() + 72 * 60 * 60 * 1000) } });
+          requestedDate } });
+      assert.equal(saved.requestedDate?.toISOString(), requestedDate.toISOString());
       const submitted = await submitTicket(repo, db, { tenantId, ticketId: draft.id,
         actorId: requesterId, actorRole: 'REQUESTER', isWhitelisted: false });
       assert.match(submitted.ticketNumber ?? '', /^FSS-U1-\d{5}$/);
       assert.equal(submitted.status, 'SUBMITTED');
+      assert.equal(submitted.requestedDate?.toISOString(), requestedDate.toISOString());
       await db.query(`UPDATE tickets SET submitted_at=NOW()-INTERVAL '25 hours'
         WHERE id=$1 AND tenant_id=$2`, [draft.id, tenantId]);
       assert.equal(await recordApproverTimeoutSignals(db, tenantId, [draft.id]), 2);

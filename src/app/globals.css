@@ -34,4 +34,10 @@ textarea { resize:vertical; min-height:150px; }
 .record h2 { margin-bottom:6px; } .record p { margin-bottom:10px; overflow-wrap:anywhere; }
 .pill { display:inline-block; background:#e6eee7; color:var(--green); border-radius:20px; font-size:12px; font-weight:700; padding:4px 10px; margin-bottom:12px; }
 .footer { color:var(--muted); font-size:13px; padding:24px; text-align:center; }
+nav { align-items:center; }
+.nav-button { min-height:44px; padding:0; background:transparent; border:0; color:var(--green); font-size:14px; text-decoration:underline; text-underline-offset:4px; }
+.details { margin:0 0 28px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.details dt { font-size:13px; color:var(--muted); margin-bottom:4px; }
+.details dd { margin:0; font-weight:700; overflow-wrap:anywhere; }
+.description { white-space:pre-wrap; overflow-wrap:anywhere; }
 @media(max-width:600px) { .brand span { display:none; } .topbar { padding:16px 20px; } .workspace { margin-top:30px; padding:0 18px; } .panel { padding:20px; } .grid { grid-template-columns:1fr; } .actions > * { flex:1 1 auto; } }

@@ -12,6 +12,17 @@ export interface RequestDraft {
   draftLastSavedAt: string | null;
 }
 
+export interface RequestTicket extends RequestDraft {
+  displayStatus: string;
+  projectName: string;
+  locationName: string | null;
+  departmentName: string | null;
+  submittedAt: string | null;
+  rejectionReason: string | null;
+  delayedReason: string | null;
+  cancelReason: string | null;
+}
+
 export function localDateTime(value: string | null): string {
   if (!value) return '';
   const date = new Date(value);
