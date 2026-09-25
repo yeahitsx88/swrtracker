@@ -525,3 +525,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: Superintendent browser acceptance, override rejection and remaining role surfaces; responsive QA.
 - Production behavior changed: yes.
 - Module boundary deviation: sequential Tenancy candidate/label extension and Ticket application/UI integration, with two related existing API routes and shared response types. Cross-module access remains through application services. No migrations or mutation policy changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 31 (Superintendent browser acceptance)
+- Intent: verify Superintendent reassignment through the production UI against a disposable Full Build fixture.
+- Files touched: CODEX.md.
+- Behavior verified: current Superintendent name is visible; picker excludes inactive and out-of-AOR Superintendents; unchanged selection and missing reason are rejected. Manager replacement refreshes the displayed name and preserves pending delay information. Signing in as the replacement shows the new assignment and field approval controls but no Superintendent reassignment control.
+- Verification: PostgreSQL assertions proved preserved PENDING_PC_APPROVAL and pending DELAYED report/reason, replacement snapshot, and exactly one ticket.superintendent_reassigned event with the correct manager actor, old/new IDs and written reason. TypeScript passed; standard suite passed 132 with 29 database skips. No production changes since Batch 30's passing build and 159 PostgreSQL tests. Preview stopped, disposable database and fixtures removed, browser tab closed.
+- Known gap queued for later batches: override rejection, remaining role surfaces and responsive visual QA; outstanding Slim/Superintendent crew-reassignment browser branches.
+- Production behavior changed: no.
+- Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
