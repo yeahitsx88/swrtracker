@@ -462,3 +462,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: survey-cancellation browser acceptance, reassignment, priority controls and responsive visual QA remain.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket capability plus one detail API route and ticket web/shared response types; no migration or command policy changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 24 (Priority adjustment controls)
+- Intent: expose Survey Manager priority adjustment with the required High-downgrade confirmation.
+- Files touched: src/modules/ticket/application/priority-actions.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/priority-actions.tsx, src/app/tickets/[ticketId]/ticket-detail.tsx, tests/ticket/priority-actions.test.ts, CODEX.md.
+- Behavior added: eligible Survey Managers see current priority and can elevate to High or select a server-derived lower priority. A native modal dialog requires confirmation before showing the reason field for a High downgrade. Every adjustment requires a written reason and uses existing audited endpoints. Pending submission disables other actions, errors remain visible, and successful changes refresh details.
+- Verification: baseline and final TypeScript and standard tests passed. Final standard suite passed 124 with 28 database skips; PostgreSQL suite passed 150 with 2 dedicated-URL skips. Production build and whitespace checks passed. Capability tests cover each rank, terminal/draft/rejected states, wrong roles, company isolation, archived project and infrastructure failure propagation. Existing database High downgrade confirmation/audit checks remain passing. Browser acceptance for priority and survey cancellation is pending.
+- Known gap queued for later batches: browser acceptance, crew reassignment and responsive visual QA remain. Elevation currently uses the existing High-only endpoint; lower controls preserve the existing rejection restriction.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket capability plus one detail API route and ticket web/shared types; no migration or mutation policy change. Concurrent sample/configuration changes excluded.

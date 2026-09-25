@@ -13,6 +13,8 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  priority: 'NORMAL' | 'MEDIUM' | 'MED_HIGH' | 'HIGH';
+  priorityActions: { canElevate: boolean; lowerChoices: Array<'NORMAL' | 'MEDIUM' | 'MED_HIGH' | 'HIGH'> };
   surveyCancelActions: { canInitiate: boolean; canApprove: boolean; immediate: boolean; pending: boolean };
   fieldActions: { canStart: boolean; canReport: boolean; canRequestFieldCancel: boolean;
     canResolve: boolean; canRestart: boolean; canCompleteDirectly: boolean };

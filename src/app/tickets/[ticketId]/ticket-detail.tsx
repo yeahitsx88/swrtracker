@@ -11,6 +11,7 @@ import { ReviewActions } from './review-actions';
 import { AssignmentActions } from './assignment-actions';
 import { FieldActions } from './field-actions';
 import { SurveyCancelActions } from './survey-cancel-actions';
+import { PriorityActions } from './priority-actions';
 
 const typeLabels: Record<string, string> = {
   LAYOUT: 'Field layout', CHECK_OUT: 'Equipment check-out', AS_BUILT: 'As-built survey',
@@ -61,6 +62,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       <AssignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onAssigned={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <FieldActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <SurveyCancelActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
+      <PriorityActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <RequesterActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onCanceled={() => setRevision(value => value + 1)} />
       <Attachments key={revision} ticketId={ticket.id} disabled={actionBusy} onBusyChange={setAttachmentBusy} />
       <div className="actions"><button className="secondary" disabled={attachmentBusy || actionBusy} onClick={() => setRevision(value => value + 1)}>Refresh status</button>
