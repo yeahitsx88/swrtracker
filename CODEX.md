@@ -381,3 +381,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: existing accounts need invitations to join additional projects; project discovery, role-aware navigation, and survey execution/approval UI remain. Registration API now requires projectId; companyId is optional and must match the domain binding when supplied.
 - Production behavior changed: yes.
 - Module boundary deviation: Identity orchestrates Tenancy and Audit application services, with one registration API route and entry pages; no migration. Concurrent sample/configuration changes are excluded.
+
+### 2026-09-25 - Batch 15 (Project directory)
+- Intent: let signed-in users discover accessible projects without copying project IDs.
+- Files touched: src/modules/tenancy/application/project-directory.ts, src/modules/tenancy/infrastructure/project-directory.repository.ts, src/app/api/projects/route.ts, src/app/projects/page.tsx, src/app/page.tsx, src/app/ui/api.ts, src/app/ui/shell.tsx, tests/tenancy/project-directory.test.ts, CODEX.md.
+- Behavior added: paginated authenticated project listing scoped to active users and project membership, with tenant-wide discovery for tenant administrators. Project cards expose server-derived request capabilities, setup messaging, and archived read-only labels. Navigation and default sign-in destination lead to Projects; explicit draft, request and invitation return paths are preserved.
+- Verification: baseline TypeScript and standard tests passed. Final production build, TypeScript, standard suite (116 pass, 27 database skips), full PostgreSQL suite (141 pass, 2 dedicated-URL skips), and whitespace checks passed. Integration coverage verifies tenant boundaries, membership removal, deactivation, admin discovery without requester privileges, pagination, lifecycle capabilities and invalid pagination. An initial fixture incorrectly attempted two memberships for one user/project; corrected to the schema's single-role constraint. Browser visual verification remains pending.
+- Known gap queued for later batches: role-specific survey execution/approval actions and administrator setup UI remain; setup cards describe pending activation without an administration destination.
+- Production behavior changed: yes.
+- Module boundary deviation: Tenancy directory service plus one project API route and shared web navigation; no migration. Concurrent sample/configuration changes excluded.

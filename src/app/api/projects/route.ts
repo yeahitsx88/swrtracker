@@ -13,8 +13,21 @@ import { parseUuid } from '@/lib/parse-uuid';
 import { createProject } from '@/modules/tenancy/application/create-project';
 import { createProjectFromTemplate } from '@/modules/tenancy/application/project-templates';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
+import { listAccessibleProjects } from '@/modules/tenancy/application/project-directory';
+import { ProjectDirectoryRepository } from '@/modules/tenancy/infrastructure/project-directory.repository';
 
 export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  try {
+    const auth = await requireAuth(req);
+    const query = new URL(req.url).searchParams;
+    const page = await listAccessibleProjects(new ProjectDirectoryRepository(), pool, {
+      ...auth, limit: Number(query.get('limit') ?? '50'), offset: Number(query.get('offset') ?? '0'),
+    });
+    return NextResponse.json(page);
+  } catch (error) { return errorResponse(error); }
+}
 
 export async function POST(req: NextRequest) {
   try {
