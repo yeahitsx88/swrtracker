@@ -2381,3 +2381,10 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added/changed: `beta:reset` stops the local database, rejects an unexpected or symbolic-link beta root, moves the complete dataset into an owner-only timestamped backup, and creates a fresh seeded beta.
 - Validation: Node 22.23.3 TypeScript passed, the focused reset-policy tests passed, and all 241 tests passed. The current beta dataset was deliberately left intact.
 - Production behavior changed: no; this is a device-local beta operation. GitHub publication is deferred.
+
+### 2026-09-24 — ADCQ-260923-001 Gate B9 owner-scoped ticket actions
+- Intent: align company-authority and staff ticket controls with the ownership and assignment rules already enforced by the APIs.
+- Files touched: ticket capability resolver and contract; ticket detail endpoint and screen; requester list; capability tests; validation record.
+- Behavior added/changed: the server reports edit, submit, cancel, follow-up, instruction-upload, and field-upload capabilities for the current actor and ticket. The UI renders only those actions. Requester cancellation is now on an owned ticket detail rather than the company-visible list.
+- Validation: live company-authority checks returned no mutation capabilities on another requester's returned SWR and only follow-up capability on the authority's own completed SWR. Node 22.23.3 TypeScript, 245 tests, and the Next production build passed; beta services were stopped.
+- Production behavior changed: yes. Changes remain local and GitHub publication is deferred.

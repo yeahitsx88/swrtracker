@@ -5,17 +5,19 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
-import type { AttachmentRecord, TicketRecord } from '@/lib/contracts';
+import type { AttachmentRecord, TicketCapabilities, TicketRecord } from '@/lib/contracts';
 import { AttachmentList, AttachmentUploader, TicketDetails, TicketHistory } from '@/components/tickets';
 import { Button, Card, ErrorBanner, Input, SuccessBanner, Textarea } from '@/components/ui';
 import { Field } from '@/components/forms';
 
-const TERMINAL_UPLOAD_BLOCK_STATUSES = new Set([
-  'COMPLETED',
-  'REQUESTER_CANCELED',
-  'FIELD_CANCELED',
-  'SURVEY_CANCELED',
-]);
+const NO_CAPABILITIES: TicketCapabilities = {
+  canEditRequesterFields: false,
+  canSubmit: false,
+  canRequesterCancel: false,
+  canCreateFollowUp: false,
+  canUploadRequestInstruction: false,
+  canUploadFieldSupport: false,
+};
 
 export default function TicketDetailPage() {
   const params = useParams<{ projectId: string; ticketId: string }>();
@@ -24,7 +26,7 @@ export default function TicketDetailPage() {
   const router = useRouter();
 
   const [ticket, setTicket] = useState<TicketRecord | null>(null);
-  const [canCreateFollowUp, setCanCreateFollowUp] = useState(false);
+  const [capabilities, setCapabilities] = useState<TicketCapabilities>(NO_CAPABILITIES);
   const [attachments, setAttachments] = useState<AttachmentRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -32,6 +34,7 @@ export default function TicketDetailPage() {
   const [submittingDraft, setSubmittingDraft] = useState(false);
   const [saving, setSaving] = useState(false);
   const [creatingFollowUp, setCreatingFollowUp] = useState(false);
+  const [canceling, setCanceling] = useState(false);
   const [historyRevision, setHistoryRevision] = useState(0);
   const [editCraft, setEditCraft] = useState('');
   const [editFieldContact, setEditFieldContact] = useState('');
@@ -40,18 +43,20 @@ export default function TicketDetailPage() {
   const [editRequestedDate, setEditRequestedDate] = useState('');
   const [urgentReason, setUrgentReason] = useState('');
 
-  const uploadsDisabled = !ticket || TERMINAL_UPLOAD_BLOCK_STATUSES.has(ticket.status);
+  const canUpload = capabilities.canUploadRequestInstruction || capabilities.canUploadFieldSupport;
 
   async function loadAll() {
     setLoading(true);
     setError(null);
+    setTicket(null);
+    setCapabilities(NO_CAPABILITIES);
     try {
       const [ticketResponse, attachmentsResponse] = await Promise.all([
         apiClient.getTicket(ticketId),
         apiClient.listAttachments(ticketId),
       ]);
       setTicket(ticketResponse.ticket);
-      setCanCreateFollowUp(ticketResponse.capabilities?.canCreateFollowUp ?? false);
+      setCapabilities(ticketResponse.capabilities ?? NO_CAPABILITIES);
       setEditCraft(ticketResponse.ticket.craft);
       setEditFieldContact(ticketResponse.ticket.fieldContact ?? '');
       setEditFieldChannel(ticketResponse.ticket.fieldChannel ?? '');
@@ -75,9 +80,8 @@ export default function TicketDetailPage() {
     setSuccess(null);
     setSubmittingDraft(true);
     try {
-      const response = await apiClient.submitTicket(ticketId, undefined, urgentReason.trim() || undefined);
-      setTicket(response.ticket);
-      setHistoryRevision((revision) => revision + 1);
+      await apiClient.submitTicket(ticketId, undefined, urgentReason.trim() || undefined);
+      await loadAll();
       setSuccess('Draft submitted successfully.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to submit draft.'));
@@ -114,6 +118,20 @@ export default function TicketDetailPage() {
     }
   }
 
+  async function cancelRequest() {
+    if (!window.confirm('Cancel this SWR? This action is permanent.')) return;
+    setCanceling(true); setError(null); setSuccess(null);
+    try {
+      await apiClient.requesterCancel(ticketId);
+      await loadAll();
+      setSuccess('SWR canceled.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Unable to cancel this SWR.'));
+    } finally {
+      setCanceling(false);
+    }
+  }
+
   return (
     <div className="stack">
       <Card title="Ticket Detail" description="Requester detail surface with active-ticket attachment controls.">
@@ -129,12 +147,17 @@ export default function TicketDetailPage() {
               Refresh
             </Button>
           </div>
-          {ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION' ? (
+          {capabilities.canSubmit ? (
             <Button disabled={submittingDraft} onClick={() => void submitDraft()}>
-              {submittingDraft ? 'Submitting...' : ticket.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
+              {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
             </Button>
           ) : null}
-          {ticket?.status === 'COMPLETED' && canCreateFollowUp ? (
+          {capabilities.canRequesterCancel ? (
+            <Button variant="secondary" disabled={canceling} onClick={() => void cancelRequest()}>
+              {canceling ? 'Canceling…' : 'Cancel SWR'}
+            </Button>
+          ) : null}
+          {capabilities.canCreateFollowUp ? (
             <Button disabled={creatingFollowUp} onClick={() => void createFollowUp()}>
               {creatingFollowUp ? 'Creating Follow-Up…' : 'Create Follow-Up SWR'}
             </Button>
@@ -142,7 +165,7 @@ export default function TicketDetailPage() {
         </div>
       </Card>
 
-      {ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION' ? (
+      {capabilities.canEditRequesterFields ? (
         <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
           <div className="stack">
             <Field label="Craft / Discipline"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
@@ -161,23 +184,26 @@ export default function TicketDetailPage() {
           {ticket ? (
             <p className="muted">Current Status: {ticket.status}</p>
           ) : null}
-          <AttachmentUploader
-            disabled={uploadsDisabled}
-            instructionMode={ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION'}
-            onUpload={async (payload) => {
-              setError(null);
-              setSuccess(null);
-              try {
-                await apiClient.uploadAttachment(ticketId, payload);
-                const refreshed = await apiClient.listAttachments(ticketId);
-                setAttachments(refreshed.attachments);
-                setHistoryRevision((revision) => revision + 1);
-                setSuccess('Attachment uploaded.');
-              } catch (err) {
-                setError(getErrorMessage(err, 'Unable to upload attachment.'));
-              }
-            }}
-          />
+          {canUpload ? (
+            <AttachmentUploader
+              instructionMode={capabilities.canUploadRequestInstruction}
+              onUpload={async (payload) => {
+                setError(null);
+                setSuccess(null);
+                try {
+                  await apiClient.uploadAttachment(ticketId, payload);
+                  const refreshed = await apiClient.listAttachments(ticketId);
+                  setAttachments(refreshed.attachments);
+                  setHistoryRevision((revision) => revision + 1);
+                  setSuccess('Attachment uploaded.');
+                } catch (err) {
+                  setError(getErrorMessage(err, 'Unable to upload attachment.'));
+                }
+              }}
+            />
+          ) : (
+            <p className="muted">You can view and download attachments on this SWR. No upload action is available in your current role or state.</p>
+          )}
           <AttachmentList attachments={attachments} />
         </div>
       </Card>

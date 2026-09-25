@@ -143,3 +143,9 @@ Node 22.23.3 TypeScript passed, all 239 tests passed, and the Next production bu
 `pnpm beta:reset` provides a deliberate way to restore the original five-case walkthrough baseline. It accepts only the fixed `.data/beta/` workspace path, rejects a symbolic-link beta root, stops PostgreSQL, moves the complete prior dataset to an owner-only timestamped `.data/beta-backups/` directory, and then performs normal setup and seeding. The existing device dataset was not reset during implementation.
 
 Node 22.23.3 TypeScript passed, the two reset-policy tests passed, and all 241 tests passed.
+
+## Gate B9 owner-scoped ticket actions
+
+The ticket detail endpoint now returns server-computed action capabilities from the authenticated actor, role, ticket ownership, assignment, workflow variant, and current state. The shared ticket screen uses those capabilities for requester editing, submit/resubmit, requester cancellation, follow-up creation, instruction upload, and field-support upload. Company authorities retain read access to company SWRs but receive no mutation controls on another employee's SWR. Requester cancellation moved from the company-wide list to the owned ticket detail.
+
+Live beta verification as the company authority returned all six mutation capabilities as `false` on the other requester's returned SWR and only `canCreateFollowUp: true` on the authority's own completed SWR. Node 22.23.3 TypeScript passed, all 245 tests passed, the Next production build passed, and the beta database stopped cleanly.

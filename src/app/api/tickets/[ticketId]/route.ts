@@ -12,6 +12,7 @@ import { pool } from '@/lib/db';
 import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { updateRequesterTicket } from '@/modules/ticket/application/update-requester-ticket';
+import { getTicketCapabilities } from '@/modules/ticket/application/get-ticket-capabilities';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import type { TicketType } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';
@@ -32,12 +33,7 @@ export async function GET(
 
     return NextResponse.json({
       ticket,
-      capabilities: {
-        canCreateFollowUp:
-          ctx.actorRole === 'REQUESTER' &&
-          ticket.requesterId === ctx.actorId &&
-          ticket.status === 'COMPLETED',
-      },
+      capabilities: getTicketCapabilities(ticket, { id: ctx.actorId, role: ctx.actorRole }),
     });
   } catch (err) {
     return errorResponse(err);

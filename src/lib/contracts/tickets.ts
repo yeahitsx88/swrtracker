@@ -73,9 +73,16 @@ export interface TicketListResponse {
 
 export interface TicketResponse {
   ticket: TicketRecord;
-  capabilities?: {
-    canCreateFollowUp: boolean;
-  };
+  capabilities?: TicketCapabilities;
+}
+
+export interface TicketCapabilities {
+  canEditRequesterFields: boolean;
+  canSubmit: boolean;
+  canRequesterCancel: boolean;
+  canCreateFollowUp: boolean;
+  canUploadRequestInstruction: boolean;
+  canUploadFieldSupport: boolean;
 }
 
 export interface CreateTicketRequest {
