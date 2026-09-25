@@ -6,6 +6,7 @@ import { api, ApiError, errorMessage } from '@/app/ui/api';
 import { Shell } from '@/app/ui/shell';
 import { Attachments } from '@/app/ui/attachments';
 import type { RequestTicket } from '@/app/ui/request-types';
+import { RequesterActions } from './requester-actions';
 
 const typeLabels: Record<string, string> = {
   LAYOUT: 'Field layout', CHECK_OUT: 'Equipment check-out', AS_BUILT: 'As-built survey',
@@ -19,6 +20,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
   const [revision, setRevision] = useState(0);
   const [loading, setLoading] = useState(true);
   const [attachmentBusy, setAttachmentBusy] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
   useEffect(() => {
     let current = true; setLoading(true); setError('');
     api<{ ticket: RequestTicket }>(`/api/tickets/${ticketId}`).then(result => {
@@ -47,8 +49,9 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       {ticket.rejectionReason && <section className="notice warning"><h2>Reason for rejection</h2><p className="description">{ticket.rejectionReason}</p></section>}
       {ticket.delayedReason && <section className="notice warning"><h2>Delay information</h2><p className="description">{ticket.delayedReason}</p></section>}
       {ticket.cancelReason && <section className="notice"><h2>Cancellation information</h2><p className="description">{ticket.cancelReason}</p></section>}
-      <Attachments key={revision} ticketId={ticket.id} onBusyChange={setAttachmentBusy} />
-      <div className="actions"><button className="secondary" disabled={attachmentBusy} onClick={() => setRevision(value => value + 1)}>Refresh status</button>
+      <RequesterActions ticket={ticket} disabled={attachmentBusy} onBusyChange={setActionBusy} onCanceled={() => setRevision(value => value + 1)} />
+      <Attachments key={revision} ticketId={ticket.id} disabled={actionBusy} onBusyChange={setAttachmentBusy} />
+      <div className="actions"><button className="secondary" disabled={attachmentBusy || actionBusy} onClick={() => setRevision(value => value + 1)}>Refresh status</button>
         {ticket.status === 'DRAFT' && <Link className="button" href={`/project/${ticket.projectId}/request?draft=${ticket.id}`}>Continue draft</Link>}
         <Link href={`/project/${ticket.projectId}/requests`}>Project requests</Link></div>
     </>}

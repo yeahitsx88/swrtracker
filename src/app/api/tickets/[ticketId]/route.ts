@@ -12,6 +12,7 @@ import { pool } from '@/lib/db';
 import { getTicketReadContext } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { statusLabel } from '@/modules/ticket/domain/status-label';
+import { getRequesterActions } from '@/modules/ticket/application/requester-actions';
 import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
 import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
 import { recordApproverTimeoutSignals } from
@@ -38,7 +39,8 @@ export async function GET(
       await recordApproverTimeoutSignals(pool, ctx.tenantId, [ticket.id]);
     }
 
-    return NextResponse.json({ ticket: { ...ticket, ...labels,
+    const requesterActions = await getRequesterActions(repo, pool, ticket, ctx.visibility);
+    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions,
       displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);

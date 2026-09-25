@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import type { RequestOptions } from '@/modules/tenancy/application/request-options';
 import { api, ApiError, errorMessage, jsonBody } from '@/app/ui/api';
-import { localDateTime, type RequestDraft } from '@/app/ui/request-types';
+import { localDateTime, type RequestDraft, type RequestTicket } from '@/app/ui/request-types';
 import { Shell } from '@/app/ui/shell';
 import { Attachments } from '@/app/ui/attachments';
 
@@ -17,6 +17,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
   const router = useRouter();
   const [options, setOptions] = useState<RequestOptions | null>(null);
   const [fields, setFields] = useState(empty);
+  const [savedLocationName, setSavedLocationName] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [authNeeded, setAuthNeeded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
     async function load() {
       try {
         const draft = draftId
-          ? (await api<{ ticket: RequestDraft }>(`/api/tickets/${draftId}`)).ticket : null;
+          ? (await api<{ ticket: RequestTicket }>(`/api/tickets/${draftId}`)).ticket : null;
         if (draft && draft.projectId !== projectId) {
           throw new Error('This request is not an editable draft for this project.');
         }
@@ -48,6 +49,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
         const data = await api<RequestOptions>(`/api/projects/${projectId}/request-options`);
         if (!current) return;
         setOptions(data);
+        setSavedLocationName(draft?.locationName ?? null);
         setFields(draft ? {
           aorNodeId: draft.aorNodeId ?? '', departmentId: data.ownDepartmentId ?? draft.departmentId ?? '',
           ticketType: draft.ticketType ?? '', craft: draft.craft ?? '', description: draft.description ?? '',
@@ -109,7 +111,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
           <h2>Work details</h2>
           <label className="field">Work location<select required value={fields.aorNodeId} onChange={event => edit('aorNodeId', event.target.value)}>
             <option value="">Choose an area</option>
-            {missingLocation && <option value={fields.aorNodeId}>Previously selected location</option>}
+            {missingLocation && <option value={fields.aorNodeId}>{savedLocationName ?? 'Previously selected location'} (retired)</option>}
             {options.aorNodes.map(node => <option key={node.id} value={node.id}>{node.path} · {node.code}</option>)}
           </select></label>
           {missingLocation && <p className="notice warning">The selected area may have changed. Confirm the location before submitting, or select an active area.</p>}

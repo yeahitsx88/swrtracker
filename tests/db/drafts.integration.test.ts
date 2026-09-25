@@ -112,12 +112,22 @@ test('PostgreSQL partial draft save, isolated listing, submit-time number, and r
         WHERE id=$1 AND tenant_id=$2`, [draft.id, tenantId]);
       await db.query('UPDATE aor_nodes SET retired_at=NOW() WHERE id=$1 AND tenant_id=$2',
         [nodeId, tenantId]);
+      await db.query(`INSERT INTO attachments(ticket_id,tenant_id,uploaded_by,filename,mime_type,
+        storage_key,size_bytes,ticket_status_at_upload) VALUES($1,$2,$3,'original.pdf','application/pdf',$4,10,'REJECTED')`,
+        [draft.id, tenantId, requesterId, `${tenantId}/${draft.id}/${id()}`]);
       const revision = await saveDraft(repo, db, {
         ...ctx, parentTicketId: draft.id, fields: {},
       });
       assert.equal(revision.parentTicketId, draft.id);
       assert.equal(revision.aorNodeId, nodeId);
       assert.equal(revision.requestedDate, null);
+      assert.equal(revision.priority, 'NORMAL');
+      assert.equal(revision.ticketNumber, null);
+      assert.equal(revision.description, submitted.description);
+      assert.equal(revision.departmentId, submitted.departmentId);
+      const copiedFiles = await db.query('SELECT id FROM attachments WHERE tenant_id=$1 AND ticket_id=$2',
+        [tenantId, revision.id]);
+      assert.equal(copiedFiles.rows.length, 0);
       await saveDraft(repo, db, { ...ctx, ticketId: revision.id,
         fields: { requestedDate: new Date(Date.now() + 72 * 60 * 60 * 1000) } });
       const revised = await submitTicket(repo, db, { tenantId,
