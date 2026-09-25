@@ -113,3 +113,9 @@ Observed B4 checks:
 | Regression gate | Node 22.23.3 TypeScript passed; 224 tests passed; Next production build passed |
 
 The persistent `.data/beta/` dataset remains on the device for the user's private walkthrough and is ignored by Git. The runbook is `docs/AMELIA_PRIVATE_BETA.md`. These checks do not establish hosted operations, real mail, organization-owned file recovery, real-user onboarding, SharePoint import, or Amelia field-pilot acceptance.
+
+## Gate B5 private-beta usability and traceability
+
+The first real-browser walkthrough exercised Survey Lead and subcontractor company-authority sessions against the persistent Amelia sample dataset. It replaced manual project UUID entry with an authenticated active-project list, displays **Entergy Amelia** in the project shell, exposes linked follow-up creation only to the original requester of a completed SWR, and renders a visibility-gated ticket history from workflow events, returns, assignments, Need-By revisions, attachment activity, and local notifications.
+
+Observed B5 checks: the launcher opened Amelia from a project card; the Survey Operations measures, assignment queue, and local message preview rendered; the completed company-authority SWR showed the follow-up action; its history returned ten ordered records without storage, recipient, email, or idempotency fields; a direct hidden-ticket check remained covered by the route tests. Node 22.23.3 TypeScript passed, 235 tests passed, and the Next production build passed. The browser and beta PostgreSQL server were closed after the walkthrough.

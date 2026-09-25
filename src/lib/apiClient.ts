@@ -12,6 +12,7 @@ import type {
   ResetPasswordRequest,
   ResetPasswordResponse,
   TicketListResponse,
+  TicketHistoryResponse,
   TicketResponse,
   UploadAttachmentRequest,
   UpdateRequesterTicketRequest,
@@ -22,6 +23,7 @@ import type {
   ProjectRequestConfig,
   ProjectRequestConfigResponse,
   ProjectMembersResponse,
+  ProjectListResponse,
 } from '@/lib/contracts/projects';
 import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
 
@@ -117,6 +119,10 @@ export const apiClient = {
     return apiRequest<InviteValidationResponse>(`/api/auth/invite/${token}`);
   },
 
+  listProjects(): Promise<ProjectListResponse> {
+    return apiRequest<ProjectListResponse>('/api/projects');
+  },
+
   listTickets(projectId: string, limit = 20, offset = 0): Promise<TicketListResponse> {
     return apiRequest<TicketListResponse>(
       withQuery('/api/tickets', { projectId, limit, offset }),
@@ -131,6 +137,10 @@ export const apiClient = {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}`);
   },
 
+  getTicketHistory(ticketId: string): Promise<TicketHistoryResponse> {
+    return apiRequest<TicketHistoryResponse>(`/api/tickets/${ticketId}/history`);
+  },
+
   updateRequesterTicket(ticketId: string, input: UpdateRequesterTicketRequest): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}`, {
       method: 'PATCH',
@@ -143,6 +153,13 @@ export const apiClient = {
     return apiRequest<TicketResponse>('/api/tickets', {
       method: 'POST',
       body: input,
+      headers: { 'Idempotency-Key': createIdempotencyKey() },
+    });
+  },
+
+  createFollowUpTicket(ticketId: string): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/follow-up`, {
+      method: 'POST',
       headers: { 'Idempotency-Key': createIdempotencyKey() },
     });
   },

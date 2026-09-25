@@ -108,7 +108,10 @@ export async function createTicket(
     tenantId:  ticket.tenantId,
     actorId:   params.requesterId,
     eventType: 'ticket.created',
-    payload:   { workflowVariant: params.workflowVariant },
+    payload:   {
+      workflowVariant: params.workflowVariant,
+      ...(params.parentTicketId ? { parentTicketId: params.parentTicketId } : {}),
+    },
   });
 
   return ticket;

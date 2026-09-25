@@ -1,3 +1,5 @@
+import type { ProjectRole } from '@/modules/identity/domain/types';
+
 export interface ProjectRequestConfig {
   leadTimeEnforcementEnabled: boolean;
   leadTimeDays: number;
@@ -51,4 +53,15 @@ export interface ProjectMemberRecord {
 
 export interface ProjectMembersResponse {
   members: ProjectMemberRecord[];
+}
+
+export interface ProjectMembershipRecord {
+  id: string;
+  name: string;
+  status: 'ACTIVE';
+  role: ProjectRole;
+}
+
+export interface ProjectListResponse {
+  projects: ProjectMembershipRecord[];
 }

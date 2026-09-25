@@ -1,6 +1,6 @@
 /**
- * POST /api/projects
- * Creates a project within the authenticated user's tenant.
+ * GET /api/projects lists the signed-in user's active project memberships.
+ * POST /api/projects creates a project within the authenticated user's tenant.
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
@@ -12,10 +12,15 @@ import { createProject } from '@/modules/tenancy/application/create-project';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { CrewBuild } from '@/modules/tenancy/domain/types';
 import type { UUID } from '@/shared/types';
+import { handleGetProjects } from './get-handler';
 
 export const dynamic = 'force-dynamic';
 
 const VALID_CREW_BUILDS: CrewBuild[] = ['FULL', 'MEDIUM', 'SLIM'];
+
+export async function GET(req: NextRequest) {
+  return handleGetProjects(req);
+}
 
 export async function POST(req: NextRequest) {
   try {

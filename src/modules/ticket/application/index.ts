@@ -6,6 +6,7 @@ export type { Ticket, TicketStatus, WorkflowVariant } from '../domain/types';
 export type { ITicketRepository, TicketStatusPatch, ListTicketsOptions } from './ports';
 
 export { createTicket } from './create-ticket';
+export { createFollowUpTicket } from './create-follow-up-ticket';
 export { createDirectAssignmentTicket } from './create-direct-assignment-ticket';
 export { submitTicket } from './submit-ticket';
 export { approveTicket } from './approve-ticket';

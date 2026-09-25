@@ -1,5 +1,6 @@
 export * from './approval-actions';
 export * from './attachment-list';
+export * from './ticket-history';
 export * from './attachment-uploader';
 export * from './crew-work-actions';
 export * from './ticket-card';

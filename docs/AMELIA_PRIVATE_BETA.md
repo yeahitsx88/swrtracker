@@ -45,7 +45,7 @@ pnpm beta:stop
 
 ## Shared beta identifiers
 
-The login and project launcher currently require IDs in addition to the user credentials.
+The login currently requires the tenant ID in addition to the user credentials. After sign-in, choose **Entergy Amelia** from the project launcher; the project ID remains useful for direct links and troubleshooting.
 
 | Field | Value |
 |---|---|
@@ -84,7 +84,7 @@ Use a private browser window or sign out between roles so each step uses the int
 
 1. **Requester correction and resubmission**
    - Sign in as `requester@amelia.local` using the tenant ID above.
-   - Enter the project ID in **Project Launcher**, then open **My Requests**.
+   - Choose **Entergy Amelia** in **Project Launcher**, then open **My Requests**.
    - Open the returned SWR, change a requester field, and save it.
    - Upload a replacement instruction file, then select **Resubmit for Approval**. The same SWR number should remain in use through the new approval cycle.
 
@@ -95,7 +95,7 @@ Use a private browser window or sign out between roles so each step uses the int
    - Confirm that requester instruction uploads are no longer accepted after submission unless Survey returns that SWR for correction.
 
 3. **Survey review and assignment**
-   - Sign in as `lead@amelia.local`, enter the project ID, and open **Survey Operations**.
+   - Sign in as `lead@amelia.local`, choose **Entergy Amelia**, and open **Survey Operations**.
    - Confirm **Approved Work Needing Assignment** includes the seeded overdue request.
    - Approve a submitted SWR, then assign an Instrument Man. A Party Chief may be selected or left empty.
    - Exercise **Return**, **Set High/Normal**, or **Revise Need-By** and confirm a reason is required.
@@ -114,8 +114,8 @@ Use a private browser window or sign out between roles so each step uses the int
 
 6. **Traceability and metrics**
    - As the Survey Lead, refresh **Survey Operations**, capture queued messages, and compare the queue cards with the actions just completed.
-   - Open ticket details to download attachments. Downloads recheck visibility and append an audit event.
-   - Confirm completed SWRs remain closed. Correction work after completion should be entered as a linked follow-up SWR when that creation flow is exercised in a later package.
+   - Open ticket details to review the newest-first SWR History and download attachments. Downloads recheck visibility and append an audit event.
+   - As the original requester, open a completed SWR and select **Create Follow-Up SWR**. Confirm the completed parent stays closed and the linked child opens as an editable draft.
 
 ## Attachment and instruction rules
 
@@ -148,4 +148,3 @@ Treat this directory as one beta dataset. Do not copy its sample credentials or 
 - The identities and password are sample credentials for this private beta.
 - SharePoint remains the historical system. V1 does not import or synchronize SharePoint records.
 - Central or project IT onboarding, real subcontractor identities, hosted storage, real mail delivery, the backup Survey Lead, and one-month pilot operations remain later gates.
-

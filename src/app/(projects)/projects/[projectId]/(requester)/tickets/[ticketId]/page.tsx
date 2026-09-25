@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { AttachmentRecord, TicketRecord } from '@/lib/contracts';
-import { AttachmentList, AttachmentUploader, TicketDetails } from '@/components/tickets';
+import { AttachmentList, AttachmentUploader, TicketDetails, TicketHistory } from '@/components/tickets';
 import { Button, Card, ErrorBanner, Input, SuccessBanner, Textarea } from '@/components/ui';
 import { Field } from '@/components/forms';
 
@@ -21,14 +21,17 @@ export default function TicketDetailPage() {
   const params = useParams<{ projectId: string; ticketId: string }>();
   const projectId = params.projectId;
   const ticketId = params.ticketId;
+  const router = useRouter();
 
   const [ticket, setTicket] = useState<TicketRecord | null>(null);
+  const [canCreateFollowUp, setCanCreateFollowUp] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submittingDraft, setSubmittingDraft] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creatingFollowUp, setCreatingFollowUp] = useState(false);
   const [editCraft, setEditCraft] = useState('');
   const [editFieldContact, setEditFieldContact] = useState('');
   const [editFieldChannel, setEditFieldChannel] = useState('');
@@ -47,6 +50,7 @@ export default function TicketDetailPage() {
         apiClient.listAttachments(ticketId),
       ]);
       setTicket(ticketResponse.ticket);
+      setCanCreateFollowUp(ticketResponse.capabilities?.canCreateFollowUp ?? false);
       setEditCraft(ticketResponse.ticket.craft);
       setEditFieldContact(ticketResponse.ticket.fieldContact ?? '');
       setEditFieldChannel(ticketResponse.ticket.fieldChannel ?? '');
@@ -95,6 +99,17 @@ export default function TicketDetailPage() {
     }
   }
 
+  async function createFollowUp() {
+    setCreatingFollowUp(true); setError(null); setSuccess(null);
+    try {
+      const response = await apiClient.createFollowUpTicket(ticketId);
+      router.push(`/projects/${projectId}/tickets/${response.ticket.id}`);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Unable to create a follow-up SWR.'));
+      setCreatingFollowUp(false);
+    }
+  }
+
   return (
     <div className="stack">
       <Card title="Ticket Detail" description="Requester detail surface with active-ticket attachment controls.">
@@ -113,6 +128,11 @@ export default function TicketDetailPage() {
           {ticket?.status === 'DRAFT' || ticket?.status === 'RETURNED_FOR_CORRECTION' ? (
             <Button disabled={submittingDraft} onClick={() => void submitDraft()}>
               {submittingDraft ? 'Submitting...' : ticket.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
+            </Button>
+          ) : null}
+          {ticket?.status === 'COMPLETED' && canCreateFollowUp ? (
+            <Button disabled={creatingFollowUp} onClick={() => void createFollowUp()}>
+              {creatingFollowUp ? 'Creating Follow-Up…' : 'Create Follow-Up SWR'}
             </Button>
           ) : null}
         </div>
@@ -156,6 +176,12 @@ export default function TicketDetailPage() {
           <AttachmentList attachments={attachments} />
         </div>
       </Card>
+
+      {ticket ? (
+        <Card title="SWR History" description="Chronological record of review, assignment, files, messages, and field progress.">
+          <TicketHistory ticketId={ticket.id} />
+        </Card>
+      ) : null}
     </div>
   );
 }

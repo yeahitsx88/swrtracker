@@ -73,6 +73,9 @@ export interface TicketListResponse {
 
 export interface TicketResponse {
   ticket: TicketRecord;
+  capabilities?: {
+    canCreateFollowUp: boolean;
+  };
 }
 
 export interface CreateTicketRequest {
@@ -127,6 +130,27 @@ export interface AttachmentsListResponse {
 export interface UploadAttachmentRequest {
   file: File;
   purpose: 'REQUEST_INSTRUCTION' | 'FIELD_SUPPORT';
+}
+
+export type TicketHistorySource =
+  | 'TICKET_EVENT'
+  | 'RETURN_CYCLE'
+  | 'ASSIGNMENT'
+  | 'NEED_BY_REVISION'
+  | 'ATTACHMENT'
+  | 'NOTIFICATION';
+
+export interface TicketHistoryItem {
+  id: string;
+  source: TicketHistorySource;
+  type: string;
+  occurredAt: string;
+  actor: { id: string; name: string } | null;
+  details: Record<string, unknown>;
+}
+
+export interface TicketHistoryResponse {
+  history: TicketHistoryItem[];
 }
 
 export interface AorLevelRecord {

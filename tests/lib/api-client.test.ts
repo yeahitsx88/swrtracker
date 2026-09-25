@@ -35,6 +35,30 @@ test('apiClient forwards method/body/query and parses success payloads', { concu
   }
 });
 
+test('apiClient lists projects from the authenticated project collection', { concurrency: false }, async () => {
+  let capturedUrl = '';
+  let capturedInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    capturedUrl = String(input);
+    capturedInit = init;
+    return new Response(JSON.stringify({
+      projects: [{ id: 'project-1', name: 'Amelia', status: 'ACTIVE', role: 'REQUESTER' }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }) as typeof fetch;
+
+  try {
+    const result = await apiClient.listProjects();
+
+    assert.equal(capturedUrl, '/api/projects');
+    assert.equal(capturedInit?.method, 'GET');
+    assert.equal(capturedInit?.credentials, 'include');
+    assert.equal(result.projects[0]?.name, 'Amelia');
+  } finally {
+    restoreFetch();
+  }
+});
+
 test('apiClient adds Idempotency-Key headers for idempotent ticket mutations', { concurrency: false }, async () => {
   const requests: Array<{ url: string; init?: RequestInit }> = [];
 

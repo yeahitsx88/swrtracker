@@ -30,7 +30,15 @@ export async function GET(
     const ticket = await repo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
     if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
 
-    return NextResponse.json({ ticket });
+    return NextResponse.json({
+      ticket,
+      capabilities: {
+        canCreateFollowUp:
+          ctx.actorRole === 'REQUESTER' &&
+          ticket.requesterId === ctx.actorId &&
+          ticket.status === 'COMPLETED',
+      },
+    });
   } catch (err) {
     return errorResponse(err);
   }
