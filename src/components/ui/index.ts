@@ -5,6 +5,7 @@ export * from './input';
 export * from './logout-button';
 export * from './project-nav';
 export * from './project-navigation';
+export * from './project-entry-redirect';
 export * from './project-shell-header';
 export * from './select';
 export * from './status-badge';

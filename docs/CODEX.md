@@ -2367,3 +2367,10 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Validation: live API checks proved Project IT project/config access, zero ticket results, and hidden history; disposable initdb produced peer local and rejected host rules. The guarded historical smoke preserved legacy `REJECTED`, `FIELD_CANCELED`, parent-linked resubmission, and attachment semantics through migrations 001–023 and refused a nonempty rerun. Final Node 22 TypeScript, test, and build results are recorded in `BASELINE_TESTING.md`.
 - Known gaps queued: organization-owned storage and recovery, malware/content policy, actual email delivery, real-user onboarding, reporting windows/filters, named backup operators, and one-month Amelia pilot acceptance. Reviewer transfer while field inability is pending remains an explicit design decision.
 - Production behavior changed: yes. Changes remain local and GitHub publication is deferred.
+
+### 2026-09-24 — ADCQ-260923-001 Gate B7 role-safe project entry
+- Intent: make every project entry path use the signed-in user's active membership and role instead of sending non-requester roles to requester pages.
+- Files touched: project launcher and project-root page; shared project-entry redirect and navigation resolver; focused navigation tests; validation records.
+- Behavior added/changed: project cards, direct project-root links, and the troubleshooting project-ID form now select the role landing page from the authenticated project list. Unknown or inactive membership IDs display an access error and do not navigate.
+- Validation: Node 22.23.3 TypeScript passed, 239 tests passed, and the Next production build passed.
+- Production behavior changed: yes. Changes remain local and GitHub publication is deferred.

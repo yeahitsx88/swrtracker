@@ -8,7 +8,7 @@ import { Field } from '@/components/forms';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
-import { getProjectLandingHref } from '@/components/ui/project-navigation';
+import { findProjectLandingHref, getProjectLandingHref } from '@/components/ui/project-navigation';
 
 export default function ProjectsLauncherPage() {
   const router = useRouter();
@@ -34,8 +34,13 @@ export default function ProjectsLauncherPage() {
   }, []);
 
   function openProject() {
-    if (!projectId.trim()) return;
-    router.push(`/projects/${projectId.trim()}/my-requests`);
+    const destination = findProjectLandingHref(projects, projectId);
+    if (!destination) {
+      setError('Choose a project from your active memberships or enter its exact project ID.');
+      return;
+    }
+    setError(null);
+    router.push(destination);
   }
 
   return (
@@ -73,7 +78,7 @@ export default function ProjectsLauncherPage() {
 
       <Card
         title="Open by project ID"
-        description="Use a known project ID for troubleshooting or direct navigation."
+        description="Use the ID of one of your active project memberships for troubleshooting."
       >
         <div className="stack">
           <Field label="Project ID">

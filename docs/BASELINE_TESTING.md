@@ -131,3 +131,9 @@ The guarded `smoke:historical-compatibility` command verifies representative pre
 Ticket history now refreshes after detail refresh, submit/resubmit, requester save, and attachment upload. Follow-up children link back to their completed parent, and parent history records and links to the created child in the same transaction.
 
 Final Gate B6 validation used Node 22.23.3: TypeScript passed, all 238 tests passed, the Next production build passed, and `git diff --check` reported no whitespace errors.
+
+## Gate B7 role-safe project entry
+
+Project cards, direct project-root links, and the troubleshooting project-ID form now resolve through the same active-membership role map. Survey, field, requester, and Project IT users land on their first relevant workspace; a project ID absent from the authenticated active-membership list is refused before navigation. Direct page APIs remain responsible for resource authorization.
+
+Node 22.23.3 TypeScript passed, all 239 tests passed, and the Next production build passed.

@@ -1,4 +1,5 @@
 import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 
 export interface ProjectNavigationItem {
   label: string;
@@ -60,4 +61,13 @@ export function getProjectNavigation(role: ProjectRole): readonly ProjectNavigat
 
 export function getProjectLandingHref(projectId: string, role: ProjectRole): string {
   return getProjectNavigation(role)[0]?.href(projectId) ?? `/projects/${projectId}/requests`;
+}
+
+export function findProjectLandingHref(
+  projects: readonly ProjectMembershipRecord[],
+  projectId: string,
+): string | null {
+  const normalizedProjectId = projectId.trim();
+  const membership = projects.find((project) => project.id === normalizedProjectId);
+  return membership ? getProjectLandingHref(membership.id, membership.role) : null;
 }

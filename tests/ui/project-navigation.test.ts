@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { ProjectRole } from '@/modules/identity/domain/types';
-import { getProjectLandingHref, getProjectNavigation } from '@/components/ui/project-navigation';
+import {
+  findProjectLandingHref,
+  getProjectLandingHref,
+  getProjectNavigation,
+} from '@/components/ui/project-navigation';
 
 function labels(role: ProjectRole): string[] {
   return getProjectNavigation(role).map((item) => item.label);
@@ -35,4 +39,15 @@ test('project landing follows the first authorized navigation destination', () =
   assert.equal(getProjectLandingHref('amelia', 'SURVEY_MANAGER'), '/projects/amelia/survey/operations');
   assert.equal(getProjectLandingHref('amelia', 'PARTY_CHIEF'), '/projects/amelia/crew/work');
   assert.equal(getProjectLandingHref('amelia', 'PROJECT_ADMIN'), '/projects/amelia/admin');
+});
+
+test('direct project entry resolves only an active listed membership', () => {
+  const projects = [
+    { id: 'amelia', name: 'Entergy Amelia', status: 'ACTIVE' as const, role: 'SURVEY_MANAGER' as const },
+    { id: 'other', name: 'Other Project', status: 'ACTIVE' as const, role: 'PROJECT_ADMIN' as const },
+  ];
+
+  assert.equal(findProjectLandingHref(projects, ' amelia '), '/projects/amelia/survey/operations');
+  assert.equal(findProjectLandingHref(projects, 'other'), '/projects/other/admin');
+  assert.equal(findProjectLandingHref(projects, 'unknown'), null);
 });
