@@ -408,3 +408,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: crew assignment and field execution controls remain. Browser behavior verification for Batches 15 and 16 is now complete; responsive visual QA remains a later pass.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket capability plus one list API route and its request-list UI; no migration or authorization policy changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 18 (Assignment candidate service)
+- Intent: provide eligible, searchable crew choices for the assignment UI.
+- Files touched: src/modules/tenancy/application/assignment-candidates.ts, src/modules/tenancy/infrastructure/assignment-candidates.repository.ts, src/modules/ticket/application/assignment-options.ts, src/app/api/tickets/[ticketId]/assign/route.ts, tests/tenancy/assignment-candidates.test.ts, CODEX.md.
+- Behavior added: authenticated GET assignment options checks ticket visibility, assignment transition, active project and manager/superintendent authority before listing crew. Candidate names are tenant/project/role scoped and exclude deactivated users. Superintendent Party Chief candidates require active assignment at the ticket location or an ancestor; managers can choose project-wide. Instrument Men remain project-scoped as in the existing assignment command. Slim returns no Party Chief choices. Bounded literal-name search and pagination apply after scope filtering.
+- Verification: baseline and final TypeScript and standard tests passed. Final PostgreSQL suite passed 144 with 2 dedicated-URL skips; standard suite passed 118 with 28 database skips. Production build and whitespace checks passed. Added real PostgreSQL candidate tests for tenant/project isolation, roles, inactive users, inherited AOR, deactivated scope, archived project, literal search and pagination; application tests cover invisible ticket, wrong role/state, inactive project, Superintendent scope and Slim behavior.
+- Known gap queued for later batches: assignment picker UI and browser acceptance remain next; reassignment and field execution controls are still pending.
+- Production behavior changed: yes, additive read endpoint only.
+- Module boundary deviation: Ticket authorization orchestrates Tenancy candidate application service plus one existing assignment API route and focused tests; no migration or mutation changes. Concurrent sample/configuration changes excluded.
