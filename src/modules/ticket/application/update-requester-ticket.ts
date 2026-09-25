@@ -45,9 +45,7 @@ export async function updateRequesterTicket(
     throw new ValidationError('ticketType is invalid');
   }
   for (const [name, value] of [
-    ['craft', params.changes.craft],
     ['fieldContact', params.changes.fieldContact],
-    ['fieldChannel', params.changes.fieldChannel],
     ['description', params.changes.description],
   ] as const) {
     if (value !== undefined && !value.trim()) throw new ValidationError(`${name} cannot be blank`);

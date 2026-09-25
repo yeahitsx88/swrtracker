@@ -149,3 +149,9 @@ Node 22.23.3 TypeScript passed, the two reset-policy tests passed, and all 241 t
 The ticket detail endpoint now returns server-computed action capabilities from the authenticated actor, role, ticket ownership, assignment, workflow variant, and current state. The shared ticket screen uses those capabilities for requester editing, submit/resubmit, requester cancellation, follow-up creation, instruction upload, and field-support upload. Company authorities retain read access to company SWRs but receive no mutation controls on another employee's SWR. Requester cancellation moved from the company-wide list to the owned ticket detail.
 
 Live beta verification as the company authority returned all six mutation capabilities as `false` on the other requester's returned SWR and only `canCreateFollowUp: true` on the authority's own completed SWR. Node 22.23.3 TypeScript passed, all 245 tests passed, the Next production build passed, and the beta database stopped cleanly.
+
+## Gate B10 approved requester intake
+
+The requester create and correction paths now enforce the approved V1 intake: Area, Request Type, Point of Contact, Need-By Date, and Request Details. Craft/Discipline and Phone/Radio Channel remain available but are optional. The API accepts their omission, normalizes the schema-required craft value to an empty string, and stores an omitted channel as null. Existing records and columns require no migration.
+
+The idempotent create route test now omits both optional fields and proves their normalized stored values. Node 22.23.3 TypeScript passed, all 245 tests passed, and the Next production build passed.

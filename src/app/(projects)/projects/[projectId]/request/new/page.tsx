@@ -20,7 +20,7 @@ import {
 
 const STEP_TITLES = ['AOR', 'Type', 'Date', 'Details', 'Attachments', 'Review'];
 const TICKET_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
-const CRAFT_OPTIONS = ['Civil', 'Structural', 'Mechanical', 'Electrical', 'Instrumentation', 'Survey', 'Other'];
+const CRAFT_OPTIONS = ['', 'Civil', 'Structural', 'Mechanical', 'Electrical', 'Instrumentation', 'Survey', 'Other'];
 
 function dateStringFromNow(daysAhead: number): string {
   const date = new Date();
@@ -43,7 +43,7 @@ export default function NewRequestPage() {
   });
   const [requestedDate, setRequestedDate] = useState(dateStringFromNow(2));
   const [urgentReason, setUrgentReason] = useState('');
-  const [craft, setCraft] = useState(CRAFT_OPTIONS[0] ?? 'Civil');
+  const [craft, setCraft] = useState(CRAFT_OPTIONS[0] ?? '');
   const [customCraft, setCustomCraft] = useState('');
   const [fieldContact, setFieldContact] = useState('');
   const [fieldChannel, setFieldChannel] = useState('');
@@ -124,7 +124,7 @@ export default function NewRequestPage() {
       case 2:
         return Boolean(requestedDate);
       case 3:
-        return Boolean(resolvedCraft && fieldContact.trim() && fieldChannel.trim() && description.trim());
+        return Boolean(fieldContact.trim() && description.trim());
       default:
         return true;
     }
@@ -135,9 +135,7 @@ export default function NewRequestPage() {
       !aorNodeId ||
       !ticketType ||
       !requestedDate ||
-      !resolvedCraft ||
       !fieldContact.trim() ||
-      !fieldChannel.trim() ||
       !description.trim()
     ) {
       setError('Complete all required fields before submission.');
@@ -153,9 +151,9 @@ export default function NewRequestPage() {
         projectId,
         aorNodeId: aorNodeId.trim(),
         ticketType,
-        craft: resolvedCraft,
+        ...(resolvedCraft ? { craft: resolvedCraft } : {}),
         fieldContact: fieldContact.trim(),
-        fieldChannel: fieldChannel.trim(),
+        ...(fieldChannel.trim() ? { fieldChannel: fieldChannel.trim() } : {}),
         description: description.trim(),
         requestedDate: new Date(requestedDate).toISOString(),
       });
@@ -229,10 +227,10 @@ export default function NewRequestPage() {
       case 3:
         return (
           <div className="stack">
-            <Field label="Craft / Discipline">
+            <Field label="Craft / Discipline (optional)">
               <Select value={craft} onChange={(event) => setCraft(event.target.value)}>
                 {CRAFT_OPTIONS.map((value) => (
-                  <option key={value} value={value}>{value}</option>
+                  <option key={value || 'unspecified'} value={value}>{value || 'Not specified'}</option>
                 ))}
               </Select>
             </Field>
@@ -241,13 +239,13 @@ export default function NewRequestPage() {
                 <Input value={customCraft} onChange={(event) => setCustomCraft(event.target.value)} />
               </Field>
             ) : null}
-            <Field label="Field Contact">
+            <Field label="Point of Contact">
               <Input value={fieldContact} onChange={(event) => setFieldContact(event.target.value)} />
             </Field>
-            <Field label="Phone / Radio Channel">
+            <Field label="Phone / Radio Channel (optional)">
               <Input value={fieldChannel} onChange={(event) => setFieldChannel(event.target.value)} />
             </Field>
-            <Field label="Description">
+            <Field label="Request Details">
               <Textarea value={description} onChange={(event) => setDescription(event.target.value)} />
             </Field>
           </div>
@@ -277,8 +275,8 @@ export default function NewRequestPage() {
             <p className="muted">AOR Node: {aorNodeId || '-'}</p>
             <p className="muted">Type: {ticketType}</p>
             <p className="muted">Requested Date: {requestedDate}</p>
-            <p className="muted">Craft / Discipline: {resolvedCraft || '-'}</p>
-            <p className="muted">Field Contact: {fieldContact || '-'}</p>
+            <p className="muted">Craft / Discipline: {resolvedCraft || 'Not specified'}</p>
+            <p className="muted">Point of Contact: {fieldContact || '-'}</p>
             <p className="muted">Phone / Radio Channel: {fieldChannel || '-'}</p>
             <p className="muted">Description: {description || '-'}</p>
             <p className="muted">Attachments: {attachments.length}</p>

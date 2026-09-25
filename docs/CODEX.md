@@ -2388,3 +2388,10 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added/changed: the server reports edit, submit, cancel, follow-up, instruction-upload, and field-upload capabilities for the current actor and ticket. The UI renders only those actions. Requester cancellation is now on an owned ticket detail rather than the company-visible list.
 - Validation: live company-authority checks returned no mutation capabilities on another requester's returned SWR and only follow-up capability on the authority's own completed SWR. Node 22.23.3 TypeScript, 245 tests, and the Next production build passed; beta services were stopped.
 - Production behavior changed: yes. Changes remain local and GitHub publication is deferred.
+
+### 2026-09-24 — ADCQ-260923-001 Gate B10 approved requester intake
+- Intent: remove superseded mandatory Discipline and Phone/Radio assumptions from the Amelia request path.
+- Files touched: request create API and contract; new-request and requester-correction screens; ticket detail labels; requester-update validation; create-route test; beta runbook and validation record.
+- Behavior added/changed: Area, Request Type, Point of Contact, Need-By Date, and Request Details are the enforced requester minimums. Craft/Discipline and Phone/Radio Channel are optional and may be omitted or cleared.
+- Validation: the create-route test omits both optional fields and verifies normalized persistence. Node 22.23.3 TypeScript, 245 tests, and the Next production build passed.
+- Production behavior changed: yes. Changes remain local and GitHub publication is deferred.

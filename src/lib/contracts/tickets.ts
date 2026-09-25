@@ -89,9 +89,9 @@ export interface CreateTicketRequest {
   projectId: string;
   aorNodeId: string;
   ticketType: TicketType;
-  craft: string;
+  craft?: string;
   fieldContact: string;
-  fieldChannel: string;
+  fieldChannel?: string;
   description: string;
   requestedDate: string;
   departmentId?: string;

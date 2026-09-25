@@ -98,6 +98,7 @@ Use a private browser window or sign out between roles so each step uses the int
 
 2. **New request and instruction file**
    - As the requester, open **New Request** and create a draft.
+   - Confirm the required intake is Area, Request Type, Need-By Date, Point of Contact, and Request Details. Craft/Discipline and Phone/Radio Channel are optional.
    - Attach a PDF, JPEG, PNG, text, CSV, Word, or Excel file. Each file must be no larger than 30 MB.
    - Submit the draft. If the Need-By date is inside the configured two-day lead time, enter an urgent reason.
    - Confirm that requester instruction uploads are no longer accepted after submission unless Survey returns that SWR for correction.

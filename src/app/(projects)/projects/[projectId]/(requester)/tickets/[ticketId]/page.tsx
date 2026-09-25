@@ -168,11 +168,11 @@ export default function TicketDetailPage() {
       {capabilities.canEditRequesterFields ? (
         <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
           <div className="stack">
-            <Field label="Craft / Discipline"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
-            <Field label="Field Contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
-            <Field label="Phone / Radio Channel"><Input value={editFieldChannel} onChange={(event) => setEditFieldChannel(event.target.value)} /></Field>
+            <Field label="Craft / Discipline (optional)"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
+            <Field label="Point of Contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
+            <Field label="Phone / Radio Channel (optional)"><Input value={editFieldChannel} onChange={(event) => setEditFieldChannel(event.target.value)} /></Field>
             <Field label="Need-By Date"><Input type="date" value={editRequestedDate} onChange={(event) => setEditRequestedDate(event.target.value)} /></Field>
-            <Field label="Description"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
+            <Field label="Request Details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
             <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
             <Button disabled={saving} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : 'Save Changes'}</Button>
           </div>

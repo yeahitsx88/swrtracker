@@ -157,6 +157,7 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
   const originalSaveCadWork = TicketRepository.prototype.saveCadWork;
 
   let saveCalls = 0;
+  const savedTickets: Ticket[] = [];
   pool.query = async (sql: string) => {
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };
@@ -176,8 +177,9 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
     companyType: 'GC',
   });
   TicketRepository.prototype.findRequesterDepartmentMembership = async () => null;
-  TicketRepository.prototype.save = async () => {
+  TicketRepository.prototype.save = async (_db, ticket) => {
     saveCalls += 1;
+    savedTickets.push(ticket);
   };
   TicketRepository.prototype.saveCadWork = async () => undefined;
 
@@ -187,9 +189,7 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
       projectId: 'project-1',
       aorNodeId: 'aor-node-1',
       ticketType: 'LAYOUT',
-      craft: 'Civil',
       fieldContact: 'Foreman A',
-      fieldChannel: 'CH-11',
       description: 'Retry-safe create',
       requestedDate: new Date(Date.now() + (72 * 60 * 60 * 1000)).toISOString(),
     };
@@ -203,6 +203,9 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
     const secondJson = await second.json() as { ticket: { id: string } };
     assert.equal(secondJson.ticket.id, firstJson.ticket.id);
     assert.equal(saveCalls, 1);
+    assert.equal(savedTickets[0]?.craft, '');
+    assert.equal(savedTickets[0]?.fieldContact, 'Foreman A');
+    assert.equal(savedTickets[0]?.fieldChannel, null);
   } finally {
     pool.query = originalQuery;
     pool.connect = originalConnect;

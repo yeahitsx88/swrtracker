@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
       typeof b.projectId !== 'string' ||
       typeof b.aorNodeId !== 'string' ||
       typeof b.ticketType !== 'string' ||
-      typeof b.craft !== 'string' ||
       typeof b.fieldContact !== 'string' ||
-      typeof b.fieldChannel !== 'string' ||
       typeof b.description !== 'string' ||
       typeof b.requestedDate !== 'string' ||
+      (b.craft !== undefined && typeof b.craft !== 'string') ||
+      (b.fieldChannel !== undefined && typeof b.fieldChannel !== 'string') ||
       (b.workflowVariant !== undefined && (
         typeof b.workflowVariant !== 'string' ||
         !VALID_VARIANTS.includes(b.workflowVariant as WorkflowVariant)
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       !VALID_TYPES.includes(b.ticketType as TicketType)
     ) {
       throw new ValidationError(
-        'projectId, aorNodeId, ticketType, craft, fieldContact, fieldChannel, description, requestedDate are required',
+        'projectId, aorNodeId, ticketType, fieldContact, description, and requestedDate are required',
       );
     }
 
@@ -79,26 +79,20 @@ export async function POST(req: NextRequest) {
       assignedInstrumentManId?: string;
       departmentId?: string;
       ticketType: TicketType;
-      craft: string;
+      craft?: string;
       fieldContact: string;
-      fieldChannel: string;
+      fieldChannel?: string;
       description: string;
       requestedDate: string;
     };
 
-    const normalizedCraft = craft.trim();
+    const normalizedCraft = craft?.trim() ?? '';
     const normalizedFieldContact = fieldContact.trim();
-    const normalizedFieldChannel = fieldChannel.trim();
+    const normalizedFieldChannel = fieldChannel?.trim() || null;
     const normalizedDescription = description.trim();
 
-    if (!normalizedCraft) {
-      throw new ValidationError('craft is required');
-    }
     if (!normalizedFieldContact) {
       throw new ValidationError('fieldContact is required');
-    }
-    if (!normalizedFieldChannel) {
-      throw new ValidationError('fieldChannel is required');
     }
     if (!normalizedDescription) {
       throw new ValidationError('description is required');
