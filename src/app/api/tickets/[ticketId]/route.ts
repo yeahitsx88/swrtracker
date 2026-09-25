@@ -16,6 +16,7 @@ import { getRequesterActions } from '@/modules/ticket/application/requester-acti
 import { getReviewActions } from '@/modules/ticket/application/review-actions';
 import { getAssignmentCapability } from '@/modules/ticket/application/assignment-options';
 import { getFieldActions } from '@/modules/ticket/application/field-actions';
+import { getSurveyCancelActions } from '@/modules/ticket/application/survey-cancel-actions';
 import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
 import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
 import { recordApproverTimeoutSignals } from
@@ -47,7 +48,8 @@ export async function GET(
     const reviewActions = await getReviewActions(repo, pool, ticket, ctx.visibility);
     const assignment = await getAssignmentCapability(repo, pool, ticket, ctx.visibility);
     const fieldActions = await getFieldActions(repo, pool, ticket, ctx.visibility);
-    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, fieldActions,
+    const surveyCancelActions = await getSurveyCancelActions(repo, pool, ticket, ctx.visibility);
+    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, fieldActions, surveyCancelActions,
       displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);

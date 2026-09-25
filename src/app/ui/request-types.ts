@@ -13,6 +13,7 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  surveyCancelActions: { canInitiate: boolean; canApprove: boolean; immediate: boolean; pending: boolean };
   fieldActions: { canStart: boolean; canReport: boolean; canRequestFieldCancel: boolean;
     canResolve: boolean; canRestart: boolean; canCompleteDirectly: boolean };
   pendingFieldStatus: 'COMPLETED' | 'DELAYED' | 'FIELD_CANCELED' | null;

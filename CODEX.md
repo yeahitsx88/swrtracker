@@ -453,3 +453,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: field cancellation/return-to-work browser branches, responsive visual QA, survey cancellation, reassignment and priority UI remain. Preview stall cause was not established; recovery was verified without changing production code.
 - Production behavior changed: no.
 - Module boundary deviation: append-only verification record only; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 23 (Survey cancellation controls)
+- Intent: expose survey-side cancellation and its approval chain on ticket details.
+- Files touched: src/modules/ticket/application/survey-cancel-actions.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/survey-cancel-actions.tsx, src/app/tickets/[ticketId]/ticket-detail.tsx, tests/ticket/survey-cancel-actions.test.ts, CODEX.md.
+- Behavior added: Survey Manager can confirm immediate permanent cancellation with a written reason; assigned Party Chief or responsible Superintendent can submit for approval. Pending requests display without changing the work-status label. Only the required higher survey lead can approve, and self-approval is hidden. Duplicate submission and concurrent mutations are blocked in the UI; existing commands remain authoritative and preserve atomic audit events.
+- Verification: baseline and final TypeScript and standard tests passed. Final standard suite passed 123 with 28 database skips; PostgreSQL suite passed 149 with 2 dedicated-URL skips. Production build and whitespace checks passed. New capability tests cover PC/Superintendent/Manager chains, self-approval, pending and terminal states, peer/wrong-role rejection, company isolation, inactive project and infrastructure failures. Existing database cancellation-chain tests pass. Browser verification remains queued.
+- Known gap queued for later batches: survey-cancellation browser acceptance, reassignment, priority controls and responsive visual QA remain.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket capability plus one detail API route and ticket web/shared response types; no migration or command policy changes. Concurrent sample/configuration changes excluded.
