@@ -7,6 +7,8 @@
 import type { UUID } from '@/shared/types';
 
 export type AuditEventType =
+  | 'cad.status_changed'
+  | 'cad.qa_signed_off'
   | 'ticket.created'
   | 'ticket.draft_saved'
   | 'ticket.draft_deleted'

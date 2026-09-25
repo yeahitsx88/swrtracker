@@ -570,3 +570,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: CAD assignment, status changes and QA sign-off; CAD browser acceptance, remaining role surfaces and responsive visual QA.
 - Production behavior changed: yes (read-only CAD summary).
 - Module boundary deviation: Ticket application/infrastructure and one detail API route plus ticket web/shared response types. No migration. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 36 (Atomic CAD QA sign-off)
+- Intent: implement the specification's CAD Lead QA sign-off authority.
+- Files touched: src/modules/ticket/application/sign-off-cad.ts, src/modules/ticket/infrastructure/cad-review.repository.ts, src/app/api/tickets/[ticketId]/cad-sign-off/route.ts, src/modules/audit/domain/types.ts, tests/ticket/cad-sign-off.test.ts, CODEX.md.
+- Behavior added: visible ticket on an active project with exactly one QA_PENDING CAD record may be signed off by CAD_LEAD. Ticket and CAD records are locked; completion stamps reviewer and completion time and emits both cad.status_changed and cad.qa_signed_off within the route transaction. Field workflow status is preserved, including completed field work. Duplicate/missing records, other CAD states, wrong roles and repeated sign-off fail explicitly.
+- Verification: baseline TypeScript and 135 standard tests passed. Final TypeScript, production build and whitespace checks passed; standard suite passed 136 with 31 database skips; PostgreSQL suite passed 165 with 2 dedicated-URL skips. Tests cover role/visibility/project/state gates, duplicate records, update conflicts, real tenant/company isolation, completion metadata, field-state preservation and repeated sign-off. Injected failure of the second audit write rolls back both completion and the first event.
+- Known gap queued for later batches: CAD sign-off UI, assignment and status progression, browser acceptance, remaining role surfaces and responsive QA.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket application/infrastructure and one new route plus Audit type registration for two event names already defined in CLAUDE.md Section 12. No migration or new event names. Concurrent sample/configuration changes excluded.
