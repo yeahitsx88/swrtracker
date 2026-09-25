@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import { ProjectNav } from '@/components/ui';
-import { ProjectHeading } from './project-heading';
+import { ProjectShellHeader } from '@/components/ui';
 
 export default async function ProjectLayout(
   {
@@ -15,10 +14,7 @@ export default async function ProjectLayout(
 
   return (
     <div className="stack">
-      <section className="panel">
-        <ProjectHeading projectId={projectId} />
-        <ProjectNav projectId={projectId} />
-      </section>
+      <ProjectShellHeader projectId={projectId} />
       {children}
     </div>
   );

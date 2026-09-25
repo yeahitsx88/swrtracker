@@ -64,7 +64,7 @@ The login currently requires the tenant ID in addition to the user credentials. 
 | `instrument@amelia.local` | Instrument Man | Read assigned work; start, delay, resume, report inability, flag stop-work, complete, and add supporting files while work is active |
 | `admin@amelia.local` | Project and tenant administrator | Review and change project request configuration, including the per-SWR attachment count limit |
 
-The navigation shows a common set of links. The API still enforces the signed-in account's project role, ticket ownership, company authority, and assignment.
+The project navigation follows the signed-in role: requesters see intake and their request lists; Survey Lead sees operations and all authorized requests; field roles see their work surfaces; Project IT sees administration. APIs independently enforce project role, ticket ownership, company authority, and assignment.
 
 ## Seeded SWRs
 
@@ -139,6 +139,7 @@ All beta state stays under `product/.data/beta/`, which is ignored by Git:
 | `.data/beta/socket/` | Local Unix socket while PostgreSQL is running |
 
 Treat this directory as one beta dataset. Do not copy its sample credentials or records into an operational environment.
+Setup restricts the beta, socket, and attachment directories to the current operating-system user. Newly uploaded files use owner-only read/write permissions. New beta clusters use peer authentication for local socket connections and reject host connections.
 
 ## Current boundaries
 

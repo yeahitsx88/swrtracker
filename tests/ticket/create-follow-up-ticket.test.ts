@@ -112,8 +112,15 @@ test('requester creates an editable draft linked to their completed SWR', async 
   const parent = completedTicket();
   const saved: Ticket[] = [];
   const now = new Date('2026-09-24T12:00:00Z');
+  const auditWrites: unknown[][] = [];
+  const auditDb: DbClient = {
+    query: async (_sql, params) => {
+      if (params) auditWrites.push(params);
+      return { rows: [] };
+    },
+  };
 
-  const followUp = await createFollowUpTicket(makeRepo(parent, saved), db, {
+  const followUp = await createFollowUpTicket(makeRepo(parent, saved), auditDb, {
     tenantId,
     parentTicketId,
     actorId: requesterId,
@@ -138,6 +145,12 @@ test('requester creates an editable draft linked to their completed SWR', async 
   assert.equal(saved.length, 1);
   assert.equal(parent.status, 'COMPLETED');
   assert.equal(parent.parentTicketId, null);
+  assert.deepEqual(auditWrites.map((params) => params[4]), ['ticket.created', 'ticket.follow_up_created']);
+  assert.equal(auditWrites[1]?.[1], parent.id);
+  assert.deepEqual(JSON.parse(auditWrites[1]?.[5] as string), {
+    followUpTicketId: followUp.id,
+    projectId: parent.projectId,
+  });
 });
 
 test('company authority cannot create a follow-up from another requester\'s visible SWR', async () => {

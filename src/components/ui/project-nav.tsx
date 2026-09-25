@@ -2,24 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { ProjectRole } from '@/modules/identity/domain/types';
 import { cn } from './cn';
+import { getProjectNavigation } from './project-navigation';
 
 interface ProjectNavProps {
   projectId: string;
+  role: ProjectRole;
 }
 
-const tabs: Array<{ label: string; href: (projectId: string) => string }> = [
-  { label: 'New Request', href: (projectId) => `/projects/${projectId}/request/new` },
-  { label: 'My Requests', href: (projectId) => `/projects/${projectId}/my-requests` },
-  { label: 'Drafts', href: (projectId) => `/projects/${projectId}/drafts` },
-  { label: 'Crew Work', href: (projectId) => `/projects/${projectId}/crew/work` },
-  { label: 'Survey Operations', href: (projectId) => `/projects/${projectId}/survey/operations` },
-  { label: 'PC Approvals', href: (projectId) => `/projects/${projectId}/crew/approvals` },
-  { label: 'Admin', href: (projectId) => `/projects/${projectId}/admin` },
-];
-
-export function ProjectNav({ projectId }: ProjectNavProps) {
+export function ProjectNav({ projectId, role }: ProjectNavProps) {
   const pathname = usePathname();
+  const tabs = getProjectNavigation(role);
 
   return (
     <nav className="app-links" style={{ marginTop: '0.45rem' }}>

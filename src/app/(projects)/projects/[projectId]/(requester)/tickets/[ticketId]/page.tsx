@@ -32,6 +32,7 @@ export default function TicketDetailPage() {
   const [submittingDraft, setSubmittingDraft] = useState(false);
   const [saving, setSaving] = useState(false);
   const [creatingFollowUp, setCreatingFollowUp] = useState(false);
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [editCraft, setEditCraft] = useState('');
   const [editFieldContact, setEditFieldContact] = useState('');
   const [editFieldChannel, setEditFieldChannel] = useState('');
@@ -57,6 +58,7 @@ export default function TicketDetailPage() {
       setEditDescription(ticketResponse.ticket.description);
       setEditRequestedDate(ticketResponse.ticket.requestedDate.slice(0, 10));
       setAttachments(attachmentsResponse.attachments);
+      setHistoryRevision((revision) => revision + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load ticket details.'));
     } finally {
@@ -75,6 +77,7 @@ export default function TicketDetailPage() {
     try {
       const response = await apiClient.submitTicket(ticketId, undefined, urgentReason.trim() || undefined);
       setTicket(response.ticket);
+      setHistoryRevision((revision) => revision + 1);
       setSuccess('Draft submitted successfully.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to submit draft.'));
@@ -91,6 +94,7 @@ export default function TicketDetailPage() {
         description: editDescription, requestedDate: new Date(editRequestedDate).toISOString(),
       });
       setTicket(response.ticket);
+      setHistoryRevision((revision) => revision + 1);
       setSuccess('Requester fields saved. Review attachments, then submit for fresh approval.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to save requester changes.'));
@@ -167,6 +171,7 @@ export default function TicketDetailPage() {
                 await apiClient.uploadAttachment(ticketId, payload);
                 const refreshed = await apiClient.listAttachments(ticketId);
                 setAttachments(refreshed.attachments);
+                setHistoryRevision((revision) => revision + 1);
                 setSuccess('Attachment uploaded.');
               } catch (err) {
                 setError(getErrorMessage(err, 'Unable to upload attachment.'));
@@ -179,7 +184,7 @@ export default function TicketDetailPage() {
 
       {ticket ? (
         <Card title="SWR History" description="Chronological record of review, assignment, files, messages, and field progress.">
-          <TicketHistory ticketId={ticket.id} />
+          <TicketHistory ticketId={ticket.id} refreshRevision={historyRevision} />
         </Card>
       ) : null}
     </div>

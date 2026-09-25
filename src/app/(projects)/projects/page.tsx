@@ -8,6 +8,7 @@ import { Field } from '@/components/forms';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
+import { getProjectLandingHref } from '@/components/ui/project-navigation';
 
 export default function ProjectsLauncherPage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function ProjectsLauncherPage() {
               {projects.map((project) => (
                 <Link
                   className="ticket-card"
-                  href={`/projects/${project.id}/my-requests`}
+                  href={getProjectLandingHref(project.id, project.role)}
                   key={project.id}
                 >
                   <div className="row" style={{ justifyContent: 'space-between' }}>

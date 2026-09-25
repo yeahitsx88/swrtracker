@@ -106,7 +106,7 @@ Observed B4 checks:
 | Health and authentication | Health returned `db: connected`; Lead, requester, company authority, and Project IT logins succeeded |
 | Seeded workflow | Five visible statuses: submitted, approved, in progress, completed, and returned for correction |
 | Access boundaries | Requester saw three own SWRs; company authority saw all five company SWRs; cross-requester read returned 404 and edit returned 403 |
-| Project IT | Project administrator saw all five project SWRs after the full-project visibility correction |
+| Project IT | Initial B4 validation exposed all five SWRs; Gate B6 identified that as over-broad and corrected Project IT to configuration access with zero inherent SWR visibility |
 | Measures | Four open, one approved without Instrument Man, one overdue Need-By, one completed; Area/status groups reconciled |
 | Local messages | Twelve queued messages captured through the preview API |
 | Shutdown | Next stopped and `pg_ctl status` confirmed no beta server running |
@@ -119,3 +119,15 @@ The persistent `.data/beta/` dataset remains on the device for the user's privat
 The first real-browser walkthrough exercised Survey Lead and subcontractor company-authority sessions against the persistent Amelia sample dataset. It replaced manual project UUID entry with an authenticated active-project list, displays **Entergy Amelia** in the project shell, exposes linked follow-up creation only to the original requester of a completed SWR, and renders a visibility-gated ticket history from workflow events, returns, assignments, Need-By revisions, attachment activity, and local notifications.
 
 Observed B5 checks: the launcher opened Amelia from a project card; the Survey Operations measures, assignment queue, and local message preview rendered; the completed company-authority SWR showed the follow-up action; its history returned ten ordered records without storage, recipient, email, or idempotency fields; a direct hidden-ticket check remained covered by the route tests. Node 22.23.3 TypeScript passed, 235 tests passed, and the Next production build passed. The browser and beta PostgreSQL server were closed after the walkthrough.
+
+## Gate B6 access correction, role navigation, and compatibility
+
+Review of the private-beta changes found that Project IT had been given ticket visibility beyond its approved access/configuration responsibility. Gate B6 removes that visibility and makes project navigation role-aware. Live verification showed the Project Administrator can list Entergy Amelia and read request configuration, receives zero tickets, and receives 404 for a ticket history. Requester, Survey Lead, Party Chief, and Instrument Man navigation now opens only their relevant beta surfaces; other existing roles retain their scoped read or work entry point. Direct routes continue to enforce server-side authorization.
+
+Local beta storage was tightened to owner-only directories and attachment files. Fresh beta clusters use peer authentication for Unix-socket access and reject host connections; a disposable `initdb` check confirmed those `pg_hba.conf` rules. Existing beta setup applied directory permissions and stopped cleanly.
+
+The guarded `smoke:historical-compatibility` command verifies representative pre-Amelia records without modifying them. It requires an empty disposable database named exactly `swr_history_compat_test`, a declared matching cluster directory, and explicit `SWR_HISTORY_COMPAT_DISPOSABLE_DB=1`. The smoke applies migrations 001–021, inserts legacy `REJECTED`, `FIELD_CANCELED`, linked `parent_ticket_id`, and attachment records, then applies 022–023. It proves historical fields remain unchanged, additive defaults are correct, no synthetic histories are invented, and current requester/Survey visibility can still read the records. The fresh PostgreSQL 15 run passed; a repeat against the nonempty database was refused.
+
+Ticket history now refreshes after detail refresh, submit/resubmit, requester save, and attachment upload. Follow-up children link back to their completed parent, and parent history records and links to the created child in the same transaction.
+
+Final Gate B6 validation used Node 22.23.3: TypeScript passed, all 238 tests passed, the Next production build passed, and `git diff --check` reported no whitespace errors.

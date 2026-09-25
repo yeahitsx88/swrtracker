@@ -1,17 +1,20 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { TicketHistoryItem } from '@/lib/contracts';
 
 interface TicketHistoryProps {
   ticketId: string;
+  refreshRevision?: number;
 }
 
 const LABELS: Record<string, string> = {
   'ticket.returned_for_correction': 'Returned for correction',
   'ticket.assignment_recorded': 'Assignment recorded',
   'ticket.need_by_revised': 'Need-By date revised',
+  'ticket.follow_up_created': 'Follow-up SWR created',
   'attachment.uploaded': 'Attachment uploaded',
   'attachment.downloaded': 'Attachment downloaded',
 };
@@ -56,7 +59,7 @@ function summary(item: TicketHistoryItem): string | null {
   return null;
 }
 
-export function TicketHistory({ ticketId }: TicketHistoryProps) {
+export function TicketHistory({ ticketId, refreshRevision = 0 }: TicketHistoryProps) {
   const [history, setHistory] = useState<TicketHistoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +73,7 @@ export function TicketHistory({ ticketId }: TicketHistoryProps) {
       .catch((err: unknown) => { if (active) setError(err instanceof Error ? err.message : 'Unable to load history'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [ticketId]);
+  }, [ticketId, refreshRevision]);
 
   if (loading) return <p className="muted">Loading history…</p>;
   if (error) return <p role="alert" className="error-message">{error}</p>;
@@ -88,6 +91,10 @@ export function TicketHistory({ ticketId }: TicketHistoryProps) {
     <ol className="ticket-history" aria-label="SWR history">
       {orderedHistory.map((item) => {
         const detail = summary(item);
+        const followUpTicketId = typeof item.details.followUpTicketId === 'string'
+          ? item.details.followUpTicketId
+          : null;
+        const projectId = typeof item.details.projectId === 'string' ? item.details.projectId : null;
         return (
           <li key={`${item.source}:${item.id}`} className="ticket-card">
             <p className="ticket-headline">{humanize(item.type)}</p>
@@ -96,6 +103,11 @@ export function TicketHistory({ ticketId }: TicketHistoryProps) {
               {item.actor ? ` · ${item.actor.name}` : ''}
             </p>
             {detail ? <p>{detail}</p> : null}
+            {followUpTicketId && projectId ? (
+              <Link className="app-link" href={`/projects/${projectId}/tickets/${followUpTicketId}`}>
+                Open linked follow-up
+              </Link>
+            ) : null}
           </li>
         );
       })}

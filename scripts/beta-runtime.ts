@@ -90,8 +90,16 @@ function setup(): void {
   mkdirSync(root, { recursive: true });
   mkdirSync(socketDir, { recursive: true });
   mkdirSync(attachmentDir, { recursive: true });
+  chmodSync(root, 0o700);
+  chmodSync(socketDir, 0o700);
+  chmodSync(attachmentDir, 0o700);
   if (!existsSync(path.join(dataDir, 'PG_VERSION'))) {
-    run(path.join(pgBin, 'initdb'), ['-D', dataDir, '-A', 'trust', '--no-instructions']);
+    run(path.join(pgBin, 'initdb'), [
+      '-D', dataDir,
+      '--auth-local=peer',
+      '--auth-host=reject',
+      '--no-instructions',
+    ]);
   }
   const existingEnv = existsSync(envPath) ? parseBetaEnv() : undefined;
   const env: NodeJS.ProcessEnv = {

@@ -1,4 +1,5 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
+import { appendAuditEvent } from '@/modules/audit/application';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
@@ -45,7 +46,7 @@ export async function createFollowUpTicket(
     now.getTime() + (Math.max(leadTime?.leadTimeDays ?? 2, 0) + 1) * DAY_MS,
   );
 
-  return createTicket(repo, db, {
+  const followUp = await createTicket(repo, db, {
     tenantId: parent.tenantId,
     projectId: parent.projectId,
     aorNodeId: parent.aorNodeId,
@@ -61,4 +62,14 @@ export async function createFollowUpTicket(
     requestedDate,
     parentTicketId: parent.id,
   });
+
+  await appendAuditEvent(db, {
+    tenantId: parent.tenantId,
+    ticketId: parent.id,
+    actorId: params.actorId,
+    eventType: 'ticket.follow_up_created',
+    payload: { followUpTicketId: followUp.id, projectId: followUp.projectId },
+  });
+
+  return followUp;
 }

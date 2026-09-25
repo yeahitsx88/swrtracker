@@ -14,6 +14,7 @@
     "smoke:access": "node --import tsx tests/identity/company-access-smoke.ts",
     "smoke:workflow": "node --import tsx tests/ticket/amelia-workflow-smoke.ts",
     "smoke:capabilities": "node --import tsx tests/beta/amelia-capabilities-smoke.ts",
+    "smoke:historical-compatibility": "node --import tsx tests/migrations/historical-compatibility-smoke.ts",
     "beta:setup": "node --import tsx scripts/beta-runtime.ts setup",
     "beta:start": "node --import tsx scripts/beta-runtime.ts start",
     "beta:stop": "node --import tsx scripts/beta-runtime.ts stop",

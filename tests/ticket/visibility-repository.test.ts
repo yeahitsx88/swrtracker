@@ -88,7 +88,7 @@ test('TicketRepository.list does not add company isolation for non-subcontractor
   assert.deepEqual(queries[1]?.params, [tenantId, projectId, actorId, 25, 0]);
 });
 
-test('TicketRepository.list gives PROJECT_ADMIN full project visibility', async () => {
+test('TicketRepository.list gives PROJECT_ADMIN no inherent ticket visibility', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const repo = new TicketRepository();
 
@@ -114,9 +114,9 @@ test('TicketRepository.list gives PROJECT_ADMIN full project visibility', async 
   });
 
   assert.equal(queries.length, 2);
-  assert.doesNotMatch(queries[0]?.sql ?? '', /AND 1 = 0/);
+  assert.match(queries[0]?.sql ?? '', /AND 1 = 0/);
   assert.deepEqual(queries[0]?.params, [tenantId, projectId]);
-  assert.doesNotMatch(queries[1]?.sql ?? '', /AND 1 = 0/);
+  assert.match(queries[1]?.sql ?? '', /AND 1 = 0/);
   assert.deepEqual(queries[1]?.params, [tenantId, projectId, 25, 0]);
 });
 

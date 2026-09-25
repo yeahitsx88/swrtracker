@@ -31,6 +31,7 @@ export type AuditEventType =
   | 'ticket.pc_approval_rejected'
   | 'ticket.pc_approval_overridden'
   | 'ticket.completed'
+  | 'ticket.follow_up_created'
   | 'ticket.delayed'
   | 'ticket.delay_restarted'
   | 'ticket.requester_canceled'

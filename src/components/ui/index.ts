@@ -4,6 +4,8 @@ export * from './feedback';
 export * from './input';
 export * from './logout-button';
 export * from './project-nav';
+export * from './project-navigation';
+export * from './project-shell-header';
 export * from './select';
 export * from './status-badge';
 export * from './textarea';

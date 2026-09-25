@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { TicketRecord } from '@/lib/contracts';
 import { StatusBadge } from '@/components/ui';
 
@@ -19,6 +20,14 @@ export function TicketDetails({ ticket }: TicketDetailsProps) {
       <p className="muted">Priority: {ticket.priority}</p>
       <p className="muted">Requested Date: {new Date(ticket.requestedDate).toLocaleDateString()}</p>
       <p>{ticket.description}</p>
+      {ticket.parentTicketId ? (
+        <p>
+          Follow-up to{' '}
+          <Link className="app-link" href={`/projects/${ticket.projectId}/tickets/${ticket.parentTicketId}`}>
+            the completed parent SWR
+          </Link>
+        </p>
+      ) : null}
       {ticket.pendingPcOutcome ? (
         <p className="muted">
           Pending Outcome: {ticket.pendingPcOutcome}

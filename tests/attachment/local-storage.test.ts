@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'fs/promises';
+import { mkdtemp, rm, stat } from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { LocalAttachmentStorage, MAX_ATTACHMENT_BYTES, validateAttachmentObjectMetadata } from '@/modules/attachment/infrastructure';
@@ -19,6 +19,9 @@ test('LocalAttachmentStorage round-trips bytes behind a server-generated key and
     assert.match(stored.storageKey, new RegExp(`^${tenantId}/${ticketId}/[a-f0-9-]+$`));
     assert.match(stored.contentSha256, /^[a-f0-9]{64}$/);
     assert.deepEqual(await storage.read(stored.storageKey), Buffer.from(bytes));
+    const storedFile = path.join(root, ...stored.storageKey.split('/'));
+    assert.equal((await stat(storedFile)).mode & 0o777, 0o600);
+    assert.equal((await stat(path.dirname(storedFile))).mode & 0o777, 0o700);
     await storage.remove(stored.storageKey);
     await assert.rejects(() => storage.read(stored.storageKey));
   } finally {

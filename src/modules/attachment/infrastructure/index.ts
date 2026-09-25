@@ -71,8 +71,8 @@ export class LocalAttachmentStorage {
   async write(tenantId: UUID, ticketId: UUID, bytes: Uint8Array): Promise<{ storageKey: string; contentSha256: string }> {
     const storageKey = path.posix.join(tenantId, ticketId, randomUUID());
     const absolutePath = this.resolve(storageKey);
-    await mkdir(path.dirname(absolutePath), { recursive: true });
-    await writeFile(absolutePath, bytes, { flag: 'wx' });
+    await mkdir(path.dirname(absolutePath), { recursive: true, mode: 0o700 });
+    await writeFile(absolutePath, bytes, { flag: 'wx', mode: 0o600 });
     return { storageKey, contentSha256: createHash('sha256').update(bytes).digest('hex') };
   }
 
