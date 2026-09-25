@@ -444,3 +444,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: browser field-execution verification, survey-side cancellation, reassignment and priority controls remain.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket capability plus one detail API route and ticket web/shared response types; no migration or mutation policy change. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 22 (Field workflow browser acceptance)
+- Intent: verify assigned crew display and field execution across Instrument Man and Party Chief accounts.
+- Files touched: CODEX.md only; disposable local fixture files removed after use.
+- Behavior verified: assigned crew names render; assigned Instrument Man starts work, receives required-delay-reason feedback, submits a delay; Party Chief approves delay and restarts work; Instrument Man reports completion; Party Chief approves completion; completed request has no field mutation controls. Pending reports and reasons remain visible between roles.
+- Verification: browser flow ran against a disposable database on the configured PostgreSQL server. Final completion initially stalled because the local preview stopped answering both browser and independent health requests; database still showed pending completion with no active DB queries. Stopped the confirmed live preview process, restarted it, reloaded state and retried successfully. Readback proved COMPLETED with completion timestamp, cleared pending status and delay reason, exactly one start/delay/restart/completion event and two report/approval events. No duplicate completion event. TypeScript and standard suite passed (121 pass, 28 database skips); production code is unchanged from Batch 21's passing build and 147 database tests. Disposable database and fixtures removed.
+- Known gap queued for later batches: field cancellation/return-to-work browser branches, responsive visual QA, survey cancellation, reassignment and priority UI remain. Preview stall cause was not established; recovery was verified without changing production code.
+- Production behavior changed: no.
+- Module boundary deviation: append-only verification record only; concurrent sample/configuration changes excluded.
