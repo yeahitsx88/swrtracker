@@ -10,6 +10,13 @@ const terminalStatuses = new Set([
   'COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED',
 ]);
 
+/** Presentation capability; uploads still recheck permissions in their transaction. */
+export async function canUploadAttachment(repo: IAttachmentRepository, db: DbClient,
+  tenantId: UUID, ticketId: UUID, requesterId: UUID): Promise<boolean> {
+  const ticket = await repo.findWritableTicket(db, tenantId, ticketId, requesterId);
+  return ticket !== null && !terminalStatuses.has(ticket.status);
+}
+
 export async function requireWritableTicket(repo: IAttachmentRepository, db: DbClient,
   tenantId: UUID, ticketId: UUID, requesterId: UUID): Promise<UploadTicket> {
   const ticket = await repo.findWritableTicket(db, tenantId, ticketId, requesterId);

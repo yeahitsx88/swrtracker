@@ -10,7 +10,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { Attachment } from '@/modules/attachment/domain/types';
 import type { IAttachmentRepository, IAttachmentStorage } from
   '@/modules/attachment/application/ports';
-import { recordAttachmentUpload, requireWritableTicket, validateAttachmentMetadata,
+import { recordAttachmentUpload, requireWritableTicket, canUploadAttachment, validateAttachmentMetadata,
   processAttachmentPurgeQueue, sweepOrphanedAttachments } from
   '@/modules/attachment/application';
 import { AttachmentRepository, VolumeAttachmentStorage } from
@@ -49,6 +49,11 @@ test('upload checks requester and active ticket before writing metadata and audi
   const completed = { findWritableTicket: async () => ({ id: ticketId, status: 'COMPLETED' }) } as
     unknown as IAttachmentRepository;
   await assert.rejects(requireWritableTicket(completed, db, tenantId, ticketId, actorId), ConflictError);
+  for (const status of ['COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED']) {
+    const terminal = { findWritableTicket: async () => ({ id: ticketId, status }) } as unknown as IAttachmentRepository;
+    assert.equal(await canUploadAttachment(terminal, db, tenantId, ticketId, actorId), false);
+    await assert.rejects(requireWritableTicket(terminal, db, tenantId, ticketId, actorId), ConflictError);
+  }
 });
 
 test('upload input rejects unsafe names, MIME values, and empty bytes', async () => {
@@ -170,6 +175,12 @@ test('PostgreSQL attachment metadata and audit event commit together with ticket
         VALUES ($1,$2,$3,$4,$5,'STANDARD_APPROVAL','DRAFT')`,
       [ticket, tenant, project, company, user]);
       const repo = new AttachmentRepository();
+      assert.equal(await canUploadAttachment(repo, db, tenant, ticket, user), true);
+      assert.equal(await canUploadAttachment(repo, db, tenant, ticket, randomUUID() as UUID), false);
+      assert.equal(await canUploadAttachment(repo, db, randomUUID() as UUID, ticket, user), false);
+      await db.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1 AND tenant_id=$2", [project, tenant]);
+      assert.equal(await canUploadAttachment(repo, db, tenant, ticket, user), false);
+      await db.query("UPDATE projects SET status='ACTIVE' WHERE id=$1 AND tenant_id=$2", [project, tenant]);
       const saved = await recordAttachmentUpload(repo, db, {
         tenantId: tenant, ticketId: ticket, actorId: user,
         filename: 'layout.pdf', mimeType: 'application/pdf',

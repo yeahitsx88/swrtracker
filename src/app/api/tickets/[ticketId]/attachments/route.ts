@@ -1,5 +1,6 @@
 /**
- * POST raw file bytes with x-file-name and Content-Type headers (max 20 MiB).
+ * POST raw bytes with percent-encoded x-file-name-utf8 (or legacy x-file-name)
+ * and Content-Type headers (max 20 MiB).
  * GET lists attachment metadata for a visible ticket.
  */
 import { NextResponse, type NextRequest } from 'next/server';
@@ -13,7 +14,8 @@ import { withTransaction } from '@/lib/with-transaction';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { MAX_ATTACHMENT_BYTES, listTicketAttachments, recordAttachmentUpload,
   validateAttachmentMetadata,
-  requireWritableTicket } from '@/modules/attachment/application';
+  requireWritableTicket, canUploadAttachment } from '@/modules/attachment/application';
+import { attachmentFilename } from './filename-header';
 import { AttachmentRepository, VolumeAttachmentStorage } from
   '@/modules/attachment/infrastructure';
 
@@ -37,8 +39,8 @@ export async function POST(req: NextRequest,
   try {
     const auth = await requireAuth(req);
     const ticketId = parseUuid((await params).ticketId, 'ticketId');
-    const filename = req.headers.get('x-file-name');
-    if (!filename || !req.body) throw new ValidationError('x-file-name and file body are required');
+    const filename = attachmentFilename(req.headers);
+    if (!req.body) throw new ValidationError('File body is required');
     const mimeType = (req.headers.get('content-type') ?? 'application/octet-stream')
       .split(';', 1)[0]?.trim() ?? 'application/octet-stream';
     const safeFilename = validateAttachmentMetadata(filename, mimeType);
@@ -81,7 +83,10 @@ export async function GET(req: NextRequest,
       limit: Number(searchParams.get('limit') ?? '50'),
       offset: Number(searchParams.get('offset') ?? '0'),
     });
-    return NextResponse.json({ ...page, data: page.data.map(publicAttachment) });
+    const canUpload = await canUploadAttachment(new AttachmentRepository(), pool,
+      ctx.tenantId, ctx.ticketId, ctx.visibility.actorId);
+    return NextResponse.json({ ...page, data: page.data.map(publicAttachment),
+      canUpload, maxUploadBytes: MAX_ATTACHMENT_BYTES });
   } catch (error) {
     return errorResponse(error);
   }

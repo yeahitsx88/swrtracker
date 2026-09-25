@@ -4,7 +4,7 @@
  */
 export type { Attachment } from '../domain/types';
 export type { IAttachmentRepository, IAttachmentStorage } from './ports';
-export { MAX_ATTACHMENT_BYTES, requireWritableTicket, validateAttachmentMetadata,
+export { MAX_ATTACHMENT_BYTES, requireWritableTicket, canUploadAttachment, validateAttachmentMetadata,
   recordAttachmentUpload,
   listTicketAttachments, findTicketAttachment, recordAttachmentDownload } from './attachments';
 export { processAttachmentPurgeQueue, sweepOrphanedAttachments } from './maintenance';

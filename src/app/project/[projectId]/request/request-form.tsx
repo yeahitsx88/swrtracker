@@ -7,6 +7,7 @@ import type { RequestOptions } from '@/modules/tenancy/application/request-optio
 import { api, ApiError, errorMessage, jsonBody } from '@/app/ui/api';
 import { localDateTime, type RequestDraft } from '@/app/ui/request-types';
 import { Shell } from '@/app/ui/shell';
+import { Attachments } from '@/app/ui/attachments';
 
 const empty = { aorNodeId: '', departmentId: '', ticketType: '', craft: '', description: '', requestedDate: '' };
 
@@ -20,6 +21,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
   const [authNeeded, setAuthNeeded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [attachmentBusy, setAttachmentBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState<string | null>(null);
   const savedId = useRef(draftId);
@@ -64,7 +66,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
   }
 
   async function save(submit: boolean) {
-    if (inFlight.current) return;
+    if (inFlight.current || attachmentBusy) return;
     inFlight.current = true; setBusy(true); setError(''); setMessage('');
     let saved = false;
     try {
@@ -103,7 +105,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
         {authNeeded && <p><Link href={loginLink}>Sign in to continue</Link></p>}</div>}
       </div>
       {options && <form className="panel" onSubmit={submit}>
-        <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0 }}>
+        <fieldset disabled={busy || attachmentBusy} style={{ border: 0, padding: 0, margin: 0 }}>
           <h2>Work details</h2>
           <label className="field">Work location<select required value={fields.aorNodeId} onChange={event => edit('aorNodeId', event.target.value)}>
             <option value="">Choose an area</option>
@@ -131,6 +133,7 @@ export function RequestForm({ projectId, draftId, tenantId }: {
           <p className="muted" style={{ marginTop: 16, marginBottom: 0 }}>Changes are saved only when you choose Save Draft or Submit request.</p>
         </fieldset>
       </form>}
+      {options && <Attachments ticketId={savedId.current} disabled={busy} onBusyChange={setAttachmentBusy} />}
     </>}
   </Shell>;
 }
