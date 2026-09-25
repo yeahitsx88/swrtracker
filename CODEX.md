@@ -318,3 +318,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: company lifecycle application operations and UI are deferred by CLAUDE.md. The new relationship table has no runtime writer or historical backfill because project-company membership semantics have not yet been specified.
 - Production behavior changed: yes, after migration 022 is applied.
 - Module boundary deviation: one Tenancy schema migration, its database test, and the append-only CODEX entry.
+
+### 2026-09-25 - Batch 7 (Requester intake options)
+- Intent: provide the Phase 3 request form with tenant-scoped project, AOR, and department choices.
+- Files touched: `src/modules/tenancy/application/request-options.ts`, `src/modules/tenancy/infrastructure/request-options.repository.ts`, `src/app/api/projects/[projectId]/request-options/route.ts`, `tests/tenancy/request-options.test.ts`, `CODEX.md`.
+- Behavior added: authenticated REQUESTER members of an ACTIVE project can read the project name, active AOR nodes with hierarchy paths, available departments, and their current department. Wrong role, inactive user, archived project, and cross-tenant/project access return no options.
+- Verification: focused PostgreSQL integration test, full database-backed suite (132 pass, 2 dedicated-URL skips), `pnpm tsc --noEmit`, `pnpm build`, and `git diff --check` passed against `survey_dev` at `host.docker.internal:5433`.
+- Known gap queued for later batches: Phase 3 requester UI still needs to consume this endpoint; registration/login UX and draft/submission views remain to be built.
+- Production behavior changed: yes.
+- Module boundary deviation: one request-options API route and focused integration test accompany the Tenancy module change.
