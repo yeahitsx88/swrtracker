@@ -435,3 +435,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: reassignment and field execution controls remain next.
 - Production behavior changed: yes.
 - Module boundary deviation: Tenancy label service plus one authorized detail route and its web/shared response types; no migration or workflow mutation change. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 21 (Field execution controls)
+- Intent: make existing field workflow commands available from ticket details.
+- Files touched: src/modules/ticket/application/field-actions.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/field-actions.tsx, src/app/tickets/[ticketId]/ticket-detail.tsx, tests/ticket/field-actions.test.ts, CODEX.md.
+- Behavior added: server-derived capabilities expose start, Instrument Man completion/delay/field-cancellation reports, lead approval or rejection, delayed-work restart, and direct completion where no Instrument Man is assigned. Pending reports and reasons are readable by authorized ticket viewers. Explicit confirmation, required delay reason, permanent field-cancellation wording, visible errors, duplicate submission guards, and mutual exclusion with other ticket actions accompany the existing transaction-backed endpoints.
+- Verification: baseline and final TypeScript and standard tests passed. Final standard suite passed 121 with 28 database skips; PostgreSQL suite passed 147 with 2 dedicated-URL skips. Production build and whitespace checks passed. New table-driven capability tests cover both variants, crew ownership, approval chain, Slim start, completion with/without IM, delay restart, cancellation request/review, terminal states, wrong roles, company scope, archived projects and infrastructure failures. Existing field workflow and atomic audit tests continue passing. Browser acceptance is pending for the next checkpoint.
+- Known gap queued for later batches: browser field-execution verification, survey-side cancellation, reassignment and priority controls remain.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket capability plus one detail API route and ticket web/shared response types; no migration or mutation policy change. Concurrent sample/configuration changes excluded.

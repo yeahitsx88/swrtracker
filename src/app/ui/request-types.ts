@@ -13,6 +13,10 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  fieldActions: { canStart: boolean; canReport: boolean; canRequestFieldCancel: boolean;
+    canResolve: boolean; canRestart: boolean; canCompleteDirectly: boolean };
+  pendingFieldStatus: 'COMPLETED' | 'DELAYED' | 'FIELD_CANCELED' | null;
+  pendingFieldReason: string | null;
   assignment: { crewBuild: 'FULL' | 'MEDIUM' | 'SLIM' } | null;
   reviewActions: { canReview: boolean };
   requesterActions: { canCancel: boolean; canResubmit: boolean };

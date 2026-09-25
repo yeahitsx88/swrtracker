@@ -9,6 +9,7 @@ import type { RequestTicket } from '@/app/ui/request-types';
 import { RequesterActions } from './requester-actions';
 import { ReviewActions } from './review-actions';
 import { AssignmentActions } from './assignment-actions';
+import { FieldActions } from './field-actions';
 
 const typeLabels: Record<string, string> = {
   LAYOUT: 'Field layout', CHECK_OUT: 'Equipment check-out', AS_BUILT: 'As-built survey',
@@ -57,6 +58,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       </section>}
       <ReviewActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onReviewed={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <AssignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onAssigned={() => { setActionBusy(false); setRevision(value => value + 1); }} />
+      <FieldActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <RequesterActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onCanceled={() => setRevision(value => value + 1)} />
       <Attachments key={revision} ticketId={ticket.id} disabled={actionBusy} onBusyChange={setAttachmentBusy} />
       <div className="actions"><button className="secondary" disabled={attachmentBusy || actionBusy} onClick={() => setRevision(value => value + 1)}>Refresh status</button>
