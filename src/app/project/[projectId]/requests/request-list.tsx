@@ -6,7 +6,7 @@ import { api, ApiError, errorMessage } from '@/app/ui/api';
 import { Shell } from '@/app/ui/shell';
 import type { RequestTicket } from '@/app/ui/request-types';
 
-interface TicketPage { data: RequestTicket[]; total: number; limit: number; offset: number }
+interface TicketPage { data: RequestTicket[]; total: number; limit: number; offset: number; canRequest: boolean }
 
 export function RequestList({ projectId }: { projectId: string }) {
   const [page, setPage] = useState<TicketPage | null>(null);
@@ -24,7 +24,7 @@ export function RequestList({ projectId }: { projectId: string }) {
   }, [projectId, offset]);
   return <Shell projectId={projectId} signedIn={Boolean(page)}><p className="eyebrow">Project workspace</p><h1>Requests</h1>
     <p className="muted">Track the requests available to you in this project. Saved drafts are in the separate Drafts section.</p>
-    <div className="actions"><Link className="button" href={`/project/${projectId}/request`}>New request</Link><Link href="/drafts">My drafts</Link></div>
+    <div className="actions">{page?.canRequest && <Link className="button" href={`/project/${projectId}/request`}>New request</Link>}<Link href="/drafts">My drafts</Link></div>
     {error && <div className="notice error" role="alert">{error}{authNeeded && <p><Link href={`/login?next=${encodeURIComponent(`/project/${projectId}/requests`)}`}>Sign in to see requests</Link></p>}</div>}
     {!page && !error && <p className="notice" role="status">Loading requests…</p>}
     {page && <section className="panel" aria-label="Submitted requests">

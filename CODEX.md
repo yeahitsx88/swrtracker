@@ -399,3 +399,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: assignment, field execution, survey cancellation and other elevated workflow controls remain; this checkpoint covers initial review only.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application capability plus one detail API route and web/shared types; no migration or mutation-rule changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 17 (Review browser verification and request navigation)
+- Intent: verify project discovery and review decisions end to end and correct an unavailable request link found during verification.
+- Files touched: src/modules/ticket/application/requester-actions.ts, src/app/api/tickets/route.ts, src/app/project/[projectId]/requests/request-list.tsx, CODEX.md.
+- Behavior changed: request lists display New request only when the existing active-project requester eligibility query permits it. Capability is supplied by the application service; creation endpoints remain authoritative.
+- Verification: browser checks on a disposable database covered default login to Projects, active/archived/setup project cards, manager approval confirmation, empty rejection reason validation, rejection with written reason, refreshed terminal decision controls, requester-only project discovery and new-request link, and requester visibility of rejection and revision controls. Database readback confirmed one ticket.approved event and one ticket.rejected event, correct states and exact reason. Both roles were rechecked after the navigation fix. Baseline and final TypeScript and standard suite passed (117 pass, 27 database skips); final database suite passed 142 with 2 dedicated-URL skips. Production build and whitespace checks passed. Disposable database and fixture files removed.
+- Known gap queued for later batches: crew assignment and field execution controls remain. Browser behavior verification for Batches 15 and 16 is now complete; responsive visual QA remains a later pass.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket capability plus one list API route and its request-list UI; no migration or authorization policy changes. Concurrent sample/configuration changes excluded.

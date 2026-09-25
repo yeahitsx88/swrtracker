@@ -1,10 +1,15 @@
-import type { DbClient } from '@/shared/types';
+import type { DbClient, UUID } from '@/shared/types';
 import { ConflictError } from '@/shared/errors';
 import { assertValidTransition } from '@/modules/workflow/domain/transitions';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 
 export interface RequesterActions { canCancel: boolean; canResubmit: boolean }
+
+export async function canCreateRequest(repo: ITicketRepository, db: DbClient,
+  tenantId: UUID, projectId: UUID, actor: VisibilityScope): Promise<boolean> {
+  return repo.isDraftOwnerAllowed(db, tenantId, projectId, actor.actorId, actor.companyId);
+}
 
 /** Called after ticket visibility is established. Commands recheck their own authorization. */
 export async function getRequesterActions(repo: ITicketRepository, db: DbClient,
