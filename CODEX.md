@@ -480,3 +480,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: crew reassignment, responsive visual QA and remaining role surfaces. During direct cancellation the preview stopped answering an independent health request; database confirmed no cancellation write. Explicitly stopped the live preview, restarted, reloaded and retried successfully without duplicate events. Preview stall cause remains unestablished.
 - Production behavior changed: no.
 - Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 26 (Reassignment candidate service)
+- Intent: provide authorized searchable crew candidates for the upcoming reassignment controls.
+- Files touched: src/modules/ticket/application/reassignment-options.ts, src/app/api/tickets/[ticketId]/reassign-crew/route.ts, tests/ticket/reassignment-options.test.ts, CODEX.md.
+- Behavior added: GET reassignment options resolves ticket visibility before looking up candidates, permits only active assigned/in-progress/pending/delayed work, and applies existing survey authority rules. Superintendent chief choices are AOR scoped; Instrument Man choices are project-wide. Assigned Party Chiefs can choose only IM replacements on their own ticket. Slim exposes required IM selection without chief replacement. Capability helper supplies form constraints; mutation endpoint and audit transactions are unchanged.
+- Verification: baseline TypeScript and 124 standard tests passed. Final TypeScript and production build passed; standard suite passed 128 with 28 database skips; PostgreSQL suite passed 154 with 2 dedicated-URL skips. New tests cover tenant/visibility denial, role/ownership boundaries, AOR candidate constraints, crew builds, pagination, invalid states/queries and infrastructure failure propagation. Existing PostgreSQL candidate-isolation and reassignment/audit tests remain passing. Whitespace checks passed.
+- Known gap queued for later batches: wire the crew reassignment picker and capability into ticket detail; browser and responsive acceptance remain pending. Superintendent-of-record replacement is a separate remaining action.
+- Production behavior changed: yes (read-only candidate API).
+- Module boundary deviation: Ticket application plus one existing ticket API route, with cross-module candidate access through the Tenancy application service. No migrations. Concurrent sample/configuration changes excluded.
