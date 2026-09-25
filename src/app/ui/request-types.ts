@@ -28,7 +28,7 @@ export interface RequestTicket extends RequestDraft {
   pendingFieldStatus: 'COMPLETED' | 'DELAYED' | 'FIELD_CANCELED' | null;
   pendingFieldReason: string | null;
   assignment: { crewBuild: 'FULL' | 'MEDIUM' | 'SLIM' } | null;
-  reviewActions: { canReview: boolean };
+  reviewActions: { canReview: boolean; canOverride: boolean };
   requesterActions: { canCancel: boolean; canResubmit: boolean };
   displayStatus: string;
   projectName: string;

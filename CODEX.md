@@ -534,3 +534,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: override rejection, remaining role surfaces and responsive visual QA; outstanding Slim/Superintendent crew-reassignment browser branches.
 - Production behavior changed: no.
 - Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 32 (Rejection override controls)
+- Intent: expose the existing audited rejection override command on ticket details.
+- Files touched: src/modules/ticket/application/review-actions.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/review-actions.tsx, tests/ticket/review-actions.test.ts, CODEX.md.
+- Behavior added: eligible Survey Managers see Override rejection on rejected standard-approval requests. Confirmation explains the return to approval and requires a written override reason. Existing requester, recorded lead and recorded manager self-conflicts suppress the action, as do company isolation and inactive projects. Success refreshes details; duplicate and concurrent mutations are disabled. Existing override command and endpoint remain authoritative.
+- Verification: baseline TypeScript and 132 standard tests passed. Final TypeScript and production build passed; standard suite passed 133 with 29 database skips; PostgreSQL suite passed 160 with 2 dedicated-URL skips. New capability tests cover rejected state, all self-conflict fields, wrong roles, company isolation, direct workflow, deleted draft, inactive project and infrastructure error propagation. Existing mutation tests remain passing. Whitespace check passed after removing a trailing blank line. Browser acceptance is queued next.
+- Known gap queued for later batches: override browser acceptance, remaining role surfaces and responsive visual QA.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket application capability plus ticket web/shared response types; no route, command, migration or authority changes. Concurrent sample/configuration changes excluded.
