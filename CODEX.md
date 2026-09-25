@@ -471,3 +471,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: browser acceptance, crew reassignment and responsive visual QA remain. Elevation currently uses the existing High-only endpoint; lower controls preserve the existing rejection restriction.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket capability plus one detail API route and ticket web/shared types; no migration or mutation policy change. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 25 (Priority and survey cancellation browser acceptance)
+- Intent: verify the published priority and survey cancellation controls through the production browser UI.
+- Files touched: CODEX.md.
+- Behavior verified: assigned Party Chief must supply a cancellation reason and cannot self-approve; Survey Manager approval preserves the reason and ends in Canceled by Survey Team. High downgrade displays confirmation before its reason form, Keep High leaves priority unchanged, confirmed downgrade reaches Medium, and elevation returns to High. Direct Survey Manager cancellation requires a reason and removes mutation controls after completion.
+- Verification: disposable PostgreSQL database readback proved both terminal cancellations and exactly five expected audit events: one requested cancellation, two completed cancellations, one confirmed High downgrade, and one elevation. Approval actor chain and confirmation payload were checked. TypeScript passed; standard suite passed 124 with 28 database skips. No production code changed. Disposable database, fixtures and browser tab removed.
+- Known gap queued for later batches: crew reassignment, responsive visual QA and remaining role surfaces. During direct cancellation the preview stopped answering an independent health request; database confirmed no cancellation write. Explicitly stopped the live preview, restarted, reloaded and retried successfully without duplicate events. Preview stall cause remains unestablished.
+- Production behavior changed: no.
+- Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
