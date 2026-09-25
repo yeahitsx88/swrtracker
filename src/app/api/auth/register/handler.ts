@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { NextResponse, type NextRequest } from 'next/server';
-import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
@@ -37,31 +37,25 @@ export async function handlePostRegister(
       !body ||
       typeof body !== 'object' ||
       typeof (body as Record<string, unknown>).tenantId !== 'string' ||
-      typeof (body as Record<string, unknown>).companyId !== 'string' ||
       typeof (body as Record<string, unknown>).email !== 'string' ||
       typeof (body as Record<string, unknown>).password !== 'string' ||
       typeof (body as Record<string, unknown>).name !== 'string' ||
-      (
-        (body as Record<string, unknown>).inviteToken !== undefined &&
-        typeof (body as Record<string, unknown>).inviteToken !== 'string'
-      )
+      typeof (body as Record<string, unknown>).inviteToken !== 'string'
     ) {
-      throw new ValidationError('tenantId, companyId, email, password, name, and optional inviteToken are required');
+      throw new ValidationError('tenantId, email, password, name, and inviteToken are required');
     }
 
-    const { tenantId, companyId, email, password, name, inviteToken } = body as {
+    const { tenantId, email, password, name, inviteToken } = body as {
       tenantId: string;
-      companyId: string;
       email: string;
       password: string;
       name: string;
-      inviteToken?: string;
+      inviteToken: string;
     };
     const normalizedTenantId = tenantId.trim() as UUID;
-    const normalizedCompanyId = companyId.trim() as UUID;
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
-    const normalizedInviteToken = inviteToken?.trim();
+    const normalizedInviteToken = inviteToken.trim();
 
     if (password.length < 8) {
       throw new ValidationError('Password must be at least 8 characters');
@@ -72,20 +66,13 @@ export async function handlePostRegister(
     if (!normalizedEmail) {
       throw new ValidationError('email is required');
     }
-
-    const repo = deps.createRepo();
-    const companyBelongsToTenant = await repo.isCompanyInTenant(
-      deps.db,
-      normalizedTenantId,
-      normalizedCompanyId,
-    );
-    if (!companyBelongsToTenant) {
-      throw new ValidationError('companyId must reference a company in this tenant');
+    if (!normalizedInviteToken) {
+      throw new ValidationError('inviteToken is required');
     }
 
-    let memberships: Array<{ projectId: UUID; role: ProjectRole }> = [];
-    if (normalizedInviteToken) {
-      const invite = await repo.findActiveInviteByToken(deps.db, normalizedInviteToken);
+    const repo = deps.createRepo();
+    const user = await deps.withTransaction(async (client) => {
+      const invite = await repo.findActiveInviteByToken(client, normalizedInviteToken);
       if (!invite) {
         throw new ValidationError('inviteToken is invalid or expired');
       }
@@ -95,42 +82,37 @@ export async function handlePostRegister(
       if (invite.email.trim().toLowerCase() !== normalizedEmail) {
         throw new ValidationError('inviteToken does not match email');
       }
-      memberships = [{ projectId: invite.projectId, role: invite.role as ProjectRole }];
-    } else {
-      const domainAllowed = await repo.isDomainAllowed(deps.db, normalizedTenantId, normalizedEmail);
-      if (!domainAllowed) {
-        throw new ForbiddenError(
-          'Your email domain is not authorised for self-registration. Contact your project administrator for an invite.',
-        );
+      if (!invite.companyId) {
+        throw new ValidationError('inviteToken is not bound to a company');
       }
-
-      const projectIds = await repo.listRegisterableProjectIds(deps.db, normalizedTenantId);
-      memberships = projectIds.map((projectId) => ({ projectId, role: 'REQUESTER' as const }));
-    }
-
-    const user = await deps.withTransaction(async (client) => {
+      if (invite.companyType === 'SUBCONTRACTOR' && invite.role !== 'REQUESTER') {
+        throw new ValidationError('Subcontractor invitations must have requester access');
+      }
+      if (!invite.companyType) {
+        throw new ValidationError('inviteToken is not bound to a valid company');
+      }
+      const suppliedCompanyId = (body as Record<string, unknown>).companyId;
+      if (suppliedCompanyId !== undefined &&
+          (typeof suppliedCompanyId !== 'string' || suppliedCompanyId.trim() !== invite.companyId)) {
+        throw new ValidationError('companyId does not match invite');
+      }
       const createdUser = await deps.createUser(repo, client, {
         tenantId: normalizedTenantId,
-        companyId: normalizedCompanyId,
+        companyId: invite.companyId,
         email: normalizedEmail,
         password,
         name: normalizedName,
       });
 
       const createdAt = new Date();
-      for (const membership of memberships) {
-        await repo.saveProjectMembership(client, {
-          id: randomUUID() as UUID,
-          projectId: membership.projectId,
-          userId: createdUser.id,
-          role: membership.role,
-          createdAt,
-        });
-      }
-
-      if (normalizedInviteToken) {
-        await repo.markInviteAccepted(client, normalizedInviteToken, createdAt);
-      }
+      await repo.saveProjectMembership(client, {
+        id: randomUUID() as UUID,
+        projectId: invite.projectId,
+        userId: createdUser.id,
+        role: invite.role as ProjectRole,
+        createdAt,
+      });
+      await repo.markInviteAccepted(client, normalizedInviteToken, createdAt);
 
       return createdUser;
     });

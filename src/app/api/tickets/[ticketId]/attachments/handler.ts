@@ -84,7 +84,6 @@ interface AttachmentRow {
   uploaded_by: string;
   filename: string;
   mime_type: string;
-  storage_key: string;
   size_bytes: number;
   created_at: Date;
 }
@@ -100,7 +99,7 @@ const defaultGetDeps: TicketAttachmentsGetRouteDeps = {
   createTicketRepo: () => new TicketRepository(),
   listAttachments: async (tenantId, ticketId) => {
     const { rows } = await pool.query<AttachmentRow>(
-      `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, storage_key, size_bytes, created_at
+      `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, size_bytes, created_at
        FROM attachments
        WHERE tenant_id = $1
          AND ticket_id = $2
@@ -137,7 +136,6 @@ export async function handleGetTicketAttachments(
         uploadedBy: row.uploaded_by,
         filename: row.filename,
         mimeType: row.mime_type,
-        storageKey: row.storage_key,
         sizeBytes: row.size_bytes,
         createdAt: row.created_at.toISOString(),
       })),

@@ -1,13 +1,10 @@
 /**
  * POST /api/auth/register
  *
- * Self-registration flow (CLAUDE.md §8):
+ * Invitation-bound registration flow:
  * 1. Parse and validate input.
- * 2. Validate companyId within the tenant.
- * 3. Check allowed_domains or validate inviteToken.
- *    - Domain match -> registration proceeds and requester memberships are seeded.
- *    - Valid inviteToken -> registration proceeds with the invite's project role.
- *    - No match -> 403 ForbiddenError.
+ * 2. Lock and validate a single-use invitation inside the registration transaction.
+ * 3. Bind tenant, project, company, email, and role from the invitation.
  */
 import type { NextRequest } from 'next/server';
 import { handlePostRegister } from './handler';

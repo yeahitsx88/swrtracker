@@ -16,7 +16,6 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
           <p className="ticket-headline">{attachment.filename}</p>
           <p className="muted">{attachment.mimeType}</p>
           <p className="muted">Size: {attachment.sizeBytes.toLocaleString()} bytes</p>
-          <p className="muted">Storage Key: {attachment.storageKey}</p>
           <p className="muted">Uploaded: {new Date(attachment.createdAt).toLocaleString()}</p>
         </article>
       ))}

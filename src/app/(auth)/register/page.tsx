@@ -21,7 +21,6 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('inviteToken');
   const [tenantId, setTenantId] = useState(searchParams.get('tenantId') ?? '');
-  const [companyId, setCompanyId] = useState(searchParams.get('companyId') ?? '');
   const [name, setName] = useState('');
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [password, setPassword] = useState('');
@@ -33,7 +32,7 @@ function RegisterForm() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!tenantId.trim() || !companyId.trim() || !name.trim() || !email.trim() || !password) {
+    if (!tenantId.trim() || !name.trim() || !email.trim() || !password || !inviteToken?.trim()) {
       setError('All registration fields are required.');
       return;
     }
@@ -43,11 +42,10 @@ function RegisterForm() {
     try {
       await apiClient.register({
         tenantId: tenantId.trim(),
-        companyId: companyId.trim(),
         name: name.trim(),
         email: email.trim(),
         password,
-        inviteToken: inviteToken?.trim() || undefined,
+        inviteToken: inviteToken.trim(),
       });
       setSuccess('Registration complete. Sign in with your new credentials.');
       router.push(`/login?tenantId=${encodeURIComponent(tenantId.trim())}&email=${encodeURIComponent(email.trim())}`);
@@ -59,13 +57,11 @@ function RegisterForm() {
   }
 
   return (
-    <Card title="Create Account" description="Register with your tenant and company IDs. Invite links prefill tenant and email.">
+    <Card title="Create Account" description="Register using a project invitation. The invitation determines your company and project access.">
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
-        {inviteToken ? (
-          <p className="muted">Invite-validated tenant and email are locked. Enter your company ID to finish registration.</p>
-        ) : null}
+        {inviteToken ? <p className="muted">Your invitation determines company and project access.</p> : <p className="muted">Ask your project administrator for an invitation link.</p>}
         <Field label="Tenant ID">
           <Input
             value={tenantId}
@@ -73,9 +69,6 @@ function RegisterForm() {
             readOnly={tenantLocked}
             required
           />
-        </Field>
-        <Field label="Company ID">
-          <Input value={companyId} onChange={(event) => setCompanyId(event.target.value)} required />
         </Field>
         <Field label="Full Name">
           <Input value={name} onChange={(event) => setName(event.target.value)} required />

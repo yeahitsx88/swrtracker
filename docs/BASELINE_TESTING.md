@@ -51,3 +51,14 @@ Choose an unused port if 55483 is taken. The socket-only cluster is the test env
 | Smoke guard | Run without explicit disposable flag failed before fixture mutation |
 
 The route smoke exercises the older `phase5` workflow only through assignment. It does not cover field completion, return/resubmission, cancellation, external company identity, email delivery, attachment bytes, reporting, or the one-month Amelia pilot. No deployed database or SharePoint process was inspected. Docker image build was not run because Docker is unavailable on this machine; the Dockerfile now copies the pnpm build allowlist for its dependency stage.
+
+## Gate B1 access foundation
+
+Migration 022 adds company-bound invitations, project-scoped company authority and responsibility grants, and additive workflow history fields. The new access smoke requires a separate disposable PostgreSQL 15 cluster with migrations 001–022 applied. Its database name must be exactly `swr_b1_test`; it checks both `SWR_B1_DISPOSABLE_DB=1` and the cluster data directory before adding fixtures. After creating and migrating that database, run:
+
+```sh
+export DATABASE_URL="postgresql://$(id -un)@localhost:55484/swr_b1_test?host=$SWR_TEST_CLUSTER_DIR"
+SWR_B1_DISPOSABLE_DB=1 SWR_B1_DATA_DIR="$SWR_TEST_CLUSTER_DIR/data" pnpm smoke:access
+```
+
+Use the actual socket directory and unused port selected for that cluster. The smoke adds randomized tenants, companies, projects, users, and tickets; dispose of the whole temporary cluster afterward. It checks invite company binding and single use, central versus project IT scope, subcontractor role restrictions, own-only versus granted company visibility, project isolation, mutation denial on a coworker's SWR, and immediate revocation. This is an access foundation check; it does not validate the later workflow, attachment-byte, notification, or private-beta screens.

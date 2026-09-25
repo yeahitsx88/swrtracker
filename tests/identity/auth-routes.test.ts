@@ -92,8 +92,7 @@ function makeLoginDeps(overrides?: Partial<LoginRouteDeps>): LoginRouteDeps {
   };
 }
 
-test('handlePostRegister returns 201 with mapped user payload', async () => {
-  const memberships: Array<{ projectId: UUID; userId: UUID; role: string }> = [];
+test('handlePostRegister requires an invitation even for an allowed email domain', async () => {
   const response = await handlePostRegister(
     makeRequest('http://localhost/api/auth/register', {
       tenantId,
@@ -102,32 +101,12 @@ test('handlePostRegister returns 201 with mapped user payload', async () => {
       password: 'strong-password',
       name: 'Field User',
     }),
-    makeRegisterDeps({
-      createRepo: () =>
-        makeRepo({
-          listRegisterableProjectIds: async () => ['project-1' as UUID, 'project-2' as UUID],
-          saveProjectMembership: async (_db, membership) => {
-            memberships.push(membership);
-          },
-        }),
-    }),
+    makeRegisterDeps(),
   );
-
-  assert.equal(response.status, 201);
-  const json = await response.json() as { user: User };
-  assert.equal(json.user.id, userId);
-  assert.equal(json.user.tenantId, tenantId);
-  assert.equal(json.user.email, 'field.user@example.com');
-  assert.deepEqual(
-    memberships.map(({ projectId, userId: memberUserId, role }) => ({ projectId, userId: memberUserId, role })),
-    [
-      { projectId: 'project-1' as UUID, userId, role: 'REQUESTER' },
-      { projectId: 'project-2' as UUID, userId, role: 'REQUESTER' },
-    ],
-  );
+  assert.equal(response.status, 400);
 });
 
-test('handlePostRegister returns 403 when email domain is not allowed', async () => {
+test('handlePostRegister refuses registration without an invite regardless of domain', async () => {
   const response = await handlePostRegister(
     makeRequest('http://localhost/api/auth/register', {
       tenantId,
@@ -144,10 +123,10 @@ test('handlePostRegister returns 403 when email domain is not allowed', async ()
     }),
   );
 
-  assert.equal(response.status, 403);
+  assert.equal(response.status, 400);
 });
 
-test('handlePostRegister rejects company ids outside the tenant', async () => {
+test('handlePostRegister rejects a caller-selected company that differs from the invite', async () => {
   const response = await handlePostRegister(
     makeRequest('http://localhost/api/auth/register', {
       tenantId,
@@ -155,18 +134,26 @@ test('handlePostRegister rejects company ids outside the tenant', async () => {
       email: 'field.user@example.com',
       password: 'strong-password',
       name: 'Field User',
+      inviteToken: 'invite-token-1',
     }),
     makeRegisterDeps({
       createRepo: () =>
         makeRepo({
-          isCompanyInTenant: async () => false,
+          findActiveInviteByToken: async () => ({
+            tenantId,
+            projectId: 'project-1' as UUID,
+            companyId: 'other-company' as UUID,
+            companyType: 'SUBCONTRACTOR',
+            email: 'field.user@example.com',
+            role: 'REQUESTER',
+          }),
         }),
     }),
   );
 
   assert.equal(response.status, 400);
   const json = await response.json() as { error: { message: string } };
-  assert.equal(json.error.message, 'companyId must reference a company in this tenant');
+  assert.equal(json.error.message, 'companyId does not match invite');
 });
 
 test('handlePostRegister honors active invite tokens and marks them accepted', async () => {
@@ -189,6 +176,8 @@ test('handlePostRegister honors active invite tokens and marks them accepted', a
           findActiveInviteByToken: async () => ({
             tenantId,
             projectId: 'project-7' as UUID,
+            companyId,
+            companyType: 'GC',
             email: 'invited.user@example.com',
             role: 'SURVEY_MANAGER',
           }),
@@ -226,8 +215,19 @@ test('handlePostRegister normalizes email before creating the user', async () =>
       email: ' Mixed.Case@Example.com ',
       password: 'strong-password',
       name: 'Field User',
+      inviteToken: 'invite-token-1',
     }),
     makeRegisterDeps({
+      createRepo: () => makeRepo({
+        findActiveInviteByToken: async () => ({
+          tenantId,
+          projectId: 'project-1' as UUID,
+          companyId,
+          companyType: 'SUBCONTRACTOR',
+          email: 'mixed.case@example.com',
+          role: 'REQUESTER',
+        }),
+      }),
       createUser: async (_repo, _db, params) => {
         capturedEmail = params.email;
         return makeUser({

@@ -19,6 +19,7 @@ function makeDeps(overrides?: Partial<InviteTokenRouteDeps>): InviteTokenRouteDe
     queryInvite: async () => ({
       tenant_id: 'tenant-1',
       project_id: 'project-1',
+      company_id: 'company-1',
       email: 'field.user@example.com',
       role: 'REQUESTER',
       expires_at: new Date('2026-03-05T12:00:00Z'),
@@ -72,6 +73,7 @@ test('handleGetInviteToken returns 409 when token is expired', async () => {
       queryInvite: async () => ({
         tenant_id: 'tenant-1',
         project_id: 'project-1',
+        company_id: 'company-1',
         email: 'field.user@example.com',
         role: 'REQUESTER',
         expires_at: new Date('2026-03-04T11:59:59Z'),

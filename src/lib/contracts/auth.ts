@@ -13,11 +13,10 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   tenantId: string;
-  companyId: string;
   email: string;
   password: string;
   name: string;
-  inviteToken?: string;
+  inviteToken: string;
 }
 
 export interface AuthResponse {

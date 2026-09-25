@@ -23,7 +23,7 @@ export interface IUserRepository {
   findActiveInviteByToken(
     db: DbClient,
     token: string,
-  ): Promise<{ tenantId: UUID; projectId: UUID; email: string; role: string } | null>;
+  ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string } | null>;
   markInviteAccepted(db: DbClient, token: string, acceptedAt: Date): Promise<void>;
   bumpSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
   save(db: DbClient, user: UserWithCredentials): Promise<void>;

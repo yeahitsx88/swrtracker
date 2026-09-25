@@ -9,6 +9,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { AuthMethod, User, UserWithCredentials } from '../domain/types';
 import type { IUserRepository } from '../application/ports';
 import type { PasswordResetToken } from '../application/password-reset';
+import { ConflictError } from '@/shared/errors';
 
 interface DbRow {
   id: string;
@@ -149,20 +150,25 @@ export class UserRepository implements IUserRepository {
   async findActiveInviteByToken(
     db: DbClient,
     token: string,
-  ): Promise<{ tenantId: UUID; projectId: UUID; email: string; role: string } | null> {
+  ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string } | null> {
     const { rows } = await db.query<{
       tenant_id: string;
       project_id: string;
+      company_id: string | null;
+      company_type: string | null;
       email: string;
       role: string;
     }>(
-      `SELECT tenant_id, project_id, email, role
-       FROM invites
-       WHERE token = $1
-         AND accepted_at IS NULL
-         AND canceled_at IS NULL
-         AND expires_at > NOW()
-       LIMIT 1`,
+      `SELECT i.tenant_id, i.project_id, i.company_id, c.type AS company_type, i.email, i.role
+       FROM invites i
+       JOIN projects p ON p.id = i.project_id AND p.tenant_id = i.tenant_id AND p.status <> 'ARCHIVED'
+       LEFT JOIN companies c ON c.id = i.company_id AND c.tenant_id = i.tenant_id
+       WHERE i.token = $1
+         AND i.accepted_at IS NULL
+         AND i.canceled_at IS NULL
+         AND i.expires_at > NOW()
+       LIMIT 1
+       FOR UPDATE OF i`,
       [token],
     );
 
@@ -170,19 +176,27 @@ export class UserRepository implements IUserRepository {
     return {
       tenantId: rows[0].tenant_id as UUID,
       projectId: rows[0].project_id as UUID,
+      companyId: rows[0].company_id as UUID | null,
+      companyType: rows[0].company_type,
       email: rows[0].email,
       role: rows[0].role,
     };
   }
 
   async markInviteAccepted(db: DbClient, token: string, acceptedAt: Date): Promise<void> {
-    await db.query(
+    const { rows } = await db.query<{ id: string }>(
       `UPDATE invites
        SET accepted_at = $2
        WHERE token = $1
-         AND accepted_at IS NULL`,
+         AND accepted_at IS NULL
+         AND canceled_at IS NULL
+         AND expires_at > NOW()
+       RETURNING id`,
       [token, acceptedAt],
     );
+    if (rows.length === 0) {
+      throw new ConflictError('Invite has already been used');
+    }
   }
 
   async save(db: DbClient, user: UserWithCredentials): Promise<void> {

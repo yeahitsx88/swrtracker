@@ -92,7 +92,6 @@ export interface AttachmentRecord {
   uploadedBy: string;
   filename: string;
   mimeType: string;
-  storageKey: string;
   sizeBytes: number;
   createdAt: string;
 }

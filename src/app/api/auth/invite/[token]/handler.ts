@@ -6,6 +6,7 @@ import { pool } from '@/lib/db';
 interface InviteRow {
   tenant_id: string;
   project_id: string;
+  company_id: string | null;
   email: string;
   role: string;
   expires_at: Date;
@@ -19,7 +20,7 @@ export interface InviteTokenRouteDeps {
 const defaultDeps: InviteTokenRouteDeps = {
   queryInvite: async (token) => {
     const { rows } = await pool.query<InviteRow>(
-      `SELECT tenant_id, project_id, email, role, expires_at
+      `SELECT tenant_id, project_id, company_id, email, role, expires_at
        FROM invites
        WHERE token = $1
          AND accepted_at IS NULL
@@ -46,6 +47,9 @@ export async function handleGetInviteToken(
     }
     if (invite.expires_at.getTime() <= deps.now()) {
       throw new ConflictError('Invite token is expired');
+    }
+    if (!invite.company_id) {
+      throw new ConflictError('Invite is not bound to a company');
     }
 
     return NextResponse.json({

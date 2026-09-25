@@ -121,7 +121,7 @@ function buildVisibilityClause(
   scope: VisibilityScope,
   baseIdx: number,
 ): { sql: string; params: unknown[] } {
-  const { actorId, actorRole, departmentId, aorNodeIds, partyChiefId, companyId, companyType } = scope;
+  const { actorId, actorRole, projectId, departmentId, aorNodeIds, partyChiefId, companyId, companyType } = scope;
 
   const withSubcontractorIsolation = (
     clause: { sql: string; params: unknown[] },
@@ -152,6 +152,24 @@ function buildVisibilityClause(
       });
 
     case 'REQUESTER':
+      if (companyType === 'SUBCONTRACTOR' && projectId) {
+        return {
+          sql: `AND (t.requester_id = $${baseIdx} OR (
+            t.company_id = $${baseIdx + 1} AND t.project_id = $${baseIdx + 2}
+            AND EXISTS (
+              SELECT 1 FROM company_authority_grants g
+              JOIN project_memberships pm
+                ON pm.project_id = g.project_id AND pm.user_id = g.user_id
+              JOIN users u ON u.id = g.user_id AND u.tenant_id = g.tenant_id
+              WHERE g.tenant_id = t.tenant_id AND g.project_id = t.project_id
+                AND g.company_id = t.company_id AND g.user_id = $${baseIdx}
+                AND g.revoked_at IS NULL AND pm.role = 'REQUESTER'
+                AND u.deactivated_at IS NULL
+            )
+          ))`,
+          params: [actorId, companyId, projectId],
+        };
+      }
       return withSubcontractorIsolation({
         sql:    `AND t.requester_id = $${baseIdx}`,
         params: [actorId],
@@ -494,6 +512,25 @@ export class TicketRepository implements ITicketRepository {
     );
     if (!rows[0]) return null;
     return { companyId: rows[0].company_id as UUID, companyType: rows[0].type };
+  }
+
+  async hasCompanyAuthority(
+    db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID, companyId: UUID,
+  ): Promise<boolean> {
+    const { rows } = await db.query<{ granted: boolean }>(
+      `SELECT EXISTS (
+         SELECT 1 FROM company_authority_grants g
+         JOIN project_memberships pm
+           ON pm.project_id = g.project_id AND pm.user_id = g.user_id
+         JOIN users u ON u.id = g.user_id AND u.tenant_id = g.tenant_id
+         WHERE g.tenant_id = $1 AND g.project_id = $2
+           AND g.user_id = $3 AND g.company_id = $4
+           AND g.revoked_at IS NULL AND u.deactivated_at IS NULL
+           AND pm.role = 'REQUESTER'
+       ) AS granted`,
+      [tenantId, projectId, userId, companyId],
+    );
+    return rows[0]?.granted === true;
   }
 
   async findUserEmail(db: DbClient, tenantId: UUID, userId: UUID): Promise<string | null> {

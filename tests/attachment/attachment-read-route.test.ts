@@ -154,7 +154,6 @@ test('handleGetTicketAttachments returns mapped attachment metadata', async () =
       uploadedBy: string;
       filename: string;
       mimeType: string;
-      storageKey: string;
       sizeBytes: number;
       createdAt: string;
     }>;
@@ -164,6 +163,7 @@ test('handleGetTicketAttachments returns mapped attachment metadata', async () =
   assert.equal(json.attachments[0]?.id, 'attachment-2');
   assert.equal(json.attachments[0]?.ticketId, ticketId);
   assert.equal(json.attachments[0]?.createdAt, '2026-03-04T12:05:00.000Z');
+  assert.equal('storageKey' in json.attachments[0]!, false);
 });
 
 test('handleGetTicketAttachments returns 404 when ticket is not visible', async () => {

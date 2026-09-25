@@ -45,6 +45,8 @@ export interface PatchTicketOptions {
 export interface VisibilityScope {
   actorId:   UUID;
   actorRole: ProjectRole;
+  /** Project for which the current access grant was resolved. */
+  projectId?: UUID;
   /** The actor's project department membership, when visibility depends on department tags. */
   departmentId?: UUID;
   /** The actor's company_id — used for SUBCONTRACTOR isolation on top of role scoping. */
@@ -134,6 +136,8 @@ export interface ITicketRepository {
   findUserCompanyInfo(
     db: DbClient, tenantId: UUID, userId: UUID,
   ): Promise<{ companyId: UUID; companyType: string } | null>;
+
+  hasCompanyAuthority?(db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID, companyId: UUID): Promise<boolean>;
 
   /** Look up the email of a user (for whitelist check at ticket creation). */
   findUserEmail(db: DbClient, tenantId: UUID, userId: UUID): Promise<string | null>;

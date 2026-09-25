@@ -36,6 +36,7 @@ export async function resolveVisibility(
   const scope: VisibilityScope = {
     actorId,
     actorRole,
+    projectId,
     companyId,
     companyType: companyInfo?.companyType,
   };
