@@ -543,3 +543,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: override browser acceptance, remaining role surfaces and responsive visual QA.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application capability plus ticket web/shared response types; no route, command, migration or authority changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 33 (Rejection override state guard)
+- Intent: close a command-level state gap found while preparing override acceptance.
+- Files touched: src/modules/ticket/application/override-rejection.ts, tests/ticket/override-rejection-state.test.ts, CODEX.md.
+- Behavior changed: overrideRejection explicitly requires REJECTED before writing. Previously the shared transition map also permitted SUBMITTED to APPROVED, allowing a direct override call to record a rejection-override event for a ticket that had not been rejected. Normal approval remains available through its own command.
+- Verification: baseline TypeScript and 133 standard tests passed. Final TypeScript, production build and whitespace checks passed; standard suite passed 134 with 29 database skips; PostgreSQL suite passed 161 with 2 dedicated-URL skips. New regression checks all non-rejected statuses and asserts no state or audit writes; existing successful override and self-conflict tests remain green.
+- Known gap queued for later batches: override browser acceptance, remaining role surfaces and responsive visual QA.
+- Production behavior changed: yes.
+- Module boundary deviation: none beyond append-only CODEX record; concurrent sample/configuration changes excluded.

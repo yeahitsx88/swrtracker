@@ -4,7 +4,7 @@
  * Covers the case where a requester contacts an Approver directly after rejection.
  * A written reason is required. Logged as ticket.rejection_overridden.
  */
-import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
@@ -33,6 +33,9 @@ export async function overrideRejection(
     actorRole:      params.actorRole,
     permittedRoles: ['SURVEY_MANAGER'],
     authorizeTicket: (ticket) => {
+      if (ticket.status !== 'REJECTED') {
+        throw new ConflictError('Only a rejected ticket can have its rejection overridden');
+      }
       if (ticket.requesterId === params.actorId ||
           ticket.surveyLeadId === params.actorId ||
           ticket.surveyManagerId === params.actorId) {
