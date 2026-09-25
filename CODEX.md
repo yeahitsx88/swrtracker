@@ -552,3 +552,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: override browser acceptance, remaining role surfaces and responsive visual QA.
 - Production behavior changed: yes.
 - Module boundary deviation: none beyond append-only CODEX record; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 34 (Rejection override browser acceptance)
+- Intent: verify the corrected override flow through the production UI.
+- Files touched: CODEX.md.
+- Behavior verified: recorded-manager self-conflict hides the override control; an independent manager sees the override confirmation on a rejected request. Blank reason is rejected. Successful override refreshes to Approved - Awaiting Assignment, removes the current rejection notice and exposes crew assignment.
+- Verification: PostgreSQL assertions confirmed APPROVED with approval timestamp and cleared current rejection reason, unchanged self-conflict fixture, and exactly one ticket.rejection_overridden event with the correct actor and written reason. TypeScript passed; standard suite passed 134 with 29 database skips. Production unchanged from Batch 33's passing build and 161 PostgreSQL tests. Preview stopped; disposable database, fixture files and browser tab removed.
+- Known gap queued for later batches: remaining role surfaces (help flags, CAD and administration) and responsive visual QA; outstanding Slim/Superintendent crew-reassignment browser branches.
+- Production behavior changed: no.
+- Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
