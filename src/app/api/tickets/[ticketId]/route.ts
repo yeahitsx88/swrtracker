@@ -16,6 +16,7 @@ import { getRequesterActions } from '@/modules/ticket/application/requester-acti
 import { getReviewActions } from '@/modules/ticket/application/review-actions';
 import { getAssignmentCapability } from '@/modules/ticket/application/assignment-options';
 import { getReassignmentCapability } from '@/modules/ticket/application/reassignment-options';
+import { canReassignSuperintendent } from '@/modules/ticket/application/superintendent-options';
 import { getFieldActions } from '@/modules/ticket/application/field-actions';
 import { getSurveyCancelActions } from '@/modules/ticket/application/survey-cancel-actions';
 import { getPriorityActions } from '@/modules/ticket/application/priority-actions';
@@ -41,6 +42,7 @@ export async function GET(
       tenantId: ctx.tenantId, projectId: ticket.projectId,
       aorNodeId: ticket.aorNodeId, departmentId: ticket.departmentId,
       partyChiefId: ticket.assignedPartyChiefId, instrumentManId: ticket.assignedInstrumentManId,
+      superintendentId: ticket.surveySuperintendentId,
     });
     if (ticket.status === 'SUBMITTED') {
       await recordApproverTimeoutSignals(pool, ctx.tenantId, [ticket.id]);
@@ -50,10 +52,11 @@ export async function GET(
     const reviewActions = await getReviewActions(repo, pool, ticket, ctx.visibility);
     const assignment = await getAssignmentCapability(repo, pool, ticket, ctx.visibility);
     const reassignment = await getReassignmentCapability(repo, pool, ticket, ctx.visibility);
+    const superintendentReassignment = await canReassignSuperintendent(repo, pool, ticket, ctx.visibility);
     const fieldActions = await getFieldActions(repo, pool, ticket, ctx.visibility);
     const surveyCancelActions = await getSurveyCancelActions(repo, pool, ticket, ctx.visibility);
     const priorityActions = await getPriorityActions(repo, pool, ticket, ctx.visibility);
-    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, reassignment, fieldActions, surveyCancelActions, priorityActions,
+    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, reassignment, superintendentReassignment, fieldActions, surveyCancelActions, priorityActions,
       displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);

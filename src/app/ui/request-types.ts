@@ -13,6 +13,9 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  surveySuperintendentId: string | null;
+  superintendentName: string | null;
+  superintendentReassignment: boolean;
   assignedPartyChiefId: string | null;
   assignedInstrumentManId: string | null;
   reassignment: { crewBuild: 'FULL' | 'MEDIUM' | 'SLIM'; canChangePartyChief: boolean;

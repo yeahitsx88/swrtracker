@@ -4,10 +4,12 @@ import type { DbClient, UUID } from '@/shared/types';
 export interface TicketLabelContext {
   tenantId: UUID; projectId: UUID; aorNodeId: UUID | null; departmentId: UUID | null;
   partyChiefId?: UUID | null; instrumentManId?: UUID | null;
+  superintendentId?: UUID | null;
 }
 export interface TicketLabels {
   projectName: string; locationName: string | null; departmentName: string | null;
   partyChiefName: string | null; instrumentManName: string | null;
+  superintendentName: string | null;
 }
 export interface TicketLabelsPort {
   find(db: DbClient, context: TicketLabelContext): Promise<TicketLabels | null>;
@@ -20,7 +22,8 @@ export async function getTicketLabels(repo: TicketLabelsPort, db: DbClient,
   if (!labels || (context.aorNodeId && !labels.locationName) ||
       (context.departmentId && !labels.departmentName) ||
       (context.partyChiefId && !labels.partyChiefName) ||
-      (context.instrumentManId && !labels.instrumentManName)) {
+      (context.instrumentManId && !labels.instrumentManName) ||
+      (context.superintendentId && !labels.superintendentName)) {
     throw new NotFoundError('Request project, location, department or crew details were not found');
   }
   return labels;

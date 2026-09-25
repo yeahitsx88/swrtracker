@@ -8,8 +8,8 @@ export interface Candidate { id: string; name: string }
 interface CandidatePage { candidates: Candidate[]; hasMore: boolean }
 
 export function CrewPicker({ ticketId, role, label, value, onChange, disabled, endpoint = 'assign' }: {
-  endpoint?: 'assign' | 'reassign-crew';
-  ticketId: string; role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN'; label: string;
+  endpoint?: 'assign' | 'reassign-crew' | 'reassign-superintendent';
+  ticketId: string; role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN' | 'SURVEY_SUPERINTENDENT'; label: string;
   value: Candidate | null; onChange: (candidate: Candidate | null) => void; disabled: boolean;
 }) {
   const [text, setText] = useState('');

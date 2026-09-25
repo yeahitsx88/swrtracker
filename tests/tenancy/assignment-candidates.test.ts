@@ -14,12 +14,12 @@ test('candidate names are scoped by tenant, project, active user, role and ances
   { skip: !process.env.DATABASE_URL }, async () => {
   const db = new Client({ connectionString: process.env.DATABASE_URL }); await db.connect(); await db.query('BEGIN');
   const tenant=id(),foreign=id(),company=id(),project=id(),other=id(),level=id(),root=id(),child=id();
-  const pc=id(),outside=id(),inactive=id(),im=id();
+    const pc=id(),outside=id(),inactive=id(),im=id(),superintendent=id();
   try {
     await db.query("INSERT INTO tenants(id,name) VALUES($1,'Candidates'),($2,'Foreign')",[tenant,foreign]);
     await db.query("INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,'GC','GC')",[company,tenant]);
     await db.query("INSERT INTO projects(id,tenant_id,name,status) VALUES($1,$3,'Active','ACTIVE'),($2,$3,'Other','ACTIVE')",[project,other,tenant]);
-    for(const [user,name,role] of [[pc,'A scoped chief','PARTY_CHIEF'],[outside,'B other chief','PARTY_CHIEF'],[inactive,'C inactive','PARTY_CHIEF'],[im,'D instrument','INSTRUMENT_MAN']]) {
+    for(const [user,name,role] of [[pc,'A scoped chief','PARTY_CHIEF'],[outside,'B other chief','PARTY_CHIEF'],[inactive,'C inactive','PARTY_CHIEF'],[im,'D instrument','INSTRUMENT_MAN'],[superintendent,'E superintendent','SURVEY_SUPERINTENDENT']]) {
       await db.query('INSERT INTO users(id,tenant_id,company_id,email,name) VALUES($1,$2,$3,$4,$5)',[user,tenant,company,user+'@example.test',name]);
       await db.query('INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,$3)',[project,user,role]);
     }
@@ -34,6 +34,12 @@ test('candidate names are scoped by tenant, project, active user, role and ances
     assert.deepEqual((await listAssignmentCandidates(repo,db,{...params,aorNodeId:child,limit:20})).candidates,[{id:pc,name:'A scoped chief'}]);
     assert.equal((await listAssignmentCandidates(repo,db,{...params,search:'OTHER'})).candidates[0]!.id,outside);
     assert.equal((await listAssignmentCandidates(repo,db,{...params,role:'INSTRUMENT_MAN'})).candidates[0]!.id,im);
+    const superintendentQuery={...params,role:'SURVEY_SUPERINTENDENT' as const,aorNodeId:child};
+    assert.deepEqual((await listAssignmentCandidates(repo,db,superintendentQuery)).candidates,[]);
+    await db.query('INSERT INTO aor_assignments(project_id,tenant_id,user_id,aor_node_id) VALUES($1,$2,$3,$4)',[project,tenant,superintendent,root]);
+    assert.deepEqual((await listAssignmentCandidates(repo,db,superintendentQuery)).candidates,[{id:superintendent,name:'E superintendent'}]);
+    await db.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[superintendent]);
+    assert.deepEqual((await listAssignmentCandidates(repo,db,superintendentQuery)).candidates,[]);
     for(const overrides of [{tenantId:foreign},{projectId:other},{search:'%'}]) assert.deepEqual((await listAssignmentCandidates(repo,db,{...params,...overrides})).candidates,[]);
     await db.query('UPDATE aor_assignments SET deactivated_at=NOW() WHERE user_id=$1',[pc]);
     assert.deepEqual((await listAssignmentCandidates(repo,db,{...params,aorNodeId:child})).candidates,[]);

@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { canReassignSuperintendent, getSuperintendentOptions } from '@/modules/ticket/application/superintendent-options';
+import type { ITicketRepository, VisibilityScope } from '@/modules/ticket/application/ports';
+import type { Ticket } from '@/modules/ticket/domain/types';
+import type { CandidateQuery } from '@/modules/tenancy/application/assignment-candidates';
+import type { DbClient, UUID } from '@/shared/types';
+const id='00000000-0000-0000-0000-000000000001' as UUID;
+const other='00000000-0000-0000-0000-000000000002' as UUID;
+const db:DbClient={async query(){throw new Error('Unexpected SQL');}};
+const ticket={id,tenantId:id,projectId:id,aorNodeId:id,companyId:id,status:'ASSIGNED'} as Ticket;
+const actor:VisibilityScope={actorId:id,actorRole:'SURVEY_MANAGER',companyId:id,companyType:'GC'};
+const repo={findById:async()=>ticket,findActiveProjectCrewBuild:async()=> 'FULL'} as unknown as ITicketRepository;
+test('Superintendent options require visible eligible ticket and always constrain candidates to ticket AOR',async()=>{
+  const queries:CandidateQuery[]=[];
+  const candidates={async list(_db:DbClient,query:CandidateQuery){queries.push(query);return [{id,name:'Superintendent'}];}};
+  const params={tenantId:id,ticketId:id,actor,search:' Super ',limit:20,offset:0};
+  assert.deepEqual(await getSuperintendentOptions(repo,candidates,db,params),{candidates:[{id,name:'Superintendent'}],hasMore:false});
+  assert.deepEqual(queries,[{tenantId:id,projectId:id,role:'SURVEY_SUPERINTENDENT',aorNodeId:id,search:'Super',limit:21,offset:0}]);
+  await assert.rejects(getSuperintendentOptions({...repo,findById:async()=>null},candidates,db,params),/not found/);
+  await assert.rejects(getSuperintendentOptions(repo,candidates,db,{...params,actor:{...actor,actorRole:'SURVEY_SUPERINTENDENT'}}),/not available/);
+  assert.equal(queries.length,1);
+});
+test('Superintendent capability follows role, company, state and active Full Build requirements',async()=>{
+  for(const status of ['ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL','DELAYED'] as const)assert.equal(await canReassignSuperintendent(repo,db,{...ticket,status},actor),true);
+  for(const status of ['DRAFT','SUBMITTED','APPROVED','REJECTED','COMPLETED','FIELD_CANCELED','SURVEY_CANCELED','REQUESTER_CANCELED'] as const)assert.equal(await canReassignSuperintendent(repo,db,{...ticket,status},actor),false);
+  for(const actorRole of ['PARTY_CHIEF','SURVEY_SUPERINTENDENT','REQUESTER','TENANT_ADMIN'] as const)assert.equal(await canReassignSuperintendent(repo,db,ticket,{...actor,actorRole}),false);
+  assert.equal(await canReassignSuperintendent(repo,db,ticket,{...actor,companyType:'SUBCONTRACTOR',companyId:other}),false);
+  assert.equal(await canReassignSuperintendent(repo,db,{...ticket,aorNodeId:null},actor),false);
+  for(const build of ['SLIM','MEDIUM',null] as const)assert.equal(await canReassignSuperintendent({...repo,findActiveProjectCrewBuild:async()=>build},db,ticket,actor),false);
+  await assert.rejects(canReassignSuperintendent({...repo,findActiveProjectCrewBuild:async()=>{throw new Error('offline');}},db,ticket,actor),/offline/);
+});

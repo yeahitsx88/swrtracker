@@ -10,6 +10,7 @@ import { RequesterActions } from './requester-actions';
 import { ReviewActions } from './review-actions';
 import { AssignmentActions } from './assignment-actions';
 import { ReassignmentActions } from './reassignment-actions';
+import { SuperintendentActions } from './superintendent-actions';
 import { FieldActions } from './field-actions';
 import { SurveyCancelActions } from './survey-cancel-actions';
 import { PriorityActions } from './priority-actions';
@@ -55,13 +56,15 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       {ticket.rejectionReason && <section className="notice warning"><h2>Reason for rejection</h2><p className="description">{ticket.rejectionReason}</p></section>}
       {ticket.delayedReason && <section className="notice warning"><h2>Delay information</h2><p className="description">{ticket.delayedReason}</p></section>}
       {ticket.cancelReason && <section className="notice"><h2>Cancellation information</h2><p className="description">{ticket.cancelReason}</p></section>}
-      {(ticket.partyChiefName || ticket.instrumentManName) && <section className="panel"><h2>Assigned crew</h2>
+      {(ticket.partyChiefName || ticket.instrumentManName || ticket.superintendentName) && <section className="panel"><h2>Assigned crew</h2>
         <dl className="details">{ticket.partyChiefName && <div><dt>Party Chief</dt><dd>{ticket.partyChiefName}</dd></div>}
-          {ticket.instrumentManName && <div><dt>Instrument Man</dt><dd>{ticket.instrumentManName}</dd></div>}</dl>
+          {ticket.instrumentManName && <div><dt>Instrument Man</dt><dd>{ticket.instrumentManName}</dd></div>}
+          {ticket.superintendentName && <div><dt>Superintendent</dt><dd>{ticket.superintendentName}</dd></div>}</dl>
       </section>}
       <ReviewActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onReviewed={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <AssignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onAssigned={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <ReassignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
+      <SuperintendentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <FieldActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <SurveyCancelActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <PriorityActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />

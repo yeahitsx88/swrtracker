@@ -15,14 +15,16 @@ export class TicketLabelsRepository implements TicketLabelsPort {
        )
        SELECT p.name AS "projectName",
          (SELECT path FROM location WHERE parent_id IS NULL) AS "locationName",
-         d.name AS "departmentName", pc.name AS "partyChiefName", im.name AS "instrumentManName"
+         d.name AS "departmentName", pc.name AS "partyChiefName", im.name AS "instrumentManName",
+         su.name AS "superintendentName"
        FROM projects p LEFT JOIN departments d ON d.id=$4
          AND d.project_id=p.id AND d.tenant_id=p.tenant_id
        LEFT JOIN users pc ON pc.id=$5 AND pc.tenant_id=p.tenant_id
        LEFT JOIN users im ON im.id=$6 AND im.tenant_id=p.tenant_id
+       LEFT JOIN users su ON su.id=$7 AND su.tenant_id=p.tenant_id
        WHERE p.tenant_id=$1 AND p.id=$2`,
       [context.tenantId, context.projectId, context.aorNodeId, context.departmentId,
-        context.partyChiefId ?? null, context.instrumentManId ?? null]);
+        context.partyChiefId ?? null, context.instrumentManId ?? null, context.superintendentId ?? null]);
     return rows[0] ?? null;
   }
 }

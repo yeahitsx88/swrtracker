@@ -5,8 +5,25 @@ import { parseUuid } from '@/lib/parse-uuid';
 import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { reassignSuperintendent } from '@/modules/ticket/application/reassign-superintendent';
+import { getSuperintendentOptions } from '@/modules/ticket/application/superintendent-options';
+import { AssignmentCandidatesRepository } from '@/modules/tenancy/infrastructure/assignment-candidates.repository';
+import { pool } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest,
+  { params }: { params: Promise<{ ticketId: string }> }) {
+  try {
+    const ctx = await getTicketRouteContext(req, (await params).ticketId);
+    const query = new URL(req.url).searchParams;
+    return NextResponse.json(await getSuperintendentOptions(new TicketRepository(),
+      new AssignmentCandidatesRepository(), pool, {
+        tenantId: ctx.tenantId, ticketId: ctx.ticketId, actor: ctx.visibility,
+        search: query.get('search') ?? '', limit: Number(query.get('limit') ?? '20'),
+        offset: Number(query.get('offset') ?? '0'),
+      }));
+  } catch (error) { return errorResponse(error); }
+}
 
 export async function POST(req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> }) {
