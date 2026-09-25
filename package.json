@@ -16,6 +16,7 @@
     "smoke:capabilities": "node --import tsx tests/beta/amelia-capabilities-smoke.ts",
     "smoke:historical-compatibility": "node --import tsx tests/migrations/historical-compatibility-smoke.ts",
     "beta:setup": "node --import tsx scripts/beta-runtime.ts setup",
+    "beta:reset": "node --import tsx scripts/beta-runtime.ts reset",
     "beta:start": "node --import tsx scripts/beta-runtime.ts start",
     "beta:stop": "node --import tsx scripts/beta-runtime.ts stop",
     "db:migrate": "tsx --env-file=.env db/migrate.ts"

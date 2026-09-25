@@ -1,8 +1,9 @@
 import { randomBytes } from 'crypto';
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
 import { spawn, spawnSync } from 'child_process';
+import { assertSafeBetaResetRoot, betaBackupPath } from './beta-reset-policy';
 
 const command = process.argv[2];
 const root = path.join(process.cwd(), '.data', 'beta');
@@ -163,7 +164,27 @@ function start(): void {
   });
 }
 
+function reset(): void {
+  const pgBin = findPgBin();
+  assertSafeBetaResetRoot(process.cwd(), root);
+  if (existsSync(root)) {
+    if (lstatSync(root).isSymbolicLink()) {
+      throw new Error(`Refusing to reset a symbolic-link beta path: ${root}`);
+    }
+    stopDatabase(pgBin);
+    const backupRoot = path.join(process.cwd(), '.data', 'beta-backups');
+    mkdirSync(backupRoot, { recursive: true, mode: 0o700 });
+    chmodSync(backupRoot, 0o700);
+    const backupPath = betaBackupPath(process.cwd());
+    if (existsSync(backupPath)) throw new Error(`Beta backup path already exists: ${backupPath}`);
+    renameSync(root, backupPath);
+    console.log(`Previous beta dataset backed up to ${backupPath}`);
+  }
+  setup();
+}
+
 if (command === 'setup') setup();
 else if (command === 'start') start();
 else if (command === 'stop') stopDatabase(findPgBin());
-else throw new Error('Usage: beta-runtime.ts setup|start|stop');
+else if (command === 'reset') reset();
+else throw new Error('Usage: beta-runtime.ts setup|start|stop|reset');

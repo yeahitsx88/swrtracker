@@ -2374,3 +2374,10 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added/changed: project cards, direct project-root links, and the troubleshooting project-ID form now select the role landing page from the authenticated project list. Unknown or inactive membership IDs display an access error and do not navigate.
 - Validation: Node 22.23.3 TypeScript passed, 239 tests passed, and the Next production build passed.
 - Production behavior changed: yes. Changes remain local and GitHub publication is deferred.
+
+### 2026-09-24 — ADCQ-260923-001 Gate B8 reversible beta reset
+- Intent: let the private beta return to its five known sample cases after a walkthrough without silently deleting the prior test state.
+- Files touched: beta runtime, reset path policy, package command, reset-policy tests, private-beta runbook, and validation record.
+- Behavior added/changed: `beta:reset` stops the local database, rejects an unexpected or symbolic-link beta root, moves the complete dataset into an owner-only timestamped backup, and creates a fresh seeded beta.
+- Validation: Node 22.23.3 TypeScript passed, the focused reset-policy tests passed, and all 241 tests passed. The current beta dataset was deliberately left intact.
+- Production behavior changed: no; this is a device-local beta operation. GitHub publication is deferred.

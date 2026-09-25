@@ -27,6 +27,14 @@ pnpm beta:setup
 
 Setup stops PostgreSQL after it finishes. It can be run again: migrations skip versions already applied and the seed skips the existing Amelia tenant.
 
+To restore the five original sample SWRs after a walkthrough, run:
+
+```sh
+pnpm beta:reset
+```
+
+Reset stops the beta database, moves the complete prior dataset into an owner-only timestamped directory under `.data/beta-backups/`, then creates and seeds a fresh dataset. It does not silently delete the previous walkthrough state.
+
 ## Start and stop
 
 Start the beta:
@@ -137,6 +145,7 @@ All beta state stays under `product/.data/beta/`, which is ignored by Git:
 | `.data/beta/beta.env` | Local database URL, generated JWT secret, and attachment-root setting |
 | `.data/beta/postgres.log` | Local PostgreSQL log |
 | `.data/beta/socket/` | Local Unix socket while PostgreSQL is running |
+| `.data/beta-backups/` | Timestamped prior datasets retained by `beta:reset` |
 
 Treat this directory as one beta dataset. Do not copy its sample credentials or records into an operational environment.
 Setup restricts the beta, socket, and attachment directories to the current operating-system user. Newly uploaded files use owner-only read/write permissions. New beta clusters use peer authentication for local socket connections and reject host connections.

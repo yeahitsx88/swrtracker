@@ -137,3 +137,9 @@ Final Gate B6 validation used Node 22.23.3: TypeScript passed, all 238 tests pas
 Project cards, direct project-root links, and the troubleshooting project-ID form now resolve through the same active-membership role map. Survey, field, requester, and Project IT users land on their first relevant workspace; a project ID absent from the authenticated active-membership list is refused before navigation. Direct page APIs remain responsible for resource authorization.
 
 Node 22.23.3 TypeScript passed, all 239 tests passed, and the Next production build passed.
+
+## Gate B8 reversible beta reset
+
+`pnpm beta:reset` provides a deliberate way to restore the original five-case walkthrough baseline. It accepts only the fixed `.data/beta/` workspace path, rejects a symbolic-link beta root, stops PostgreSQL, moves the complete prior dataset to an owner-only timestamped `.data/beta-backups/` directory, and then performs normal setup and seeding. The existing device dataset was not reset during implementation.
+
+Node 22.23.3 TypeScript passed, the two reset-policy tests passed, and all 241 tests passed.
