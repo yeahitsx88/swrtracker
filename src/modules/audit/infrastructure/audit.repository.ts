@@ -11,6 +11,16 @@ import { randomUUID } from 'crypto';
 import type { DbClient, UUID } from '@/shared/types';
 import type { AuditEventType } from '../domain/types';
 
+export async function appendRegistrationAuditEvent(db: DbClient, event: {
+  tenantId: UUID; actorId: UUID; projectId: UUID; companyId: UUID; domain: string;
+}): Promise<void> {
+  await db.query(`INSERT INTO tenant_events(id,tenant_id,actor_id,event_type,payload)
+    VALUES($1,$2,$3,'user.self_registered',$4::jsonb)`,
+    [randomUUID(), event.tenantId, event.actorId, JSON.stringify({
+      projectId: event.projectId, companyId: event.companyId, domain: event.domain,
+    })]);
+}
+
 export async function appendAuditEvent(
   db: DbClient,
   event: {

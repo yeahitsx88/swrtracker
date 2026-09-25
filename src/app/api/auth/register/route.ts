@@ -6,17 +6,17 @@
  * 2. Check the email domain against allowed_domains for this tenant.
  *    - Domain match -> registration proceeds, user gets REQUESTER role.
  *    - No match -> 403 ForbiddenError.
- * Invite-based registration is handled separately via /api/auth/invite/:token (future).
+ * Domain binding, account, project membership and audit share one transaction.
+ * Invite-based registration is handled separately via PUT /api/invites.
  */
 import { NextResponse, type NextRequest } from 'next/server';
-import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { parseUuid } from '@/lib/parse-uuid';
-import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
-import { createUser } from '@/modules/identity/application/create-user';
+import { selfRegister } from '@/modules/identity/application/self-register';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
-import type { UUID } from '@/shared/types';
+import { SelfRegistrationAccessRepository } from '@/modules/tenancy/infrastructure/self-registration.repository';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,19 +56,21 @@ export async function POST(req: NextRequest) {
       !body ||
       typeof body !== 'object' ||
       typeof (body as Record<string, unknown>).tenantId   !== 'string' ||
-      typeof (body as Record<string, unknown>).companyId  !== 'string' ||
+      typeof (body as Record<string, unknown>).projectId  !== 'string' ||
       typeof (body as Record<string, unknown>).email      !== 'string' ||
       typeof (body as Record<string, unknown>).password   !== 'string' ||
       typeof (body as Record<string, unknown>).name       !== 'string'
     ) {
-      throw new ValidationError('tenantId, companyId, email, password, and name are required');
+      throw new ValidationError('tenantId, projectId, email, password, and name are required');
     }
 
-    const { tenantId, companyId, email, password, name } = body as {
-      tenantId: string; companyId: string; email: string; password: string; name: string;
+    const { tenantId, projectId, companyId, email, password, name } = body as {
+      tenantId: string; projectId: string; companyId?: unknown; email: string; password: string; name: string;
     };
     const parsedTenantId = parseUuid(tenantId, 'tenantId');
-    const parsedCompanyId = parseUuid(companyId, 'companyId');
+    const parsedProjectId = parseUuid(projectId, 'projectId');
+    if (companyId !== undefined && typeof companyId !== 'string') throw new ValidationError('companyId must be a UUID');
+    const parsedCompanyId = typeof companyId === 'string' ? parseUuid(companyId, 'companyId') : undefined;
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
@@ -83,22 +85,10 @@ export async function POST(req: NextRequest) {
       throw new ValidationError('Password must be at least 8 characters and at most 72 bytes');
     }
 
-    const repo = new UserRepository();
-
-    // Domain check - email domain must be in allowed_domains for this tenant.
-    // This is the only self-service registration path in v1.
-    const domainAllowed = await repo.isDomainAllowed(
-      pool, parsedTenantId, parsedCompanyId, normalizedEmail,
-    );
-    if (!domainAllowed) {
-      throw new ForbiddenError(
-        'Your email domain is not authorised for self-registration. Contact your project administrator for an invite.',
-      );
-    }
-
     const user = await withTransaction((client) =>
-      createUser(repo, client, {
+      selfRegister(new UserRepository(), new SelfRegistrationAccessRepository(), client, {
         tenantId:  parsedTenantId,
+        projectId: parsedProjectId,
         companyId: parsedCompanyId,
         email: normalizedEmail,
         password,

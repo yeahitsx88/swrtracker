@@ -2,6 +2,7 @@
 
 import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api, errorMessage, jsonBody } from '../ui/api';
 import { Shell } from '../ui/shell';
 
@@ -9,6 +10,8 @@ export function LoginForm({ tenantId, next }: { tenantId: string; next: string }
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [organizationId, setOrganizationId] = useState(tenantId);
+  const projectId = /^\/project\/([a-f0-9-]{36})\/request$/i.exec(next)?.[1];
   const inFlight = useRef(false);
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,12 +29,13 @@ export function LoginForm({ tenantId, next }: { tenantId: string; next: string }
   return <Shell><div className="narrow"><p className="eyebrow">Welcome back</p><h1>Sign in</h1>
     <p className="muted">Use your work account to access your survey requests.</p>
     <form className="panel" onSubmit={login}>
-      <label className="field">Organization ID<input name="tenantId" defaultValue={tenantId} required
+      <label className="field">Organization ID<input name="tenantId" value={organizationId} onChange={event => setOrganizationId(event.target.value)} required
         pattern="[a-fA-F0-9\-]{36}" autoComplete="off" spellCheck={false} />
         <small>Provided in your project link or by your administrator.</small></label>
       <label className="field">Work email<input name="email" type="email" required autoComplete="username" /></label>
       <label className="field">Password<input name="password" type="password" required autoComplete="current-password" /></label>
       {error && <p className="notice error" role="alert">{error}</p>}
       <button disabled={busy} type="submit">{busy ? 'Signing in…' : 'Sign in'}</button>
+      {projectId && <p style={{ marginTop: 20, marginBottom: 0 }}><Link href={`/register?projectId=${projectId}&tenantId=${encodeURIComponent(organizationId)}`}>New here? Create an account</Link></p>}
     </form></div></Shell>;
 }

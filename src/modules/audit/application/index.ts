@@ -4,3 +4,4 @@
  */
 export type { AuditEventType, TicketEvent } from '../domain/types';
 export { appendAuditEvent, appendSystemAuditEvent } from '../infrastructure/audit.repository';
+export { appendRegistrationAuditEvent } from '../infrastructure/audit.repository';

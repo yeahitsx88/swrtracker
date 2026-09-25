@@ -27,13 +27,15 @@ test('registration use case rejects a company outside tenant before hashing or s
 
 test('registration rejects oversized and malformed inputs before database access', async () => {
   const base = {
-    tenantId, companyId, name: 'User', email: 'user@example.com', password: 'secret-passphrase',
+    tenantId, projectId: tenantId, companyId, name: 'User', email: 'user@example.com', password: 'secret-passphrase',
   };
   for (const body of [
     { ...base, email: 'bad@@example.com' },
     { ...base, password: 'x'.repeat(73) },
     { ...base, name: 'N'.repeat(201) },
     { ...base, extra: 'X'.repeat(9000) },
+    { ...base, projectId: undefined },
+    { ...base, companyId: 1 },
   ]) {
     const request = new NextRequest('http://localhost/api/auth/register', {
       method: 'POST', body: JSON.stringify(body),
