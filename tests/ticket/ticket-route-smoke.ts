@@ -87,6 +87,7 @@ async function main(): Promise<void> {
     requester: randomUUID(),
     manager: randomUUID(),
     partyChief: randomUUID(),
+    instrumentMan: randomUUID(),
     department: randomUUID(),
     aorLevel: randomUUID(),
     aorNode: randomUUID(),
@@ -119,12 +120,16 @@ async function main(): Promise<void> {
         [ids.partyChief, ids.tenant, ids.company, `pc-${suffix}@example.com`, 'Smoke Party Chief', 'LOCAL'],
       );
       await client.query(
+        'INSERT INTO users (id, tenant_id, company_id, email, name, auth_method) VALUES ($1, $2, $3, $4, $5, $6)',
+        [ids.instrumentMan, ids.tenant, ids.company, `im-${suffix}@example.com`, 'Smoke Instrument Man', 'LOCAL'],
+      );
+      await client.query(
         'INSERT INTO projects (id, tenant_id, name, status) VALUES ($1, $2, $3, $4)',
         [ids.project, ids.tenant, `Smoke Project ${suffix}`, 'ACTIVE'],
       );
       await client.query(
-        'INSERT INTO project_memberships (project_id, user_id, role) VALUES ($1, $2, $3), ($1, $4, $5), ($1, $6, $7)',
-        [ids.project, ids.requester, 'REQUESTER', ids.manager, 'SURVEY_MANAGER', ids.partyChief, 'PARTY_CHIEF'],
+        'INSERT INTO project_memberships (project_id, user_id, role) VALUES ($1, $2, $3), ($1, $4, $5), ($1, $6, $7), ($1, $8, $9)',
+        [ids.project, ids.requester, 'REQUESTER', ids.manager, 'SURVEY_MANAGER', ids.partyChief, 'PARTY_CHIEF', ids.instrumentMan, 'INSTRUMENT_MAN'],
       );
       await client.query(
         'INSERT INTO aor_levels (id, project_id, tenant_id, depth, label) VALUES ($1, $2, $3, $4, $5)',
@@ -179,6 +184,7 @@ async function main(): Promise<void> {
     const assignRes = await assignTicketRoute(
       makeRequest(`http://localhost/api/tickets/${ticketId}/assign`, managerToken, {
         assignedPartyChiefId: ids.partyChief,
+        assignedInstrumentManId: ids.instrumentMan,
       }),
       { params: Promise.resolve({ ticketId }) },
     );

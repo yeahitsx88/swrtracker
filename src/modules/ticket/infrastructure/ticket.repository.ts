@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import type { DbClient, UUID, Page } from '@/shared/types';
 import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus, TicketType, WorkflowVariant } from '../domain/types';
 import type { ProjectStatus } from '@/modules/tenancy/domain/types';
+import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { ProjectLeadTimeConfig } from '../domain/lead-time-policy';
 import type {
   ITicketRepository,
@@ -42,6 +43,10 @@ interface TicketRow {
   field_channel: string | null;
   description: string;
   requested_date: Date;
+  original_requested_date: Date | null;
+  first_submitted_at: Date | null;
+  return_cycle: number;
+  field_validation_reviewer_id: string | null;
   submitted_at: Date | null;
   approved_at: Date | null;
   assigned_at: Date | null;
@@ -85,6 +90,10 @@ function rowToTicket(r: TicketRow): Ticket {
     fieldChannel:            r.field_channel,
     description:             r.description,
     requestedDate:           r.requested_date,
+    originalRequestedDate:   r.original_requested_date,
+    firstSubmittedAt:        r.first_submitted_at,
+    returnCycle:             r.return_cycle ?? 0,
+    fieldValidationReviewerId: r.field_validation_reviewer_id as UUID | null,
     submittedAt:             r.submitted_at,
     approvedAt:              r.approved_at,
     assignedAt:              r.assigned_at,
@@ -422,6 +431,11 @@ export class TicketRepository implements ITicketRepository {
     maybe('department_id',              patch.departmentId);
     maybe('ticket_number',              patch.ticketNumber);
     maybe('submitted_at',               patch.submittedAt);
+    maybe('first_submitted_at',         patch.firstSubmittedAt);
+    maybe('original_requested_date',    patch.originalRequestedDate);
+    maybe('requested_date',             patch.requestedDate);
+    maybe('return_cycle',               patch.returnCycle);
+    maybe('field_validation_reviewer_id', patch.fieldValidationReviewerId);
     maybe('approved_at',                patch.approvedAt);
     maybe('assigned_at',                patch.assignedAt);
     maybe('started_at',                 patch.startedAt);
@@ -512,6 +526,27 @@ export class TicketRepository implements ITicketRepository {
     );
     if (!rows[0]) return null;
     return { companyId: rows[0].company_id as UUID, companyType: rows[0].type };
+  }
+
+  async isActiveProjectMemberWithRole(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    userId: UUID,
+    roles: readonly ProjectRole[],
+  ): Promise<boolean> {
+    const { rows } = await db.query<{ eligible: boolean }>(
+      `SELECT EXISTS (
+         SELECT 1
+         FROM project_memberships pm
+         JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
+         JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
+         WHERE pm.project_id = $2 AND pm.user_id = $3
+           AND pm.role = ANY($4::text[]) AND u.deactivated_at IS NULL
+       ) AS eligible`,
+      [tenantId, projectId, userId, roles],
+    );
+    return rows[0]?.eligible === true;
   }
 
   async hasCompanyAuthority(

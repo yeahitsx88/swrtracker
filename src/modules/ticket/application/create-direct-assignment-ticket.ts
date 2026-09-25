@@ -20,8 +20,8 @@ export interface CreateDirectAssignmentTicketParams {
   requesterId:             UUID;
   actorId:                 UUID;
   actorRole:               ProjectRole;
-  assignedPartyChiefId:    UUID;
-  assignedInstrumentManId: UUID | null;
+  assignedPartyChiefId:    UUID | null;
+  assignedInstrumentManId: UUID;
   departmentId?:           UUID;
   ticketType:              TicketType;
   craft:                   string;
@@ -38,8 +38,8 @@ export async function createDirectAssignmentTicket(
 ): Promise<Ticket> {
   assertActorHasRole(params.actorRole, ['SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT']);
 
-  if (!params.assignedPartyChiefId) {
-    throw new ValidationError('assignedPartyChiefId is required');
+  if (!params.assignedInstrumentManId) {
+    throw new ValidationError('assignedInstrumentManId is required');
   }
 
   if (isNaN(params.requestedDate.getTime())) {
@@ -49,6 +49,20 @@ export async function createDirectAssignmentTicket(
   const companyInfo = await repo.findUserCompanyInfo(db, params.tenantId, params.requesterId);
   if (!companyInfo) {
     throw new ForbiddenError('Requester is missing company context');
+  }
+
+  if (!repo.isActiveProjectMemberWithRole) {
+    throw new Error('Ticket repository does not support assignment eligibility checks');
+  }
+  if (params.assignedPartyChiefId && !await repo.isActiveProjectMemberWithRole(
+    db, params.tenantId, params.projectId, params.assignedPartyChiefId, ['PARTY_CHIEF'],
+  )) {
+    throw new ValidationError('assignedPartyChiefId must be an active Party Chief on this project');
+  }
+  if (!await repo.isActiveProjectMemberWithRole(
+    db, params.tenantId, params.projectId, params.assignedInstrumentManId, ['INSTRUMENT_MAN'],
+  )) {
+    throw new ValidationError('assignedInstrumentManId must be an active Instrument Man on this project');
   }
 
   const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, params.aorNodeId);
@@ -151,6 +165,12 @@ export async function createDirectAssignmentTicket(
 
   await repo.save(db, ticket);
   await repo.saveCadWork(db, ticket.id, ticket.tenantId);
+  await db.query(
+    `INSERT INTO ticket_assignment_history
+       (tenant_id, ticket_id, party_chief_id, instrument_man_id, assigned_by)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [params.tenantId, ticket.id, params.assignedPartyChiefId, params.assignedInstrumentManId, params.actorId],
+  );
 
   await appendAuditEvent(db, {
     ticketId:  ticket.id,

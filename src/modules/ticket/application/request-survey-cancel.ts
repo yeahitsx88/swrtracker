@@ -5,6 +5,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
+import { enqueueAssignedFieldNotifications, enqueueRequesterNotification } from './amelia-notifications';
 
 export async function requestSurveyCancel(
   repo: ITicketRepository,
@@ -40,8 +41,11 @@ export async function requestSurveyCancel(
         pendingPcReason: null,
         surveyCancelRequestedBy: null,
         surveyCancelRequestedRole: null,
-        surveyCancelReason: null,
+        surveyCancelReason: params.reason.trim(),
         surveyCancelRequestedAt: null,
+        assignedPartyChiefId: null,
+        assignedInstrumentManId: null,
+        fieldValidationReviewerId: null,
       },
       eventType:    'ticket.survey_canceled',
       eventPayload: { reason: params.reason, approverRole: params.actorRole },
@@ -58,11 +62,38 @@ export async function requestSurveyCancel(
       });
     }
 
+    await db.query(
+      `UPDATE ticket_assignment_history
+       SET ended_at = NOW(), end_reason = 'SURVEY_CANCELED'
+       WHERE tenant_id = $1 AND ticket_id = $2 AND ended_at IS NULL`,
+      [params.tenantId, params.ticketId],
+    );
+    await enqueueRequesterNotification(db, {
+      tenantId: params.tenantId,
+      ticketId: params.ticketId,
+      requesterId: ticket.requesterId,
+      eventType: 'SURVEY_CANCELED',
+      payload: { reason: params.reason.trim() },
+      idempotencyKey: `${params.ticketId}:survey-canceled`,
+    });
+    await enqueueAssignedFieldNotifications(db, {
+      tenantId: params.tenantId,
+      ticketId: params.ticketId,
+      assignedPartyChiefId: ticket.assignedPartyChiefId,
+      assignedInstrumentManId: ticket.assignedInstrumentManId,
+      eventType: 'STOP_WORK_CANCELED',
+      payload: { reason: params.reason.trim() },
+      idempotencyKey: `${params.ticketId}:survey-canceled:field`,
+    });
+
     return canceled;
   }
 
-  if (params.actorRole !== 'PARTY_CHIEF' && params.actorRole !== 'SURVEY_SUPERINTENDENT') {
-    throw new ForbiddenError('Only survey leadership may initiate survey-side cancellation');
+  if (params.actorRole !== 'PARTY_CHIEF' && params.actorRole !== 'INSTRUMENT_MAN') {
+    throw new ForbiddenError('Only assigned field staff or survey leadership may flag stop-work');
+  }
+  if (params.actorRole === 'INSTRUMENT_MAN' && ticket.assignedInstrumentManId !== params.actorId) {
+    throw new ForbiddenError('Instrument Man may only flag their own assigned SWR');
   }
 
   if (ticket.surveyCancelRequestedAt) {

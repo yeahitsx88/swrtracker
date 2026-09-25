@@ -9,8 +9,7 @@ import type { UUID } from '@/shared/types';
 import { POST as createTicketRoute } from '@/app/api/tickets/route';
 import { POST as assignTicketRoute } from '@/app/api/tickets/[ticketId]/assign/route';
 import { POST as startTicketRoute } from '@/app/api/tickets/[ticketId]/start/route';
-import { POST as fieldCancelRoute } from '@/app/api/tickets/[ticketId]/field-cancel/route';
-import { POST as approvePcRoute } from '@/app/api/tickets/[ticketId]/pc-approve/route';
+import { POST as completeTicketRoute } from '@/app/api/tickets/[ticketId]/complete/route';
 
 type JsonObject = Record<string, unknown>;
 type PoolLike = {
@@ -42,7 +41,7 @@ async function readJson(response: Response): Promise<JsonObject> {
   return await response.json() as JsonObject;
 }
 
-test('direct-assignment tickets move through create, assign, start, field-cancel, and pc-approve routes', async () => {
+test('direct-assignment tickets move through create, assign, start, and direct completion routes', async () => {
   process.env.JWT_SECRET ??= 'test-secret';
   process.env.DATABASE_URL ??= 'postgres://local/test';
 
@@ -90,6 +89,7 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
   const originalFindByIdInternal = TicketRepository.prototype.findByIdInternal;
   const originalPatchTicket = TicketRepository.prototype.patchTicket;
   const originalFindPartyChiefForInstrumentMan = TicketRepository.prototype.findPartyChiefForInstrumentMan;
+  const originalIsActiveProjectMemberWithRole = TicketRepository.prototype.isActiveProjectMemberWithRole;
 
   pool.query = async (sql: string, params?: unknown[]) => {
     if (/FROM users/.test(sql)) {
@@ -178,10 +178,10 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
     };
   };
   TicketRepository.prototype.findPartyChiefForInstrumentMan = async () => secondPcId;
+  TicketRepository.prototype.isActiveProjectMemberWithRole = async () => true;
 
   try {
     const managerToken = signToken(managerId, tenantId);
-    const secondPcToken = signToken(secondPcId, tenantId);
     const instrumentManToken = signToken(instrumentManId, tenantId);
 
     const createResponse = await createTicketRoute(makeRequest('http://localhost/api/tickets', managerToken, {
@@ -215,30 +215,20 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
     assert.equal((reassigned.ticket as JsonObject).assignedPartyChiefId, secondPcId);
 
     const startResponse = await startTicketRoute(
-      makeRequest(`http://localhost/api/tickets/${ticketId}/start`, secondPcToken),
+      makeRequest(`http://localhost/api/tickets/${ticketId}/start`, instrumentManToken),
       { params: Promise.resolve({ ticketId }) },
     );
     assert.equal(startResponse.status, 200);
     const started = await readJson(startResponse);
     assert.equal((started.ticket as JsonObject).status, 'IN_PROGRESS');
 
-    const fieldCancelResponse = await fieldCancelRoute(
-      makeRequest(`http://localhost/api/tickets/${ticketId}/field-cancel`, instrumentManToken, {
-        reason: 'Unsafe conditions',
-      }, 'idem-field-cancel-1'),
+    const completeResponse = await completeTicketRoute(
+      makeRequest(`http://localhost/api/tickets/${ticketId}/complete`, instrumentManToken),
       { params: Promise.resolve({ ticketId }) },
     );
-    assert.equal(fieldCancelResponse.status, 200);
-    const pending = await readJson(fieldCancelResponse);
-    assert.equal((pending.ticket as JsonObject).status, 'PENDING_PC_APPROVAL');
-
-    const approveResponse = await approvePcRoute(
-      makeRequest(`http://localhost/api/tickets/${ticketId}/pc-approve`, secondPcToken),
-      { params: Promise.resolve({ ticketId }) },
-    );
-    assert.equal(approveResponse.status, 200);
-    const canceled = await readJson(approveResponse);
-    assert.equal((canceled.ticket as JsonObject).status, 'FIELD_CANCELED');
+    assert.equal(completeResponse.status, 200);
+    const completed = await readJson(completeResponse);
+    assert.equal((completed.ticket as JsonObject).status, 'COMPLETED');
   } finally {
     pool.query = originalQuery;
     pool.connect = originalConnect;
@@ -257,5 +247,6 @@ test('direct-assignment tickets move through create, assign, start, field-cancel
     TicketRepository.prototype.findByIdInternal = originalFindByIdInternal;
     TicketRepository.prototype.patchTicket = originalPatchTicket;
     TicketRepository.prototype.findPartyChiefForInstrumentMan = originalFindPartyChiefForInstrumentMan;
+    TicketRepository.prototype.isActiveProjectMemberWithRole = originalIsActiveProjectMemberWithRole;
   }
 });

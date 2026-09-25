@@ -14,6 +14,8 @@ import {
   doesRequestedDateMeetLeadTime,
   normalizeProjectLeadTimeConfig,
 } from '../domain/lead-time-policy';
+import { assertValidTransition } from '@/modules/workflow/domain/transitions';
+import { enqueueRequesterNotification } from './amelia-notifications';
 
 export async function submitTicket(
   repo: ITicketRepository,
@@ -36,6 +38,10 @@ export async function submitTicket(
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if (ticket.status !== 'DRAFT' && ticket.status !== 'RETURNED_FOR_CORRECTION') {
+    throw new ConflictError('Only draft or returned SWRs may be submitted');
+  }
+  assertValidTransition(ticket.workflowVariant, ticket.status, 'SUBMITTED');
 
   // REQUESTER can only submit their own tickets
   if (ticket.requesterId !== params.actorId) {
@@ -67,8 +73,15 @@ export async function submitTicket(
     );
   }
 
-  const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, ticket.aorNodeId);
-  if (!aorNodeCode) throw new NotFoundError('AOR node not found');
+  const isResubmission = ticket.status === 'RETURNED_FOR_CORRECTION';
+  let ticketNumber = ticket.ticketNumber;
+  if (!isResubmission) {
+    const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, ticket.aorNodeId);
+    if (!aorNodeCode) throw new NotFoundError('AOR node not found');
+    const sequence = await repo.nextSequence(db, ticket.projectId);
+    ticketNumber = `FSS-${aorNodeCode}-${String(sequence).padStart(5, '0')}`;
+  }
+  if (!ticketNumber) throw new ConflictError('Returned SWR is missing its durable ticket number');
 
   const requesterEmail = await repo.findUserEmail(db, params.tenantId, ticket.requesterId);
   const isWhitelisted = requesterEmail
@@ -119,9 +132,9 @@ export async function submitTicket(
     resolvedPriority = 'HIGH';
   }
 
-  const sequence = await repo.nextSequence(db, ticket.projectId);
-  const ticketNumber = `FSS-${aorNodeCode}-${String(sequence).padStart(5, '0')}`;
   const submittedAt = new Date();
+  const firstSubmittedAt = ticket.firstSubmittedAt ?? submittedAt;
+  const originalRequestedDate = ticket.originalRequestedDate ?? ticket.requestedDate;
 
   await repo.patchTicket(db, params.tenantId, params.ticketId, {
     status: 'SUBMITTED',
@@ -129,6 +142,8 @@ export async function submitTicket(
     priority: resolvedPriority,
     ticketNumber,
     submittedAt,
+    firstSubmittedAt,
+    originalRequestedDate,
   }, {
     expectedStatus: ticket.status,
     expectedRowVersion: ticket.rowVersion,
@@ -138,10 +153,18 @@ export async function submitTicket(
     ticketId:  params.ticketId,
     tenantId:  params.tenantId,
     actorId:   params.actorId,
-    eventType: 'ticket.submitted',
-    payload:   { ticketNumber, departmentId: resolvedDepartmentId, priority: resolvedPriority },
+    eventType: isResubmission ? 'ticket.resubmitted' : 'ticket.submitted',
+    payload:   { ticketNumber, departmentId: resolvedDepartmentId, priority: resolvedPriority, returnCycle: ticket.returnCycle ?? 0 },
   });
 
+  if (isResubmission) {
+    await db.query(
+      `UPDATE ticket_return_cycles
+       SET resubmitted_at = $3
+       WHERE tenant_id = $1 AND ticket_id = $2 AND cycle_number = $4 AND resubmitted_at IS NULL`,
+      [params.tenantId, params.ticketId, submittedAt, ticket.returnCycle ?? 0],
+    );
+  }
   if (isWhitelisted && requesterEmail) {
     await appendAuditEvent(db, {
       ticketId:  params.ticketId,
@@ -151,6 +174,14 @@ export async function submitTicket(
       payload:   { requesterEmail },
     });
   }
+  await enqueueRequesterNotification(db, {
+    tenantId: params.tenantId,
+    ticketId: params.ticketId,
+    requesterId: ticket.requesterId,
+    eventType: isResubmission ? 'RESUBMITTED' : 'SUBMITTED',
+    payload: { ticketNumber, returnCycle: ticket.returnCycle ?? 0 },
+    idempotencyKey: `${params.ticketId}:submit:${ticket.returnCycle ?? 0}`,
+  });
 
   return {
     ...ticket,
@@ -159,6 +190,8 @@ export async function submitTicket(
     priority: resolvedPriority,
     ticketNumber,
     submittedAt,
+    firstSubmittedAt,
+    originalRequestedDate,
     rowVersion: (ticket.rowVersion ?? 0) + 1,
     updatedAt: new Date(),
   };

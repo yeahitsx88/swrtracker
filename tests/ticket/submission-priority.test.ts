@@ -119,8 +119,9 @@ test('submitTicket derives department and default priority from department membe
   assert.equal(patchCalls[0]?.departmentId, memberDepartmentId);
   assert.equal(patchCalls[0]?.priority, 'MED_HIGH');
   assert.equal(departmentLookupCalls, 0);
-  assert.equal(dbCalls.length, 1);
+  assert.equal(dbCalls.length, 2);
   assert.equal(dbCalls[0]?.params?.[4], 'ticket.submitted');
+  assert.match(dbCalls[1]?.sql ?? '', /notification_outbox/);
 });
 
 test('submitTicket accepts a manual department at submit time when the requester has no membership', async () => {
@@ -179,9 +180,10 @@ test('submitTicket overrides derived priority to HIGH when the requester email i
 
   assert.equal(result.priority, 'HIGH');
   assert.equal(patchCalls[0]?.priority, 'HIGH');
-  assert.equal(dbCalls.length, 2);
+  assert.equal(dbCalls.length, 3);
   assert.deepEqual(
-    dbCalls.map((call) => call.params?.[4] as string),
+    dbCalls.slice(0, 2).map((call) => call.params?.[4] as string),
     ['ticket.submitted', 'ticket.priority_set_by_whitelist'],
   );
+  assert.match(dbCalls[2]?.sql ?? '', /notification_outbox/);
 });

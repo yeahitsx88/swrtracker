@@ -4,6 +4,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
+import { enqueueRequesterNotification } from './amelia-notifications';
 
 export async function requesterCancel(
   repo: ITicketRepository,
@@ -29,7 +30,7 @@ export async function requesterCancel(
     throw new ForbiddenError('You can only cancel your own tickets');
   }
 
-  return performTransition(db, repo, {
+  const canceled = await performTransition(db, repo, {
     tenantId:       params.tenantId,
     ticketId:       params.ticketId,
     actorId:        params.actorId,
@@ -39,8 +40,25 @@ export async function requesterCancel(
     patch:          {
       pendingPcOutcome: null,
       pendingPcReason: null,
+      assignedPartyChiefId: null,
+      assignedInstrumentManId: null,
+      fieldValidationReviewerId: null,
     },
     eventType:      'ticket.requester_canceled',
     visibility:     params.visibility,
   });
+  await db.query(
+    `UPDATE ticket_assignment_history
+     SET ended_at = NOW(), end_reason = 'REQUESTER_CANCELED'
+     WHERE tenant_id = $1 AND ticket_id = $2 AND ended_at IS NULL`,
+    [params.tenantId, params.ticketId],
+  );
+  await enqueueRequesterNotification(db, {
+    tenantId: params.tenantId,
+    ticketId: params.ticketId,
+    requesterId: ticket.requesterId,
+    eventType: 'REQUESTER_CANCELED',
+    idempotencyKey: `${params.ticketId}:requester-canceled`,
+  });
+  return canceled;
 }

@@ -23,3 +23,8 @@ export { requestSurveyCancel } from './request-survey-cancel';
 export { approveSurveyCancel } from './approve-survey-cancel';
 export { elevateToPrority } from './elevate-priority';
 export { overrideRejection } from './override-rejection';
+export { returnTicketForCorrection } from './return-ticket-for-correction';
+export { reportFieldInability, rejectFieldInability } from './field-inability';
+export { reviseNeedBy } from './revise-need-by';
+export { revisePriority } from './revise-priority';
+export { updateRequesterTicket } from './update-requester-ticket';

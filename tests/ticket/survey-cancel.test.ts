@@ -164,5 +164,8 @@ test('approveSurveyCancel clears pending request metadata and cancels the ticket
   assert.equal(patchCalls[0]?.status, 'SURVEY_CANCELED');
   assert.equal(patchCalls[0]?.surveyCancelRequestedBy, null);
   assert.equal(patchCalls[0]?.surveyCancelRequestedRole, null);
-  assert.equal(dbCalls.length, 2);
+  assert.equal(patchCalls[0]?.assignedPartyChiefId, null);
+  assert.equal(patchCalls[0]?.assignedInstrumentManId, null);
+  assert.equal(dbCalls.length, 6);
+  assert.equal(dbCalls.filter((sql) => /notification_outbox/.test(sql)).length, 3);
 });

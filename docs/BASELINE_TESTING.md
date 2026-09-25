@@ -62,3 +62,16 @@ SWR_B1_DISPOSABLE_DB=1 SWR_B1_DATA_DIR="$SWR_TEST_CLUSTER_DIR/data" pnpm smoke:a
 ```
 
 Use the actual socket directory and unused port selected for that cluster. The smoke adds randomized tenants, companies, projects, users, and tickets; dispose of the whole temporary cluster afterward. It checks invite company binding and single use, central versus project IT scope, subcontractor role restrictions, own-only versus granted company visibility, project isolation, mutation denial on a coworker's SWR, and immediate revocation. This is an access foundation check; it does not validate the later workflow, attachment-byte, notification, or private-beta screens.
+
+## Gate B2 Amelia workflow
+
+Migration 023 adds the captured reviewer for field-inability validation. The B2 workflow smoke uses a separate disposable PostgreSQL 15 database named exactly `swr_b2_test`, verifies the server data directory, and requires an explicit opt-in:
+
+```sh
+export DATABASE_URL="postgresql://$(id -un)@localhost:55485/swr_b2_test?host=$SWR_TEST_CLUSTER_DIR"
+SWR_B2_DISPOSABLE_DB=1 SWR_B2_DATA_DIR="$SWR_TEST_CLUSTER_DIR/data" pnpm smoke:workflow
+```
+
+The smoke creates randomized Amelia fixtures and exercises submit, approval, optional Party Chief assignment, Party Chief assignment of an Instrument Man, start, inability validation, same-record return, requester correction, resubmission, independent priority and Need-By revision, direct Instrument Man assignment, and direct completion. It proves the SWR number and first-submitted timestamp survive a return, and checks one return cycle, three assignment-history rows, one Need-By revision, and twelve requester or field-team outbox records. Dispose of the whole temporary cluster after the run.
+
+Observed B2 checks on Node 22.23.3: TypeScript passed; 222 tests passed; the workflow smoke passed against migrations 001–023; and the Next production build passed. This gate validates backend workflow and durable local notification inputs. Attachment bytes, message-preview UI, operational queues, KPI screens, private-beta packaging, and a representative historical-data replay remain outside B2.

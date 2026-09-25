@@ -1,4 +1,4 @@
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
@@ -21,19 +21,27 @@ export async function delayTicket(
     throw new ValidationError('reason is required when submitting a delayed field status');
   }
 
+  const ticket = params.visibility
+    ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
+    : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
+  if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if (params.actorRole !== 'INSTRUMENT_MAN' || ticket.assignedInstrumentManId !== params.actorId) {
+    throw new ForbiddenError('Only the assigned Instrument Man may delay this SWR');
+  }
+
   return performTransition(db, repo, {
     tenantId:       params.tenantId,
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'SURVEY_MANAGER'],
-    to:             'PENDING_PC_APPROVAL',
+    permittedRoles: ['INSTRUMENT_MAN'],
+    to:             'DELAYED',
     patch:          {
-      pendingPcOutcome: 'DELAYED',
+      pendingPcOutcome: null,
       pendingPcReason: params.reason,
     },
-    eventType:    'ticket.pending_pc_approval',
-    eventPayload: { requestedStatus: 'DELAYED', reason: params.reason },
+    eventType:    'ticket.delayed',
+    eventPayload: { reason: params.reason },
     visibility:   params.visibility,
   });
 }

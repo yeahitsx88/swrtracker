@@ -5,6 +5,7 @@ import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.reposit
 import { submitTicket } from '@/modules/ticket/application/submit-ticket';
 import { ValidationError } from '@/shared/errors';
 import type { UUID } from '@/shared/types';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,7 @@ export async function POST(
 ) {
   try {
     const { ticketId } = await params;
+    const idempotencyKey = requireIdempotencyKey(req);
     const ctx = await getTicketRouteContext(req, ticketId);
     const repo = new TicketRepository();
     const rawBody = await req.text();
@@ -24,13 +26,19 @@ export async function POST(
     if (departmentId !== undefined && typeof departmentId !== 'string') {
       throw new ValidationError('departmentId must be a string when provided');
     }
-    const ticket = await withTransaction((client) =>
-      submitTicket(repo, client, {
-        ...ctx,
-        departmentId: departmentId as UUID | undefined,
+    const result = await withTransaction((client) => executeIdempotentHttpMutation(
+      client,
+      { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/submit`, idempotencyKey },
+      { ticketId, departmentId: departmentId ?? null },
+      async () => ({
+        status: 200,
+        body: { ticket: await submitTicket(repo, client, {
+          ...ctx,
+          departmentId: departmentId as UUID | undefined,
+        }) },
       }),
-    );
-    return NextResponse.json({ ticket });
+    ));
+    return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     return errorResponse(err);
   }

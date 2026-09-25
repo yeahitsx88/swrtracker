@@ -23,7 +23,7 @@ export interface Ticket {
   ticketNumber: string | null;
   ticketType: TicketType;
   requesterId: UUID;
-  /** Required — one Party Chief per ticket. */
+  /** Optional coordination assignment; an Instrument Man may be assigned directly. */
   assignedPartyChiefId: UUID | null;
   /** Optional — Survey Lead may explicitly assign any Instrument Man in the project. */
   assignedInstrumentManId: UUID | null;
@@ -35,6 +35,10 @@ export interface Ticket {
   fieldChannel?: string | null;
   description: string;
   requestedDate: Date;
+  originalRequestedDate?: Date | null;
+  firstSubmittedAt?: Date | null;
+  returnCycle?: number;
+  fieldValidationReviewerId?: UUID | null;
   submittedAt: Date | null;
   approvedAt: Date | null;
   assignedAt: Date | null;

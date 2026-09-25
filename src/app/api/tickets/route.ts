@@ -135,8 +135,8 @@ export async function POST(req: NextRequest) {
       if (typeof requesterId !== 'string') {
         throw new ValidationError('requesterId is required for direct-assignment tickets');
       }
-      if (typeof assignedPartyChiefId !== 'string') {
-        throw new ValidationError('assignedPartyChiefId is required for direct-assignment tickets');
+      if (typeof assignedInstrumentManId !== 'string') {
+        throw new ValidationError('assignedInstrumentManId is required for direct-assignment tickets');
       }
 
       const result = await withTransaction((client) =>
@@ -157,10 +157,10 @@ export async function POST(req: NextRequest) {
               requesterId: requesterId as UUID,
               actorId: auth.userId,
               actorRole,
-              assignedPartyChiefId: assignedPartyChiefId as UUID,
-              assignedInstrumentManId: typeof assignedInstrumentManId === 'string'
-                ? assignedInstrumentManId as UUID
+              assignedPartyChiefId: typeof assignedPartyChiefId === 'string'
+                ? assignedPartyChiefId as UUID
                 : null,
+              assignedInstrumentManId: assignedInstrumentManId as UUID,
               departmentId: typeof departmentId === 'string' ? departmentId as UUID : undefined,
               ticketType,
               craft: normalizedCraft,

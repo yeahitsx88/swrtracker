@@ -3,7 +3,7 @@
  *
  * APPROVED → ASSIGNED for the standard-approval workflow.
  * Permitted actors: SURVEY_MANAGER, SURVEY_SUPERINTENDENT.
- * assignedPartyChiefId is required; assignedInstrumentManId is optional.
+ * Party Chief is optional. An Instrument Man assignment moves APPROVED to ASSIGNED.
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
@@ -29,9 +29,14 @@ export async function POST(
       const body = await req.json() as unknown;
       const b    = body as Record<string, unknown>;
 
-    if (!body || typeof body !== 'object' || typeof b.assignedPartyChiefId !== 'string') {
-      throw new ValidationError('assignedPartyChiefId is required');
+    if (!body || typeof body !== 'object') {
+      throw new ValidationError('An assignment body is required');
     }
+
+    const assignedPartyChiefId =
+      typeof b.assignedPartyChiefId === 'string' && b.assignedPartyChiefId.trim()
+        ? b.assignedPartyChiefId as UUID
+        : null;
 
     const assignedInstrumentManId =
       typeof b.assignedInstrumentManId === 'string'
@@ -50,7 +55,7 @@ export async function POST(
         },
         {
           ticketId: ctx.ticketId,
-          assignedPartyChiefId: b.assignedPartyChiefId,
+          assignedPartyChiefId,
           assignedInstrumentManId,
         },
         async () => {
@@ -59,7 +64,7 @@ export async function POST(
             ticketId:                ctx.ticketId,
             actorId:                 ctx.actorId,
             actorRole:               ctx.actorRole,
-            assignedPartyChiefId:    b.assignedPartyChiefId as UUID,
+            assignedPartyChiefId,
             assignedInstrumentManId,
             surveyLeadId:            ctx.actorId,
             visibility:              ctx.visibility,

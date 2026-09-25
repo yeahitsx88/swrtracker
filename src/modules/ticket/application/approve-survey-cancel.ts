@@ -5,14 +5,22 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
+import { enqueueAssignedFieldNotifications, enqueueRequesterNotification } from './amelia-notifications';
 
 function assertApprovalChain(
   actorRole: ProjectRole,
   requestedRole: string | null,
 ): void {
   if (requestedRole === 'PARTY_CHIEF') {
-    if (actorRole !== 'SURVEY_SUPERINTENDENT' && actorRole !== 'SURVEY_MANAGER') {
-      throw new ForbiddenError('Party Chief survey-cancel requests require Survey Superintendent or Survey Manager approval');
+    if (actorRole !== 'SURVEY_MANAGER') {
+      throw new ForbiddenError('Party Chief stop-work flags require Survey Lead approval');
+    }
+    return;
+  }
+
+  if (requestedRole === 'INSTRUMENT_MAN') {
+    if (actorRole !== 'SURVEY_MANAGER') {
+      throw new ForbiddenError('Instrument Man stop-work flags require Survey Lead approval');
     }
     return;
   }
@@ -58,8 +66,11 @@ export async function approveSurveyCancel(
       pendingPcReason: null,
       surveyCancelRequestedBy: null,
       surveyCancelRequestedRole: null,
-      surveyCancelReason: null,
+      surveyCancelReason: reason,
       surveyCancelRequestedAt: null,
+      assignedPartyChiefId: null,
+      assignedInstrumentManId: null,
+      fieldValidationReviewerId: null,
     },
     eventType:    'ticket.survey_canceled',
     eventPayload: {
@@ -80,6 +91,30 @@ export async function approveSurveyCancel(
       payload: { reason },
     });
   }
+
+  await db.query(
+    `UPDATE ticket_assignment_history
+     SET ended_at = NOW(), end_reason = 'SURVEY_CANCELED'
+     WHERE tenant_id = $1 AND ticket_id = $2 AND ended_at IS NULL`,
+    [params.tenantId, params.ticketId],
+  );
+  await enqueueRequesterNotification(db, {
+    tenantId: params.tenantId,
+    ticketId: params.ticketId,
+    requesterId: originalTicket.requesterId,
+    eventType: 'SURVEY_CANCELED',
+    payload: { reason },
+    idempotencyKey: `${params.ticketId}:survey-canceled`,
+  });
+  await enqueueAssignedFieldNotifications(db, {
+    tenantId: params.tenantId,
+    ticketId: params.ticketId,
+    assignedPartyChiefId: originalTicket.assignedPartyChiefId,
+    assignedInstrumentManId: originalTicket.assignedInstrumentManId,
+    eventType: 'STOP_WORK_CANCELED',
+    payload: { reason },
+    idempotencyKey: `${params.ticketId}:survey-canceled:field`,
+  });
 
   return ticket;
 }

@@ -10,6 +10,8 @@ export type TicketStatus =
   | 'REJECTED'
   | 'ASSIGNED'
   | 'IN_PROGRESS'
+  | 'PENDING_FIELD_VALIDATION'
+  | 'RETURNED_FOR_CORRECTION'
   | 'PENDING_PC_APPROVAL'
   | 'DELAYED'
   | 'COMPLETED'
@@ -37,6 +39,10 @@ export interface TicketRecord {
   fieldChannel: string | null;
   description: string;
   requestedDate: string;
+  originalRequestedDate: string | null;
+  firstSubmittedAt: string | null;
+  returnCycle: number;
+  fieldValidationReviewerId: string | null;
   submittedAt: string | null;
   approvedAt: string | null;
   assignedAt: string | null;
@@ -83,6 +89,16 @@ export interface CreateTicketRequest {
   requesterId?: string;
   assignedPartyChiefId?: string;
   assignedInstrumentManId?: string;
+}
+
+export interface UpdateRequesterTicketRequest {
+  aorNodeId?: string;
+  ticketType?: TicketType;
+  craft?: string;
+  fieldContact?: string;
+  fieldChannel?: string;
+  description?: string;
+  requestedDate?: string;
 }
 
 export interface AttachmentRecord {
@@ -138,6 +154,8 @@ export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
   ASSIGNED: 'Scheduled',
   IN_PROGRESS: 'In Progress',
   PENDING_PC_APPROVAL: 'Under Review by Survey Lead',
+  PENDING_FIELD_VALIDATION: 'Field Report Review',
+  RETURNED_FOR_CORRECTION: 'Returned for Correction',
   DELAYED: 'Delayed',
   COMPLETED: 'Completed',
   REQUESTER_CANCELED: 'Canceled by You',

@@ -7,6 +7,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
+import { enqueueRequesterNotification } from './amelia-notifications';
 
 export async function approveTicket(
   repo: ITicketRepository,
@@ -19,7 +20,7 @@ export async function approveTicket(
     visibility?: VisibilityScope;
   },
 ): Promise<Ticket> {
-  return performTransition(db, repo, {
+  const approved = await performTransition(db, repo, {
     tenantId:       params.tenantId,
     ticketId:       params.ticketId,
     actorId:        params.actorId,
@@ -30,4 +31,12 @@ export async function approveTicket(
     eventType:      'ticket.approved',
     visibility:     params.visibility,
   });
+  await enqueueRequesterNotification(db, {
+    tenantId: params.tenantId,
+    ticketId: params.ticketId,
+    requesterId: approved.requesterId,
+    eventType: 'APPROVED',
+    idempotencyKey: `${params.ticketId}:approved:${approved.returnCycle ?? 0}`,
+  });
+  return approved;
 }

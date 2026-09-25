@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { ForbiddenError } from '@/shared/errors';
 import { createDirectAssignmentTicket } from '@/modules/ticket/application/create-direct-assignment-ticket';
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
 import type { Ticket } from '@/modules/ticket/domain/types';
@@ -36,6 +36,7 @@ function makeRepo(overrides?: Partial<ITicketRepository>): ITicketRepository {
     findUserEmail: async () => 'requester@example.com',
     findPartyChiefForInstrumentMan: async () => null,
     findAorNodeIdsForUser: async () => [],
+    isActiveProjectMemberWithRole: async () => true,
     ...overrides,
   };
 }
@@ -88,9 +89,9 @@ test('createDirectAssignmentTicket creates a direct-assignment ticket in ASSIGNE
   assert.ok(ticket.assignedAt instanceof Date);
   assert.equal(savedTickets.length, 1);
   assert.equal(savedTickets[0]?.status, 'ASSIGNED');
-  assert.equal(dbCalls.length, 2);
+  assert.equal(dbCalls.length, 3);
   assert.deepEqual(
-    dbCalls.map((call) => call.params?.[4] as string),
+    dbCalls.slice(1).map((call) => call.params?.[4] as string),
     ['ticket.created', 'ticket.assigned'],
   );
 });
@@ -116,7 +117,7 @@ test('createDirectAssignmentTicket accepts manual department fallback and whitel
     actorId,
     actorRole: 'SURVEY_SUPERINTENDENT',
     assignedPartyChiefId: 'pc-1' as UUID,
-    assignedInstrumentManId: null,
+    assignedInstrumentManId: 'im-1' as UUID,
     departmentId,
     ticketType: 'TOPO',
     craft: 'Civil',
@@ -128,7 +129,7 @@ test('createDirectAssignmentTicket accepts manual department fallback and whitel
   assert.equal(ticket.priority, 'HIGH');
   assert.equal(ticket.ticketNumber, 'FSS-U1-00007');
   assert.deepEqual(
-    dbCalls.map((call) => call.params?.[4] as string),
+    dbCalls.slice(1).map((call) => call.params?.[4] as string),
     ['ticket.created', 'ticket.assigned', 'ticket.priority_set_by_whitelist'],
   );
 });
@@ -148,7 +149,7 @@ test('createDirectAssignmentTicket rejects actors outside the survey leadership 
       actorId,
       actorRole: 'REQUESTER',
       assignedPartyChiefId: 'pc-1' as UUID,
-      assignedInstrumentManId: null,
+      assignedInstrumentManId: 'im-1' as UUID,
       departmentId,
       ticketType: 'LAYOUT',
       craft: 'Civil',
@@ -159,28 +160,27 @@ test('createDirectAssignmentTicket rejects actors outside the survey leadership 
   );
 });
 
-test('createDirectAssignmentTicket requires a Party Chief assignment', async () => {
+test('createDirectAssignmentTicket allows direct IM assignment without a Party Chief', async () => {
   const repo = makeRepo();
   const db: DbClient = {
     query: async () => ({ rows: [] }),
   };
 
-  await assert.rejects(
-    () => createDirectAssignmentTicket(repo, db, {
+  const ticket = await createDirectAssignmentTicket(repo, db, {
       tenantId,
       projectId,
       aorNodeId: 'aor-node-1' as UUID,
       requesterId,
       actorId,
       actorRole: 'SURVEY_MANAGER',
-      assignedPartyChiefId: '' as UUID,
-      assignedInstrumentManId: null,
+      assignedPartyChiefId: null,
+      assignedInstrumentManId: 'im-1' as UUID,
       departmentId,
       ticketType: 'LAYOUT',
       craft: 'Civil',
       description: 'Urgent work',
       requestedDate: new Date(Date.now() + (60 * 60 * 1000)),
-    }),
-    ValidationError,
-  );
+    });
+  assert.equal(ticket.assignedPartyChiefId, null);
+  assert.equal(ticket.assignedInstrumentManId, 'im-1');
 });

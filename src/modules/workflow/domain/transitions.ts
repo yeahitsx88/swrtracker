@@ -19,6 +19,8 @@ export type TicketStatus =
   | 'REJECTED'           // Variant 1 — rejected; rejection_reason required
   | 'ASSIGNED'           // Both variants — crew assigned
   | 'IN_PROGRESS'        // Both variants — work underway
+  | 'PENDING_FIELD_VALIDATION' // IM reported inability; assigned PC or Survey Lead reviews
+  | 'RETURNED_FOR_CORRECTION'  // Requester revises the same SWR and resubmits
   | 'PENDING_PC_APPROVAL' // Both variants — IM submitted field status; pending approval
   | 'DELAYED'            // Both variants — blocked in field
   | 'COMPLETED'          // Both variants — terminal success state
@@ -41,12 +43,14 @@ export type TicketStatus =
  */
 const STANDARD_APPROVAL_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
-    ['DRAFT',            new Set<TicketStatus>(['SUBMITTED'])],
-    ['SUBMITTED',        new Set<TicketStatus>(['APPROVED', 'REJECTED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
-    ['APPROVED',         new Set<TicketStatus>(['ASSIGNED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['DRAFT',            new Set<TicketStatus>(['SUBMITTED', 'REQUESTER_CANCELED'])],
+    ['SUBMITTED',        new Set<TicketStatus>(['APPROVED', 'REJECTED', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['APPROVED',         new Set<TicketStatus>(['ASSIGNED', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
     ['REJECTED',         new Set<TicketStatus>(['APPROVED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
-    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
-    ['IN_PROGRESS',      new Set<TicketStatus>(['PENDING_PC_APPROVAL', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['PENDING_FIELD_VALIDATION', new Set<TicketStatus>(['RETURNED_FOR_CORRECTION', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['RETURNED_FOR_CORRECTION', new Set<TicketStatus>(['SUBMITTED', 'REQUESTER_CANCELED'])],
     ['PENDING_PC_APPROVAL', new Set<TicketStatus>([
       'COMPLETED',
       'IN_PROGRESS',
@@ -57,6 +61,8 @@ const STANDARD_APPROVAL_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<Ticke
     ])],
     ['DELAYED',          new Set<TicketStatus>([
       'IN_PROGRESS',
+      'PENDING_FIELD_VALIDATION',
+      'RETURNED_FOR_CORRECTION',
       'PENDING_PC_APPROVAL',
       'REQUESTER_CANCELED',
       'SURVEY_CANCELED',
@@ -72,8 +78,10 @@ const STANDARD_APPROVAL_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<Ticke
  */
 const DIRECT_ASSIGNMENT_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
-    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
-    ['IN_PROGRESS',      new Set<TicketStatus>(['PENDING_PC_APPROVAL', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['PENDING_FIELD_VALIDATION', new Set<TicketStatus>(['RETURNED_FOR_CORRECTION', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['RETURNED_FOR_CORRECTION', new Set<TicketStatus>(['SUBMITTED', 'REQUESTER_CANCELED'])],
     ['PENDING_PC_APPROVAL', new Set<TicketStatus>([
       'COMPLETED',
       'IN_PROGRESS',
@@ -84,6 +92,8 @@ const DIRECT_ASSIGNMENT_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<Ticke
     ])],
     ['DELAYED',          new Set<TicketStatus>([
       'IN_PROGRESS',
+      'PENDING_FIELD_VALIDATION',
+      'RETURNED_FOR_CORRECTION',
       'PENDING_PC_APPROVAL',
       'REQUESTER_CANCELED',
       'SURVEY_CANCELED',

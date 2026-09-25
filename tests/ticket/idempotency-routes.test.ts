@@ -292,6 +292,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
   const originalConnect = pool.connect;
   const originalFindById = TicketRepository.prototype.findById;
   const originalPatchTicket = TicketRepository.prototype.patchTicket;
+  const originalIsActiveProjectMemberWithRole = TicketRepository.prototype.isActiveProjectMemberWithRole;
 
   let patchCalls = 0;
   let currentTicket = makeDirectAssignmentTicket();
@@ -321,6 +322,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
       updatedAt: new Date(),
     };
   };
+  TicketRepository.prototype.isActiveProjectMemberWithRole = async () => true;
 
   try {
     const token = signToken('manager-1' as UUID, 'tenant-1' as UUID);
@@ -351,5 +353,6 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
     pool.connect = originalConnect;
     TicketRepository.prototype.findById = originalFindById;
     TicketRepository.prototype.patchTicket = originalPatchTicket;
+    TicketRepository.prototype.isActiveProjectMemberWithRole = originalIsActiveProjectMemberWithRole;
   }
 });

@@ -13,6 +13,11 @@ export interface TicketStatusPatch {
   departmentId?:            UUID | null;
   ticketNumber?:            string | null;
   submittedAt?:             Date | null;
+  firstSubmittedAt?:        Date | null;
+  originalRequestedDate?:   Date | null;
+  requestedDate?:           Date;
+  returnCycle?:             number;
+  fieldValidationReviewerId?: UUID | null;
   approvedAt?:              Date | null;
   assignedAt?:              Date | null;
   startedAt?:               Date | null;
@@ -164,4 +169,11 @@ export interface ITicketRepository {
     tenantId: UUID,
     projectId: UUID,
   ): Promise<ProjectLeadTimeConfig | null>;
+  isActiveProjectMemberWithRole?(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    userId: UUID,
+    roles: readonly ProjectRole[],
+  ): Promise<boolean>;
 }

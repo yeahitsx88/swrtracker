@@ -12,6 +12,7 @@
     "test": "node --import tsx --test scripts/run-tests.ts",
     "smoke:ticket": "node --import tsx tests/ticket/ticket-route-smoke.ts",
     "smoke:access": "node --import tsx tests/identity/company-access-smoke.ts",
+    "smoke:workflow": "node --import tsx tests/ticket/amelia-workflow-smoke.ts",
     "db:migrate": "tsx --env-file=.env db/migrate.ts"
   },
   "dependencies": {

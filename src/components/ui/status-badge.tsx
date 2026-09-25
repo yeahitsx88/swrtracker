@@ -3,7 +3,10 @@ import { TICKET_STATUS_LABELS } from '@/lib/contracts';
 import { cn } from './cn';
 
 const DANGER_STATUSES: TicketStatus[] = ['REJECTED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED'];
-const WARNING_STATUSES: TicketStatus[] = ['SUBMITTED', 'APPROVED', 'PENDING_PC_APPROVAL', 'DELAYED'];
+const WARNING_STATUSES: TicketStatus[] = [
+  'SUBMITTED', 'APPROVED', 'PENDING_PC_APPROVAL', 'PENDING_FIELD_VALIDATION',
+  'RETURNED_FOR_CORRECTION', 'DELAYED',
+];
 const SUCCESS_STATUSES: TicketStatus[] = ['COMPLETED'];
 
 function statusClass(status: TicketStatus): string {
