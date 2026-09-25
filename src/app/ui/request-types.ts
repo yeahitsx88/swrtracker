@@ -13,6 +13,7 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  reviewActions: { canReview: boolean };
   requesterActions: { canCancel: boolean; canResubmit: boolean };
   displayStatus: string;
   projectName: string;

@@ -390,3 +390,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: role-specific survey execution/approval actions and administrator setup UI remain; setup cards describe pending activation without an administration destination.
 - Production behavior changed: yes.
 - Module boundary deviation: Tenancy directory service plus one project API route and shared web navigation; no migration. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 16 (Survey Manager review controls)
+- Intent: expose approval and rejection decisions from ticket details.
+- Files touched: src/modules/ticket/application/review-actions.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/tickets/[ticketId]/review-actions.tsx, src/app/tickets/[ticketId]/ticket-detail.tsx, src/app/ui/request-types.ts, tests/ticket/review-actions.test.ts, CODEX.md.
+- Behavior added: server-derived review capability for independent Survey Managers on submitted standard-workflow tickets in active projects. Explicit approval confirmation and written rejection reason call the existing transaction-backed commands. Controls prevent repeated submission and concurrent attachment/requester actions; successful decisions refresh ticket details, while errors remain visible.
+- Verification: baseline TypeScript and standard suite passed. Final production build, TypeScript, standard suite (117 pass, 27 database skips), full database-backed suite (142 pass, 2 dedicated-URL skips), and whitespace checks passed. Capability coverage includes actor role, requester/lead/manager self-conflicts, all other states, direct-assignment variant, isolated companies, archived projects, and propagated infrastructure failures. Existing transition/visibility/atomic audit tests remain passing. Browser verification of this UI and the project directory remains pending.
+- Known gap queued for later batches: assignment, field execution, survey cancellation and other elevated workflow controls remain; this checkpoint covers initial review only.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket application capability plus one detail API route and web/shared types; no migration or mutation-rule changes. Concurrent sample/configuration changes excluded.
