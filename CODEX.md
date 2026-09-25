@@ -507,3 +507,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: Superintendent and Slim UI acceptance, responsive visual QA, Superintendent-of-record replacement, override rejection and remaining role surfaces.
 - Production behavior changed: no.
 - Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 29 (Superintendent snapshot reassignment command)
+- Intent: implement the missing Superintendent-of-record replacement required by CLAUDE.md Section 9.
+- Files touched: src/modules/ticket/application/reassign-superintendent.ts, src/app/api/tickets/[ticketId]/reassign-superintendent/route.ts, src/modules/audit/domain/types.ts, tests/ticket/reassign-superintendent.test.ts, CODEX.md.
+- Behavior added: Survey Manager can replace the Superintendent snapshot on assigned, in-progress, pending or delayed tickets in an active Full Build project. Replacement must be an active project Superintendent covering the ticket AOR. Required written reason, no-op rejection, tenant/company scope and row locking precede the snapshot update. Existing ticket.superintendent_reassigned event from the specification records old/new IDs and reason in the same transaction; current work status and pending report remain intact.
+- Verification: baseline TypeScript and 128 standard tests passed. Final TypeScript, production build and whitespace checks passed. Standard suite passed 130 with 29 database skips; PostgreSQL suite passed 157 with 2 dedicated-URL skips. New tests cover authority, company/tenant isolation, terminal states, crew build, invalid reasons, inactive replacement and unchanged assignments. PostgreSQL rollback test verifies snapshot recovery when audit insertion fails, then one successful event with the expected payload and preserved report.
+- Known gap queued for later batches: Superintendent candidate lookup, detail controls and browser acceptance; remaining role surfaces and responsive QA.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket application and one new API route plus Audit event type registration for an event already defined in CLAUDE.md; no new event name or migration. Concurrent sample/configuration changes excluded.

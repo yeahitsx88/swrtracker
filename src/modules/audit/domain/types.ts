@@ -33,6 +33,7 @@ export type AuditEventType =
   | 'ticket.assigned'
   | 'ticket.unassigned'
   | 'ticket.im_reassigned'
+  | 'ticket.superintendent_reassigned'
   | 'ticket.in_progress'
   | 'ticket.pending_pc_approval'
   | 'ticket.pc_approval_given'
