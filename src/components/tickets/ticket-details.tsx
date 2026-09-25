@@ -14,6 +14,9 @@ export function TicketDetails({ ticket }: TicketDetailsProps) {
         <StatusBadge status={ticket.status} />
       </div>
       <p className="muted">Type: {ticket.ticketType}</p>
+      <p className="muted">
+        Requested by: {ticket.isOwnRequest ? 'You' : ticket.requesterName ?? 'Unknown requester'}
+      </p>
       <p className="muted">Craft / Discipline: {ticket.craft || 'Not specified'}</p>
       <p className="muted">Point of Contact: {ticket.fieldContact ?? '-'}</p>
       <p className="muted">Phone / Radio Channel: {ticket.fieldChannel ?? '-'}</p>

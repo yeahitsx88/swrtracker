@@ -155,3 +155,9 @@ Live beta verification as the company authority returned all six mutation capabi
 The requester create and correction paths now enforce the approved V1 intake: Area, Request Type, Point of Contact, Need-By Date, and Request Details. Craft/Discipline and Phone/Radio Channel remain available but are optional. The API accepts their omission, normalizes the schema-required craft value to an empty string, and stores an omitted channel as null. Existing records and columns require no migration.
 
 The idempotent create route test now omits both optional fields and proves their normalized stored values. Node 22.23.3 TypeScript passed, all 245 tests passed, and the Next production build passed.
+
+## Gate B11 requester identity in company views
+
+Ticket list and detail responses now include the requester's display name and whether the SWR belongs to the signed-in user. Names are resolved in one deduplicated tenant-scoped lookup per list page; no email or credential field is added. Cards and details render **Requested by: You** for owned work or the submitting employee's name for other authorized work. The requester navigation and page use the neutral **Requests** label because a subcontractor company authority can see more than personal SWRs.
+
+Node 22.23.3 TypeScript passed, all 247 tests passed, and the Next production build passed.

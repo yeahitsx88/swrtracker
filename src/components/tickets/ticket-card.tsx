@@ -14,7 +14,10 @@ export function TicketCard({ ticket, detailHref }: TicketCardProps) {
         <p className="ticket-headline">{ticket.ticketNumber ?? ticket.id}</p>
         <StatusBadge status={ticket.status} />
       </div>
-      <p className="muted">{ticket.ticketType} - {ticket.craft}</p>
+      <p className="muted">{ticket.ticketType}{ticket.craft ? ` - ${ticket.craft}` : ''}</p>
+      <p className="muted">
+        Requested by: {ticket.isOwnRequest ? 'You' : ticket.requesterName ?? 'Unknown requester'}
+      </p>
       <p className="muted">Requested: {new Date(ticket.requestedDate).toLocaleDateString()}</p>
       <Link href={detailHref} className="app-link">
         Open Details

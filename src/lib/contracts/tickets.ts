@@ -29,6 +29,8 @@ export interface TicketRecord {
   ticketNumber: string | null;
   ticketType: TicketType;
   requesterId: string;
+  requesterName?: string;
+  isOwnRequest?: boolean;
   assignedPartyChiefId: string | null;
   assignedInstrumentManId: string | null;
   surveyLeadId: string | null;

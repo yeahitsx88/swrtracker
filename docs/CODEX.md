@@ -2395,3 +2395,10 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Behavior added/changed: Area, Request Type, Point of Contact, Need-By Date, and Request Details are the enforced requester minimums. Craft/Discipline and Phone/Radio Channel are optional and may be omitted or cleared.
 - Validation: the create-route test omits both optional fields and verifies normalized persistence. Node 22.23.3 TypeScript, 245 tests, and the Next production build passed.
 - Production behavior changed: yes. Changes remain local and GitHub publication is deferred.
+
+### 2026-09-24 — ADCQ-260923-001 Gate B11 requester identity in company views
+- Intent: make company-authority visibility usable by identifying which employee submitted each visible SWR.
+- Files touched: tenant-scoped user name lookup; ticket list/detail response projection and contract; cards, details, requester navigation, runbook, and focused tests.
+- Behavior added/changed: visible SWRs show `Requested by: You` or the requester's display name. The requester list is labeled `Requests` so company-authority visibility is not presented as personal ownership.
+- Validation: the name lookup tests prove tenant scoping, ID deduplication, name-only output, and the empty-page fast path. Node 22.23.3 TypeScript, 247 tests, and the Next production build passed.
+- Production behavior changed: yes. Changes remain local and GitHub publication is deferred.

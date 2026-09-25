@@ -12,7 +12,7 @@ function labels(role: ProjectRole): string[] {
 }
 
 test('Amelia pilot roles receive only their relevant project navigation', () => {
-  assert.deepEqual(labels('REQUESTER'), ['New Request', 'My Requests', 'Drafts']);
+  assert.deepEqual(labels('REQUESTER'), ['New Request', 'Requests', 'Drafts']);
   assert.deepEqual(labels('SURVEY_MANAGER'), ['Survey Operations', 'All Requests']);
   assert.deepEqual(labels('PARTY_CHIEF'), ['Crew Work', 'PC Approvals']);
   assert.deepEqual(labels('INSTRUMENT_MAN'), ['Crew Work']);

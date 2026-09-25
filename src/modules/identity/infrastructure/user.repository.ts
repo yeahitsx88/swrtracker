@@ -64,6 +64,22 @@ function rowToUser(row: DbRow): User {
 }
 
 export class UserRepository implements IUserRepository {
+  async findNamesByIds(
+    db: DbClient,
+    tenantId: UUID,
+    userIds: readonly UUID[],
+  ): Promise<Map<UUID, string>> {
+    if (userIds.length === 0) return new Map();
+    const { rows } = await db.query<{ id: string; name: string }>(
+      `SELECT id, name
+       FROM users
+       WHERE tenant_id = $1
+         AND id = ANY($2::uuid[])`,
+      [tenantId, [...new Set(userIds)]],
+    );
+    return new Map(rows.map((row) => [row.id as UUID, row.name]));
+  }
+
   async findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null> {
     const { rows } = await db.query<DbRow>(
       `SELECT id, tenant_id, company_id, email, password_hash, auth_method, name, session_version, deactivated_at, created_at

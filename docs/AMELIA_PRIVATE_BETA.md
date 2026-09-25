@@ -66,7 +66,7 @@ The login currently requires the tenant ID in addition to the user credentials. 
 | Account | Project role | Expected access |
 |---|---|---|
 | `requester@amelia.local` | Subcontractor requester | Create SWRs; read and change only their own drafts or returned SWRs; read their own active and completed SWRs |
-| `authority@amelia.local` | Subcontractor requester with company authority | Submit and change their own SWRs; read every Amelia Civil Subcontractor SWR; cannot change another employee's SWR |
+| `authority@amelia.local` | Subcontractor requester with company authority | Submit and change their own SWRs; read every Amelia Civil Subcontractor SWR with the requester identified; cannot change another employee's SWR |
 | `lead@amelia.local` | Survey Lead (`SURVEY_MANAGER`) | Review every project SWR; approve, return, assign, revise priority or Need-By, cancel, validate unassigned-chain inability reports, review metrics, and capture local messages |
 | `chief@amelia.local` | Party Chief | Read assigned work; assign an Instrument Man on that work; validate inability reports when captured as reviewer; add supporting files while work is active |
 | `instrument@amelia.local` | Instrument Man | Read assigned work; start, delay, resume, report inability, flag stop-work, complete, and add supporting files while work is active |
@@ -92,7 +92,7 @@ Use a private browser window or sign out between roles so each step uses the int
 
 1. **Requester correction and resubmission**
    - Sign in as `requester@amelia.local` using the tenant ID above.
-   - Choose **Entergy Amelia** in **Project Launcher**, then open **My Requests**.
+   - Choose **Entergy Amelia** in **Project Launcher**, then open **Requests**.
    - Open the returned SWR, change a requester field, and save it.
    - Upload a replacement instruction file, then select **Resubmit for Approval**. The same SWR number should remain in use through the new approval cycle.
 
@@ -117,7 +117,7 @@ Use a private browser window or sign out between roles so each step uses the int
    - A validated inability returns the same SWR to the requester. A rejected inability report resumes the prior field state.
 
 5. **Company authority boundary**
-   - Sign in as `authority@amelia.local` and open **My Requests**.
+   - Sign in as `authority@amelia.local` and open **Requests**.
    - Confirm the authority can read SWRs submitted by the other Amelia Civil Subcontractor requester.
    - Confirm the authority can edit only their own draft or returned SWR.
 

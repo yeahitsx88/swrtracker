@@ -11,7 +11,7 @@ const newRequest: ProjectNavigationItem = {
   href: (projectId) => `/projects/${projectId}/request/new`,
 };
 const myRequests: ProjectNavigationItem = {
-  label: 'My Requests',
+  label: 'Requests',
   href: (projectId) => `/projects/${projectId}/my-requests`,
 };
 const drafts: ProjectNavigationItem = {

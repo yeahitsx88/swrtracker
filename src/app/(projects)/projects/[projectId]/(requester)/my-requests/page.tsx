@@ -44,8 +44,8 @@ export default function MyRequestsPage() {
 
   return (
     <Card
-      title="My Requests"
-      description="Requester dashboard backed by role-scoped ticket list APIs."
+      title="Requests"
+      description="Your SWRs and any additional company SWRs granted to your account."
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}

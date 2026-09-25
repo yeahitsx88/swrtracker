@@ -16,6 +16,7 @@ import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { resolveVisibility } from '@/lib/resolve-visibility';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { createTicket } from '@/modules/ticket/application/create-ticket';
 import { createDirectAssignmentTicket } from '@/modules/ticket/application/create-direct-assignment-ticket';
 import type { WorkflowVariant } from '@/modules/workflow/domain/transitions';
@@ -308,7 +309,20 @@ export async function GET(req: NextRequest) {
         offset,
       });
 
-      return NextResponse.json(page);
+      const requesterNames = await new UserRepository().findNamesByIds(
+        pool,
+        auth.tenantId,
+        page.data.map((ticket) => ticket.requesterId),
+      );
+
+      return NextResponse.json({
+        ...page,
+        data: page.data.map((ticket) => ({
+          ...ticket,
+          requesterName: requesterNames.get(ticket.requesterId) ?? 'Unknown requester',
+          isOwnRequest: ticket.requesterId === auth.userId,
+        })),
+      });
     } catch (err) {
       return errorResponse(err);
     }
