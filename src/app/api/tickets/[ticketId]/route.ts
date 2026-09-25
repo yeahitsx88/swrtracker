@@ -15,6 +15,7 @@ import { statusLabel } from '@/modules/ticket/domain/status-label';
 import { getRequesterActions } from '@/modules/ticket/application/requester-actions';
 import { getReviewActions } from '@/modules/ticket/application/review-actions';
 import { getAssignmentCapability } from '@/modules/ticket/application/assignment-options';
+import { getReassignmentCapability } from '@/modules/ticket/application/reassignment-options';
 import { getFieldActions } from '@/modules/ticket/application/field-actions';
 import { getSurveyCancelActions } from '@/modules/ticket/application/survey-cancel-actions';
 import { getPriorityActions } from '@/modules/ticket/application/priority-actions';
@@ -48,10 +49,11 @@ export async function GET(
     const requesterActions = await getRequesterActions(repo, pool, ticket, ctx.visibility);
     const reviewActions = await getReviewActions(repo, pool, ticket, ctx.visibility);
     const assignment = await getAssignmentCapability(repo, pool, ticket, ctx.visibility);
+    const reassignment = await getReassignmentCapability(repo, pool, ticket, ctx.visibility);
     const fieldActions = await getFieldActions(repo, pool, ticket, ctx.visibility);
     const surveyCancelActions = await getSurveyCancelActions(repo, pool, ticket, ctx.visibility);
     const priorityActions = await getPriorityActions(repo, pool, ticket, ctx.visibility);
-    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, fieldActions, surveyCancelActions, priorityActions,
+    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, reassignment, fieldActions, surveyCancelActions, priorityActions,
       displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);

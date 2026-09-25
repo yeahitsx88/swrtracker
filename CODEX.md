@@ -489,3 +489,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: wire the crew reassignment picker and capability into ticket detail; browser and responsive acceptance remain pending. Superintendent-of-record replacement is a separate remaining action.
 - Production behavior changed: yes (read-only candidate API).
 - Module boundary deviation: Ticket application plus one existing ticket API route, with cross-module candidate access through the Tenancy application service. No migrations. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 27 (Crew reassignment controls)
+- Intent: connect the authorized reassignment candidate service to ticket details.
+- Files touched: src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/assignment-actions.tsx, src/app/tickets/[ticketId]/reassignment-actions.tsx, src/app/tickets/[ticketId]/ticket-detail.tsx, CODEX.md.
+- Behavior added: server-derived reassignment capability controls visibility and crew shape. The searchable picker retains current assignments, supports manager/Superintendent chief replacement and assigned Party Chief IM swaps, and requires a written reason. Unchanged assignments and missing required crew are rejected before submission. Pending report status is explained; successful audited reassignment refreshes details. Duplicate and concurrent mutations are disabled. The existing assignment picker is reused through an explicit endpoint option.
+- Verification: baseline and final TypeScript passed; standard suite passed 128 with 28 database skips; PostgreSQL suite passed 154 with 2 dedicated-URL skips. Production build and whitespace checks passed. Existing capability, scoped candidate, reassignment state preservation and audit transaction tests remain green. Browser acceptance of the new form is queued next.
+- Known gap queued for later batches: browser acceptance and responsive QA; separate Superintendent-of-record replacement and remaining role surfaces.
+- Production behavior changed: yes.
+- Module boundary deviation: one detail API route and ticket web/shared response types; application authority and mutation policies unchanged. Concurrent sample/configuration changes excluded.

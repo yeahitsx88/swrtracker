@@ -9,6 +9,7 @@ import type { RequestTicket } from '@/app/ui/request-types';
 import { RequesterActions } from './requester-actions';
 import { ReviewActions } from './review-actions';
 import { AssignmentActions } from './assignment-actions';
+import { ReassignmentActions } from './reassignment-actions';
 import { FieldActions } from './field-actions';
 import { SurveyCancelActions } from './survey-cancel-actions';
 import { PriorityActions } from './priority-actions';
@@ -60,6 +61,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       </section>}
       <ReviewActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onReviewed={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <AssignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onAssigned={() => { setActionBusy(false); setRevision(value => value + 1); }} />
+      <ReassignmentActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <FieldActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <SurveyCancelActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       <PriorityActions ticket={ticket} disabled={attachmentBusy || actionBusy} onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />

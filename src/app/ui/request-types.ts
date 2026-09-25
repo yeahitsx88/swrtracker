@@ -13,6 +13,10 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  assignedPartyChiefId: string | null;
+  assignedInstrumentManId: string | null;
+  reassignment: { crewBuild: 'FULL' | 'MEDIUM' | 'SLIM'; canChangePartyChief: boolean;
+    instrumentManRequired: boolean } | null;
   priority: 'NORMAL' | 'MEDIUM' | 'MED_HIGH' | 'HIGH';
   priorityActions: { canElevate: boolean; lowerChoices: Array<'NORMAL' | 'MEDIUM' | 'MED_HIGH' | 'HIGH'> };
   surveyCancelActions: { canInitiate: boolean; canApprove: boolean; immediate: boolean; pending: boolean };

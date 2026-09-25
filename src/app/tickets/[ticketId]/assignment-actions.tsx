@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { api, errorMessage, jsonBody } from '@/app/ui/api';
 import type { RequestTicket } from '@/app/ui/request-types';
 
-interface Candidate { id: string; name: string }
+export interface Candidate { id: string; name: string }
 interface CandidatePage { candidates: Candidate[]; hasMore: boolean }
 
-function CrewPicker({ ticketId, role, label, value, onChange, disabled }: {
+export function CrewPicker({ ticketId, role, label, value, onChange, disabled, endpoint = 'assign' }: {
+  endpoint?: 'assign' | 'reassign-crew';
   ticketId: string; role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN'; label: string;
   value: Candidate | null; onChange: (candidate: Candidate | null) => void; disabled: boolean;
 }) {
@@ -19,11 +20,11 @@ function CrewPicker({ ticketId, role, label, value, onChange, disabled }: {
   const [error, setError] = useState('');
   useEffect(() => {
     let current = true; setPage(null); setError('');
-    api<CandidatePage>(`/api/tickets/${ticketId}/assign?role=${role}&search=${encodeURIComponent(search)}&limit=20&offset=${offset}`)
+    api<CandidatePage>(`/api/tickets/${ticketId}/${endpoint}?role=${role}&search=${encodeURIComponent(search)}&limit=20&offset=${offset}`)
       .then(result => { if (current) setPage(result); })
       .catch(cause => { if (current) setError(errorMessage(cause)); });
     return () => { current = false; };
-  }, [ticketId, role, search, offset, revision]);
+  }, [ticketId, endpoint, role, search, offset, revision]);
   return <fieldset disabled={disabled} style={{ border: '1px solid #ccd4d8', borderRadius: 8, padding: 16, marginBottom: 16 }}>
     <legend>{label}</legend>
     <p aria-live="polite">Selected: {value?.name ?? 'None'} {value && <button className="secondary" onClick={() => onChange(null)}>Clear {label}</button>}</p>
