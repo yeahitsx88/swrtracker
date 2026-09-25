@@ -14,6 +14,7 @@ import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.reposit
 import { statusLabel } from '@/modules/ticket/domain/status-label';
 import { getRequesterActions } from '@/modules/ticket/application/requester-actions';
 import { getReviewActions } from '@/modules/ticket/application/review-actions';
+import { getAssignmentCapability } from '@/modules/ticket/application/assignment-options';
 import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
 import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
 import { recordApproverTimeoutSignals } from
@@ -42,7 +43,8 @@ export async function GET(
 
     const requesterActions = await getRequesterActions(repo, pool, ticket, ctx.visibility);
     const reviewActions = await getReviewActions(repo, pool, ticket, ctx.visibility);
-    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions,
+    const assignment = await getAssignmentCapability(repo, pool, ticket, ctx.visibility);
+    return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment,
       displayStatus: statusLabel(ticket.status) } });
   } catch (err) {
     return errorResponse(err);
