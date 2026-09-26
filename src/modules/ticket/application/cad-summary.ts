@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
+import type { Ticket } from '../domain/types';
 
 export interface CadSummary {
   status: 'NOT_REQUIRED' | 'NOT_STARTED' | 'IN_PROGRESS' | 'QA_PENDING' | 'COMPLETE';
@@ -17,4 +18,12 @@ export async function getCadSummary(tickets: ITicketRepository, cad: CadSummaryP
   const rows = await cad.find(db, params.tenantId, params.ticketId);
   if (rows.length > 1) throw new ConflictError('Multiple CAD records found for this request');
   return rows[0] ?? null;
+}
+
+/** Read-time hint; the mutation rechecks role, visibility, state and project. */
+export async function canSignOffCad(tickets: ITicketRepository, db: DbClient,
+  ticket: Ticket, cad: CadSummary | null, actor: VisibilityScope) {
+  if (actor.actorRole !== 'CAD_LEAD' || cad?.status !== 'QA_PENDING' ||
+      (actor.companyType === 'SUBCONTRACTOR' && actor.companyId !== ticket.companyId)) return false;
+  return Boolean(await tickets.findActiveProjectCrewBuild(db, ticket.tenantId, ticket.projectId));
 }

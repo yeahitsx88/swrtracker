@@ -579,3 +579,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: CAD sign-off UI, assignment and status progression, browser acceptance, remaining role surfaces and responsive QA.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application/infrastructure and one new route plus Audit type registration for two event names already defined in CLAUDE.md Section 12. No migration or new event names. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 37 (CAD QA sign-off controls)
+- Intent: expose CAD Lead QA sign-off from the ticket's CAD summary.
+- Files touched: src/modules/ticket/application/cad-summary.ts, src/app/api/tickets/[ticketId]/route.ts, src/app/ui/request-types.ts, src/app/tickets/[ticketId]/cad-actions.tsx, src/app/tickets/[ticketId]/ticket-detail.tsx, tests/ticket/cad-summary.test.ts, CODEX.md.
+- Behavior added: server-derived capability exposes sign-off only to eligible CAD Leads on active-project QA_PENDING records. Confirmation explains reviewer attribution and CAD completion. The form uses the audited endpoint, blocks duplicate/concurrent mutations, surfaces errors and refreshes status/completion date on success.
+- Verification: baseline TypeScript and 136 standard tests passed. Final TypeScript, production build and whitespace checks passed; standard suite passed 137 with 31 database skips; PostgreSQL suite passed 166 with 2 dedicated-URL skips. New capability tests cover CAD Lead versus other roles, all CAD states, missing records, company isolation, inactive projects and infrastructure errors. Browser acceptance remains queued.
+- Known gap queued for later batches: CAD browser acceptance, assignment/status progression, remaining role surfaces and responsive QA.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket application and one detail API route plus ticket web/shared response types. No mutation-policy or migration changes. Concurrent sample/configuration changes excluded.

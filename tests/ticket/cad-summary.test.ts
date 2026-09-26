@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { Client } from 'pg';
-import { getCadSummary } from '@/modules/ticket/application/cad-summary';
+import { getCadSummary, canSignOffCad } from '@/modules/ticket/application/cad-summary';
 import { CadSummaryRepository } from '@/modules/ticket/infrastructure/cad-summary.repository';
 import type { ITicketRepository, VisibilityScope } from '@/modules/ticket/application/ports';
 import type { Ticket } from '@/modules/ticket/domain/types';
@@ -13,6 +13,20 @@ const tenant=id(),ticketId=id();
 const actor:VisibilityScope={actorId:id(),actorRole:'CAD_TECHNICIAN',companyId:id(),companyType:'GC'};
 const params={tenantId:tenant,ticketId,actor};
 const db:DbClient={async query(){throw new Error('Unexpected query');}};
+
+test('CAD sign-off capability requires lead, pending review, same-company visibility and active project',async()=>{
+  const tickets={findActiveProjectCrewBuild:async()=> 'FULL'} as unknown as ITicketRepository;
+  const ticket={tenantId:tenant,projectId:id(),companyId:actor.companyId} as Ticket;
+  const lead={...actor,actorRole:'CAD_LEAD' as const};
+  const pending={status:'QA_PENDING' as const,completedAt:null};
+  assert.equal(await canSignOffCad(tickets,db,ticket,pending,lead),true);
+  for(const actorRole of ['CAD_TECHNICIAN','SURVEY_MANAGER','TENANT_ADMIN','REQUESTER'] as const)assert.equal(await canSignOffCad(tickets,db,ticket,pending,{...lead,actorRole}),false);
+  for(const status of ['NOT_REQUIRED','NOT_STARTED','IN_PROGRESS','COMPLETE'] as const)assert.equal(await canSignOffCad(tickets,db,ticket,{...pending,status},lead),false);
+  assert.equal(await canSignOffCad(tickets,db,ticket,null,lead),false);
+  assert.equal(await canSignOffCad(tickets,db,ticket,pending,{...lead,companyType:'SUBCONTRACTOR',companyId:id()}),false);
+  assert.equal(await canSignOffCad({...tickets,findActiveProjectCrewBuild:async()=>null},db,ticket,pending,lead),false);
+  await assert.rejects(canSignOffCad({...tickets,findActiveProjectCrewBuild:async()=>{throw new Error('offline');}},db,ticket,pending,lead),/offline/);
+});
 
 test('CAD summary authorizes ticket visibility before retrieving CAD and detects duplicate records',async()=>{
   let reads=0;
