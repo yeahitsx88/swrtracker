@@ -765,3 +765,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: none; one Reporting test file and append-only work log.
 - Known gaps queued for later batches: operational reports by area/craft/crew and daily summary; multi-project/concurrent performance measurements.
 - Production behavior changed: no.
+
+### 2026-09-25 - Batch 57
+- Intent: expose visibility-scoped operational aggregates through the Ticket application boundary for the remaining Reporting surfaces (IMPLEMENTER, Ticket module).
+- Files touched: src/modules/ticket/application/operational-report.ts; src/modules/ticket/application/index.ts; src/modules/ticket/infrastructure/ticket.repository.ts; tests/ticket/operational-report.test.ts; CODEX.md.
+- Behavior added: getOperationalReport resolves authenticated tenant/project/acting role and existing ticket visibility, then returns bounded grouped counts by project, exact AOR node, craft, assigned Party Chief or assigned Instrument Man. SQL reuses the ticket repository's visibility clause. Every group carries separate non-draft status counts and a total; null assignments remain explicit groups, identical area names remain separate by ID, and archived projects and inactive crew names remain reportable. No tickets or audit records are changed.
+- Verification: baseline TypeScript and pnpm test passed (159 pass, 35 skips). Final TypeScript and production build passed; pnpm test passed (160 pass, 36 database skips); PostgreSQL suite passed (194 pass, 2 dedicated-URL skips). New tests verify all non-draft statuses including distinct cancellation paths, active/deleted draft exclusion, other-project isolation, group pagination, duplicate area labels, historical crew names, archived access, requester/PC/IM/AOR/department/coordinator/subcontractor scopes, tenant-admin access, denied project-only admin, wrong tenant and deactivated user, and invalid dimensions/page bounds. Fixture writes roll back.
+- Module boundary deviations: none; Ticket owns the aggregation and public service. Reporting can consume the application service in a subsequent batch without duplicating visibility SQL. No migration or API route added.
+- Known gaps queued for later batches: Reporting orchestration, report API and user interface, daily summary, and grouped-report volume measurements. This is an application-service foundation and is not yet exposed in the UI.
+- Production behavior changed: new application service; existing HTTP and UI behavior unchanged.

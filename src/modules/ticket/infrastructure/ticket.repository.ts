@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { ConflictError } from '@/shared/errors';
 import type { DbClient, UUID, Page } from '@/shared/types';
 import type { Ticket, TicketStatus, TicketType, WorkflowVariant } from '../domain/types';
+import type { OperationalGroup, OperationalReportQuery } from '../application/operational-report';
 import type {
   ITicketRepository,
   TicketStatusPatch,
@@ -603,6 +604,32 @@ export class TicketRepository implements ITicketRepository {
     );
 
     return { data: rows.map(rowToTicket), total, limit: opts.limit, offset: opts.offset };
+  }
+
+  async operationalGroups(db:DbClient,query:OperationalReportQuery,visibility:VisibilityScope):Promise<OperationalGroup[]> {
+    const dimensions={
+      project:{key:'t.project_id::text',label:'p.name'},
+      area:{key:'t.aor_node_id::text',label:'a.name'},
+      craft:{key:'t.craft',label:'t.craft'},
+      partyChief:{key:'t.assigned_party_chief_id::text',label:'pc.name'},
+      instrumentMan:{key:'t.assigned_instrument_man_id::text',label:'im.name'},
+    };
+    const dimension=dimensions[query.dimension];
+    const visibilityClause=buildVisibilityClause(visibility,3);
+    const values:unknown[]=[query.tenantId,query.projectId,...visibilityClause.params];
+    const limitIndex=values.length+1,offsetIndex=values.length+2;
+    return (await db.query<OperationalGroup>(`WITH counts AS (
+      SELECT ${dimension.key} AS key,${dimension.label} AS label,t.status,count(*)::int AS count
+      FROM tickets t JOIN projects p ON p.id=t.project_id AND p.tenant_id=t.tenant_id
+      LEFT JOIN aor_nodes a ON a.id=t.aor_node_id AND a.project_id=t.project_id AND a.tenant_id=t.tenant_id
+      LEFT JOIN users pc ON pc.id=t.assigned_party_chief_id AND pc.tenant_id=t.tenant_id
+      LEFT JOIN users im ON im.id=t.assigned_instrument_man_id AND im.tenant_id=t.tenant_id
+      WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.status<>'DRAFT'
+        AND t.draft_deleted_at IS NULL ${visibilityClause.sql}
+      GROUP BY ${dimension.key},${dimension.label},t.status
+    ) SELECT key,label,sum(count)::int AS total,jsonb_object_agg(status,count) AS statuses
+      FROM counts GROUP BY key,label ORDER BY label NULLS FIRST,key NULLS FIRST
+      LIMIT $${limitIndex} OFFSET $${offsetIndex}`,[...values,query.limit,query.offset])).rows;
   }
 
   async findUserCompanyInfo(

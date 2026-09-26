@@ -20,3 +20,5 @@ export { requestCancel } from './request-cancel';
 export { elevateToPrority } from './elevate-priority';
 export { lowerPriority } from './lower-priority';
 export { overrideRejection } from './override-rejection';
+export { getOperationalReport, reportDimensions } from './operational-report';
+export type { OperationalReportPort, OperationalReportQuery, OperationalGroup, ReportDimension } from './operational-report';
