@@ -119,7 +119,9 @@ export interface ITicketRepository {
   listDrafts(db: DbClient, tenantId: UUID, requesterId: UUID,
     limit: number, offset: number): Promise<Page<Ticket>>;
   listDeletedDrafts(db: DbClient, tenantId: UUID, projectId: UUID,
-    actorId: UUID, limit: number, offset: number): Promise<Page<Ticket>>;
+    actorId: UUID, limit: number, offset: number): Promise<Page<Ticket & {
+      requesterName: string; companyName: string;
+    }>>;
   findStaleDraftsForExpiry(db: DbClient, tenantId: UUID, limit: number): Promise<Ticket[]>;
   findDraftsForPurge(db: DbClient, tenantId: UUID, limit: number): Promise<Ticket[]>;
   purgeDraft(db: DbClient, tenantId: UUID, ticketId: UUID): Promise<void>;

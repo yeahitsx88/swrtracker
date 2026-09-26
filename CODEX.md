@@ -364,6 +364,15 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application capability plus one detail route and requester web/shared response types; no workflow rules or migrations changed.
 
+### 2026-09-25 - Batch 12 (Explorable site sample)
+- Intent: provide a representative interface to explore while the local development database has no projects or tickets.
+- Files touched: `src/app/sample/page.tsx`, `src/app/sample/sample-site.tsx`, `src/app/sample/sample.css`, `next.config.ts`, `.gitignore`, `CODEX.md`.
+- Behavior added: an isolated `/sample` preview with example project requests, status filtering, request details, and a client-only request form. The preview labels its data and does not call production APIs or persist entries.
+- Verification: baseline and final `pnpm tsc --noEmit` passed; baseline and final `pnpm test` passed (116 pass, 25 skipped); HTTP `/sample` returned 200; browser checks covered list, filter, detail panel, and form submission.
+- Known gap queued for later batches: the production database has no projects or tickets, so the authenticated workflow still requires setup data and accounts.
+- Production behavior changed: no; the added sample route is separate from the authenticated workflow.
+- Module boundary deviation: this user-requested preview is a web-only route outside the module ownership paths; the optional Next.js output directory lets its local server coexist with the already-running app.
+
 ### 2026-09-25 - Batch 13 (Invitation entry UI)
 - Intent: provide the invitation acceptance page targeted by the configured email links.
 - Files touched: `src/app/invites/accept/page.tsx`, `src/app/invites/accept/invite-form.tsx`, `src/app/api/invites/route.ts`, `src/app/ui/api.ts`, `tests/ticket/request-ui.test.ts`, `CODEX.md`.
@@ -832,4 +841,16 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Discovery: a proposed dual-role integration fixture failed the existing project_memberships(project_id,user_id) unique constraint. The fixture now tests a real role change. The specification permits Project Admin plus a ticket-visible role, but schema and role resolution currently need coordinated multi-role implementation; no schema change is hidden in this navigation correction.
 - Module boundary deviations: none. No workflow transition, audit event or migration changed. Unrelated local changes preserved.
 - Known gaps queued for later batches: project draft recovery interface; multi-role project memberships and deterministic authority resolution.
+- Production behavior changed: yes.
+
+### 2026-09-25 - Batch 64 (Night checkpoint)
+- Intent: deliver Project Admin draft recovery and publish all remaining project source changes before the owner-requested overnight stop (IMPLEMENTER, Ticket).
+- Files touched: src/modules/ticket/application/drafts.ts; src/modules/ticket/application/ports.ts; src/modules/ticket/infrastructure/ticket.repository.ts; src/modules/tenancy/application/project-directory.ts; src/app/projects/page.tsx; src/app/ui/api.ts; src/app/project/[projectId]/deleted-drafts/page.tsx; src/app/project/[projectId]/deleted-drafts/deleted-drafts.tsx; tests/db/drafts.integration.test.ts; tests/ticket/drafts.test.ts; tests/ticket/request-ui.test.ts; tests/tenancy/project-directory.test.ts; .gitignore; next.config.ts; src/app/sample/; CODEX.md.
+- Behavior added: Project Admin-only Deleted drafts link; named requester/company recovery list, ten-row pagination, deletion reason/deadline, minimum ten-character written reason, success/error states and safe sign-in return. Recovering the last item of a page adjusts pagination. Names remain tenant-scoped and subcontractor isolation is preserved; deleted-draft ordering has an ID tie-breaker.
+- Behavior corrected: recovery now requires an active project at the application layer. Deleted drafts remain readable by Project Admin in inactive projects, with recovery actions hidden. Refresh clears stale data and notices when access changes. Tenant Admin alone has no recovery capability.
+- Verification: baseline TypeScript and pnpm test passed (167 pass, 36 skips). Final TypeScript and pnpm test passed (168 pass, 36 skips); PostgreSQL suite passed (202 pass, 2 dedicated-URL skips). Regression coverage includes lifecycle denial, requester/company display, tenant isolation, role denial, reason validation, requester draft restoration, recorded actor/reason and directory capabilities. Production build verified for the complete source checkpoint.
+- Browser acceptance: isolated migrated fixture showed eleven drafts across two pages. Short reason kept confirmation disabled; valid recovery removed the only item on page two and returned to page one. Database readback confirmed null deletion timestamp and one recovery event with the expected actor/reason. Archived-project refresh removed recovery actions; changing the actor to Viewer cleared the list with a permission error. Mobile viewport 390x844 had equal 375px content/client widths; screenshot retained at .local/draft-recovery-mobile.png. Preview stopped, browser closed, viewport reset, temporary database and credential files removed.
+- Existing local source included at owner request: the separately authored sample preview, its original Batch 12 log entry, and optional preview build directory configuration. The sample was included in the successful build/type/test checks. Local screenshots/logs, compiler cache and the clean duplicate checkout are ignored; the duplicate checkout has no unpushed commits.
+- Module boundary deviations: minimal Tenancy directory capability and its test, Projects navigation, shared UI login-return helper, new Ticket web page and existing DB integration test support this Ticket feature. No route or migration added or modified.
+- Known gaps for resume: coordinated multiple project roles (Batch 63 discovery); recovery preserves the explicit-save inactivity timestamp, so recovered old drafts can expire again on the next maintenance pass unless the requester saves them (UI explains this); remaining end-to-end acceptance. Daily report distribution still needs recipient/cadence requirements. No new work starts until the owner resumes development.
 - Production behavior changed: yes.

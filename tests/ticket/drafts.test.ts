@@ -72,6 +72,7 @@ test('subcontractor Project Admin cannot recover another company draft', async (
   const db: DbClient = { async query(sql) { writes.push(sql); return { rows: [] }; } };
   const repo = {
     findUserCompanyInfo: async () => ({ companyId, companyType: 'SUBCONTRACTOR' }),
+    findActiveProjectCrewBuild: async () => 'MEDIUM',
     findByIdInternal: async () => draft,
     patchTicket: async () => { writes.push('patch'); },
   } as unknown as ITicketRepository;
@@ -97,9 +98,27 @@ test('deleted draft listing binds the actor company in both page queries', async
   await listRecoverableDrafts(new TicketRepository(), db, {
     tenantId, projectId, actorId: adminId,
     actorRole: 'PROJECT_ADMIN', limit: 20, offset: 0 });
-  assert.equal(queries.length, 2);
-  for (const query of queries) {
+  assert.equal(queries.length, 3);
+  for (const query of queries.slice(0, 2)) {
     assert.match(query.sql, /c\.type<>'SUBCONTRACTOR' OR t\.company_id=u\.company_id/);
     assert.deepEqual(query.params.slice(0, 3), [tenantId, projectId, adminId]);
   }
+});
+
+test('recovery rejects inactive projects and tenant administrators without writing', async () => {
+  const writes: string[] = [];
+  const db: DbClient = { async query(sql) { writes.push(sql); return { rows: [] }; } };
+  const repo = {
+    findUserCompanyInfo: async () => ({ companyId, companyType: 'GC' }),
+    findByIdInternal: async () => ({ id: ticketId, tenantId, projectId, companyId,
+      status: 'DRAFT', draftDeletedAt: new Date() }),
+    findActiveProjectCrewBuild: async () => null,
+    patchTicket: async () => { writes.push('patch'); },
+  } as unknown as ITicketRepository;
+  const params = { tenantId, projectId, ticketId, actorId: requesterId,
+    actorRole: 'PROJECT_ADMIN' as const, reason: 'Restore the saved request' };
+  await assert.rejects(recoverDraft(repo, db, params), /active project/);
+  await assert.rejects(recoverDraft(repo, db, { ...params, actorRole: 'TENANT_ADMIN' }), /Project Admin required/);
+  await assert.rejects(recoverDraft(repo, db, { ...params, reason: '   short   ' }), /10 characters/);
+  assert.deepEqual(writes, []);
 });

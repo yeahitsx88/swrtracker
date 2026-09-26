@@ -32,6 +32,7 @@ test('project directory scopes memberships, tenant administration, lifecycle and
     assert.equal(first.hasMore, true);
     assert.equal(first.canViewAudit, false);
     assert.equal(first.canViewTenantHealth, false);
+    assert.ok(first.projects.every(p => !p.canViewDeletedDrafts));
     assert.deepEqual(first.projects[0]!.roles, ['REQUESTER']);
     assert.equal(first.projects[0]!.canRequest, true);
     assert.equal(first.projects[1]!.canRequest, false);
@@ -39,18 +40,21 @@ test('project directory scopes memberships, tenant administration, lifecycle and
     const last = await listAccessibleProjects(repo, db, { ...params, offset: 2 });
     assert.deepEqual(last.projects.map(p => p.id), [setup]);
     assert.equal(last.projects[0]!.canViewRequests, false);
+    assert.equal(last.projects[0]!.canViewDeletedDrafts, true);
     assert.equal(last.hasMore, false);
     const all = await listAccessibleProjects(repo, db, { ...params, userId: admin, limit: 100 });
     assert.deepEqual(all.projects.map(p => p.id), [active, archived, setup, hidden]);
     assert.ok(all.projects.every(p => !p.canRequest));
     assert.equal(all.canViewAudit, true);
     assert.equal(all.canViewTenantHealth, true);
+    assert.ok(all.projects.every(p => !p.canViewDeletedDrafts));
     assert.ok(all.projects.filter(p => p.status !== 'SETUP').every(p => p.canViewRequests));
     assert.ok(all.projects.filter(p => p.status === 'SETUP').every(p => !p.canViewRequests));
     await db.query("UPDATE project_memberships SET role='PROJECT_ADMIN' WHERE user_id=$1 AND project_id IN ($2,$3)",
       [user, active, archived]);
     const projectAdmin = await listAccessibleProjects(repo, db, params);
     assert.ok(projectAdmin.projects.every(p => !p.canViewRequests && !p.canRequest));
+    assert.ok(projectAdmin.projects.every(p => p.canViewDeletedDrafts));
     await db.query("UPDATE project_memberships SET role='VIEWER' WHERE project_id=$1 AND user_id=$2", [active, user]);
     const viewer = await listAccessibleProjects(repo, db, params);
     assert.equal(viewer.projects.find(p => p.id === active)!.canViewRequests, true);

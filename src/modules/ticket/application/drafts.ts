@@ -114,6 +114,9 @@ export async function recoverDraft(repo: ITicketRepository, db: DbClient, params
       draft.draftDeletedAt.getTime() <= Date.now() - 30 * 24 * 60 * 60 * 1000) {
     throw new ConflictError('Draft is outside the recovery window');
   }
+  if (!(await repo.findActiveProjectCrewBuild(db, params.tenantId, params.projectId))) {
+    throw new ConflictError('Draft recovery requires an active project');
+  }
   await repo.patchTicket(db, params.tenantId, params.ticketId, { status: 'DRAFT',
     draftDeletedAt: null, draftDeletedReason: null });
   await appendAuditEvent(db, { ticketId: draft.id, tenantId: params.tenantId,
@@ -129,8 +132,10 @@ export async function listRequesterDrafts(repo: ITicketRepository, db: DbClient,
 
 export async function listRecoverableDrafts(repo: ITicketRepository, db: DbClient,
   params: { tenantId: UUID; projectId: UUID; actorRole: ProjectRole | TenantRole;
-    actorId: UUID; limit: number; offset: number }): Promise<Page<Ticket>> {
+    actorId: UUID; limit: number; offset: number }) {
   if (params.actorRole !== 'PROJECT_ADMIN') throw new ForbiddenError('Project Admin required');
-  return repo.listDeletedDrafts(db, params.tenantId, params.projectId, params.actorId,
+  const page = await repo.listDeletedDrafts(db, params.tenantId, params.projectId, params.actorId,
     params.limit, params.offset);
+  const canRecover = Boolean(await repo.findActiveProjectCrewBuild(db, params.tenantId, params.projectId));
+  return { ...page, canRecover };
 }

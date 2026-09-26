@@ -3,6 +3,7 @@ node_modules/
 
 # Next.js
 .next/
+.next-sample/
 out/
 
 # Environment — never commit real credentials
@@ -24,3 +25,8 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Local verification artifacts and duplicate checkout
+.local/
+*.tsbuildinfo
+/swrtracker/

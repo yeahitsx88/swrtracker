@@ -7,7 +7,7 @@ import { Shell } from '../ui/shell';
 
 interface ProjectPage {
   projects: Array<{ id: string; name: string; status: string; roles: string[];
-    canRequest: boolean; canViewRequests: boolean }>;
+    canRequest: boolean; canViewRequests: boolean; canViewDeletedDrafts: boolean }>;
   hasMore: boolean;
   canViewAudit: boolean;
   canViewTenantHealth: boolean;
@@ -43,6 +43,7 @@ export default function ProjectsPage() {
         {project.status === 'SETUP' && <p className="muted">Requests will be available after project activation.</p>}
         <div className="actions">{project.canViewRequests && <Link className="button secondary" href={`/project/${project.id}/requests`}>View requests</Link>}
           {project.canViewRequests && <Link href={`/project/${project.id}/reports`}>Operational reports</Link>}
+          {project.canViewDeletedDrafts && <Link className="button secondary" href={`/project/${project.id}/deleted-drafts`}>Deleted drafts</Link>}
           {project.canRequest && <Link className="button" href={`/project/${project.id}/request`}>New request</Link>}</div>
       </article>)}
       {(offset > 0 || page.hasMore) && <div className="actions"><button className="secondary" disabled={offset === 0} onClick={() => setOffset(offset - 20)}>Previous</button>

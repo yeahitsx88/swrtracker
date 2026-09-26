@@ -4,7 +4,7 @@ import test from 'node:test';
 import { Client } from 'pg';
 import type { UUID } from '@/shared/types';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
-import { saveDraft, deleteDraft, recoverDraft } from '@/modules/ticket/application/drafts';
+import { saveDraft, deleteDraft, recoverDraft, listRecoverableDrafts } from '@/modules/ticket/application/drafts';
 import { submitTicket } from '@/modules/ticket/application/submit-ticket';
 import { purgeDeletedDrafts } from '@/modules/ticket/application/draft-maintenance';
 import { lowerPriority } from '@/modules/ticket/application/lower-priority';
@@ -98,10 +98,32 @@ test('PostgreSQL partial draft save, isolated listing, submit-time number, and r
       await assert.rejects(recoverDraft(repo, db, { tenantId, projectId,
         ticketId: deletedCandidate.id, actorId: requesterId,
         actorRole: 'REQUESTER', reason: 'Recover this draft' }));
+      const recoveryQuery = { tenantId, projectId, actorId: adminId,
+        actorRole: 'PROJECT_ADMIN' as const, limit: 10, offset: 0 };
+      const recoveryPage = await listRecoverableDrafts(repo, db, recoveryQuery);
+      assert.equal(recoveryPage.canRecover, true);
+      assert.equal(recoveryPage.data[0]?.requesterName, 'User');
+      assert.equal(recoveryPage.data[0]?.companyName, 'GC');
+      assert.equal((await listRecoverableDrafts(repo, db, { ...recoveryQuery, tenantId: id() })).total, 0);
+      for (const status of ['ARCHIVED', 'SETUP']) {
+        await db.query('UPDATE projects SET status=$2 WHERE id=$1', [projectId, status]);
+        const readOnly = await listRecoverableDrafts(repo, db, recoveryQuery);
+        assert.equal(readOnly.total, 1);
+        assert.equal(readOnly.canRecover, false);
+        await assert.rejects(recoverDraft(repo, db, { ...recoveryQuery,
+          ticketId: deletedCandidate.id, reason: 'Requester needs more time' }), /active project/);
+      }
+      await db.query("UPDATE projects SET status='ACTIVE' WHERE id=$1", [projectId]);
       const recovered = await recoverDraft(repo, db, { tenantId, projectId,
         ticketId: deletedCandidate.id, actorId: adminId,
         actorRole: 'PROJECT_ADMIN', reason: 'Requester needs more time' });
       assert.equal(recovered.draftDeletedAt, null);
+      assert.equal((await repo.listDrafts(db, tenantId, requesterId, 20, 0)).total, 1);
+      assert.equal((await listRecoverableDrafts(repo, db, recoveryQuery)).total, 0);
+      const recoveryEvents = await db.query('SELECT actor_id,payload FROM ticket_events WHERE ticket_id=$1 AND event_type=$2',
+        [deletedCandidate.id, 'ticket.draft_recovered']);
+      assert.deepEqual(recoveryEvents.rows, [{ actor_id: adminId,
+        payload: { reason: 'Requester needs more time', priorDeletionReason: 'REQUESTER_DELETED' } }]);
       const { rows: eventRows } = await db.query<{ event_type: string }>(
         'SELECT event_type FROM ticket_events WHERE ticket_id=$1', [draft.id]);
       assert.ok(eventRows.some(row => row.event_type === 'ticket.draft_saved'));

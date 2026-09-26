@@ -427,7 +427,9 @@ export class TicketRepository implements ITicketRepository {
   }
 
   async listDeletedDrafts(db: DbClient, tenantId: UUID, projectId: UUID,
-    actorId: UUID, limit: number, offset: number): Promise<Page<Ticket>> {
+    actorId: UUID, limit: number, offset: number): Promise<Page<Ticket & {
+      requesterName: string; companyName: string;
+    }>> {
     const predicate = `t.tenant_id=$1 AND t.project_id=$2 AND t.status='DRAFT'
       AND t.draft_deleted_at > NOW() - INTERVAL '30 days'
       AND (c.type<>'SUBCONTRACTOR' OR t.company_id=u.company_id)`;
@@ -437,11 +439,15 @@ export class TicketRepository implements ITicketRepository {
     const { rows: count } = await db.query<{ total: string }>(
       `SELECT count(*)::text AS total ${from} WHERE ${predicate}`,
       [tenantId, projectId, actorId]);
-    const { rows } = await db.query<TicketRow>(
-      `SELECT t.* ${from} WHERE ${predicate}
-       ORDER BY t.draft_deleted_at DESC LIMIT $4 OFFSET $5`,
+    const { rows } = await db.query<TicketRow & { requesterName: string; companyName: string }>(
+      `SELECT t.*,requester.name AS "requesterName",company.name AS "companyName" ${from}
+       JOIN users requester ON requester.id=t.requester_id AND requester.tenant_id=t.tenant_id
+       JOIN companies company ON company.id=t.company_id AND company.tenant_id=t.tenant_id
+       WHERE ${predicate}
+       ORDER BY t.draft_deleted_at DESC,t.id DESC LIMIT $4 OFFSET $5`,
       [tenantId, projectId, actorId, limit, offset]);
-    return { data: rows.map(rowToTicket), total: Number(count[0]?.total ?? 0), limit, offset };
+    return { data: rows.map(row => ({ ...rowToTicket(row), requesterName: row.requesterName,
+      companyName: row.companyName })), total: Number(count[0]?.total ?? 0), limit, offset };
   }
 
   async findStaleDraftsForExpiry(db: DbClient, tenantId: UUID,
