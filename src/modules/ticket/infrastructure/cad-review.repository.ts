@@ -1,13 +1,23 @@
 import type { DbClient, UUID } from '@/shared/types';
-import type { CadReviewPort, CadReviewRecord } from '../application/sign-off-cad';
+import type { CadReviewPort } from '../application/sign-off-cad';
+import type { CadProgressPort, CadProgressRecord } from '../application/progress-cad';
 
-export class CadReviewRepository implements CadReviewPort {
-  async lock(db: DbClient, tenantId: UUID, ticketId: UUID): Promise<CadReviewRecord[]> {
-    return (await db.query<CadReviewRecord>(
-      `SELECT id,cad_status AS status,cad_completed_at AS "completedAt"
+export class CadReviewRepository implements CadReviewPort, CadProgressPort {
+  async lock(db: DbClient, tenantId: UUID, ticketId: UUID): Promise<CadProgressRecord[]> {
+    return (await db.query<CadProgressRecord>(
+      `SELECT id,cad_status AS status,cad_completed_at AS "completedAt",cad_assigned_to AS "assignedTo"
        FROM cad_work WHERE tenant_id=$1 AND ticket_id=$2 LIMIT 2 FOR UPDATE`,
       [tenantId, ticketId],
     )).rows;
+  }
+  async advance(db: DbClient, tenantId: UUID, recordId: UUID, actorId: UUID,
+    from: 'NOT_STARTED' | 'IN_PROGRESS', to: 'IN_PROGRESS' | 'QA_PENDING') {
+    const { rows } = await db.query<{ id: UUID }>(
+      `UPDATE cad_work SET cad_status=$5
+       WHERE tenant_id=$1 AND id=$2 AND cad_assigned_to=$3 AND cad_status=$4 RETURNING id`,
+      [tenantId, recordId, actorId, from, to],
+    );
+    return rows.length === 1;
   }
   async complete(db: DbClient, tenantId: UUID, recordId: UUID, actorId: UUID, completedAt: Date) {
     const { rows } = await db.query<{ id: UUID }>(

@@ -3,6 +3,7 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import { signOffCad, type CadReviewPort } from '@/modules/ticket/application/sign-off-cad';
+import { progressCad } from '@/modules/ticket/application/progress-cad';
 import { CadReviewRepository } from '@/modules/ticket/infrastructure/cad-review.repository';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import type { ITicketRepository, VisibilityScope } from '@/modules/ticket/application/ports';
@@ -62,11 +63,22 @@ test('PostgreSQL CAD sign-off preserves field state and rolls back if the second
       await db.query('ROLLBACK TO SAVEPOINT before_review');
       assert.equal((await cad.lock(db,tenant,key))[0]?.status,'QA_PENDING');
       assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,0);
+      await db.query("UPDATE cad_work SET cad_status='NOT_STARTED',cad_assigned_to=$3 WHERE tenant_id=$1 AND ticket_id=$2",[tenant,key,user]);
+      await db.query('SAVEPOINT before_progress');
+      const progressFailure:DbClient={async query(sql,values){
+        if(sql.includes('INSERT INTO ticket_events'))throw new Error('progress audit failed');
+        return db.query(sql,values);
+      }};
+      await assert.rejects(progressCad(tickets,cad,progressFailure,{...params,action:'START'}),/progress audit failed/);
+      await db.query('ROLLBACK TO SAVEPOINT before_progress');
+      assert.equal((await cad.lock(db,tenant,key))[0]?.status,'NOT_STARTED');
+      await progressCad(tickets,cad,db,{...params,action:'START'});
+      await progressCad(tickets,cad,db,{...params,action:'SUBMIT_QA'});
       await signOffCad(tickets,cad,db,params);
       const saved=(await db.query('SELECT cad_status,cad_reviewed_by,cad_completed_at FROM cad_work WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows[0];
       assert.equal(saved.cad_status,'COMPLETE');assert.equal(saved.cad_reviewed_by,user);assert.ok(saved.cad_completed_at);
       assert.equal((await tickets.findByIdInternal(db,tenant,key))?.status,'COMPLETED');
       await assert.rejects(signOffCad(tickets,cad,db,params),ConflictError);
-      assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,2);
+      assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,4);
     } finally {await db.query('ROLLBACK');await db.end();}
   });

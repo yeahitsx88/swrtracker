@@ -597,3 +597,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: CAD assignment/status progression, remaining role surfaces and responsive QA.
 - Production behavior changed: no.
 - Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 39 (Assigned CAD work progression)
+- Intent: implement the forward CAD work sequence before Lead QA sign-off.
+- Files touched: src/modules/ticket/application/progress-cad.ts, src/modules/ticket/infrastructure/cad-review.repository.ts, src/app/api/tickets/[ticketId]/cad-progress/route.ts, tests/ticket/cad-progress.test.ts, tests/ticket/cad-sign-off.test.ts, CODEX.md.
+- Behavior added: assigned CAD Technician or CAD Lead may start NOT_STARTED work and submit IN_PROGRESS work for QA. Explicit action parsing, ticket visibility, active project, ticket/CAD row locks, assignment ownership and expected-state update checks precede a cad.status_changed event in the same transaction. Field state is preserved; progression cannot complete QA or skip states.
+- Verification: baseline TypeScript and 137 standard tests passed. Final TypeScript, production build and whitespace checks passed; standard suite passed 139 with 31 database skips; PostgreSQL suite passed 168 with 2 dedicated-URL skips. Tests cover forward progression, wrong roles/assignment, missing visibility, inactive projects, all invalid CAD states, missing/duplicate records and update conflicts. PostgreSQL verifies audit-failure rollback and full start/submit/sign-off sequence with exactly four audit events and unchanged completed field state.
+- Known gap queued for later batches: CAD progression controls and assignment/activation, browser acceptance, remaining role surfaces and responsive QA.
+- Production behavior changed: yes.
+- Module boundary deviation: Ticket application/infrastructure plus one new ticket API route; no migration or new audit event names. Concurrent sample/configuration changes excluded.
