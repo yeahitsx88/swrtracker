@@ -755,3 +755,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: shared Projects navigation and login-return helper plus Tenancy project-directory capability expose the Reporting surface; related tests updated. No API route or migration changed. Unrelated local work preserved.
 - Known gaps queued for later batches: broader operational reports and representative-volume measurements remain.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 56
+- Intent: verify tenant health correctness and local query latency above the 10,000-ticket project target (TEST_WRITER role).
+- Files touched: tests/reporting/tenant-health.test.ts; CODEX.md.
+- Coverage added: transaction-scoped integration fixture adds 12,000 requests across six operational statuses, bringing the project to 12,016. Five complete service reads assert exact workload/stale counts, 8,005 vacancy-affected requests, named acting authority, unchanged help counts, empty-project isolation, and project pagination. Existing tenant/role denial checks now run with representative volume. All fixture data rolls back in finally.
+- Verification: baseline and final TypeScript and pnpm test passed (159 pass, 35 skips); PostgreSQL suite passed (192 pass, 2 dedicated-URL skips). Focused local measurement: first 18.4ms, median 17.7ms, max 20.2ms over five service samples, below the 1,000ms target. Timing is diagnostic rather than a flaky shared-machine assertion; count checks are required assertions.
+- Limits: single local database connection, one populated project and four tenant projects; fixture writes warm database buffers. This measures complete application-service reads, not HTTP/browser latency, cold storage, concurrent users, or maximum-size tenants. No production optimization justified by this measurement.
+- Module boundary deviations: none; one Reporting test file and append-only work log.
+- Known gaps queued for later batches: operational reports by area/craft/crew and daily summary; multi-project/concurrent performance measurements.
+- Production behavior changed: no.

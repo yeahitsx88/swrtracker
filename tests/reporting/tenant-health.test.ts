@@ -23,7 +23,7 @@ test('tenant health rejects non-admin callers and invalid pagination before repo
 });
 
 test('PostgreSQL tenant dashboard counts statuses, strict stale thresholds, help levels and named continuity',
-  {skip:!process.env.DATABASE_URL},async()=>{
+  {skip:!process.env.DATABASE_URL},async(context)=>{
     const client=new Client({connectionString:process.env.DATABASE_URL});await client.connect();await client.query('BEGIN');
     try{
       const t=id(),p=id(),c=id(),admin=id(),pc=id(),im=id(),req=id();
@@ -90,6 +90,41 @@ test('PostgreSQL tenant dashboard counts statuses, strict stale thresholds, help
       assert.equal(health.continuity?.activeGrants[0]?.ageHours,25);assert.equal(health.continuity?.activeGrants[0]?.confirmationOverdue,true);
       assert.equal(health.continuity?.crewVacancies[0]?.userName,'Chief');assert.equal(health.continuity?.crewVacancies[0]?.ageHours,50);
       assert.equal(health.continuity?.crewVacancies[0]?.openTicketCount,5);
+
+      // Exercise the complete reporting service above the 10,000-ticket design target.
+      // Six equally sized status buckets keep expected counts independent of SQL output.
+      await client.query(`INSERT INTO tickets(tenant_id,project_id,aor_node_id,company_id,
+        ticket_number,requester_id,assigned_party_chief_id,assigned_instrument_man_id,
+        workflow_variant,status,craft,description,requested_date,ticket_type,
+        submitted_at,approved_at,updated_at)
+        SELECT tenant_id,project_id,aor_node_id,company_id,'FSS-VOLUME-'||n,
+          requester_id,assigned_party_chief_id,assigned_instrument_man_id,
+          workflow_variant,
+          (ARRAY['SUBMITTED','APPROVED','ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL','DELAYED'])[1+(n%6)],
+          craft,description,requested_date,ticket_type,
+          $3::timestamptz-INTERVAL '25 hours',$3::timestamptz-INTERVAL '49 hours',
+          $3::timestamptz-INTERVAL '5 hours'
+        FROM tickets CROSS JOIN generate_series(1,12000) n WHERE id=$1 AND tenant_id=$2`,
+      [ticket,t,now]);
+      const durations:number[]=[];
+      for(let run=0;run<5;run++){
+        const start=performance.now();
+        const loaded=await getTenantHealth(repo,continuity,client,{...query,limit:10},now);
+        durations.push(performance.now()-start);
+        assert.equal(loaded.hasMore,false);
+        assert.deepEqual(loaded.projects.map(row=>row.id),[setup,archived,empty,p]);
+        const populated=loaded.projects[3]!;
+        assert.deepEqual(populated.tickets,{created:1,submitted:2002,approved:2002,
+          assignedInProgress:4002,pendingApproval:2002,delayed:2001,canceled:3});
+        assert.deepEqual(populated.stale,{submitted:2001,approved:2001,pendingApproval:2001});
+        assert.equal(populated.activeHelpFlags,1);
+        assert.equal(populated.continuity?.crewVacancies[0]?.openTicketCount,8005);
+        assert.equal(populated.continuity?.activeGrants[0]?.userName,'Instrument');
+        assert.equal(loaded.projects[2]?.tickets?.assignedInProgress,0);
+      }
+      // Record latency without making correctness depend on shared-machine load.
+      const sorted=[...durations].sort((a,b)=>a-b);
+      context.diagnostic(`12,016-ticket tenant health service: first=${durations[0]!.toFixed(1)}ms, median=${sorted[2]!.toFixed(1)}ms, max=${sorted[4]!.toFixed(1)}ms (5 samples; target <1000ms)`);
       await assert.rejects(getTenantHealth(repo,continuity,client,{...query,userId:req},now),ForbiddenError);
       await assert.rejects(getTenantHealth(repo,continuity,client,{...query,tenantId:foreign},now),ForbiddenError);
       assert.deepEqual(await repo.list(client,{...query,userId:req},now),[]);
