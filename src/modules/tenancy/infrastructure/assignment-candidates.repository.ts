@@ -16,9 +16,12 @@ export class AssignmentCandidatesRepository implements AssignmentCandidatesPort 
         AND ($4::uuid IS NULL OR EXISTS (SELECT 1 FROM aor_assignments aa
           JOIN ancestors a ON a.id=aa.aor_node_id WHERE aa.tenant_id=$1 AND aa.project_id=$2
             AND aa.user_id=u.id AND aa.deactivated_at IS NULL))
+        AND ($8::uuid IS NULL OR EXISTS (SELECT 1 FROM crew_rosters cr
+          WHERE cr.tenant_id=$1 AND cr.project_id=$2 AND cr.party_chief_id=$8
+            AND cr.instrument_man_id=u.id AND cr.deactivated_at IS NULL))
       ORDER BY u.name,u.id LIMIT $6 OFFSET $7`,
       [params.tenantId, params.projectId, params.role, params.aorNodeId,
-        params.search, params.limit, params.offset]);
+        params.search, params.limit, params.offset, params.crewChiefId ?? null]);
     return rows;
   }
 }

@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
+import { HelpPickup } from './pickup';
 import { useEffect, useRef, useState } from 'react';
 import { api, ApiError, errorMessage, jsonBody } from '@/app/ui/api';
 import { Shell } from '@/app/ui/shell';
 interface Flag { id: string; raisedByName: string; level: 1 | 2; reason: string | null; affectedTicketIds: string[];
-  own: boolean; canClear: boolean; canEscalate: boolean }
+  own: boolean; canClear: boolean; canEscalate: boolean; canClaim: boolean }
 interface Board { flags: Flag[]; raiseLevel: 1 | 2 | null }
 export function HelpBoard({ projectId }: { projectId: string }) {
   const [board,setBoard]=useState<Board | null>(null);
@@ -13,6 +14,7 @@ export function HelpBoard({ projectId }: { projectId: string }) {
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const [revision,setRevision]=useState(0);
+  const [pickup,setPickup]=useState<string|null>(null);
   const [reason,setReason]=useState('');
   const [action,setAction]=useState<{ kind:'raise'|'clear'|'escalate'; flagId?:string } | null>(null);
   const inFlight=useRef(false);
@@ -42,8 +44,10 @@ export function HelpBoard({ projectId }: { projectId: string }) {
     {loading && <p role="status">Loading help flags…</p>}
     {error && <div className="notice error" role="alert">{error}{authNeeded && <p><Link href={`/login?next=${encodeURIComponent('/project/'+projectId+'/help')}`}>Sign in to view help flags</Link></p>}</div>}
     {board && !loading && <>
-      <div className="actions">{board.raiseLevel && <button disabled={busy || Boolean(action)} onClick={()=>choose('raise')}>Raise Level {board.raiseLevel} help flag</button>}
-        <button className="secondary" disabled={busy || Boolean(action)} onClick={()=>setRevision(n=>n+1)}>Refresh help flags</button></div>
+      <div className="actions">{board.raiseLevel && <button disabled={busy || Boolean(action) || Boolean(pickup)} onClick={()=>choose('raise')}>Raise Level {board.raiseLevel} help flag</button>}
+        <button className="secondary" disabled={busy || Boolean(action) || Boolean(pickup)} onClick={()=>setRevision(n=>n+1)}>Refresh help flags</button></div>
+      {pickup && <HelpPickup key={pickup} projectId={projectId} flagId={pickup} onBusyChange={setBusy}
+        onBack={()=>setPickup(null)} onDone={()=>{setPickup(null);setRevision(n=>n+1);}}/>}
       {action && <section className="panel"><h2>{action.kind==='clear' ? 'Clear your help flag' : action.kind==='escalate' ? 'Escalate to Level 2' : 'Request help'}</h2>
         <p>{action.kind==='clear' ? 'Confirm that you no longer need this help flag.' : action.kind==='escalate' ? 'This raises a project-wide flag for your crew workload.' : 'Describe the support your crew needs. The current assigned workload is recorded with this flag.'}</p>
         {action.kind!=='clear' && <label className="field">Reason (optional)<textarea maxLength={500} value={reason} disabled={busy} onChange={e=>setReason(e.target.value)} /></label>}
@@ -57,8 +61,9 @@ export function HelpBoard({ projectId }: { projectId: string }) {
           <p>Raised by {flag.raisedByName}</p>
           <p className="description">{flag.reason || 'No reason provided.'}</p>
           <p>{flag.affectedTicketIds.length} requests in the recorded workload visible to you.</p>
-          <div className="actions">{flag.canClear && <button className="secondary" disabled={busy || Boolean(action)} onClick={()=>choose('clear',flag.id)}>Clear flag</button>}
-            {flag.canEscalate && <button disabled={busy || Boolean(action)} onClick={()=>choose('escalate',flag.id)}>Escalate to Level 2</button>}</div>
+          <div className="actions">{flag.canClear && <button className="secondary" disabled={busy || Boolean(action) || Boolean(pickup)} onClick={()=>choose('clear',flag.id)}>Clear flag</button>}
+            {flag.canEscalate && <button disabled={busy || Boolean(action) || Boolean(pickup)} onClick={()=>choose('escalate',flag.id)}>Escalate to Level 2</button>}
+            {flag.canClaim && <button disabled={busy || Boolean(action) || Boolean(pickup)} onClick={()=>setPickup(flag.id)}>Pick up work</button>}</div>
         </article>)}
       </section>
     </>}

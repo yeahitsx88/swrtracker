@@ -6,6 +6,9 @@ import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { parseUuid } from '@/lib/parse-uuid';
 import { withTransaction } from '@/lib/with-transaction';
+import { getHelpPickupOptions } from '@/modules/ticket/application/help-pickup-options';
+import { HelpPickupRepository } from '@/modules/ticket/infrastructure/help-pickup.repository';
+import { AssignmentCandidatesRepository } from '@/modules/tenancy/infrastructure/assignment-candidates.repository';
 import { getHelpBoard } from '@/modules/ticket/application/help-board';
 import { HelpFlagRepository } from '@/modules/ticket/infrastructure/help-flag.repository';
 import {
@@ -39,6 +42,14 @@ export async function GET(req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const ctx = await context(req, params);
+    const query = new URL(req.url).searchParams;
+    if (query.has('flagId')) {
+      const kind = query.get('kind');
+      if (kind !== 'tickets' && kind !== 'crew') throw new ValidationError('Pickup kind must be tickets or crew');
+      return NextResponse.json(await getHelpPickupOptions(new HelpFlagRepository(), new HelpPickupRepository(),
+        new AssignmentCandidatesRepository(), pool, { ...ctx, flagId: requiredUuid(query.get('flagId'), 'flagId'), kind,
+          search: query.get('search') ?? '', limit: Number(query.get('limit') ?? '20'), offset: Number(query.get('offset') ?? '0') }));
+    }
     return NextResponse.json(await getHelpBoard(new HelpFlagRepository(), pool, ctx));
   } catch (error) { return errorResponse(error); }
 }

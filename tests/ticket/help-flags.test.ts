@@ -1,3 +1,6 @@
+import { getHelpPickupOptions } from '@/modules/ticket/application/help-pickup-options';
+import { HelpPickupRepository } from '@/modules/ticket/infrastructure/help-pickup.repository';
+import { AssignmentCandidatesRepository } from '@/modules/tenancy/infrastructure/assignment-candidates.repository';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
@@ -232,6 +235,14 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
       assert.equal((await repo.listVisible(client,t,p,pc2,'PARTY_CHIEF'))[0]?.raisedByName,'PC1');
       await client.query('UPDATE users SET deactivated_at=NULL WHERE tenant_id=$1 AND id=$2',[t,pc1]);
       assert.equal(await repo.lockFlag(client,id(),p,second.id),null);
+      const pickup=new HelpPickupRepository(),crewOptions=new AssignmentCandidatesRepository();
+      const pickupContext={tenantId:t,projectId:p,actorId:pc2,actorRole:'PARTY_CHIEF' as const,
+        flagId:second.id,kind:'tickets' as const,search:'',limit:20,offset:0};
+      assert.deepEqual(await getHelpPickupOptions(repo,pickup,crewOptions,client,pickupContext),{candidates:[{id:ticket,name:'FSS-A1-HF01'}],hasMore:false});
+      assert.deepEqual((await getHelpPickupOptions(repo,pickup,crewOptions,client,{...pickupContext,kind:'crew'})).candidates,[{id:im2,name:'IM2'}]);
+      assert.deepEqual((await getHelpPickupOptions(repo,pickup,crewOptions,client,{...pickupContext,search:'%'})).candidates,[]);
+      await assert.rejects(getHelpPickupOptions(repo,pickup,crewOptions,client,{...pickupContext,actorId:pc1}),NotFoundError);
+      assert.deepEqual(await pickup.list(client,{...second,tenantId:id()},pc2,'',20,0),[]);
       await claimFlaggedTicket(repo, client,
         { tenantId:t, projectId:p, actorId:pc2, actorRole:'PARTY_CHIEF',
           flagId:second.id, ticketId:ticket, instrumentManId:im2 });
@@ -241,6 +252,8 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
          FROM tickets WHERE id=$1 AND tenant_id=$2`,[ticket,t]);
       assert.equal(assignment[0]?.assigned_party_chief_id,pc2);
       assert.equal(assignment[0]?.assigned_instrument_man_id,im2);
+      assert.deepEqual(await pickup.list(client,second,pc2,'',20,0),[]);
+      await assert.rejects(getHelpPickupOptions(repo,pickup,crewOptions,client,pickupContext),NotFoundError);
       const { rows: flags } = await client.query<{ status:string }>(
         `SELECT status FROM help_flags WHERE tenant_id=$1 AND project_id=$2`,[t,p]);
       assert.deepEqual(flags.map((f)=>f.status),['CLEARED','CLEARED']);

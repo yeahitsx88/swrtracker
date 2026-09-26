@@ -3,6 +3,7 @@ import { ValidationError } from '@/shared/errors';
 
 export interface CandidateQuery {
   tenantId: UUID; projectId: UUID; role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN' | 'SURVEY_SUPERINTENDENT';
+  crewChiefId?: UUID;
   aorNodeId: UUID | null; search: string; limit: number; offset: number;
 }
 export interface AssignmentCandidatesPort {

@@ -663,3 +663,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: shared UI return-path helper changed to fix the concrete navigation bug.
 - Known gap queued for later batches: voluntary pickup selector; general overload Level 2 with empty workload; CAD reassignment and admin surfaces.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 46
+- Intent: make voluntary pickup of Level 2 flagged work available from the help board.
+- Files touched: src/modules/ticket/application/help-pickup-options.ts; src/modules/ticket/infrastructure/help-pickup.repository.ts; src/modules/ticket/application/help-board.ts; src/modules/tenancy/application/assignment-candidates.ts; src/modules/tenancy/infrastructure/assignment-candidates.repository.ts; src/app/api/projects/[projectId]/help-flags/route.ts; src/app/project/[projectId]/help/help-board.tsx; src/app/project/[projectId]/help/pickup.tsx; tests/ticket/help-pickup-options.test.ts; tests/ticket/help-flags.test.ts; CODEX.md.
+- Behavior added: other Party Chiefs can open pickup on visible Level 2 flags; paginated/searchable request choices are restricted to the original flag snapshot, current flagged-chief assignment, active statuses/project, tenant/company access and active Party Chief membership. Instrument Man choices use active project membership and the claimant's active roster. Required selections call the existing atomic claim command; shared board controls are disabled during pickup and refreshed after success.
+- Validation: baseline TypeScript/147 standard tests passed; final TypeScript/149 standard tests passed (31 skips); PostgreSQL suite passed 178 tests (2 dedicated-URL skips); production build and diff checks passed. New unit tests cover role/visibility/own-flag rejection, query bounds, pagination and crew scoping. Database tests cover candidate numbers, own roster, literal search, tenant denial, and disappearance after claim/auto-clear.
+- Boundary deviation: coordinated ticket query/UI with optional crewChiefId in tenancy candidate service; one existing API route extended.
+- Known gap queued for later batches: browser acceptance of pickup; general-overload Level 2 empty-workload support; delayed workload coverage review; CAD reassignment and admin surfaces.
+- Production behavior changed: yes
