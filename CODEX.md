@@ -606,3 +606,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: CAD progression controls and assignment/activation, browser acceptance, remaining role surfaces and responsive QA.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application/infrastructure plus one new ticket API route; no migration or new audit event names. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 40
+- Intent: expose assigned CAD progression controls on ticket details.
+- Files touched: src/modules/ticket/application/cad-summary.ts; src/modules/ticket/infrastructure/cad-summary.repository.ts; src/app/api/tickets/[ticketId]/route.ts; src/app/tickets/[ticketId]/cad-actions.tsx; src/app/tickets/[ticketId]/ticket-detail.tsx; src/app/ui/request-types.ts; tests/ticket/cad-summary.test.ts; CODEX.md.
+- Behavior added: assigned CAD Technician or CAD Lead can start work and submit it for QA using server-derived capabilities; other users, incompatible states and inactive projects receive no progression control. Existing transactional commands remain authoritative and field status is unchanged.
+- Validation: baseline TypeScript and 139 tests passed (31 skipped); final TypeScript and 140 tests passed (31 skipped); PostgreSQL suite passed 169 tests (2 dedicated-URL skips); production build passed; git diff --check passed.
+- Boundary deviation: ticket detail API/UI and shared request response type updated to expose ticket-module capabilities; no other module changed.
+- Known gap queued for later batches: browser acceptance for progression controls; CAD assignment/activation remains required before new CAD records can enter NOT_STARTED.
+- Production behavior changed: yes

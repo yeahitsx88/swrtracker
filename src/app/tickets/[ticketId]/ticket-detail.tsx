@@ -63,7 +63,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
         {ticket.cad ? <><p>{cadLabels[ticket.cad.status]}</p>
           {ticket.cad.completedAt && <p>Completed: {new Date(ticket.cad.completedAt).toLocaleString()}</p>}</>
           : <p>No CAD work record is available for this request.</p>}
-        <CadActions ticketId={ticket.id} allowed={ticket.canSignOffCad} disabled={attachmentBusy || actionBusy}
+        <CadActions ticketId={ticket.id} allowed={ticket.canSignOffCad} progressAction={ticket.cadProgressAction} disabled={attachmentBusy || actionBusy}
           onBusyChange={setActionBusy} onChanged={() => { setActionBusy(false); setRevision(value => value + 1); }} />
       </section>
       {(ticket.partyChiefName || ticket.instrumentManName || ticket.superintendentName) && <section className="panel"><h2>Assigned crew</h2>

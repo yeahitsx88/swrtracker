@@ -14,6 +14,7 @@ export interface RequestDraft {
 
 export interface RequestTicket extends RequestDraft {
   canSignOffCad: boolean;
+  cadProgressAction: 'START' | 'SUBMIT_QA' | null;
   cad: { status: 'NOT_REQUIRED' | 'NOT_STARTED' | 'IN_PROGRESS' | 'QA_PENDING' | 'COMPLETE'; completedAt: string | null } | null;
   surveySuperintendentId: string | null;
   superintendentName: string | null;
