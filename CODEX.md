@@ -700,3 +700,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: two Audit module type declarations updated for the required nullable ticket reference; migration and tests directly support the Ticket module change. Unrelated local work preserved.
 - Known gaps queued for later batches: general-overload browser acceptance; CAD reassignment; remaining planned operational surfaces.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 50
+- Intent: browser acceptance for general-overload help flags added in Batch 49.
+- Files touched: CODEX.md only; local screenshot retained outside the commit.
+- Verification: production preview used an isolated synthetic database migrated through 024. PC2, with no assigned requests, signed in via help-board return link and raised a Level 2 flag with a reason. Own flag displayed zero recorded requests and Clear flag, with no duplicate raise action. PC1 saw PC2's name/reason/empty workload with neither pickup nor clear controls. PC2 manually cleared the flag; the board became empty and raising was available again. Database readback confirmed CLEARED / MANUALLY_CLEARED, empty snapshot, and exactly one help_flag.raised plus one help_flag.cleared event, both with null ticket_id.
+- Checks: pnpm tsc --noEmit passed; pnpm test passed (151 pass, 32 database skips). Used successful Batch 49 production build. Preview stopped, browser tab closed, isolated database dropped, temporary credential files removed. Screenshot: .local/general-overload-verified.png (local only).
+- Known gaps queued for later batches: review CAD reassignment requirements against source specifications; remaining planned operational surfaces and responsive acceptance.
+- Production behavior changed: no.
