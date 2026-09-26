@@ -226,6 +226,11 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
       const visible = await listHelpFlags(repo, client,
         { tenantId:t, projectId:p, actorId:pc2, actorRole:'PARTY_CHIEF' });
       assert.deepEqual(visible.map((f)=>f.id),[second.id]);
+      assert.equal(visible[0]?.raisedByName,'PC1');
+      assert.deepEqual(await repo.listVisible(client,id(),p,pc2,'PARTY_CHIEF'),[]);
+      await client.query('UPDATE users SET deactivated_at=NOW() WHERE tenant_id=$1 AND id=$2',[t,pc1]);
+      assert.equal((await repo.listVisible(client,t,p,pc2,'PARTY_CHIEF'))[0]?.raisedByName,'PC1');
+      await client.query('UPDATE users SET deactivated_at=NULL WHERE tenant_id=$1 AND id=$2',[t,pc1]);
       assert.equal(await repo.lockFlag(client,id(),p,second.id),null);
       await claimFlaggedTicket(repo, client,
         { tenantId:t, projectId:p, actorId:pc2, actorRole:'PARTY_CHIEF',

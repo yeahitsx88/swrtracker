@@ -1,6 +1,6 @@
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
-import type { HelpFlag, HelpFlagRepositoryPort } from '../application/help-flags';
+import type { HelpFlag, VisibleHelpFlag, HelpFlagRepositoryPort } from '../application/help-flags';
 
 interface FlagRow {
   id: UUID; tenant_id: UUID; project_id: UUID; raised_by: UUID;
@@ -160,12 +160,12 @@ export class HelpFlagRepository implements HelpFlagRepositoryPort {
   }
 
   async listVisible(db: DbClient, tenantId: UUID, projectId: UUID,
-    actorId: UUID, role: ProjectRole): Promise<HelpFlag[]> {
+    actorId: UUID, role: ProjectRole): Promise<VisibleHelpFlag[]> {
     if (!['INSTRUMENT_MAN','PARTY_CHIEF','SURVEY_SUPERINTENDENT',
       'SURVEY_MANAGER'].includes(role)) return [];
-    const { rows } = await db.query<FlagRow>(
+    const { rows } = await db.query<FlagRow & { raised_by_name: string }>(
       `SELECT h.id,h.tenant_id,h.project_id,h.raised_by,h.level,h.status,
-          h.reason,h.escalated_from,
+          h.reason,h.escalated_from,raiser.name AS raised_by_name,
           CASE WHEN viewer_company.type='SUBCONTRACTOR' THEN
             (SELECT COALESCE(array_agg(t.id ORDER BY t.id), ARRAY[]::uuid[])
              FROM tickets t WHERE t.id=ANY(h.affected_ticket_ids)
@@ -203,6 +203,6 @@ export class HelpFlagRepository implements HelpFlagRepositoryPort {
                     OR viewer_roster.instrument_man_id=$3)))
        ORDER BY h.created_at DESC,h.id DESC`,
       [tenantId, projectId, actorId, role]);
-    return rows.map(mapFlag);
+    return rows.map(row => ({ ...mapFlag(row), raisedByName: row.raised_by_name }));
   }
 }

@@ -10,6 +10,8 @@ export interface HelpFlag {
   escalatedFrom: UUID | null; affectedTicketIds: UUID[];
 }
 
+export interface VisibleHelpFlag extends HelpFlag { raisedByName: string }
+
 export interface HelpFlagRepositoryPort {
   activeProject(db: DbClient, tenantId: UUID, projectId: UUID): Promise<boolean>;
   crewChief(db: DbClient, tenantId: UUID, projectId: UUID, instrumentManId: UUID): Promise<UUID | null>;
@@ -33,7 +35,7 @@ export interface HelpFlagRepositoryPort {
       oldPartyChiefId: UUID; oldInstrumentManId: UUID | null;
     } | null>;
   listVisible(db: DbClient, tenantId: UUID, projectId: UUID,
-    actorId: UUID, role: ProjectRole): Promise<HelpFlag[]>;
+    actorId: UUID, role: ProjectRole): Promise<VisibleHelpFlag[]>;
 }
 
 export interface HelpFlagContext {
@@ -202,7 +204,7 @@ export async function claimFlaggedTicket(repo: HelpFlagRepositoryPort, db: DbCli
 }
 
 export async function listHelpFlags(repo: HelpFlagRepositoryPort, db: DbClient,
-  context: HelpFlagContext): Promise<HelpFlag[]> {
+  context: HelpFlagContext): Promise<VisibleHelpFlag[]> {
   await ensureActive(repo, db, context);
   return repo.listVisible(db, context.tenantId, context.projectId,
     context.actorId, context.actorRole);

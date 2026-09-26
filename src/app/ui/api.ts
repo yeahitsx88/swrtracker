@@ -23,6 +23,6 @@ export function safeReturnPath(value?: string): string {
   if (value === undefined || value === '/projects') return '/projects';
   if (value === '/drafts' || value === '/') return value;
   if (value && /^\/invites\/accept\?token=[a-f0-9-]{36}$/i.test(value)) return value;
-  return value && /^(?:\/project\/[a-f0-9-]{36}\/(?:requests|request(?:\?draft=[a-f0-9-]{36})?)|\/tickets\/[a-f0-9-]{36})$/i.test(value)
+  return value && /^(?:\/project\/[a-f0-9-]{36}\/(?:help|requests|request(?:\?draft=[a-f0-9-]{36})?)|\/tickets\/[a-f0-9-]{36})$/i.test(value)
     ? value : '/drafts';
 }

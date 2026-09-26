@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { api, ApiError, errorMessage, jsonBody } from '@/app/ui/api';
 import { Shell } from '@/app/ui/shell';
-interface Flag { id: string; level: 1 | 2; reason: string | null; affectedTicketIds: string[];
+interface Flag { id: string; raisedByName: string; level: 1 | 2; reason: string | null; affectedTicketIds: string[];
   own: boolean; canClear: boolean; canEscalate: boolean }
 interface Board { flags: Flag[]; raiseLevel: 1 | 2 | null }
 export function HelpBoard({ projectId }: { projectId: string }) {
@@ -54,6 +54,7 @@ export function HelpBoard({ projectId }: { projectId: string }) {
         {!board.flags.length && <p>No active help flags are visible to you.</p>}
         {board.flags.map(flag=><article className="record" key={flag.id}>
           <h2>{flag.own ? 'Your' : 'Crew'} Level {flag.level} help flag</h2>
+          <p>Raised by {flag.raisedByName}</p>
           <p className="description">{flag.reason || 'No reason provided.'}</p>
           <p>{flag.affectedTicketIds.length} requests in the recorded workload visible to you.</p>
           <div className="actions">{flag.canClear && <button className="secondary" disabled={busy || Boolean(action)} onClick={()=>choose('clear',flag.id)}>Clear flag</button>}

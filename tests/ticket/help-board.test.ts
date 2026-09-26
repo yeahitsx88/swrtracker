@@ -1,19 +1,19 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getHelpBoard } from '@/modules/ticket/application/help-board';
-import type { HelpFlag, HelpFlagRepositoryPort } from '@/modules/ticket/application/help-flags';
+import type { VisibleHelpFlag, HelpFlagRepositoryPort } from '@/modules/ticket/application/help-flags';
 import type { DbClient, UUID } from '@/shared/types';
 import { ForbiddenError, ConflictError } from '@/shared/errors';
 const id='00000000-0000-0000-0000-000000000001' as UUID;
 const other='00000000-0000-0000-0000-000000000002' as UUID;
 const db:DbClient={async query(){throw new Error('Unexpected query');}};
 const context={tenantId:id,projectId:id,actorId:id,actorRole:'PARTY_CHIEF' as const};
-const flag:HelpFlag={id,tenantId:id,projectId:id,raisedBy:other,level:1,status:'ACTIVE',reason:'Support',escalatedFrom:null,affectedTicketIds:[id]};
+const flag:VisibleHelpFlag={raisedByName:'Field worker',id,tenantId:id,projectId:id,raisedBy:other,level:1,status:'ACTIVE',reason:'Support',escalatedFrom:null,affectedTicketIds:[id]};
 const repo={activeProject:async()=>true,listVisible:async()=>[flag],activeFlagForActor:async()=>null,
   crewChief:async()=>id,snapshot:async()=>[id],findEscalation:async()=>null} as unknown as HelpFlagRepositoryPort;
 test('help board permits raising and escalation only for the eligible crew with active workload',async()=>{
   const board=await getHelpBoard(repo,db,context);
-  assert.equal(board.raiseLevel,2);assert.equal(board.flags[0]?.canEscalate,true);assert.equal(board.flags[0]?.canClear,false);
+  assert.equal(board.flags[0]?.raisedByName,'Field worker');assert.equal(board.raiseLevel,2);assert.equal(board.flags[0]?.canEscalate,true);assert.equal(board.flags[0]?.canClear,false);
   assert.equal((await getHelpBoard({...repo,crewChief:async()=>other},db,context)).flags[0]?.canEscalate,false);
   assert.equal((await getHelpBoard({...repo,findEscalation:async()=>flag},db,context)).flags[0]?.canEscalate,false);
   const existing=await getHelpBoard({...repo,activeFlagForActor:async()=>flag},db,context);

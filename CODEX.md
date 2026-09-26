@@ -653,3 +653,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: ticket presentation changes span two API routes (board and navigation capability) and project UI, documented as one coordinated feature.
 - Known gap queued for later batches: help-board browser acceptance, raiser display names, flagged ticket/crew selector for voluntary pickup; existing backend disallows empty-workload Level 2 flags despite specification allowing general overload signals; CAD reassignment and admin surfaces remain.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 45
+- Intent: identify help flag raisers and verify board actions in the browser.
+- Files touched: src/modules/ticket/application/help-flags.ts; src/modules/ticket/infrastructure/help-flag.repository.ts; src/app/project/[projectId]/help/help-board.tsx; src/app/ui/api.ts; tests/ticket/help-board.test.ts; tests/ticket/help-flags.test.ts; tests/ticket/request-ui.test.ts; CODEX.md.
+- Behavior added: visible help flags include the raiser's name from the existing tenant-scoped raiser join; board renders the name. Browser testing found login return-path allowlist missing the new help route; added only that route, retaining rejection of external destinations and query injection.
+- Validation: baseline/final TypeScript and 147 standard tests passed (31 skips); PostgreSQL suite passed 176 tests (2 dedicated-URL skips), including visible names and cross-tenant/historical-user assertions; production build and diff checks passed.
+- Browser acceptance: synthetic IM raised Level 1 with reason; own-clear shown and duplicate raise hidden; unrelated PC saw no Level 1; responsible PC escalated with reason and could clear only own Level 2; original Level 1 remained and repeat escalation was hidden. Rebuilt preview confirmed login returns to help route. Database verified exactly raised/escalated/cleared events, correct raiser and separate active/cleared states. Isolated database/server/fixture files removed; local screenshot .local/help-board-cleared.png retained.
+- Boundary deviation: shared UI return-path helper changed to fix the concrete navigation bug.
+- Known gap queued for later batches: voluntary pickup selector; general overload Level 2 with empty workload; CAD reassignment and admin surfaces.
+- Production behavior changed: yes
