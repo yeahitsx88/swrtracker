@@ -71,13 +71,19 @@ test('request options require active requester membership and include only activ
       const labelContext = { tenantId: tenant, projectId: project, aorNodeId: retired, departmentId: department };
       assert.deepEqual(await getTicketLabels(labelRepo, db, labelContext), {
         projectName: 'Site A', locationName: 'West / Old Unit', departmentName: 'Civil',
-        partyChiefName: null, instrumentManName: null, superintendentName: null,
+        partyChiefName: null, instrumentManName: null, superintendentName: null, cadAssigneeName: null, cadReviewerName: null,
       });
       const crewContext = { ...labelContext, partyChiefId: admin, instrumentManId: requester, superintendentId: requester };
       const crewLabels = await getTicketLabels(labelRepo, db, crewContext);
       assert.equal(crewLabels.partyChiefName, 'Admin');
       assert.equal(crewLabels.instrumentManName, 'Requester');
       assert.equal(crewLabels.superintendentName, 'Requester');
+      const cadContext={...labelContext,cadAssigneeId:requester,cadReviewerId:requester};
+      const cadLabels=await getTicketLabels(labelRepo,db,cadContext);
+      assert.equal(cadLabels.cadAssigneeName,'Requester');
+      assert.equal(cadLabels.cadReviewerName,'Requester');
+      await assert.rejects(getTicketLabels(labelRepo,db,{...cadContext,cadAssigneeId:foreignUser}),NotFoundError);
+      await assert.rejects(getTicketLabels(labelRepo,db,{...cadContext,cadReviewerId:foreignUser}),NotFoundError);
       await assert.rejects(getTicketLabels(labelRepo, db, { ...crewContext, superintendentId: foreignUser }), NotFoundError);
       await assert.rejects(getTicketLabels(labelRepo, db, { ...crewContext, partyChiefId: foreignUser }), NotFoundError);
       await assert.rejects(getTicketLabels(labelRepo, db, { ...crewContext, instrumentManId: foreignUser }), NotFoundError);
@@ -102,6 +108,8 @@ test('request options require active requester membership and include only activ
       // Historical assignments retain names after deactivation and project archival.
       assert.equal((await getTicketLabels(labelRepo, db, crewContext)).instrumentManName, 'Requester');
       assert.equal((await getTicketLabels(labelRepo, db, crewContext)).superintendentName, 'Requester');
+      assert.equal((await getTicketLabels(labelRepo,db,cadContext)).cadAssigneeName,'Requester');
+      assert.equal((await getTicketLabels(labelRepo,db,cadContext)).cadReviewerName,'Requester');
     } finally {
       await db.query('ROLLBACK');
       await db.end();

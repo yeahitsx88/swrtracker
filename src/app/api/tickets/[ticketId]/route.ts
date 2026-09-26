@@ -41,11 +41,15 @@ export async function GET(
 
     const ticket = await repo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
     if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
+    const cad = await getCadSummary(repo, new CadSummaryRepository(), pool, {
+      tenantId: ctx.tenantId, ticketId: ctx.ticketId, actor: ctx.visibility,
+    });
     const labels = await getTicketLabels(new TicketLabelsRepository(), pool, {
       tenantId: ctx.tenantId, projectId: ticket.projectId,
       aorNodeId: ticket.aorNodeId, departmentId: ticket.departmentId,
       partyChiefId: ticket.assignedPartyChiefId, instrumentManId: ticket.assignedInstrumentManId,
       superintendentId: ticket.surveySuperintendentId,
+      cadAssigneeId: cad?.assignedTo, cadReviewerId: cad?.reviewedBy,
     });
     if (ticket.status === 'SUBMITTED') {
       await recordApproverTimeoutSignals(pool, ctx.tenantId, [ticket.id]);
@@ -59,9 +63,7 @@ export async function GET(
     const fieldActions = await getFieldActions(repo, pool, ticket, ctx.visibility);
     const surveyCancelActions = await getSurveyCancelActions(repo, pool, ticket, ctx.visibility);
     const priorityActions = await getPriorityActions(repo, pool, ticket, ctx.visibility);
-    const cad = await getCadSummary(repo, new CadSummaryRepository(), pool, {
-      tenantId: ctx.tenantId, ticketId: ctx.ticketId, actor: ctx.visibility,
-    });
+
     return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, reassignment, superintendentReassignment, fieldActions, surveyCancelActions, priorityActions,
       canActivateCad: await canActivateCad(repo, pool, ticket, cad, ctx.visibility),
       cadProgressAction: await getCadProgressAction(repo, pool, ticket, cad, ctx.visibility),

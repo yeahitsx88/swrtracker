@@ -61,6 +61,8 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       {ticket.cancelReason && <section className="notice"><h2>Cancellation information</h2><p className="description">{ticket.cancelReason}</p></section>}
       <section className="panel"><h2>CAD work</h2>
         {ticket.cad ? <><p>{cadLabels[ticket.cad.status]}</p>
+          <dl className="details"><div><dt>Assigned CAD worker</dt><dd>{ticket.cadAssigneeName ?? 'Not assigned'}</dd></div>
+            {ticket.cadReviewerName && <div><dt>QA reviewer</dt><dd>{ticket.cadReviewerName}</dd></div>}</dl>
           {ticket.cad.completedAt && <p>Completed: {new Date(ticket.cad.completedAt).toLocaleString()}</p>}</>
           : <p>No CAD work record is available for this request.</p>}
         <CadActions ticketId={ticket.id} allowed={ticket.canSignOffCad} canActivate={ticket.canActivateCad} progressAction={ticket.cadProgressAction} disabled={attachmentBusy || actionBusy}

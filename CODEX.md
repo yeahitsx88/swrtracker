@@ -635,3 +635,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: coordinated tenancy candidate service/repository plus ticket orchestration and UI; two ticket routes updated together for candidate GET and detail capability response. No concurrent agent writes.
 - Known gap queued for later batches: CAD assignee/reviewer display names and reassignment; wider help-flag/admin surfaces and responsive acceptance remain.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 43
+- Intent: identify CAD ownership and QA reviewer on request details.
+- Files touched: src/modules/ticket/application/cad-summary.ts; src/modules/ticket/infrastructure/cad-summary.repository.ts; src/modules/tenancy/application/ticket-labels.ts; src/modules/tenancy/infrastructure/ticket-labels.repository.ts; src/app/api/tickets/[ticketId]/route.ts; src/app/tickets/[ticketId]/ticket-detail.tsx; src/app/ui/request-types.ts; tests/ticket/cad-summary.test.ts; tests/ticket/cad-options.test.ts; tests/tenancy/request-options.test.ts; CODEX.md.
+- Behavior added: CAD panel shows assigned worker (or Not assigned) and recorded QA reviewer. CAD read model includes reviewer ID; existing tenancy label service resolves both names only within the ticket tenant, including historical deactivated users. Missing referenced names fail explicitly.
+- Validation: baseline and final TypeScript and 144 standard tests passed (31 skipped); PostgreSQL suite passed 173 tests (2 dedicated-URL skips), with added assertions for persisted CAD user IDs, cross-tenant name rejection and historical names after user deactivation/project archival; production build and diff checks passed.
+- Boundary deviation: coordinated ticket read model, tenancy label service and ticket API/UI changes needed to resolve names without direct cross-module table access.
+- Known gap queued for later batches: CAD reassignment; help-flag and admin surfaces; responsive acceptance. This display-only increment was build/type/database verified; no additional browser run.
+- Production behavior changed: yes

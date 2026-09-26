@@ -18,7 +18,7 @@ test('CAD sign-off capability requires lead, pending review, same-company visibi
   const tickets={findActiveProjectCrewBuild:async()=> 'FULL'} as unknown as ITicketRepository;
   const ticket={tenantId:tenant,projectId:id(),companyId:actor.companyId} as Ticket;
   const lead={...actor,actorRole:'CAD_LEAD' as const};
-  const pending={status:'QA_PENDING' as const,assignedTo:null,completedAt:null};
+  const pending={status:'QA_PENDING' as const,assignedTo:null,reviewedBy:null,completedAt:null};
   assert.equal(await canSignOffCad(tickets,db,ticket,pending,lead),true);
   for(const actorRole of ['CAD_TECHNICIAN','SURVEY_MANAGER','TENANT_ADMIN','REQUESTER'] as const)assert.equal(await canSignOffCad(tickets,db,ticket,pending,{...lead,actorRole}),false);
   for(const status of ['NOT_REQUIRED','NOT_STARTED','IN_PROGRESS','COMPLETE'] as const)assert.equal(await canSignOffCad(tickets,db,ticket,{...pending,status},lead),false);
@@ -30,15 +30,15 @@ test('CAD sign-off capability requires lead, pending review, same-company visibi
 
 test('CAD summary authorizes ticket visibility before retrieving CAD and detects duplicate records',async()=>{
   let reads=0;
-  const cad={async find(_db:DbClient,tenantId:UUID,key:UUID){assert.equal(tenantId,tenant);assert.equal(key,ticketId);reads++;return [{status:'QA_PENDING' as const,assignedTo:null,completedAt:null}];}};
+  const cad={async find(_db:DbClient,tenantId:UUID,key:UUID){assert.equal(tenantId,tenant);assert.equal(key,ticketId);reads++;return [{status:'QA_PENDING' as const,assignedTo:null,reviewedBy:null,completedAt:null}];}};
   const hidden={findById:async()=>null} as unknown as ITicketRepository;
   await assert.rejects(getCadSummary(hidden,cad,db,params),NotFoundError);assert.equal(reads,0);
   const visible={findById:async(_db:DbClient,t:UUID,key:UUID,scope:VisibilityScope)=>{
     assert.equal(t,tenant);assert.equal(key,ticketId);assert.equal(scope,actor);return {id:ticketId} as Ticket;
   }} as unknown as ITicketRepository;
-  assert.deepEqual(await getCadSummary(visible,cad,db,params),{status:'QA_PENDING',assignedTo:null,completedAt:null});
+  assert.deepEqual(await getCadSummary(visible,cad,db,params),{status:'QA_PENDING',assignedTo:null,reviewedBy:null,completedAt:null});
   assert.equal(await getCadSummary(visible,{find:async()=>[]},db,params),null);
-  await assert.rejects(getCadSummary(visible,{find:async()=>[{status:'NOT_REQUIRED',assignedTo:null,completedAt:null},{status:'COMPLETE',assignedTo:null,completedAt:new Date()}]},db,params),ConflictError);
+  await assert.rejects(getCadSummary(visible,{find:async()=>[{status:'NOT_REQUIRED',assignedTo:null,reviewedBy:null,completedAt:null},{status:'COMPLETE',assignedTo:null,reviewedBy:null,completedAt:new Date()}]},db,params),ConflictError);
   await assert.rejects(getCadSummary(visible,{find:async()=>{throw new Error('offline');}},db,params),/offline/);
 });
 
@@ -54,7 +54,10 @@ test('PostgreSQL CAD summary is tenant/ticket scoped and returns recorded status
       await client.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','DRAFT')",[ticketId,tenant,project,company,user]);
       await client.query("INSERT INTO cad_work(ticket_id,tenant_id,cad_status,cad_completed_at) VALUES($1,$2,'COMPLETE','2026-09-25T12:00:00Z')",[ticketId,tenant]);
       const repo=new CadSummaryRepository();
-      assert.deepEqual(await repo.find(client,tenant,ticketId),[{status:'COMPLETE',assignedTo:null,completedAt:new Date('2026-09-25T12:00:00Z')}]);
+      assert.deepEqual(await repo.find(client,tenant,ticketId),[{status:'COMPLETE',assignedTo:null,reviewedBy:null,completedAt:new Date('2026-09-25T12:00:00Z')}]);
+      await client.query('UPDATE cad_work SET cad_assigned_to=$3,cad_reviewed_by=$3 WHERE tenant_id=$1 AND ticket_id=$2',[tenant,ticketId,user]);
+      const saved=(await repo.find(client,tenant,ticketId))[0]!;
+      assert.equal(saved.assignedTo,user);assert.equal(saved.reviewedBy,user);
       assert.deepEqual(await repo.find(client,id(),ticketId),[]);
       assert.deepEqual(await repo.find(client,tenant,id()),[]);
     } finally {await client.query('ROLLBACK');await client.end();}

@@ -8,8 +8,9 @@ export interface CadSummary {
   completedAt: Date | null;
 }
 export interface AssignedCadSummary extends CadSummary { assignedTo: UUID | null }
+export interface CadDetailSummary extends AssignedCadSummary { reviewedBy: UUID | null }
 export interface CadSummaryPort {
-  find(db: DbClient, tenantId: UUID, ticketId: UUID): Promise<AssignedCadSummary[]>;
+  find(db: DbClient, tenantId: UUID, ticketId: UUID): Promise<CadDetailSummary[]>;
 }
 
 export async function getCadSummary(tickets: ITicketRepository, cad: CadSummaryPort,

@@ -11,7 +11,7 @@ const actor:VisibilityScope={actorId:id,actorRole:'CAD_LEAD',companyId:id,compan
 const ticket={id,tenantId:id,projectId:id,companyId:id,status:'COMPLETED'} as Ticket;
 const tickets={findById:async()=>ticket,findActiveProjectCrewBuild:async()=> 'FULL'} as unknown as ITicketRepository;
 const db:DbClient={async query(){throw new Error('Unexpected query');}};
-const summary={status:'NOT_REQUIRED' as const,assignedTo:null,completedAt:null};
+const summary={status:'NOT_REQUIRED' as const,assignedTo:null,reviewedBy:null,completedAt:null};
 const cad={find:async()=>[summary]};
 const params={tenantId:id,ticketId:id,actor,search:'  Jo  ',limit:1,offset:0};
 test('CAD options authorize ticket and constrain candidate scope before paging',async()=>{

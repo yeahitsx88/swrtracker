@@ -13,6 +13,8 @@ export interface RequestDraft {
 }
 
 export interface RequestTicket extends RequestDraft {
+  cadAssigneeName: string | null;
+  cadReviewerName: string | null;
   canActivateCad: boolean;
   canSignOffCad: boolean;
   cadProgressAction: 'START' | 'SUBMIT_QA' | null;
