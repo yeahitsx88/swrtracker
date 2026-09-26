@@ -42,6 +42,7 @@ export default function ProjectsPage() {
         <h2>{project.name}</h2>
         {project.status === 'SETUP' && <p className="muted">Requests will be available after project activation.</p>}
         <div className="actions">{project.canViewRequests && <Link className="button secondary" href={`/project/${project.id}/requests`}>View requests</Link>}
+          {project.canViewRequests && <Link href={`/project/${project.id}/reports`}>Operational reports</Link>}
           {project.canRequest && <Link className="button" href={`/project/${project.id}/request`}>New request</Link>}</div>
       </article>)}
       {(offset > 0 || page.hasMore) && <div className="actions"><button className="secondary" disabled={offset === 0} onClick={() => setOffset(offset - 20)}>Previous</button>

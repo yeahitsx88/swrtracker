@@ -783,3 +783,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: one new API route composes Ticket and Reporting application services with the Ticket repository. No other module production code or migration changed.
 - Known gaps queued for later batches: report UI/navigation and browser acceptance; daily summaries; representative-volume measurements for grouped reporting.
 - Production behavior changed: yes, new read-only report endpoint.
+
+### 2026-09-25 - Batch 59
+- Intent: deliver the project operational report interface (IMPLEMENTER, Reporting surface).
+- Files touched: src/app/project/[projectId]/reports/page.tsx; src/app/project/[projectId]/reports/project-reports.tsx; src/app/project/[projectId]/reports/reports.module.css; src/app/projects/page.tsx; src/app/ui/api.ts; tests/ticket/request-ui.test.ts; CODEX.md.
+- Behavior added: protected report page with project/area/craft/Party Chief/Instrument Man selection, ten-group pagination, refresh, server-derived total/open/closed/completed/canceled/not-approved/workload cards, expandable plain-language status breakdowns, count definitions, empty/loading/access/error states and safe login return. Projects links to reports wherever request visibility is available. Mobile cards use two columns; raw status names and UUIDs are not displayed.
+- Verification: baseline/final TypeScript and pnpm test passed (162 pass, 36 skips); production build passed; PostgreSQL suite passed (196 pass, 2 dedicated-URL skips). Safe-return test accepts exact project report URLs and rejects appended external redirect parameters.
+- Browser acceptance: isolated migrated fixture verified unauthenticated sign-in return, viewer total 24 (20 open/4 closed), status breakdown and count definitions, 14 craft groups paginated 10+4, dimension change resetting page, unassigned/named crew groups, project navigation, requester total 6 with other requests excluded, and loss-of-permission refresh clearing all totals with a friendly denial. At 390x844 viewport, content/client width both 375px; local screenshot .local/project-reports-mobile.png retained. Viewport reset, preview stopped, tab closed and fixture database/credential files removed.
+- Module boundary deviations: shared Projects navigation/login-return helper and its existing test updated. No module backend, API route or migration changed.
+- Known gaps queued for later batches: daily summary report; grouped-report representative-volume measurement; richer differentiation of identical area names in reports.
+- Production behavior changed: yes.

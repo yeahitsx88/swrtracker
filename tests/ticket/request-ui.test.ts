@@ -14,6 +14,9 @@ test('login return path preserves request drafts and rejects external destinatio
   assert.equal(safeReturnPath(list), list);
   const help='/project/12345678-1234-1234-1234-123456789abc/help';
   assert.equal(safeReturnPath(help),help);
+  const reports='/project/12345678-1234-1234-1234-123456789abc/reports';
+  assert.equal(safeReturnPath(reports),reports);
+  assert.equal(safeReturnPath(reports+'?next=https://example.test'),'/drafts');
   assert.equal(safeReturnPath('/audit'),'/audit');
   assert.equal(safeReturnPath('/tenant-health'),'/tenant-health');
   assert.equal(safeReturnPath('/tenant-health?next=https://example.test'),'/drafts');
