@@ -823,3 +823,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: none in the published diff. Unrelated local work preserved.
 - Known gaps queued for later batches: multi-project/concurrent performance and remaining end-to-end acceptance. Automatic daily distribution still lacks a recipient/cadence contract.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 63
+- Intent: enforce the specified project navigation capabilities before exposing draft recovery (IMPLEMENTER, Tenancy).
+- Files touched: src/modules/tenancy/application/project-directory.ts; tests/tenancy/project-directory.test.ts; CODEX.md.
+- Behavior changed: request/report links require an explicit ticket-visible project role or tenant administrator authority, and remain hidden during SETUP. Project Admin alone no longer exposes those links; requester creation rules remain unchanged.
+- Verification: baseline and final TypeScript/pnpm test passed (167 pass, 36 database skips). PostgreSQL suite passed (201 pass, 2 dedicated-URL skips). Regression coverage checks active/archived Project Admin denial, Viewer access without creation, tenant admin read access, SETUP exclusion, tenant isolation and deactivation.
+- Discovery: a proposed dual-role integration fixture failed the existing project_memberships(project_id,user_id) unique constraint. The fixture now tests a real role change. The specification permits Project Admin plus a ticket-visible role, but schema and role resolution currently need coordinated multi-role implementation; no schema change is hidden in this navigation correction.
+- Module boundary deviations: none. No workflow transition, audit event or migration changed. Unrelated local changes preserved.
+- Known gaps queued for later batches: project draft recovery interface; multi-role project memberships and deterministic authority resolution.
+- Production behavior changed: yes.

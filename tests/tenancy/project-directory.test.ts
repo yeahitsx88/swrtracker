@@ -45,6 +45,16 @@ test('project directory scopes memberships, tenant administration, lifecycle and
     assert.ok(all.projects.every(p => !p.canRequest));
     assert.equal(all.canViewAudit, true);
     assert.equal(all.canViewTenantHealth, true);
+    assert.ok(all.projects.filter(p => p.status !== 'SETUP').every(p => p.canViewRequests));
+    assert.ok(all.projects.filter(p => p.status === 'SETUP').every(p => !p.canViewRequests));
+    await db.query("UPDATE project_memberships SET role='PROJECT_ADMIN' WHERE user_id=$1 AND project_id IN ($2,$3)",
+      [user, active, archived]);
+    const projectAdmin = await listAccessibleProjects(repo, db, params);
+    assert.ok(projectAdmin.projects.every(p => !p.canViewRequests && !p.canRequest));
+    await db.query("UPDATE project_memberships SET role='VIEWER' WHERE project_id=$1 AND user_id=$2", [active, user]);
+    const viewer = await listAccessibleProjects(repo, db, params);
+    assert.equal(viewer.projects.find(p => p.id === active)!.canViewRequests, true);
+    assert.equal(viewer.projects.find(p => p.id === active)!.canRequest, false);
     assert.deepEqual((await listAccessibleProjects(repo, db, { ...params, tenantId: foreign })).projects, []);
     await db.query('DELETE FROM project_memberships WHERE user_id=$1 AND project_id=$2', [user, active]);
     assert.ok((await listAccessibleProjects(repo, db, params)).projects.every(p => p.id !== active));
