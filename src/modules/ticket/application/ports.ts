@@ -81,7 +81,7 @@ export interface ITicketRepository {
   /** Validate that an assignee has the required role on this tenant's project. */
   isProjectAssignee(
     db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID,
-    role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN',
+    role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN' | 'CAD_TECHNICIAN' | 'CAD_LEAD',
   ): Promise<boolean>;
   /** Returns null if ticket doesn't exist or actor cannot see it under visibility rules. */
   findById(db: DbClient, tenantId: UUID, ticketId: UUID, visibility: VisibilityScope): Promise<Ticket | null>;

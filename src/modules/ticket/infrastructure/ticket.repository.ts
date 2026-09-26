@@ -257,7 +257,7 @@ export class TicketRepository implements ITicketRepository {
 
   async isProjectAssignee(
     db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID,
-    role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN',
+    role: 'PARTY_CHIEF' | 'INSTRUMENT_MAN' | 'CAD_TECHNICIAN' | 'CAD_LEAD',
   ): Promise<boolean> {
     const { rows } = await db.query<{ assigned: boolean }>(
       `SELECT EXISTS (

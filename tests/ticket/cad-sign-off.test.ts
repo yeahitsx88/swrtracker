@@ -1,3 +1,4 @@
+import { activateCad } from '@/modules/ticket/application/activate-cad';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { randomUUID } from 'node:crypto';
@@ -63,7 +64,28 @@ test('PostgreSQL CAD sign-off preserves field state and rolls back if the second
       await db.query('ROLLBACK TO SAVEPOINT before_review');
       assert.equal((await cad.lock(db,tenant,key))[0]?.status,'QA_PENDING');
       assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,0);
-      await db.query("UPDATE cad_work SET cad_status='NOT_STARTED',cad_assigned_to=$3 WHERE tenant_id=$1 AND ticket_id=$2",[tenant,key,user]);
+      await db.query("UPDATE cad_work SET cad_status='NOT_REQUIRED' WHERE tenant_id=$1 AND ticket_id=$2",[tenant,key]);
+      await db.query('SAVEPOINT before_activation');
+      const activationFailure:DbClient={async query(sql,values){
+        if(sql.includes('INSERT INTO ticket_events'))throw new Error('activation audit failed');
+        return db.query(sql,values);
+      }};
+      await assert.rejects(activateCad(tickets,cad,activationFailure,{...params,assigneeId:user}),/activation audit failed/);
+      await db.query('ROLLBACK TO SAVEPOINT before_activation');
+      assert.equal((await cad.lock(db,tenant,key))[0]?.status,'NOT_REQUIRED');
+      assert.equal((await cad.lock(db,tenant,key))[0]?.assignedTo,null);
+      await assert.rejects(activateCad(tickets,cad,db,{...params,assigneeId:id()}),/active project CAD user/);
+      await assert.rejects(activateCad(tickets,cad,db,{...params,tenantId:id(),assigneeId:user}),NotFoundError);
+      await assert.rejects(activateCad(tickets,cad,db,{...params,actor:{...actor,companyType:'SUBCONTRACTOR',companyId:id()},assigneeId:user}),NotFoundError);
+      await db.query('UPDATE users SET deactivated_at=NOW() WHERE tenant_id=$1 AND id=$2',[tenant,user]);
+      await assert.rejects(activateCad(tickets,cad,db,{...params,assigneeId:user}),/active project CAD user/);
+      await db.query('UPDATE users SET deactivated_at=NULL WHERE tenant_id=$1 AND id=$2',[tenant,user]);
+      await db.query("UPDATE project_memberships SET role='VIEWER' WHERE project_id=$1 AND user_id=$2",[project,user]);
+      await assert.rejects(activateCad(tickets,cad,db,{...params,assigneeId:user}),/active project CAD user/);
+      await db.query("UPDATE project_memberships SET role='CAD_TECHNICIAN' WHERE project_id=$1 AND user_id=$2",[project,user]);
+      await activateCad(tickets,cad,db,{...params,assigneeId:user});
+      await db.query("UPDATE project_memberships SET role='CAD_LEAD' WHERE project_id=$1 AND user_id=$2",[project,user]);
+      await assert.rejects(activateCad(tickets,cad,db,{...params,assigneeId:user}),ConflictError);
       await db.query('SAVEPOINT before_progress');
       const progressFailure:DbClient={async query(sql,values){
         if(sql.includes('INSERT INTO ticket_events'))throw new Error('progress audit failed');
@@ -79,6 +101,6 @@ test('PostgreSQL CAD sign-off preserves field state and rolls back if the second
       assert.equal(saved.cad_status,'COMPLETE');assert.equal(saved.cad_reviewed_by,user);assert.ok(saved.cad_completed_at);
       assert.equal((await tickets.findByIdInternal(db,tenant,key))?.status,'COMPLETED');
       await assert.rejects(signOffCad(tickets,cad,db,params),ConflictError);
-      assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,4);
+      assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,5);
     } finally {await db.query('ROLLBACK');await db.end();}
   });

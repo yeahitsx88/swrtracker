@@ -615,3 +615,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: ticket detail API/UI and shared request response type updated to expose ticket-module capabilities; no other module changed.
 - Known gap queued for later batches: browser acceptance for progression controls; CAD assignment/activation remains required before new CAD records can enter NOT_STARTED.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 41
+- Intent: connect new CAD records to the work progression with transactional initial assignment and activation.
+- Files touched: src/modules/ticket/application/activate-cad.ts; src/modules/ticket/application/ports.ts; src/modules/ticket/infrastructure/cad-review.repository.ts; src/modules/ticket/infrastructure/ticket.repository.ts; src/app/api/tickets/[ticketId]/cad-activate/route.ts; tests/ticket/cad-activation.test.ts; tests/ticket/cad-sign-off.test.ts; CODEX.md.
+- Behavior added: CAD Lead activates an unassigned NOT_REQUIRED record into NOT_STARTED, selecting an active project CAD Technician or Lead who can see the ticket under company isolation. Active project required; drafts, rejected and canceled tickets cannot activate CAD. Field-completed tickets remain eligible for their independent CAD work. Assignment and existing cad.status_changed event are atomic. Repeated activation and ambiguous records fail closed.
+- Implementation assumption: specification names CAD roles but does not explicitly assign activation authority; initial activation uses CAD Lead authority. No new role or audit event added.
+- Validation: baseline TypeScript and 140 tests passed (31 skipped); final TypeScript and 142 tests passed (31 skipped); PostgreSQL suite passed 171 tests (2 dedicated-URL skips), including activation-to-sign-off sequence, inactive/wrong-role assignees, isolation, repeat activation, and audit rollback; production build passed; git diff --check passed.
+- Boundary deviation: one new ticket API route added to wire the ticket application command.
+- Known gap queued for later batches: CAD assignee picker and activation UI; browser acceptance for progression and activation; CAD reassignment.
+- Production behavior changed: yes
