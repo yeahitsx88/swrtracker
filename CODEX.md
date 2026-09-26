@@ -737,3 +737,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: Tenancy project-directory capability and shared login-return helper updated to make the Audit surface discoverable; corresponding UI/tests changed. One API route modified. Unrelated local work preserved.
 - Known gaps queued for later batches: responsive/mobile acceptance, large-volume audit measurements, remaining tenant health/reporting surfaces. Older purged-draft events lacking project context remain unfiltered-only for project lookup.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 54
+- Intent: implement the tenant health dashboard query specified by CLAUDE.md Section 23.
+- Files touched: src/modules/reporting/application/tenant-health.ts; src/modules/reporting/infrastructure/tenant-health.repository.ts; src/app/api/tenant-health/route.ts; tests/reporting/tenant-health.test.ts; CODEX.md.
+- Behavior added: tenant-admin-only GET /api/tenant-health returns paginated project identity, crew build, lifecycle dates, active-project ticket buckets, strict submitted >24h / approved >48h / pending >4h alerts, and active Level 2 help counts. CREATED direct requests have their own awaiting-assignment count. Setup/archived projects carry null operational metrics. Existing Tenancy continuity application service supplies acting-grant age/confirmation and unresolved crew-vacancy details, augmented with tenant-scoped historical names.
+- Verification: baseline TypeScript and pnpm test passed (158 pass, 34 skips). Final TypeScript and production build passed; pnpm test passed (159 pass, 35 database skips); PostgreSQL suite passed (192 pass, 2 dedicated-URL skips). New tests cover role/tenant denial, bounded pagination, lifecycle exclusions, all status buckets, exact threshold boundaries, empty active projects, active Level 2-only counts, named grant/vacancy ages and stale confirmation, and repository authorization.
+- Module boundary deviations: one new API route composes the Reporting and existing Tenancy application services; no Tenancy production files or migrations changed. Reporting read-model queries aggregate scoped project/ticket/help data. Unrelated local changes preserved.
+- Known gaps queued for later batches: tenant health dashboard page and browser acceptance; broader operational reports; representative-volume measurements and responsive acceptance.
+- Production behavior changed: yes.
