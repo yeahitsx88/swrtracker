@@ -26,11 +26,16 @@ export async function getOperationalReport(repo:OperationalReportPort,db:DbClien
     query.limit<1 || query.limit>100 || !Number.isSafeInteger(query.offset) || query.offset<0 || query.offset>100000) {
     throw new ValidationError('Invalid report dimension or pagination');
   }
+  const visibility=await resolveReportVisibility(db,query);
+  const rows=await repo.operationalGroups(db,{...query,limit:query.limit+1},visibility);
+  return {dimension:query.dimension,groups:rows.slice(0,query.limit),hasMore:rows.length>query.limit};
+}
+
+export async function resolveReportVisibility(db:DbClient,
+  query:Pick<OperationalReportQuery,'tenantId'|'projectId'|'userId'>):Promise<VisibilityScope> {
   const tenantRole=await getTenantRole(db,query.tenantId,query.userId);
   const role=tenantRole==='TENANT_ADMIN' ? tenantRole
     : await getProjectWorkflowRole(db,query.tenantId,query.projectId,query.userId);
   if(role==='PROJECT_ADMIN')throw new ForbiddenError('Ticket visibility is required for operational reports');
-  const visibility=await resolveVisibility(db,query.tenantId,query.projectId,query.userId,role);
-  const rows=await repo.operationalGroups(db,{...query,limit:query.limit+1},visibility);
-  return {dimension:query.dimension,groups:rows.slice(0,query.limit),hasMore:rows.length>query.limit};
+  return resolveVisibility(db,query.tenantId,query.projectId,query.userId,role);
 }

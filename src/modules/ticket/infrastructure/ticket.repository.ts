@@ -9,6 +9,8 @@ import { ConflictError } from '@/shared/errors';
 import type { DbClient, UUID, Page } from '@/shared/types';
 import type { Ticket, TicketStatus, TicketType, WorkflowVariant } from '../domain/types';
 import type { OperationalGroup, OperationalReportQuery } from '../application/operational-report';
+import { dailyReportEvents } from '../application/daily-report-events';
+import type { DailyActivity, DailyReportQuery } from '../application/daily-report';
 import type {
   ITicketRepository,
   TicketStatusPatch,
@@ -630,6 +632,21 @@ export class TicketRepository implements ITicketRepository {
     ) SELECT key,label,sum(count)::int AS total,jsonb_object_agg(status,count) AS statuses
       FROM counts GROUP BY key,label ORDER BY label NULLS FIRST,key NULLS FIRST
       LIMIT $${limitIndex} OFFSET $${offsetIndex}`,[...values,query.limit,query.offset])).rows;
+  }
+
+  async dailyActivity(db:DbClient,query:DailyReportQuery,visibility:VisibilityScope):Promise<DailyActivity[]> {
+    const filter=buildVisibilityClause(visibility,6);
+    return (await db.query<DailyActivity>(`SELECT e.event_type AS "eventType",
+      count(DISTINCT e.ticket_id)::int AS requests,count(*)::int AS events
+      FROM ticket_events e JOIN tickets t ON t.id=e.ticket_id AND t.tenant_id=e.tenant_id
+      WHERE t.tenant_id=$1 AND t.project_id=$2 AND e.tenant_id=$1
+        AND t.status<>'DRAFT' AND t.draft_deleted_at IS NULL
+        AND e.created_at >= $3::timestamptz AND e.created_at < $4::timestamptz
+        AND e.event_type=ANY($5::text[])
+        AND (e.event_type<>'ticket.created' OR t.workflow_variant='DIRECT_ASSIGNMENT')
+        ${filter.sql}
+      GROUP BY e.event_type ORDER BY e.event_type`,
+    [query.tenantId,query.projectId,query.from,query.until,[...dailyReportEvents],...filter.params])).rows;
   }
 
   async findUserCompanyInfo(

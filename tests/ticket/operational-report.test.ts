@@ -6,6 +6,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import { ForbiddenError, ValidationError } from '@/shared/errors';
 import { getOperationalReport, type OperationalReportQuery } from '@/modules/ticket/application/operational-report';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { getDailyTicketActivity, dailyReportEvents } from '@/modules/ticket/application/daily-report';
 const id=()=>randomUUID() as UUID;
 
 test('operational reports reject invalid dimensions and unbounded pages before querying',async()=>{
@@ -13,6 +14,15 @@ test('operational reports reject invalid dimensions and unbounded pages before q
   const db={async query(){throw Error('Unexpected database access');}} as DbClient;
   for(const invalid of [{dimension:'sql'},{limit:0},{limit:101},{offset:-1},{offset:0.5}]) {
     await assert.rejects(getOperationalReport(new TicketRepository(),db,{...query,...invalid} as OperationalReportQuery),ValidationError);
+  }
+});
+
+test('daily activity rejects invalid or oversized day boundaries before reading data',async()=>{
+  const query={tenantId:id(),projectId:id(),userId:id(),from:'2026-09-25T00:00:00.000Z',until:'2026-09-26T00:00:00.000Z'};
+  const db={async query(){throw Error('Unexpected database access');}} as DbClient;
+  for(const invalid of [{from:'2026-02-30T00:00:00.000Z'},{until:query.from},
+    {until:'2026-09-24T00:00:00.000Z'},{until:'2026-09-26T02:00:00.000Z'},{from:'yesterday'}]) {
+    await assert.rejects(getDailyTicketActivity(new TicketRepository(),db,{...query,...invalid}),ValidationError);
   }
 });
 
@@ -54,6 +64,38 @@ test('PostgreSQL operational groups preserve statuses, pagination, historical na
       assert.equal(report.groups[0]?.total,12);
       assert.deepEqual(report.groups[0]?.statuses,Object.fromEntries(statuses.filter(s=>s!=='DRAFT').map(s=>[s,1])));
       assert.equal(report.groups[0]?.label,'Main');assert.equal(report.hasMore,false);
+      const dailyQuery={tenantId:tenant,projectId:project,userId:actor,
+        from:'2026-09-25T00:00:00.000Z',until:'2026-09-26T00:00:00.000Z'};
+      await db.query("UPDATE tickets SET workflow_variant='DIRECT_ASSIGNMENT' WHERE tenant_id=$1 AND project_id=$2 AND status='CREATED'",[tenant,project]);
+      const eventStatuses=['CREATED','SUBMITTED','APPROVED','REJECTED','APPROVED','ASSIGNED',
+        'IN_PROGRESS','PENDING_PC_APPROVAL','COMPLETED','DELAYED','IN_PROGRESS',
+        'REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED'];
+      for(const [index,eventType] of dailyReportEvents.entries()) {
+        await db.query(`INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type,payload,created_at)
+          SELECT id,tenant_id,$3,$4,'{}',$5 FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND status=$6`,
+        [tenant,project,actor,eventType,dailyQuery.from,eventStatuses[index]]);
+      }
+      for(const [status,eventType,time,projectId] of [
+        ['ASSIGNED','ticket.assigned','2026-09-25T12:00:00.000Z',project],
+        ['COMPLETED','ticket.completed','2026-09-24T23:59:59.999Z',project],
+        ['COMPLETED','ticket.completed',dailyQuery.until,project],
+        ['SUBMITTED','ticket.created',dailyQuery.from,project],
+        ['CREATED','ticket.created',dailyQuery.from,otherProject],
+        ['CREATED','attachment.uploaded',dailyQuery.from,project],
+      ]) {
+        await db.query(`INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type,payload,created_at)
+          SELECT id,tenant_id,$3,$4,'{}',$5 FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND status=$6`,
+        [tenant,projectId,actor,eventType,time,status]);
+      }
+      const daily=await getDailyTicketActivity(repo,db,dailyQuery);
+      assert.equal(daily.activity.length,dailyReportEvents.length);
+      for(const row of daily.activity){assert.equal(row.requests,1,row.eventType);assert.equal(row.events,row.eventType==='ticket.assigned'?2:1,row.eventType);}
+      const emptyDay=await getDailyTicketActivity(repo,db,{...dailyQuery,from:'2026-09-20T00:00:00.000Z',until:'2026-09-21T00:00:00.000Z'});
+      assert.deepEqual(emptyDay.activity,[]);
+      // Both daylight-saving day lengths are valid; exact end stays exclusive.
+      for(const until of ['2026-09-25T23:00:00.000Z','2026-09-26T01:00:00.000Z']) {
+        assert.equal((await getDailyTicketActivity(repo,db,{...dailyQuery,until})).activity.length,dailyReportEvents.length);
+      }
       const crafts=await getOperationalReport(repo,db,{...query,dimension:'craft',limit:1});
       assert.equal(crafts.groups[0]?.label,'Civil');assert.equal(crafts.groups[0]?.total,6);assert.equal(crafts.hasMore,true);
       const next=await getOperationalReport(repo,db,{...query,dimension:'craft',limit:1,offset:1});
@@ -72,6 +114,9 @@ test('PostgreSQL operational groups preserve statuses, pagination, historical na
         // IM sees only explicitly assigned work in this fixture (no roster).
         if(role==='INSTRUMENT_MAN')await db.query('UPDATE tickets SET assigned_instrument_man_id=$1 WHERE tenant_id=$2 AND project_id=$3 AND company_id=$4',[actor,tenant,project,gc]);
         assert.equal((await getOperationalReport(repo,db,query)).groups[0]?.total,6,role);
+        const scopedDaily=await getDailyTicketActivity(repo,db,dailyQuery);
+        assert.ok(scopedDaily.activity.every(row=>!['ticket.submitted','ticket.assigned','ticket.completed','ticket.pending_pc_approval','ticket.requester_canceled','ticket.survey_canceled'].includes(row.eventType)),role);
+        assert.ok(scopedDaily.activity.some(row=>row.eventType==='ticket.field_canceled'),role);
       }
       await db.query("UPDATE project_memberships SET role='AREA_VIEWER' WHERE project_id=$1 AND user_id=$2",[project,actor]);
       assert.deepEqual((await getOperationalReport(repo,db,query)).groups,[]);
@@ -93,13 +138,18 @@ test('PostgreSQL operational groups preserve statuses, pagination, historical na
       assert.deepEqual(isolated.groups.map(g=>g.label),['Pipe']);assert.equal(isolated.groups[0]?.total,6);
       await db.query("UPDATE project_memberships SET role='PROJECT_ADMIN' WHERE project_id=$1 AND user_id=$2",[project,actor]);
       await assert.rejects(getOperationalReport(repo,db,query),ForbiddenError);
+      await assert.rejects(getDailyTicketActivity(repo,db,dailyQuery),ForbiddenError);
       await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[tenant,actor]);
       assert.equal((await getOperationalReport(repo,db,query)).groups[0]?.total,6,'subcontractor isolation also applies to tenant admin');
       await db.query('UPDATE users SET company_id=$1 WHERE id=$2',[gc,actor]);
       assert.equal((await getOperationalReport(repo,db,query)).groups[0]?.total,12);
       await assert.rejects(getOperationalReport(repo,db,{...query,tenantId:id()}),ForbiddenError);
+      await assert.rejects(getDailyTicketActivity(repo,db,{...dailyQuery,tenantId:id()}),ForbiddenError);
       assert.deepEqual((await getOperationalReport(repo,db,{...query,projectId:id()})).groups,[]);
+      await db.query("UPDATE tickets SET status='COMPLETED' WHERE tenant_id=$1 AND project_id=$2 AND status='SUBMITTED'",[tenant,project]);
+      assert.equal((await getDailyTicketActivity(repo,db,dailyQuery)).activity.find(row=>row.eventType==='ticket.submitted')?.requests,1);
       await db.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[actor]);
       await assert.rejects(getOperationalReport(repo,db,query),ForbiddenError);
+      await assert.rejects(getDailyTicketActivity(repo,db,dailyQuery),ForbiddenError);
     }finally{await db.query('ROLLBACK');await db.end();}
   });
