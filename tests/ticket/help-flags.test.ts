@@ -170,7 +170,8 @@ test('help flag listing and claim bind subcontractor company to affected tickets
     [ticketId, tenantId, projectId, actorId, actorId]);
 });
 
-test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and audit',
+for (const workloadStatus of ['IN_PROGRESS', 'DELAYED']) {
+test(`PostgreSQL ${workloadStatus} help flags preserve crew visibility, fixed snapshot, claim and audit`,
   { skip: !process.env.DATABASE_URL }, async () => {
     const client = new Client({ connectionString: process.env.DATABASE_URL });
     await client.connect();
@@ -213,8 +214,8 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
            assigned_instrument_man_id,workflow_variant,status,craft,
            description,requested_date,ticket_type)
          VALUES($1,$2,$3,$4,$5,'FSS-A1-HF01',$6,$7,$8,
-           'DIRECT_ASSIGNMENT','IN_PROGRESS','Pipe','Help flag','2026-10-01','LAYOUT')`,
-        [ticket,t,p,node,c,requester,pc1,im1]);
+           'DIRECT_ASSIGNMENT',$9,'Pipe','Help flag','2026-10-01','LAYOUT')`,
+        [ticket,t,p,node,c,requester,pc1,im1,workloadStatus]);
       const repo = new HelpFlagRepository();
       const first = await raiseHelpFlag(repo, client,
         { tenantId:t, projectId:p, actorId:im1,
@@ -226,6 +227,9 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
       const second = await escalateHelpFlag(repo, client,
         { tenantId:t, projectId:p, actorId:pc1,
           actorRole:'PARTY_CHIEF', flagId:first.id });
+      assert.equal(await repo.isResolved(client, first), false);
+      assert.equal(await repo.isResolved(client, second), false);
+      assert.equal(await clearResolvedFlagsForTicket(repo, client,t,p,ticket,pc1),0);
       const visible = await listHelpFlags(repo, client,
         { tenantId:t, projectId:p, actorId:pc2, actorRole:'PARTY_CHIEF' });
       assert.deepEqual(visible.map((f)=>f.id),[second.id]);
@@ -243,13 +247,22 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
       assert.deepEqual((await getHelpPickupOptions(repo,pickup,crewOptions,client,{...pickupContext,search:'%'})).candidates,[]);
       await assert.rejects(getHelpPickupOptions(repo,pickup,crewOptions,client,{...pickupContext,actorId:pc1}),NotFoundError);
       assert.deepEqual(await pickup.list(client,{...second,tenantId:id()},pc2,'',20,0),[]);
+      for (const terminalStatus of ['COMPLETED','REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED']) {
+        await client.query('UPDATE tickets SET status=$3 WHERE tenant_id=$1 AND id=$2',[t,ticket,terminalStatus]);
+        assert.deepEqual(await pickup.list(client,second,pc2,'',20,0),[]);
+        await assert.rejects(claimFlaggedTicket(repo,client,
+          {tenantId:t,projectId:p,actorId:pc2,actorRole:'PARTY_CHIEF',
+            flagId:second.id,ticketId:ticket,instrumentManId:im2}),ConflictError);
+      }
+      await client.query('UPDATE tickets SET status=$3 WHERE tenant_id=$1 AND id=$2',[t,ticket,workloadStatus]);
       await claimFlaggedTicket(repo, client,
         { tenantId:t, projectId:p, actorId:pc2, actorRole:'PARTY_CHIEF',
           flagId:second.id, ticketId:ticket, instrumentManId:im2 });
       const { rows: assignment } = await client.query<{
-        assigned_party_chief_id: UUID; assigned_instrument_man_id: UUID;
-      }>(`SELECT assigned_party_chief_id,assigned_instrument_man_id
+        assigned_party_chief_id: UUID; assigned_instrument_man_id: UUID; status: string;
+      }>(`SELECT assigned_party_chief_id,assigned_instrument_man_id,status
          FROM tickets WHERE id=$1 AND tenant_id=$2`,[ticket,t]);
+      assert.equal(assignment[0]?.status,workloadStatus);
       assert.equal(assignment[0]?.assigned_party_chief_id,pc2);
       assert.equal(assignment[0]?.assigned_instrument_man_id,im2);
       assert.deepEqual(await pickup.list(client,second,pc2,'',20,0),[]);
@@ -307,3 +320,5 @@ test('PostgreSQL help flags preserve crew visibility, fixed snapshot, claim and 
       await client.end();
     }
   });
+
+}

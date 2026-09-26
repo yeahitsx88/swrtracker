@@ -681,3 +681,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Validation: TypeScript and 149 standard tests passed (31 skipped); used previously verified production build from Batch 46 with no source changes. Preview server stopped and synthetic database/scripts removed; screenshot .local/help-pickup-verified.png retained locally.
 - Known gap queued for later batches: general-overload Level 2 empty-workload support; delayed workload coverage; CAD reassignment and admin surfaces.
 - Production behavior changed: no
+
+### 2026-09-25 - Batch 48
+- Intent: include delayed field work in help-flag load balancing under CLAUDE.md Sections 6 and 10.
+- Files touched: src/modules/ticket/infrastructure/help-flag.repository.ts; src/modules/ticket/infrastructure/help-pickup.repository.ts; tests/ticket/help-flags.test.ts; CODEX.md.
+- Behavior added/changed: DELAYED tickets participate in Level 1/2 snapshots, unresolved-work checks, voluntary pickup choices, and guarded claims. Pickup preserves DELAYED status and uses existing transactional assignment/claim/clear audit writes.
+- Verification: baseline TypeScript passed and pnpm test passed (149 pass, 31 database skips). Final pnpm tsc --noEmit passed; pnpm test passed (149 pass, 32 database skips); PostgreSQL suite passed (179 pass, 2 dedicated-URL skips). Integration coverage exercises both IN_PROGRESS and DELAYED through raise, escalation, visibility, pickup, and auto-clear; completed and all canceled states reject pickup. Tenant and subcontractor isolation coverage retained.
+- Known gaps queued for later batches: general-overload Level 2 flags without ticket snapshots; CAD reassignment; remaining planned operational surfaces.
+- Module boundary deviations: none; CODEX.md append only. Unrelated local changes preserved.
+- Production behavior changed: yes.

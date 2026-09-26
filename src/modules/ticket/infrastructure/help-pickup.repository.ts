@@ -11,7 +11,7 @@ export class HelpPickupRepository implements HelpPickupPort {
        JOIN companies c ON c.id=u.company_id AND c.tenant_id=t.tenant_id
        WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.id=ANY($3::uuid[])
          AND t.assigned_party_chief_id=$4 AND t.draft_deleted_at IS NULL
-         AND t.status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL')
+         AND t.status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL','DELAYED')
          AND t.ticket_number IS NOT NULL
          AND (c.type<>'SUBCONTRACTOR' OR c.id=t.company_id)
          AND STRPOS(LOWER(t.ticket_number),LOWER($6))>0

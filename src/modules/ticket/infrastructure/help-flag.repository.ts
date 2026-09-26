@@ -47,7 +47,7 @@ export class HelpFlagRepository implements HelpFlagRepositoryPort {
     const { rows } = await db.query<{ id: UUID }>(
       `SELECT id FROM tickets WHERE tenant_id=$1 AND project_id=$2
          AND ${column}=$3
-         AND status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL')
+         AND status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL','DELAYED')
        ORDER BY created_at,id`, [tenantId, projectId, actorId]);
     return rows.map((row) => row.id);
   }
@@ -120,7 +120,7 @@ export class HelpFlagRepository implements HelpFlagRepositoryPort {
     const { rows } = await db.query(
       `SELECT 1 FROM tickets WHERE tenant_id=$1 AND project_id=$2
          AND id=ANY($3::uuid[]) AND ${column}=$4
-         AND status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL') LIMIT 1`,
+         AND status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL','DELAYED') LIMIT 1`,
       [flag.tenantId, flag.projectId, flag.affectedTicketIds, flag.raisedBy]);
     return rows.length === 0;
   }
@@ -142,7 +142,7 @@ export class HelpFlagRepository implements HelpFlagRepositoryPort {
             AND claimant_company.tenant_id=t.tenant_id
           WHERE t.id=$1 AND t.tenant_id=$2 AND t.project_id=$3
             AND t.assigned_party_chief_id=$4
-            AND t.status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL')
+            AND t.status IN ('ASSIGNED','IN_PROGRESS','PENDING_PC_APPROVAL','DELAYED')
             AND p.status='ACTIVE'
             AND (claimant_company.type<>'SUBCONTRACTOR'
               OR t.company_id=claimant.company_id)
