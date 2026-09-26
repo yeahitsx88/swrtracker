@@ -7,6 +7,8 @@ import { listAuditLog } from '@/modules/audit/application/audit-log';
 import { AuditLogRepository } from '@/modules/audit/infrastructure/audit-log.repository';
 import { openAuditCsv } from '@/modules/audit/infrastructure/audit-csv-stream';
 import { ValidationError } from '@/shared/errors';
+import { listAuditFilters } from '@/modules/audit/application/audit-filters';
+import { AuditFiltersRepository } from '@/modules/audit/infrastructure/audit-filters.repository';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +16,14 @@ export async function GET(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
     const query = new URL(req.url).searchParams;
+    const options = query.get('options');
+    if (options !== null) {
+      if (options !== 'projects' && options !== 'actors' && options !== 'events') throw new ValidationError('Unknown audit filter options');
+      return NextResponse.json(await listAuditFilters(new AuditFiltersRepository(), pool, {
+        ...auth, kind: options, search: query.get('search') ?? '',
+        limit: Number(query.get('limit') ?? '20'), offset: Number(query.get('offset') ?? '0'),
+      }), { headers: { 'Cache-Control': 'no-store' } });
+    }
     const projectId = query.get('projectId'), actorId = query.get('actorId');
     const filters = {
       ...auth, projectId: projectId === null ? undefined : parseUuid(projectId, 'projectId'),

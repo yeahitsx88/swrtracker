@@ -1,3 +1,5 @@
+import { listAuditFilters } from '@/modules/audit/application/audit-filters';
+import { AuditFiltersRepository } from '@/modules/audit/infrastructure/audit-filters.repository';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
@@ -56,6 +58,16 @@ test('PostgreSQL audit log includes ticket and tenant events with scoped filters
         ($2,$4,$6,'project.archived',$8,'2026-09-03T12:00:00Z')`,
       [tenantEvent,outsideEvent,tenant,foreign,admin,outsider,{projectId:project},{projectId:foreignProject}]);
     const repo=new AuditLogRepository(),query={tenantId:tenant,userId:admin,limit:2,offset:0};
+    const filterRepo=new AuditFiltersRepository(),filterQuery={...query,kind:'projects' as const,search:'',limit:1};
+    const choices=await listAuditFilters(filterRepo,db,filterQuery);
+    assert.equal(choices.hasMore,true);assert.equal(choices.options.length,1);
+    assert.equal((await listAuditFilters(filterRepo,db,{...filterQuery,offset:1})).hasMore,false);
+    assert.deepEqual((await listAuditFilters(filterRepo,db,{...filterQuery,search:'Foreign'})).options,[]);
+    assert.deepEqual((await listAuditFilters(filterRepo,db,{...filterQuery,search:'%'})).options,[]);
+    assert.deepEqual((await listAuditFilters(filterRepo,db,{...filterQuery,kind:'events',limit:20})).options.map(o=>o.value),['help_flag.raised','project.archived','ticket.draft_saved']);
+    assert.deepEqual(await filterRepo.list(db,{...filterQuery,userId:actor}),[]);
+    await assert.rejects(listAuditFilters(filterRepo,db,{...filterQuery,userId:actor}),ForbiddenError);
+    await assert.rejects(listAuditFilters(filterRepo,db,{...filterQuery,limit:101}),ValidationError);
     const first=await listAuditLog(repo,db,query),last=await listAuditLog(repo,db,{...query,offset:2});
     assert.equal(first.hasMore,true);assert.equal(last.hasMore,false);
     const all=[...first.events,...last.events];
@@ -80,6 +92,9 @@ test('PostgreSQL audit log includes ticket and tenant events with scoped filters
     assert.deepEqual(await repo.list(db,{...query,tenantId:foreign}),[]);
     await db.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[actor]);
     assert.equal((await listAuditLog(repo,db,{...query,eventType:'ticket.draft_saved'})).events[0]?.actorName,'Historical actor');
+    const historical=await listAuditFilters(filterRepo,db,{...filterQuery,kind:'actors',search:'Historical'});
+    assert.equal(historical.options[0]?.value,actor);assert.match(historical.options[0]!.label,/inactive/);
+    assert.deepEqual((await listAuditFilters(filterRepo,db,{...filterQuery,kind:'actors',search:'Foreign'})).options,[]);
     // Purged drafts retain their events even though no ticket row can be joined.
     await db.query("UPDATE tickets SET draft_deleted_at=NOW()-INTERVAL '31 days',draft_deleted_reason='REQUESTER_DELETED' WHERE id=$1",[ticket]);
     await db.query('INSERT INTO ticket_draft_tombstones(ticket_id,tenant_id) VALUES($1,$2)',[ticket,tenant]);

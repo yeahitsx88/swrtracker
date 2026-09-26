@@ -9,6 +9,7 @@ interface ProjectPage {
   projects: Array<{ id: string; name: string; status: string; roles: string[];
     canRequest: boolean; canViewRequests: boolean }>;
   hasMore: boolean;
+  canViewAudit: boolean;
 }
 
 export default function ProjectsPage() {
@@ -31,6 +32,7 @@ export default function ProjectsPage() {
     {error && <div className="notice error" role="alert">{error}{authNeeded && <p><Link href="/login?next=%2Fprojects">Sign in to see your projects</Link></p>}</div>}
     {!page && !error && <p role="status">Loading projects…</p>}
     <button className="secondary" onClick={() => setRevision(value => value + 1)}>Refresh projects</button>
+    {page?.canViewAudit && <p className="actions"><Link className="button secondary" href="/audit">Tenant audit log</Link></p>}
     {page && <section className="panel" aria-label="Accessible projects">
       {!page.projects.length && <><h2>No projects found</h2><p>Ask your administrator for a project invitation.</p></>}
       {page.projects.map(project => <article className="record" key={project.id}>
