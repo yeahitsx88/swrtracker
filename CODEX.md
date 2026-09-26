@@ -672,3 +672,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: coordinated ticket query/UI with optional crewChiefId in tenancy candidate service; one existing API route extended.
 - Known gap queued for later batches: browser acceptance of pickup; general-overload Level 2 empty-workload support; delayed workload coverage review; CAD reassignment and admin surfaces.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 47
+- Intent: browser acceptance of voluntary pickup and automatic help-flag clearing.
+- Files touched: CODEX.md only.
+- Browser acceptance: isolated two-crew fixture with linked Level 1/Level 2 flags; unrelated Party Chief sees Level 2 only, pickup selector offers flagged request FSS-A1-HF01 and only own IM2, missing selections produce a validation message, confirmation refreshes to no active flags, request becomes visible in new chief's request list, and detail displays PC2/IM2 with IN_PROGRESS preserved.
+- Database verification: both flags CLEARED with TICKETS_REASSIGNED; correct new PC/IM; exactly one ticket.assigned, one help_flag.ticket_claimed and two help_flag.cleared events. Fixture flags were seeded directly, so counts exclude setup events.
+- Validation: TypeScript and 149 standard tests passed (31 skipped); used previously verified production build from Batch 46 with no source changes. Preview server stopped and synthetic database/scripts removed; screenshot .local/help-pickup-verified.png retained locally.
+- Known gap queued for later batches: general-overload Level 2 empty-workload support; delayed workload coverage; CAD reassignment and admin surfaces.
+- Production behavior changed: no
