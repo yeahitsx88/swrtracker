@@ -1,0 +1,5 @@
+.metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:24px 0; }
+.metrics div { border:1px solid var(--line); border-radius:8px; padding:16px; background:var(--paper); }
+.metrics dt { color:var(--muted); font-size:14px; overflow-wrap:anywhere; }
+.metrics dd { margin:8px 0 0; font-size:28px; line-height:1.1; font-weight:700; }
+@media(max-width:600px) { .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .metrics div { padding:12px; } }

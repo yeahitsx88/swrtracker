@@ -31,6 +31,7 @@ test('project directory scopes memberships, tenant administration, lifecycle and
     assert.deepEqual(first.projects.map(p => p.id), [active, archived]);
     assert.equal(first.hasMore, true);
     assert.equal(first.canViewAudit, false);
+    assert.equal(first.canViewTenantHealth, false);
     assert.deepEqual(first.projects[0]!.roles, ['REQUESTER']);
     assert.equal(first.projects[0]!.canRequest, true);
     assert.equal(first.projects[1]!.canRequest, false);
@@ -43,6 +44,7 @@ test('project directory scopes memberships, tenant administration, lifecycle and
     assert.deepEqual(all.projects.map(p => p.id), [active, archived, setup, hidden]);
     assert.ok(all.projects.every(p => !p.canRequest));
     assert.equal(all.canViewAudit, true);
+    assert.equal(all.canViewTenantHealth, true);
     assert.deepEqual((await listAccessibleProjects(repo, db, { ...params, tenantId: foreign })).projects, []);
     await db.query('DELETE FROM project_memberships WHERE user_id=$1 AND project_id=$2', [user, active]);
     assert.ok((await listAccessibleProjects(repo, db, params)).projects.every(p => p.id !== active));

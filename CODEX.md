@@ -746,3 +746,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: one new API route composes the Reporting and existing Tenancy application services; no Tenancy production files or migrations changed. Reporting read-model queries aggregate scoped project/ticket/help data. Unrelated local changes preserved.
 - Known gaps queued for later batches: tenant health dashboard page and browser acceptance; broader operational reports; representative-volume measurements and responsive acceptance.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 55
+- Intent: deliver the tenant administrator project health dashboard.
+- Files touched: src/app/tenant-health/page.tsx; src/app/tenant-health/tenant-health.module.css; src/app/projects/page.tsx; src/app/ui/api.ts; src/modules/tenancy/application/project-directory.ts; tests/tenancy/project-directory.test.ts; tests/ticket/request-ui.test.ts; CODEX.md.
+- Behavior added: paginated read-only project identity, lifecycle dates, workload buckets, stale-work alerts, Level 2 help flags, named acting authority and unresolved crew vacancies. Setup/archived projects explain operational metric exclusions. Tenant admins receive a dashboard navigation link; login returns to the dashboard; unauthorized users receive a clear access message without data. Responsive metric cards support phone screens.
+- Verification: baseline and final TypeScript and pnpm test passed (159 pass, 35 database skips); production build passed; PostgreSQL suite passed (192 pass, 2 dedicated-URL skips). Tests cover navigation capability and safe login return. Browser acceptance verified login return, populated/empty/nonactive project states, 10-row pagination across 14 projects, administrator navigation, requester link absence and direct denial. Phone viewport 390x844 had no horizontal overflow (375px content/client width); screenshot retained in .local/tenant-health-mobile.png. Preview stopped, tab closed, temporary database and credential fixtures removed.
+- Module boundary deviations: shared Projects navigation and login-return helper plus Tenancy project-directory capability expose the Reporting surface; related tests updated. No API route or migration changed. Unrelated local work preserved.
+- Known gaps queued for later batches: broader operational reports and representative-volume measurements remain.
+- Production behavior changed: yes.

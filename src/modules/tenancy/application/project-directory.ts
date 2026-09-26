@@ -23,7 +23,7 @@ export async function listAccessibleProjects(repo: ProjectDirectoryPort, db: DbC
   }
   const rows = await repo.list(db, { ...params, limit: params.limit + 1 });
   const canViewAudit = await getTenantRole(db, params.tenantId, params.userId) === 'TENANT_ADMIN';
-  return { canViewAudit, projects: rows.slice(0, params.limit).map(project => ({ ...project,
+  return { canViewAudit, canViewTenantHealth: canViewAudit, projects: rows.slice(0, params.limit).map(project => ({ ...project,
     canRequest: project.status === 'ACTIVE' && project.roles.includes('REQUESTER'),
     canViewRequests: project.status !== 'SETUP',
   })), hasMore: rows.length > params.limit };
