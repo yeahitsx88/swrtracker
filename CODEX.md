@@ -588,3 +588,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gap queued for later batches: CAD browser acceptance, assignment/status progression, remaining role surfaces and responsive QA.
 - Production behavior changed: yes.
 - Module boundary deviation: Ticket application and one detail API route plus ticket web/shared response types. No mutation-policy or migration changes. Concurrent sample/configuration changes excluded.
+
+### 2026-09-25 - Batch 38 (CAD QA browser acceptance)
+- Intent: verify CAD Lead sign-off end to end against a disposable PostgreSQL fixture.
+- Files touched: CODEX.md.
+- Behavior verified: CAD Technician sees Awaiting CAD review without sign-off controls; CAD Lead sees the confirmation and completes QA. Successful sign-off displays Complete and completion date, with no repeat sign-off control. Field work remains Completed.
+- Verification: database assertions confirmed reviewer identity, completion timestamp, unchanged field status and exactly one cad.status_changed plus one cad.qa_signed_off event with the CAD Lead actor. TypeScript and standard suite passed (137 pass, 31 database skips). Production unchanged from Batch 37's passing build and 166 PostgreSQL tests. Screenshot retained locally at .local/cad-signoff-verified.png. Preview stopped, disposable database and credential fixture files removed, browser tab closed.
+- Known gap queued for later batches: CAD assignment/status progression, remaining role surfaces and responsive QA.
+- Production behavior changed: no.
+- Module boundary deviation: append-only verification record; concurrent sample/configuration changes excluded.
