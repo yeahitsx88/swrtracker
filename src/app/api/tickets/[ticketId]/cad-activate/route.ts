@@ -7,7 +7,24 @@ import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.reposit
 import { CadReviewRepository } from '@/modules/ticket/infrastructure/cad-review.repository';
 import { activateCad } from '@/modules/ticket/application/activate-cad';
 
+import { pool } from '@/lib/db';
+import { getCadOptions } from '@/modules/ticket/application/cad-options';
+import { CadSummaryRepository } from '@/modules/ticket/infrastructure/cad-summary.repository';
+import { CadAssigneesRepository } from '@/modules/tenancy/infrastructure/cad-assignees.repository';
+
 export const dynamic = 'force-dynamic';
+export async function GET(req: NextRequest,
+  { params }: { params: Promise<{ ticketId: string }> }) {
+  try {
+    const ctx = await getTicketRouteContext(req, (await params).ticketId);
+    const query = new URL(req.url).searchParams;
+    return NextResponse.json(await getCadOptions(new TicketRepository(), new CadSummaryRepository(),
+      new CadAssigneesRepository(), pool, {
+        tenantId: ctx.tenantId, ticketId: ctx.ticketId, actor: ctx.visibility,
+        search: query.get('search') ?? '', limit: Number(query.get('limit') ?? '20'), offset: Number(query.get('offset') ?? '0'),
+      }));
+  } catch (error) { return errorResponse(error); }
+}
 export async function POST(req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> }) {
   try {

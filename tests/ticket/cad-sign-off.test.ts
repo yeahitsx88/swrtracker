@@ -1,3 +1,4 @@
+import { CadAssigneesRepository } from '@/modules/tenancy/infrastructure/cad-assignees.repository';
 import { activateCad } from '@/modules/ticket/application/activate-cad';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -65,6 +66,16 @@ test('PostgreSQL CAD sign-off preserves field state and rolls back if the second
       assert.equal((await cad.lock(db,tenant,key))[0]?.status,'QA_PENDING');
       assert.equal((await db.query('SELECT 1 FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2',[tenant,key])).rows.length,0);
       await db.query("UPDATE cad_work SET cad_status='NOT_REQUIRED' WHERE tenant_id=$1 AND ticket_id=$2",[tenant,key]);
+      const candidates=new CadAssigneesRepository();
+      const query={tenantId:tenant,projectId:project,ticketCompanyId:company,search:'Lead',limit:20,offset:0};
+      assert.deepEqual(await candidates.list(db,query),[{id:user,name:'Lead'}]);
+      assert.deepEqual(await candidates.list(db,{...query,tenantId:id()}),[]);
+      assert.deepEqual(await candidates.list(db,{...query,projectId:id()}),[]);
+      assert.deepEqual(await candidates.list(db,{...query,search:'%'}),[]);
+      await db.query("UPDATE companies SET type='SUBCONTRACTOR' WHERE tenant_id=$1 AND id=$2",[tenant,company]);
+      assert.deepEqual(await candidates.list(db,query),[{id:user,name:'Lead'}]);
+      assert.deepEqual(await candidates.list(db,{...query,ticketCompanyId:id()}),[]);
+      await db.query("UPDATE companies SET type='GC' WHERE tenant_id=$1 AND id=$2",[tenant,company]);
       await db.query('SAVEPOINT before_activation');
       const activationFailure:DbClient={async query(sql,values){
         if(sql.includes('INSERT INTO ticket_events'))throw new Error('activation audit failed');
@@ -78,6 +89,7 @@ test('PostgreSQL CAD sign-off preserves field state and rolls back if the second
       await assert.rejects(activateCad(tickets,cad,db,{...params,tenantId:id(),assigneeId:user}),NotFoundError);
       await assert.rejects(activateCad(tickets,cad,db,{...params,actor:{...actor,companyType:'SUBCONTRACTOR',companyId:id()},assigneeId:user}),NotFoundError);
       await db.query('UPDATE users SET deactivated_at=NOW() WHERE tenant_id=$1 AND id=$2',[tenant,user]);
+      assert.deepEqual(await candidates.list(db,query),[]);
       await assert.rejects(activateCad(tickets,cad,db,{...params,assigneeId:user}),/active project CAD user/);
       await db.query('UPDATE users SET deactivated_at=NULL WHERE tenant_id=$1 AND id=$2',[tenant,user]);
       await db.query("UPDATE project_memberships SET role='VIEWER' WHERE project_id=$1 AND user_id=$2",[project,user]);

@@ -21,6 +21,7 @@ import { getFieldActions } from '@/modules/ticket/application/field-actions';
 import { getSurveyCancelActions } from '@/modules/ticket/application/survey-cancel-actions';
 import { getPriorityActions } from '@/modules/ticket/application/priority-actions';
 import { getCadSummary, canSignOffCad, getCadProgressAction } from '@/modules/ticket/application/cad-summary';
+import { canActivateCad } from '@/modules/ticket/application/cad-options';
 import { CadSummaryRepository } from '@/modules/ticket/infrastructure/cad-summary.repository';
 import { getTicketLabels } from '@/modules/tenancy/application/ticket-labels';
 import { TicketLabelsRepository } from '@/modules/tenancy/infrastructure/ticket-labels.repository';
@@ -62,6 +63,7 @@ export async function GET(
       tenantId: ctx.tenantId, ticketId: ctx.ticketId, actor: ctx.visibility,
     });
     return NextResponse.json({ ticket: { ...ticket, ...labels, requesterActions, reviewActions, assignment, reassignment, superintendentReassignment, fieldActions, surveyCancelActions, priorityActions,
+      canActivateCad: await canActivateCad(repo, pool, ticket, cad, ctx.visibility),
       cadProgressAction: await getCadProgressAction(repo, pool, ticket, cad, ctx.visibility),
       cad, canSignOffCad: await canSignOffCad(repo, pool, ticket, cad, ctx.visibility),
       displayStatus: statusLabel(ticket.status) } });

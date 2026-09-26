@@ -625,3 +625,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: one new ticket API route added to wire the ticket application command.
 - Known gap queued for later batches: CAD assignee picker and activation UI; browser acceptance for progression and activation; CAD reassignment.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 42
+- Intent: expose CAD assignment/activation and verify the full CAD browser workflow.
+- Files touched: src/modules/tenancy/application/cad-assignees.ts; src/modules/tenancy/infrastructure/cad-assignees.repository.ts; src/modules/ticket/application/cad-options.ts; src/app/api/tickets/[ticketId]/cad-activate/route.ts; src/app/api/tickets/[ticketId]/route.ts; src/app/tickets/[ticketId]/assignment-actions.tsx; src/app/tickets/[ticketId]/cad-actions.tsx; src/app/tickets/[ticketId]/ticket-detail.tsx; src/app/ui/request-types.ts; tests/ticket/cad-options.test.ts; tests/ticket/cad-sign-off.test.ts; CODEX.md.
+- Behavior added: Lead-only activation capability and searchable paginated CAD picker; candidates require an active project membership as Technician or Lead, active user, tenant scope and ticket company access. Existing picker reused; required selection, loading/error states and shared action locking retained.
+- Validation: baseline TypeScript and 142 standard tests passed; final TypeScript and 144 standard tests passed (31 skips); PostgreSQL suite passed 173 tests (2 dedicated-URL skips); production build and diff checks passed. Candidate tests cover tenant/project boundaries, company isolation, inactive users, literal search, authorization and pagination validation.
+- Browser acceptance: isolated synthetic database; missing-assignee error, candidate search, Lead assignment to Technician, Lead cannot start another user's work, Technician start and submit, Technician has no QA control, Lead confirms completion. DB readback verified correct assignee/reviewer/timestamp, unchanged field COMPLETED status, exactly four cad.status_changed plus one cad.qa_signed_off. Preview server stopped and fixture DB/files removed; screenshot retained locally at .local/cad-full-workflow.png.
+- Boundary deviation: coordinated tenancy candidate service/repository plus ticket orchestration and UI; two ticket routes updated together for candidate GET and detail capability response. No concurrent agent writes.
+- Known gap queued for later batches: CAD assignee/reviewer display names and reassignment; wider help-flag/admin surfaces and responsive acceptance remain.
+- Production behavior changed: yes
