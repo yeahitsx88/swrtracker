@@ -24,7 +24,7 @@ export async function appendRegistrationAuditEvent(db: DbClient, event: {
 export async function appendAuditEvent(
   db: DbClient,
   event: {
-    ticketId:  UUID;
+    ticketId:  UUID | null;
     tenantId:  UUID;
     actorId:   UUID;
     eventType: AuditEventType;

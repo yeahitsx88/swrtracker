@@ -62,7 +62,7 @@ export type AuditEventType =
 
 export interface TicketEvent {
   id: UUID;
-  ticketId: UUID;
+  ticketId: UUID | null;
   tenantId: UUID;
   actorId: UUID | null;
   eventType: AuditEventType;

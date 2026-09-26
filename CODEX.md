@@ -690,3 +690,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gaps queued for later batches: general-overload Level 2 flags without ticket snapshots; CAD reassignment; remaining planned operational surfaces.
 - Module boundary deviations: none; CODEX.md append only. Unrelated local changes preserved.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 49
+- Intent: support the specified general-overload Level 2 help signal with no assigned ticket snapshot.
+- Files touched: db/migrations/024_general_help_flag_events.sql; src/modules/ticket/application/help-flags.ts; src/modules/ticket/application/help-board.ts; src/modules/ticket/infrastructure/help-flag.repository.ts; src/modules/audit/domain/types.ts; src/modules/audit/infrastructure/audit.repository.ts; tests/ticket/help-flags.test.ts; tests/ticket/help-board.test.ts; CODEX.md.
+- Behavior added/changed: Party Chiefs can raise or escalate a general Level 2 signal with an empty snapshot. Such flags require manual clearing and do not offer pickup. Level 1 still requires assigned workload. Subcontractor viewers can see general flags from their own company; other-company isolation remains enforced.
+- Audit/migration: migration 024 permits a null ticket reference only for raised/escalated/cleared events referencing an existing empty Level 2 flag in the same tenant and project. Existing live-ticket/tombstone checks and append-only protections remain. The audit write accepts the nullable reference; no new event names. Applied to the configured development database and rerun twice inside a rolled-back transaction.
+- Verification: baseline TypeScript and pnpm test passed (149 pass, 32 skips). Final TypeScript and production build passed; pnpm test passed (151 pass, 32 database skips); PostgreSQL suite passed (181 pass, 2 dedicated-URL skips). Tests cover general raise/clear audit records, duplicate and unauthorized clearing rejection, audit failure rollback, cross-tenant/project/flag reference rejection, company visibility, empty-workload escalation, and absence of pickup. Browser acceptance of the newly enabled action is queued.
+- Module boundary deviations: two Audit module type declarations updated for the required nullable ticket reference; migration and tests directly support the Ticket module change. Unrelated local work preserved.
+- Known gaps queued for later batches: general-overload browser acceptance; CAD reassignment; remaining planned operational surfaces.
+- Production behavior changed: yes.

@@ -59,7 +59,7 @@ function reasonValue(reason: string | undefined): string | null {
 async function audit(db: DbClient, flag: HelpFlag, actorId: UUID,
   eventType: 'help_flag.raised' | 'help_flag.escalated' | 'help_flag.cleared' |
     'help_flag.ticket_claimed', payload: Record<string, unknown>,
-  ticketId: UUID = flag.affectedTicketIds[0]!): Promise<void> {
+  ticketId: UUID | null = flag.affectedTicketIds[0] ?? null): Promise<void> {
   await appendAuditEvent(db, { ticketId,
     tenantId: flag.tenantId, actorId, eventType,
     payload: { flagId: flag.id, projectId: flag.projectId, ...payload } });
@@ -84,7 +84,7 @@ export async function raiseHelpFlag(repo: HelpFlagRepositoryPort, db: DbClient,
   }
   const affectedTicketIds = await repo.snapshot(db, context.tenantId,
     context.projectId, context.actorId, context.level);
-  if (!affectedTicketIds.length) throw new ConflictError('No assigned active tickets to flag');
+  if (context.level === 1 && !affectedTicketIds.length) throw new ConflictError('No assigned active tickets to flag');
   const flag: HelpFlag = { id: randomUUID() as UUID,
     tenantId: context.tenantId, projectId: context.projectId,
     raisedBy: context.actorId, level: context.level, status: 'ACTIVE',
@@ -116,7 +116,6 @@ export async function escalateHelpFlag(repo: HelpFlagRepositoryPort, db: DbClien
   }
   const affectedTicketIds = await repo.snapshot(db, context.tenantId,
     context.projectId, context.actorId, 2);
-  if (!affectedTicketIds.length) throw new ConflictError('No assigned active tickets to flag');
   const flag: HelpFlag = { id: randomUUID() as UUID,
     tenantId: context.tenantId, projectId: context.projectId,
     raisedBy: context.actorId, level: 2, status: 'ACTIVE',
@@ -142,7 +141,7 @@ export async function clearHelpFlag(repo: HelpFlagRepositoryPort, db: DbClient,
 
 export async function clearResolvedHelpFlag(repo: HelpFlagRepositoryPort, db: DbClient,
   flag: HelpFlag, actorId: UUID, reassignmentId?: UUID): Promise<boolean> {
-  if (flag.status !== 'ACTIVE' || !(await repo.isResolved(db, flag))) return false;
+  if (flag.status !== 'ACTIVE' || !flag.affectedTicketIds.length || !(await repo.isResolved(db, flag))) return false;
   await repo.clearFlag(db, flag.tenantId, flag.projectId,
     flag.id, 'TICKETS_REASSIGNED');
   await audit(db, flag, actorId, 'help_flag.cleared',

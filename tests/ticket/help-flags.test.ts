@@ -10,7 +10,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { HelpFlagRepositoryPort, HelpFlag } from '@/modules/ticket/application/help-flags';
 import {
   raiseHelpFlag, escalateHelpFlag, clearHelpFlag,
-  claimFlaggedTicket, clearResolvedFlagsForTicket,
+  claimFlaggedTicket, clearResolvedFlagsForTicket, clearResolvedHelpFlag,
   listHelpFlags,
 } from '@/modules/ticket/application/help-flags';
 import { HelpFlagRepository } from '@/modules/ticket/infrastructure/help-flag.repository';
@@ -83,6 +83,19 @@ test('escalation belongs to the same crew and creates a fixed Level 2 snapshot',
   const escalated = await escalateHelpFlag(repo, dbWithEvents(writes), context);
   assert.equal(escalated.level, 2);
   assert.deepEqual(writes, ['save', 'event']);
+});
+
+test('crew escalation can create a general Level 2 signal without Party Chief tickets', async () => {
+  const chiefId=id(); const writes:string[]=[];
+  const repo={activeProject:async()=>true,lockFlag:async()=>l1,
+    crewChief:async()=>chiefId,findEscalation:async()=>null,
+    activeFlagForActor:async()=>null,snapshot:async()=>[],
+    saveFlag:async()=>{writes.push('save');}} as unknown as HelpFlagRepositoryPort;
+  const flag=await escalateHelpFlag(repo,dbWithEvents(writes),
+    {tenantId,projectId,actorId:chiefId,actorRole:'PARTY_CHIEF',flagId});
+  assert.deepEqual(flag.affectedTicketIds,[]);
+  assert.equal(flag.escalatedFrom,flagId);
+  assert.deepEqual(writes,['save','event']);
 });
 
 test('only raiser clears active flag and state precedes audit', async () => {
@@ -217,6 +230,39 @@ test(`PostgreSQL ${workloadStatus} help flags preserve crew visibility, fixed sn
            'DIRECT_ASSIGNMENT',$9,'Pipe','Help flag','2026-10-01','LAYOUT')`,
         [ticket,t,p,node,c,requester,pc1,im1,workloadStatus]);
       const repo = new HelpFlagRepository();
+      // A Party Chief can signal overload before any ticket is assigned.
+      const generalContext = {tenantId:t,projectId:p,actorId:pc2,actorRole:'PARTY_CHIEF' as const,level:2 as const};
+      await client.query('SAVEPOINT failed_general_flag');
+      const failedAuditDb:DbClient={async query(sql,params){
+        if(sql.includes('INSERT INTO ticket_events')) throw new Error('Audit unavailable');
+        return client.query(sql,params);
+      }};
+      await assert.rejects(raiseHelpFlag(repo,failedAuditDb,generalContext),/Audit unavailable/);
+      await client.query('ROLLBACK TO SAVEPOINT failed_general_flag');
+      assert.equal(await repo.activeFlagForActor(client,t,p,pc2,2),null);
+      const general = await raiseHelpFlag(repo,client,{...generalContext,reason:'Coordination support'});
+      assert.deepEqual(general.affectedTicketIds,[]);
+      assert.equal(await clearResolvedHelpFlag(repo,client,general,pc2),false);
+      assert.ok((await repo.listVisible(client,t,p,pc1,'PARTY_CHIEF')).some(f=>f.id===general.id));
+      assert.deepEqual(await repo.listVisible(client,id(),p,pc1,'PARTY_CHIEF'),[]);
+      await assert.rejects(raiseHelpFlag(repo,client,generalContext),ConflictError);
+      await assert.rejects(clearHelpFlag(repo,client,{...generalContext,actorId:pc1,flagId:general.id}),ForbiddenError);
+      await clearHelpFlag(repo,client,{...generalContext,flagId:general.id});
+      const generalEvents=await client.query(`SELECT ticket_id,event_type FROM ticket_events WHERE tenant_id=$1 AND payload->>'flagId'=$2 ORDER BY created_at,id`,[t,general.id]);
+      assert.equal(generalEvents.rows.length,2);
+      assert.ok(generalEvents.rows.every(e=>e.ticket_id===null));
+      assert.deepEqual(generalEvents.rows.map(e=>e.event_type).sort(),['help_flag.cleared','help_flag.raised']);
+      // Ticketless audit events must retain a valid tenant/project/flag reference.
+      for (const [eventType,eventTenant,eventProject,eventFlag] of [
+        ['ticket.assigned',t,p,general.id], ['help_flag.raised',t,id(),general.id],
+        ['help_flag.raised',t,p,id()], ['help_flag.raised',id(),p,general.id],
+      ]) {
+        await client.query('SAVEPOINT invalid_event');
+        await assert.rejects(client.query(
+          'INSERT INTO ticket_events(id,ticket_id,tenant_id,actor_id,event_type,payload) VALUES($1,NULL,$2,$3,$4,$5)',
+          [id(),eventTenant,pc2,eventType,JSON.stringify({flagId:eventFlag,projectId:eventProject})]));
+        await client.query('ROLLBACK TO SAVEPOINT invalid_event');
+      }
       const first = await raiseHelpFlag(repo, client,
         { tenantId:t, projectId:p, actorId:im1,
           actorRole:'INSTRUMENT_MAN', level:1 });
@@ -269,7 +315,7 @@ test(`PostgreSQL ${workloadStatus} help flags preserve crew visibility, fixed sn
       await assert.rejects(getHelpPickupOptions(repo,pickup,crewOptions,client,pickupContext),NotFoundError);
       const { rows: flags } = await client.query<{ status:string }>(
         `SELECT status FROM help_flags WHERE tenant_id=$1 AND project_id=$2`,[t,p]);
-      assert.deepEqual(flags.map((f)=>f.status),['CLEARED','CLEARED']);
+      assert.deepEqual(flags.map((f)=>f.status),['CLEARED','CLEARED','CLEARED']);
       const { rows: events } = await client.query<{ event_type:string }>(
         `SELECT event_type FROM ticket_events WHERE tenant_id=$1`,[t]);
       for (const event of ['help_flag.raised','help_flag.escalated',
@@ -315,6 +361,10 @@ test(`PostgreSQL ${workloadStatus} help flags preserve crew visibility, fixed sn
       const { rows: untouched } = await client.query<{ assigned_party_chief_id: UUID }>(
         `SELECT assigned_party_chief_id FROM tickets WHERE id=$1`, [subTicket]);
       assert.equal(untouched[0]?.assigned_party_chief_id, subChiefOne);
+      const subGeneral=await raiseHelpFlag(repo,client,{tenantId:t,projectId:p,actorId:subChiefTwo,actorRole:'PARTY_CHIEF',level:2});
+      assert.deepEqual((await repo.listVisible(client,t,p,subChiefTwo,'PARTY_CHIEF')).map(f=>f.id),[subGeneral.id]);
+      assert.deepEqual((await repo.listVisible(client,t,p,subChiefOne,'PARTY_CHIEF')).map(f=>f.id),[subFlag]);
+      assert.ok((await repo.listVisible(client,t,p,pc1,'PARTY_CHIEF')).some(f=>f.id===subGeneral.id));
     } finally {
       await client.query('ROLLBACK');
       await client.end();

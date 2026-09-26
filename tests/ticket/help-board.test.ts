@@ -11,7 +11,7 @@ const context={tenantId:id,projectId:id,actorId:id,actorRole:'PARTY_CHIEF' as co
 const flag:VisibleHelpFlag={raisedByName:'Field worker',id,tenantId:id,projectId:id,raisedBy:other,level:1,status:'ACTIVE',reason:'Support',escalatedFrom:null,affectedTicketIds:[id]};
 const repo={activeProject:async()=>true,listVisible:async()=>[flag],activeFlagForActor:async()=>null,
   crewChief:async()=>id,snapshot:async()=>[id],findEscalation:async()=>null} as unknown as HelpFlagRepositoryPort;
-test('help board permits raising and escalation only for the eligible crew with active workload',async()=>{
+test('help board permits general Level 2 raising and same-crew escalation',async()=>{
   const board=await getHelpBoard(repo,db,context);
   assert.equal(board.flags[0]?.raisedByName,'Field worker');assert.equal(board.raiseLevel,2);assert.equal(board.flags[0]?.canEscalate,true);assert.equal(board.flags[0]?.canClear,false);
   assert.equal((await getHelpBoard({...repo,crewChief:async()=>other},db,context)).flags[0]?.canEscalate,false);
@@ -19,7 +19,7 @@ test('help board permits raising and escalation only for the eligible crew with 
   const existing=await getHelpBoard({...repo,activeFlagForActor:async()=>flag},db,context);
   assert.equal(existing.raiseLevel,null);assert.equal(existing.flags[0]?.canEscalate,false);
   const empty=await getHelpBoard({...repo,snapshot:async()=>[]},db,context);
-  assert.equal(empty.raiseLevel,null);assert.equal(empty.flags[0]?.canEscalate,false);
+  assert.equal(empty.raiseLevel,2);assert.equal(empty.flags[0]?.canEscalate,true);
 });
 test('IM can raise Level 1 and clear own flag while supervisors only read',async()=>{
   const own={...repo,listVisible:async()=>[{...flag,raisedBy:id}]};
@@ -39,4 +39,10 @@ test('help board preserves repository visibility and rejects unrelated roles and
   assert.deepEqual((await getHelpBoard(scoped,db,context)).flags,[]);assert.equal(reads,1);
   await assert.rejects(getHelpBoard({...repo,activeProject:async()=>false},db,context),ConflictError);
   await assert.rejects(getHelpBoard({...repo,listVisible:async()=>{throw new Error('offline');}},db,context),/offline/);
+});
+
+test('general flags have no pickup action and empty IM workload still prevents Level 1 raising',async()=>{
+  const general={...repo,listVisible:async()=>[{...flag,level:2 as const,affectedTicketIds:[]}]};
+  assert.equal((await getHelpBoard(general,db,context)).flags[0]?.canClaim,false);
+  assert.equal((await getHelpBoard({...repo,snapshot:async()=>[]},db,{...context,actorRole:'INSTRUMENT_MAN'})).raiseLevel,null);
 });

@@ -181,10 +181,10 @@ export class HelpFlagRepository implements HelpFlagRepositoryPort {
         JOIN users raiser ON raiser.id=h.raised_by AND raiser.tenant_id=h.tenant_id
         WHERE h.tenant_id=$1 AND h.project_id=$2 AND h.status='ACTIVE'
           AND (viewer_company.type<>'SUBCONTRACTOR' OR
-            (raiser.company_id=viewer.company_id AND EXISTS (
+            (raiser.company_id=viewer.company_id AND ((h.level=2 AND cardinality(h.affected_ticket_ids)=0) OR EXISTS (
               SELECT 1 FROM tickets t WHERE t.id=ANY(h.affected_ticket_ids)
                 AND t.tenant_id=h.tenant_id AND t.project_id=h.project_id
-                AND t.company_id=viewer.company_id)))
+                AND t.company_id=viewer.company_id))))
          AND (h.level=2 AND $4::text IN
               ('PARTY_CHIEF','SURVEY_SUPERINTENDENT','SURVEY_MANAGER')
            OR h.level=1 AND $4::text IN ('INSTRUMENT_MAN','PARTY_CHIEF')
