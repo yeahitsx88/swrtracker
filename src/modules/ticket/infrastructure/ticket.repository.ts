@@ -611,7 +611,7 @@ export class TicketRepository implements ITicketRepository {
   async operationalGroups(db:DbClient,query:OperationalReportQuery,visibility:VisibilityScope):Promise<OperationalGroup[]> {
     const dimensions={
       project:{key:'t.project_id::text',label:'p.name'},
-      area:{key:'t.aor_node_id::text',label:'a.name'},
+      area:{key:'t.aor_node_id::text',label:"a.name || ' (' || a.code || ')'"},
       craft:{key:'t.craft',label:'t.craft'},
       partyChief:{key:'t.assigned_party_chief_id::text',label:'pc.name'},
       instrumentMan:{key:'t.assigned_instrument_man_id::text',label:'im.name'},
@@ -636,15 +636,20 @@ export class TicketRepository implements ITicketRepository {
 
   async dailyActivity(db:DbClient,query:DailyReportQuery,visibility:VisibilityScope):Promise<DailyActivity[]> {
     const filter=buildVisibilityClause(visibility,6);
+    // Resolve each event's primary-key row before scope filtering. OFFSET 0
+    // prevents flattening into a project scan when fresh tenant estimates are low.
     return (await db.query<DailyActivity>(`SELECT e.event_type AS "eventType",
       count(DISTINCT e.ticket_id)::int AS requests,count(*)::int AS events
-      FROM ticket_events e JOIN tickets t ON t.id=e.ticket_id AND t.tenant_id=e.tenant_id
-      WHERE t.tenant_id=$1 AND t.project_id=$2 AND e.tenant_id=$1
-        AND t.status<>'DRAFT' AND t.draft_deleted_at IS NULL
+      FROM ticket_events e WHERE e.tenant_id=$1
         AND e.created_at >= $3::timestamptz AND e.created_at < $4::timestamptz
         AND e.event_type=ANY($5::text[])
-        AND (e.event_type<>'ticket.created' OR t.workflow_variant='DIRECT_ASSIGNMENT')
-        ${filter.sql}
+        AND EXISTS (SELECT 1 FROM
+          (SELECT * FROM tickets WHERE id=e.ticket_id OFFSET 0) t
+          WHERE t.tenant_id=$1 AND t.project_id=$2
+            AND t.status<>'DRAFT' AND t.draft_deleted_at IS NULL
+            AND (e.event_type<>'ticket.created' OR t.workflow_variant='DIRECT_ASSIGNMENT')
+            ${filter.sql}
+          OFFSET 0)
       GROUP BY e.event_type ORDER BY e.event_type`,
     [query.tenantId,query.projectId,query.from,query.until,[...dailyReportEvents],...filter.params])).rows;
   }

@@ -812,3 +812,14 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: one existing API route composes Ticket and Reporting application services; report UI and local-date helper/tests are included. No Ticket production code or migration changed.
 - Known gaps queued for later batches: grouped/daily representative-volume measurements and duplicate area name differentiation. Automatic report distribution still needs a recipient/cadence contract; this batch provides on-demand daily summaries.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 62
+- Intent: distinguish identically named report areas and measure grouped/daily reporting at representative volume (IMPLEMENTER, Ticket).
+- Files touched: src/modules/ticket/infrastructure/ticket.repository.ts; tests/ticket/operational-report.test.ts; CODEX.md.
+- Behavior changed: area report labels include the project-unique human-readable AOR code, including retired nodes visible to the caller. Daily activity resolves each event's ticket by primary key before applying existing tenant/project/role/company filters; OFFSET 0 preserves the correlated lookup and prevents repeated full-project scans under low row estimates.
+- Performance evidence: 12,012-request fixture with 12,015 included events exposed a 9,592.7ms daily read; EXPLAIN showed about 72 million rejected join pairs and 2.6 million shared-buffer hits. Final service measurement without an added index: project 13.7ms, area 21.3ms, craft 10.7ms, Party Chief 20.7ms, Instrument Man 20.3ms, daily 20.6ms. Measurements are local single-connection warm-buffer samples, not concurrent or network benchmarks.
+- Verification: baseline/final TypeScript and pnpm test passed (167 pass, 36 skips); production build and PostgreSQL suite passed (201 pass, 2 dedicated-URL skips). Regression assertions cover duplicate labels, paginated area identity, retired labels, exact grouped/daily totals above 10,000 requests, and EXPLAIN actual ticket rows scanned bounded to at most twice project size. The work bound catches quadratic scans without depending on a specific index name or elapsed-time threshold. Fixtures roll back.
+- Migration experiment: an experimental 026 scoped index was applied and rerun locally but did not consistently solve planner behavior. After the primary-key query fix used the existing index, the experimental index, its migration tracking row and SQL file were removed. No migration is included in this checkpoint; development schema remains through 025.
+- Module boundary deviations: none in the published diff. Unrelated local work preserved.
+- Known gaps queued for later batches: multi-project/concurrent performance and remaining end-to-end acceptance. Automatic daily distribution still lacks a recipient/cadence contract.
+- Production behavior changed: yes.

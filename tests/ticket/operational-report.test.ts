@@ -27,7 +27,7 @@ test('daily activity rejects invalid or oversized day boundaries before reading 
 });
 
 test('PostgreSQL operational groups preserve statuses, pagination, historical names and ticket visibility',
-  {skip:!process.env.DATABASE_URL},async()=>{
+  {skip:!process.env.DATABASE_URL},async(context)=>{
     const db=new Client({connectionString:process.env.DATABASE_URL});await db.connect();await db.query('BEGIN');
     try{
       const tenant=id(),project=id(),otherProject=id(),gc=id(),sub=id(),actor=id(),other=id(),im=id();
@@ -102,6 +102,11 @@ test('PostgreSQL operational groups preserve statuses, pagination, historical na
       assert.equal(next.groups[0]?.label,'Pipe');assert.equal(next.hasMore,false);
       const areas=await getOperationalReport(repo,db,{...query,dimension:'area'});
       assert.equal(areas.groups.length,2);assert.deepEqual(new Set(areas.groups.map(g=>g.key)),new Set([area,secondArea]));
+      assert.deepEqual(areas.groups.map(group=>group.label),['Area (A)','Area (B)']);
+      const areaPage=await getOperationalReport(repo,db,{...query,dimension:'area',limit:1,offset:1});
+      assert.equal(areaPage.groups[0]?.label,'Area (B)');assert.equal(areaPage.groups[0]?.total,6);
+      await db.query('UPDATE aor_nodes SET retired_at=NOW() WHERE id=$1 AND tenant_id=$2',[area,tenant]);
+      assert.equal((await getOperationalReport(repo,db,{...query,dimension:'area'})).groups[0]?.label,'Area (A)');
       const chiefs=await getOperationalReport(repo,db,{...query,dimension:'partyChief'});
       assert.equal(chiefs.groups[0]?.key,null);assert.equal(chiefs.groups[0]?.total,6);
       assert.equal(chiefs.groups[1]?.label,'Lead');assert.equal(chiefs.groups[1]?.total,6);
@@ -148,6 +153,48 @@ test('PostgreSQL operational groups preserve statuses, pagination, historical na
       assert.deepEqual((await getOperationalReport(repo,db,{...query,projectId:id()})).groups,[]);
       await db.query("UPDATE tickets SET status='COMPLETED' WHERE tenant_id=$1 AND project_id=$2 AND status='SUBMITTED'",[tenant,project]);
       assert.equal((await getDailyTicketActivity(repo,db,dailyQuery)).activity.find(row=>row.eventType==='ticket.submitted')?.requests,1);
+      await db.query(`INSERT INTO tickets(tenant_id,project_id,company_id,requester_id,workflow_variant,status,
+        ticket_number,aor_node_id,craft,description,requested_date,ticket_type,assigned_party_chief_id,assigned_instrument_man_id)
+        SELECT tenant_id,project_id,company_id,requester_id,workflow_variant,status,'FSS-VOLUME-'||n,
+          aor_node_id,craft,description,requested_date,ticket_type,assigned_party_chief_id,assigned_instrument_man_id
+        FROM tickets CROSS JOIN generate_series(1,12000)n
+        WHERE tenant_id=$1 AND project_id=$2 AND status='CREATED'`,[tenant,project]);
+      await db.query(`INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type,payload,created_at)
+        SELECT id,tenant_id,$3,'ticket.created','{}',$4 FROM tickets
+        WHERE tenant_id=$1 AND project_id=$2 AND ticket_number LIKE 'FSS-VOLUME-%'`,[tenant,project,actor,dailyQuery.from]);
+      const timings:string[]=[];
+      for(const dimension of ['project','area','craft','partyChief','instrumentMan'] as const){
+        const start=performance.now();
+        const result=await getOperationalReport(repo,db,{...query,dimension});
+        const elapsed=performance.now()-start;
+        assert.equal(result.groups.reduce((total,group)=>total+group.total,0),12012,dimension);
+        assert.equal(result.groups.reduce((total,group)=>total+(group.statuses.CREATED??0),0),12001,dimension);
+        assert.equal(result.hasMore,false);
+        timings.push(`${dimension}=${elapsed.toFixed(1)}ms`);
+      }
+      let dailyStatement:{sql:string;params?:unknown[]}|undefined;
+      const measuredDb:DbClient={async query<T extends object>(sql:string,params?:unknown[]){
+        if(sql.includes('count(DISTINCT e.ticket_id)'))dailyStatement={sql,params};
+        return db.query<T>(sql,params);
+      }};
+      const dailyStart=performance.now();
+      const loadedDaily=await getDailyTicketActivity(repo,measuredDb,dailyQuery);
+      timings.push(`daily=${(performance.now()-dailyStart).toFixed(1)}ms`);
+      assert.deepEqual(loadedDaily.activity.find(row=>row.eventType==='ticket.created'),
+        {eventType:'ticket.created',requests:12001,events:12001});
+      assert.equal(loadedDaily.activity.reduce((total,row)=>total+row.events,0),12015);
+      context.diagnostic(`12,012-request project report service timings: ${timings.join(', ')}; local target <1000ms, no timing assertion`);
+      // Bound work rather than elapsed time: catch repeated full-project scans
+      // without making CI depend on machine load or a particular index name.
+      assert.ok(dailyStatement);
+      interface PlanNode { 'Relation Name'?:string;'Actual Rows'?:number;'Rows Removed by Filter'?:number;'Actual Loops'?:number;Plans?:PlanNode[] }
+      const plan=await db.query<{ 'QUERY PLAN':Array<{Plan:PlanNode}> }>(
+        'EXPLAIN (ANALYZE, FORMAT JSON) '+dailyStatement.sql,dailyStatement.params);
+      const scanned=(node:PlanNode):number=>(node['Relation Name']==='tickets'
+        ? ((node['Actual Rows']??0)+(node['Rows Removed by Filter']??0))*(node['Actual Loops']??0):0)
+        +(node.Plans??[]).reduce((sum,child)=>sum+scanned(child),0);
+      const ticketRowsScanned=scanned(plan.rows[0]!['QUERY PLAN'][0]!.Plan);
+      assert.ok(ticketRowsScanned>0&&ticketRowsScanned<=24024,`Daily report scanned ${ticketRowsScanned} ticket rows for 12,012 requests`);
       await db.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[actor]);
       await assert.rejects(getOperationalReport(repo,db,query),ForbiddenError);
       await assert.rejects(getDailyTicketActivity(repo,db,dailyQuery),ForbiddenError);
