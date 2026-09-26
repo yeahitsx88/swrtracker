@@ -7,23 +7,26 @@ import type { getProjectReport } from '@/modules/reporting/application';
 import type { ReportDimension, TicketStatus } from '@/modules/ticket/application';
 import { statusLabel } from '@/modules/ticket/domain/status-label';
 import styles from './reports.module.css';
+import { DailySummary } from './daily-summary';
 
 type ReportPage=Omit<Awaited<ReturnType<typeof getProjectReport>>,'asOf'> & {asOf:string};
-const dimensions:Array<{value:ReportDimension;label:string}>=[
+const dimensions:Array<{value:ReportDimension|'daily';label:string}>=[
   {value:'project',label:'Project overview'},{value:'area',label:'Requests by area'},
   {value:'craft',label:'Requests by craft'},{value:'partyChief',label:'Party Chief workload'},
   {value:'instrumentMan',label:'Instrument Man workload'},
+  {value:'daily',label:'Daily summary'},
 ];
 const metrics=[['total','Total requests'],['open','Open'],['closed','Closed'],['completed','Completed'],
   ['canceled','Canceled'],['notApproved','Not Approved'],['workload','Assigned workload']] as const;
 
 export function ProjectReports({projectId}:{projectId:string}) {
-  const [dimension,setDimension]=useState<ReportDimension>('project'),[offset,setOffset]=useState(0);
+  const [dimension,setDimension]=useState<ReportDimension|'daily'>('project'),[offset,setOffset]=useState(0);
   const [page,setPage]=useState<ReportPage|null>(null),[revision,setRevision]=useState(0);
   const [loading,setLoading]=useState(true),[error,setError]=useState('');
   const [signedIn,setSignedIn]=useState(false),[authNeeded,setAuthNeeded]=useState(false);
   useEffect(()=>{
     let current=true;setLoading(true);setPage(null);setError('');
+    if(dimension==='daily'){setLoading(false);return;}
     api<ReportPage>(`/api/projects/${projectId}/reports?dimension=${dimension}&limit=10&offset=${offset}`)
       .then(result=>{if(current){setPage(result);setSignedIn(true);setAuthNeeded(false);}})
       .catch(cause=>{if(current){
@@ -42,11 +45,12 @@ export function ProjectReports({projectId}:{projectId:string}) {
     </p>}</div>}
     <section className="panel" aria-label="Report selection">
       <label htmlFor="report-dimension">Report</label>
-      <select id="report-dimension" value={dimension} onChange={event=>{setDimension(event.target.value as ReportDimension);setOffset(0);}}>
+      <select id="report-dimension" value={dimension} onChange={event=>{setDimension(event.target.value as ReportDimension|'daily');setOffset(0);}}>
         {dimensions.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
       </select>
-      <div className="actions"><button className="secondary" disabled={loading} onClick={()=>setRevision(n=>n+1)}>Refresh report</button></div>
+      {dimension!=='daily'&&<div className="actions"><button className="secondary" disabled={loading} onClick={()=>setRevision(n=>n+1)}>Refresh report</button></div>}
     </section>
+    {dimension==='daily'&&<DailySummary projectId={projectId} onAuthentication={setSignedIn}/>}
     {loading && <p role="status">Loading report…</p>}
     {page && <>
       <p className="muted">Updated {new Date(page.asOf).toLocaleString()}</p>
