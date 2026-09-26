@@ -6,10 +6,11 @@ import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { parseUuid } from '@/lib/parse-uuid';
 import { withTransaction } from '@/lib/with-transaction';
+import { getHelpBoard } from '@/modules/ticket/application/help-board';
 import { HelpFlagRepository } from '@/modules/ticket/infrastructure/help-flag.repository';
 import {
   raiseHelpFlag, escalateHelpFlag, clearHelpFlag,
-  claimFlaggedTicket, listHelpFlags,
+  claimFlaggedTicket,
 } from '@/modules/ticket/application/help-flags';
 
 export const dynamic = 'force-dynamic';
@@ -38,8 +39,7 @@ export async function GET(req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const ctx = await context(req, params);
-    const flags = await listHelpFlags(new HelpFlagRepository(), pool, ctx);
-    return NextResponse.json({ flags });
+    return NextResponse.json(await getHelpBoard(new HelpFlagRepository(), pool, ctx));
   } catch (error) { return errorResponse(error); }
 }
 

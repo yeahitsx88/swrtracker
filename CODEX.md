@@ -644,3 +644,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Boundary deviation: coordinated ticket read model, tenancy label service and ticket API/UI changes needed to resolve names without direct cross-module table access.
 - Known gap queued for later batches: CAD reassignment; help-flag and admin surfaces; responsive acceptance. This display-only increment was build/type/database verified; no additional browser run.
 - Production behavior changed: yes
+
+### 2026-09-25 - Batch 44
+- Intent: expose crew help flags through a survey-role project board.
+- Files touched: src/modules/ticket/application/help-board.ts; src/app/api/projects/[projectId]/help-flags/route.ts; src/app/api/tickets/route.ts; src/app/project/[projectId]/requests/request-list.tsx; src/app/project/[projectId]/help/page.tsx; src/app/project/[projectId]/help/help-board.tsx; tests/ticket/help-board.test.ts; CODEX.md.
+- Behavior added: project requests link to help board for survey roles; board lists only repository-authorized active flags and exposes server-derived raise level, own-clear, and same-crew escalation hints. Optional reasons and confirmations call existing transactional mutations. Missing crew, duplicate flag, empty workload, existing escalation and unauthorized-role cases suppress inappropriate actions. API now explicitly denies unrelated roles on board reads.
+- Validation: baseline TypeScript and 144 standard tests passed; final TypeScript and 147 standard tests passed (31 skipped); PostgreSQL suite passed 176 tests (2 dedicated-URL skips); production build and diff checks passed. New capability tests cover ownership, crew, workload, duplicate escalation, inactive project, role denial and propagated infrastructure failures.
+- Boundary deviation: ticket presentation changes span two API routes (board and navigation capability) and project UI, documented as one coordinated feature.
+- Known gap queued for later batches: help-board browser acceptance, raiser display names, flagged ticket/crew selector for voluntary pickup; existing backend disallows empty-workload Level 2 flags despite specification allowing general overload signals; CAD reassignment and admin surfaces remain.
+- Production behavior changed: yes

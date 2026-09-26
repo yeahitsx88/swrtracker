@@ -18,6 +18,7 @@ import { resolveVisibility } from '@/lib/resolve-visibility';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { createTicket } from '@/modules/ticket/application/create-ticket';
+import { canViewHelpBoard } from '@/modules/ticket/application/help-board';
 import { canCreateRequest } from '@/modules/ticket/application/requester-actions';
 import type { WorkflowVariant } from '@/modules/workflow/domain/transitions';
 import type { TicketType } from '@/modules/ticket/domain/types';
@@ -144,7 +145,7 @@ export async function GET(req: NextRequest) {
       page.data.filter(ticket => ticket.status === 'SUBMITTED').map(ticket => ticket.id));
 
     const canRequest = await canCreateRequest(ticketRepo, pool, auth.tenantId, projectUuid, visibility);
-    return NextResponse.json({ ...page, canRequest, data: page.data.map(ticket => ({
+    return NextResponse.json({ ...page, canRequest, canViewHelpFlags: canViewHelpBoard(actorRole), data: page.data.map(ticket => ({
       ...ticket, displayStatus: statusLabel(ticket.status),
     })) });
   } catch (err) {
