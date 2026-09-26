@@ -3,5 +3,5 @@
  * Do not import from infrastructure here.
  */
 
-// Use-case implementations added here in Phase 4.
-export {};
+export { getProjectReport } from './project-report';
+export type { ProjectReportSource } from './project-report';

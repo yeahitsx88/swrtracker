@@ -774,3 +774,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: none; Ticket owns the aggregation and public service. Reporting can consume the application service in a subsequent batch without duplicating visibility SQL. No migration or API route added.
 - Known gaps queued for later batches: Reporting orchestration, report API and user interface, daily summary, and grouped-report volume measurements. This is an application-service foundation and is not yet exposed in the UI.
 - Production behavior changed: new application service; existing HTTP and UI behavior unchanged.
+
+### 2026-09-25 - Batch 58
+- Intent: expose operational project reports through Reporting and a read-only HTTP endpoint (IMPLEMENTER, Reporting module).
+- Files touched: src/modules/reporting/application/project-report.ts; src/modules/reporting/application/index.ts; src/app/api/projects/[projectId]/reports/route.ts; tests/reporting/project-report.test.ts; CODEX.md.
+- Behavior added: GET /api/projects/:projectId/reports accepts dimension project/area/craft/partyChief/instrumentMan and bounded limit/offset, composes the authorized Ticket application aggregate, and returns no-store results with as-of time and per-group totals. Closed means completed plus all three cancellation terminal states. Open includes Not Approved because rejection may be overridden; Not Approved is separately counted. Crew workload comprises assigned, in-progress, pending lead review and delayed requests. Original status counts are preserved. Reporting performs no direct table reads.
+- Verification: baseline TypeScript and pnpm test passed (160 pass, 36 skips). Final TypeScript, production build, pnpm test (162 pass, 36 skips), and PostgreSQL suite (196 pass, 2 dedicated-URL skips) passed. Added tests check all current status contributions, cancellation totals, rejected/open semantics, sparse and empty results, null crew groups, pagination/context propagation and authorization/database error propagation. Underlying Ticket integration tests cover live scoped counts.
+- Module boundary deviations: one new API route composes Ticket and Reporting application services with the Ticket repository. No other module production code or migration changed.
+- Known gaps queued for later batches: report UI/navigation and browser acceptance; daily summaries; representative-volume measurements for grouped reporting.
+- Production behavior changed: yes, new read-only report endpoint.
