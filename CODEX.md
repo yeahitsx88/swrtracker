@@ -718,3 +718,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Module boundary deviations: one API route and one migration support the Audit module. Migration extends the existing draft tombstone insert guard solely to retain audit project context. Unrelated local changes preserved.
 - Known gaps queued for later batches: audit viewer, CSV export, and browser acceptance; large-volume measurements. CAD reassignment remains a checkpoint-note suggestion without defined source-spec authority/audit semantics, so no new CAD behavior was invented.
 - Production behavior changed: yes.
+
+### 2026-09-25 - Batch 52
+- Intent: implement full filtered CSV audit export required by CLAUDE.md Section 23.
+- Files touched: src/modules/audit/application/audit-csv.ts; src/modules/audit/application/audit-log.ts; src/modules/audit/infrastructure/audit-csv-stream.ts; src/app/api/audit/route.ts; tests/audit/audit-csv.test.ts; CODEX.md.
+- Behavior added: GET /api/audit?format=csv exports all matching events (no list pagination), using the existing exact filters and tenant-admin checks. UTF-8 CSV includes event/source/time/project/ticket/actor identifiers and labels plus full JSON payload. Fields are quoted and spreadsheet formula prefixes neutralized. The stream reads batches of 500 from one read-only repeatable-read transaction; first-page authorization/query errors occur before HTTP success, later errors fail the download, and completion/cancellation releases the connection.
+- Verification: baseline TypeScript and pnpm test passed (152 pass, 33 skips). Final TypeScript and production build passed; pnpm test passed (158 pass, 34 database skips); PostgreSQL suite passed (190 pass, 2 dedicated-URL skips). CSV tests cover 501-row export, quoting/newlines/Unicode/full payload, empty headers, invalid filters, authorization failures, query failures, completion/cancellation cleanup, and live snapshot consistency when a new event arrives between pages. Temporary PostgreSQL test schema removed in finally.
+- Module boundary deviations: one existing API route supports Audit module export. No migration or other module changes; unrelated local work preserved.
+- Known gaps queued for later batches: audit viewer/filter controls and browser download acceptance; large-volume measurements remain. Historical purged events without saved project context remain available only without that project filter.
+- Production behavior changed: yes.
