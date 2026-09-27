@@ -12,7 +12,7 @@ export function Card({ title, description, className, children }: CardProps) {
   return (
     <section className={cn('panel', className)}>
       {(title || description) && (
-        <div className="stack" style={{ gap: '0.2rem' }}>
+        <div className="panel-heading">
           {title ? <h2 className="panel-title">{title}</h2> : null}
           {description ? <p className="muted">{description}</p> : null}
         </div>

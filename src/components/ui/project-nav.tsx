@@ -16,7 +16,7 @@ export function ProjectNav({ projectId, role }: ProjectNavProps) {
   const tabs = getProjectNavigation(role);
 
   return (
-    <nav className="app-links" style={{ marginTop: '0.45rem' }}>
+    <nav className="app-links" aria-label="Project navigation">
       {tabs.map((tab) => {
         const href = tab.href(projectId);
         const isActive = pathname === href;
@@ -26,6 +26,7 @@ export function ProjectNav({ projectId, role }: ProjectNavProps) {
             key={tab.label}
             className={cn('app-link', isActive && 'app-link-active')}
             href={href}
+            aria-current={isActive ? 'page' : undefined}
           >
             {tab.label}
           </Link>

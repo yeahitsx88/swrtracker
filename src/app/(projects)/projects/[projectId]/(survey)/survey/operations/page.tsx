@@ -11,7 +11,8 @@ import type {
   ProjectMemberRecord,
   TicketRecord,
 } from '@/lib/contracts';
-import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
+import { Button, Card, ErrorBanner, Select, SuccessBanner } from '@/components/ui';
+import { Field } from '@/components/forms';
 import { StatusBadge } from '@/components/ui/status-badge';
 
 const TERMINAL = new Set(['COMPLETED', 'REJECTED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED']);
@@ -90,23 +91,29 @@ export default function SurveyOperationsPage() {
       <Card title="Amelia Queue Health" description="Current project snapshot. Counts describe work demand and flow, not employee productivity.">
         {metrics ? (
           <div className="stack">
-            <div className="row">
-              <strong>Open: {metrics.openTotal}</strong>
-              <strong>Approved / no IM: {metrics.approvedWithoutInstrumentMan}</strong>
-              <strong>Overdue Need-By: {metrics.overdueNeedBy}</strong>
-              <strong>Completed: {metrics.completedTotal}</strong>
-              <strong>Average cycle: {metrics.averageSubmissionToCompletionHours === null ? '—' : `${metrics.averageSubmissionToCompletionHours.toFixed(1)} hours`}</strong>
+            <dl className="metrics-grid">
+              <div><dt>Open</dt><dd>{metrics.openTotal}</dd></div>
+              <div><dt>Approved / no IM</dt><dd>{metrics.approvedWithoutInstrumentMan}</dd></div>
+              <div><dt>Overdue Need-By</dt><dd>{metrics.overdueNeedBy}</dd></div>
+              <div><dt>Completed</dt><dd>{metrics.completedTotal}</dd></div>
+              <div><dt>Average cycle</dt><dd>{metrics.averageSubmissionToCompletionHours === null ? '—' : `${metrics.averageSubmissionToCompletionHours.toFixed(1)} hours`}</dd></div>
+            </dl>
+            <div className="area-summary">
+              {metrics.openByAreaStatus.map((row) => (
+                <div className="area-summary-row" key={`${row.areaId}:${row.status}`}>
+                  <span>{row.areaName}</span>
+                  <span><StatusBadge status={row.status} /></span>
+                  <strong>{row.count}</strong>
+                </div>
+              ))}
             </div>
-            {metrics.openByAreaStatus.map((row) => (
-              <p className="muted" key={`${row.areaId}:${row.status}`}>{row.areaName} · {row.status}: {row.count}</p>
-            ))}
           </div>
-        ) : <p className="muted">No metric snapshot loaded.</p>}
+        ) : <p className="muted">{loading ? 'Loading queue health…' : 'No metric snapshot loaded.'}</p>}
       </Card>
 
       <Card title="Approved Work Needing Assignment" description="Highest priority Amelia queue: approved SWRs remain here until an Instrument Man is assigned.">
-        <div className="stack">
-          {approvedUnassigned.length === 0 ? <p className="muted">No approved SWRs are waiting for an Instrument Man.</p> : null}
+        <div className="operation-list">
+          {approvedUnassigned.length === 0 ? <p className="muted">{loading ? 'Loading assignments…' : error ? 'Assignment queue unavailable.' : 'No approved SWRs are waiting for an Instrument Man.'}</p> : null}
           {approvedUnassigned.map((ticket) => (
             <AssignmentRow key={ticket.id} ticket={ticket} partyChiefs={partyChiefs} instrumentMen={instrumentMen}
               busy={busy === ticket.id} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
@@ -115,10 +122,10 @@ export default function SurveyOperationsPage() {
       </Card>
 
       <Card title="Open Requests" description="All nonterminal SWRs, ordered with HIGH priority first and earliest Need-By next.">
-        <div className="stack">
-          {openTickets.length === 0 ? <p className="muted">No open SWRs.</p> : null}
+        <div className="operation-list">
+          {openTickets.length === 0 ? <p className="muted">{loading ? 'Loading requests…' : error ? 'Request queue unavailable.' : 'No open SWRs.'}</p> : null}
           {openTickets.map((ticket) => (
-            <section className="panel" key={ticket.id}>
+            <section className="operation-row" key={ticket.id}>
               <div className="stack">
                 <div className="row" style={{ justifyContent: 'space-between' }}>
                   <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber ?? ticket.id}</Link>
@@ -161,7 +168,7 @@ export default function SurveyOperationsPage() {
             <Button onClick={() => void run('capture', () => apiClient.operateLocalNotificationPreview(projectId, 'capture'), 'Queued messages captured locally.')}>Capture Queued</Button>
             <Button variant="secondary" onClick={() => void run('retry', () => apiClient.operateLocalNotificationPreview(projectId, 'retry-failed'), 'Failed messages queued for retry.')}>Retry Failed</Button>
           </div>
-          {messages.length === 0 ? <p className="muted">No messages recorded.</p> : null}
+          {messages.length === 0 ? <p className="muted">{loading ? 'Loading messages…' : error ? 'Message preview unavailable.' : 'No messages recorded.'}</p> : null}
           {messages.map((message) => (
             <article className="ticket-card" key={message.id}>
               <p className="ticket-headline">{message.subject}</p>
@@ -184,13 +191,13 @@ function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign }: {
   const [partyChiefId, setPartyChiefId] = useState(ticket.assignedPartyChiefId ?? '');
   const [instrumentManId, setInstrumentManId] = useState(ticket.assignedInstrumentManId ?? '');
   return (
-    <section className="panel">
+    <section className="operation-row">
       <div className="stack">
         <p className="ticket-headline">{ticket.ticketNumber ?? ticket.id}</p>
         <p>{ticket.description}</p>
-        <div className="row">
-          <label>Party Chief <select value={partyChiefId} onChange={(event) => setPartyChiefId(event.target.value)}><option value="">None</option>{partyChiefs.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
-          <label>Instrument Man <select value={instrumentManId} onChange={(event) => setInstrumentManId(event.target.value)}><option value="">Unassigned</option>{instrumentMen.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
+        <div className="assignment-fields">
+          <Field label="Party Chief"><Select value={partyChiefId} onChange={(event) => setPartyChiefId(event.target.value)}><option value="">None</option>{partyChiefs.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</Select></Field>
+          <Field label="Instrument Man"><Select value={instrumentManId} onChange={(event) => setInstrumentManId(event.target.value)}><option value="">Unassigned</option>{instrumentMen.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</Select></Field>
           <Button disabled={busy} onClick={() => void onAssign(partyChiefId || null, instrumentManId || null)}>{busy ? 'Saving…' : 'Save Assignment'}</Button>
         </div>
       </div>

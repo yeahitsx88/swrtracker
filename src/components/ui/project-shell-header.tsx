@@ -22,7 +22,7 @@ export function ProjectShellHeader({ projectId }: { projectId: string }) {
   }, [projectId]);
 
   return (
-    <section className="panel">
+    <section className="project-header">
       <h1 className="panel-title">{project?.name ?? 'Project'}</h1>
       <p className="muted">Mobile-first field request and crew execution surfaces.</p>
       {project ? <ProjectNav projectId={projectId} role={project.role} /> : null}

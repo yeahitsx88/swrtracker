@@ -5,6 +5,7 @@ import { LogoutButton } from '@/components/ui';
 export default function ProjectsRootLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="app-nav">
         <div className="app-nav-inner">
           <div className="app-brand">SWRTracker</div>
@@ -14,7 +15,7 @@ export default function ProjectsRootLayout({ children }: { children: ReactNode }
           </div>
         </div>
       </header>
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <div className="page-shell">{children}</div>
       </main>
     </>

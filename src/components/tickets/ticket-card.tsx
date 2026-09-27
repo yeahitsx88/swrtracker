@@ -19,7 +19,7 @@ export function TicketCard({ ticket, detailHref }: TicketCardProps) {
         Requested by: {ticket.isOwnRequest ? 'You' : ticket.requesterName ?? 'Unknown requester'}
       </p>
       <p className="muted">Requested: {new Date(ticket.requestedDate).toLocaleDateString()}</p>
-      <Link href={detailHref} className="app-link">
+      <Link href={detailHref} className="app-link ticket-detail-link" aria-label={`Open Details for ${ticket.ticketNumber ?? ticket.id}`}>
         Open Details
       </Link>
     </article>

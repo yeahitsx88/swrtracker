@@ -1,4 +1,5 @@
 import type { ProjectRole } from '@/modules/identity/domain/types';
+import type { TicketStatus } from './tickets';
 
 export interface ProjectRequestConfig {
   leadTimeEnforcementEnabled: boolean;
@@ -33,7 +34,7 @@ export interface LocalNotificationPreviewResponse {
 
 export interface AmeliaMetricsRecord {
   openTotal: number;
-  openByAreaStatus: Array<{ areaId: string; areaName: string; status: string; count: number }>;
+  openByAreaStatus: Array<{ areaId: string; areaName: string; status: TicketStatus; count: number }>;
   approvedWithoutInstrumentMan: number;
   overdueNeedBy: number;
   completedTotal: number;
