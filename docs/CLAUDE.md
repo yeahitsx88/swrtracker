@@ -808,7 +808,7 @@ Each project has a crew roster. Survey Manager manages Superintendent AOR assign
 - One Party Chief may have multiple Instrument Men
 - An Instrument Man is assigned to exactly one Party Chief per project
 - Reassignment of Instrument Man to a different Party Chief is audit logged as `crew.roster_changed`
-- **Roster management UI/admin surface: parked — revisit before Phase 3**
+- **General-purpose roster admin UI: parked.** The owner has approved a narrow fixed-role Survey Manager staffing workflow for Party Chiefs, Areas and Instrument Men. Account invitation/creation authority remains a separate decision.
 
 ### Ticket Assignment
 
@@ -1042,7 +1042,7 @@ Do not log attachment content, passwords, or tokens.
 - Per-project voluntary pickup approval configuration (parked — post-v1)
 - Dig permit dependency/sequencing model
 - Scheduling model beyond basic assignment
-- Crew roster management UI (parked — needed before Phase 3)
+- General-purpose crew roster management UI; exception: the owner-approved fixed-role Survey Manager staffing flow for Party Chiefs, Areas and Instrument Men
 - Admin configuration panels beyond AOR tree and department management
 - Redis caching layer (add only if measurable cache pressure emerges)
 - Subcontracts Coordinator role subdivision (single role covers v1; divide if multiple coordinators needed in future)

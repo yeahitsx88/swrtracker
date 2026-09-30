@@ -334,6 +334,12 @@ export const apiClient = {
   }> {
     return apiRequest(withQuery(`/api/projects/${projectId}/metrics`, { ...filters, view: 'charts' }));
   },
+  getCommandActivity(projectId: string, filters: Pick<import('@/modules/reporting/application/metrics-filters').MetricsFilters,
+    'areaId' | 'ticketType' | 'status' | 'crewId' | 'instrumentManId' | 'dateFrom' | 'dateTo'> = {}): Promise<{
+    activity: import('@/modules/reporting/application/command-activity').CommandActivity;
+  }> {
+    return apiRequest(withQuery(`/api/projects/${projectId}/metrics`, { ...filters, view: 'activity' }));
+  },
 
   listLocalNotificationPreviews(projectId: string): Promise<LocalNotificationPreviewResponse> {
     return apiRequest<LocalNotificationPreviewResponse>(`/api/projects/${projectId}/notifications`);

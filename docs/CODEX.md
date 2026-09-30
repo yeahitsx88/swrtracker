@@ -2688,3 +2688,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Scope deviation: opt-in PostgreSQL fixture follows the repository's existing tests/beta convention; no API route, migration, ticket visibility predicate, ticket state or audit event changed.
 - Known gaps: explicit relationship persistence/mutation/UI, unassigned-work rule, real PostgreSQL/HTTP recheck and full Survey Authority dashboard remain pending.
 - Production behavior changed: yes, narrower read-only personnel analytics capability for Superintendents.
+
+### 2026-09-30 — Batch 43 (recorded command activity foundation)
+- Intent: IMPLEMENTER in Reporting; add truthful daily demand-versus-completion aggregates for the planned Survey Manager command overview while retaining current-state backlog separately.
+- Files touched: reporting/application/command-activity.ts and infrastructure/command-activity.reader.ts; metrics API route; lib/apiClient.ts; tests/reporting/command-activity.test.ts; CLAUDE.md, LEAD_DECISION_LOG.md, PRODUCT.md, KPI_PERFORMANCE_PROGRESS.md and this log.
+- Behavior added: manager-only `view=activity` endpoint with default 30-day, maximum 90-day UTC event series; first-submission counts, recorded completions excluding generated dates, and source exclusion count. Visibility is resolved by the server before bound operational filters. No ticket details, state changes or fabricated activity are returned. The owner-approved narrow fixed-role staffing exception is now explicit in the spec; onboarding authority remains unresolved.
+- Validation: baseline TypeScript pass, native Windows tests 288/289. Final TypeScript and production build pass; focused activity tests 4/4 and Windows suite 292/293, with the same known Unix attachment-mode failure. Docker was unavailable, so real PostgreSQL execution, HTTP acceptance and query timing for this new endpoint remain open.
+- Scope deviation: one Reporting use case/reader plus one claimed metrics route and shared typed API client, directly tied to this endpoint. Documentation changes resolve the earlier narrow staffing deferral. No migration, UI, role enum, workflow transition or audit event changed.
+- Known gaps: command UI does not yet consume this series; Superintendent crew links and staffing workflow, unassigned-work policy and live SQL/HTTP performance proof remain. The full development objective is active.
+- Production behavior changed: yes, new read-only aggregate endpoint; no existing response shape changed.

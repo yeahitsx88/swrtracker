@@ -26,4 +26,4 @@ Anonymized source exports underpin the historical simulation. Attachments and or
 
 ## Open decisions
 
-Superintendent dashboard crew scope requires an explicit Manager-assigned Superintendent-to-Party-Chief link intersected with the Superintendent's authorized Areas; never infer the link from Area overlap or historical ticket snapshots. The individual assignments and manager-led account invitation authority remain unresolved.
+Superintendent dashboard crew scope requires an explicit Manager-assigned Superintendent-to-Party-Chief link intersected with the Superintendent's authorized Areas; never infer the link from Area overlap or historical ticket snapshots. The owner approved a narrow fixed-role Survey Manager staffing flow despite the previous roster-UI deferral. Individual assignments and manager-led account invitation authority remain unresolved.
