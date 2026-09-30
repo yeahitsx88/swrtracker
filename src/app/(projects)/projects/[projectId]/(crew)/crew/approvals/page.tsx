@@ -1,49 +1,34 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
-import type { TicketRecord } from '@/lib/contracts';
+import { useTicketPage } from '@/lib/use-ticket-page';
+import { PaginationControls } from '@/components/forms';
 import { ApprovalActions, TicketCard } from '@/components/tickets';
 import { Button, Card, ErrorBanner } from '@/components/ui';
 
 export default function CrewApprovalsPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
-  const [tickets, setTickets] = useState<TicketRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(25);
+  const [revision, setRevision] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busyTicketId, setBusyTicketId] = useState<string | null>(null);
-
-  async function loadTickets() {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await apiClient.listTickets(projectId, 50, 0);
-      setTickets(page.data);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to load approval queue.'));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadTickets();
-  }, [projectId]);
-
-  const pendingApprovals = useMemo(
-    () => tickets.filter((ticket) => ticket.status === 'PENDING_FIELD_VALIDATION' || ticket.status === 'PENDING_PC_APPROVAL'),
-    [tickets],
-  );
+  const approvals = useTicketPage(projectId, page, size, { queue: 'pcApprovals' }, true, revision);
+  const total = approvals.data?.total ?? 0;
+  const pages = Math.max(1, Math.ceil(total / size));
+  useEffect(() => { if (approvals.data && page > pages) setPage(pages); }, [approvals.data, page, pages]);
+  useEffect(() => { setPage(1); }, [projectId]);
 
   async function runAction(ticketId: string, action: () => Promise<void>) {
     setError(null);
     setBusyTicketId(ticketId);
     try {
       await action();
-      await loadTickets();
+      setRevision((current) => current + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to process approval action.'));
     } finally {
@@ -58,14 +43,16 @@ export default function CrewApprovalsPage() {
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
+        {approvals.error ? <ErrorBanner message={approvals.error} /> : null}
         <div className="row">
-          <Button variant="secondary" onClick={() => void loadTickets()} disabled={loading}>
-            {loading ? 'Refreshing...' : 'Refresh'}
+          <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={approvals.loading}>
+            {approvals.loading ? 'Refreshing...' : 'Refresh'}
           </Button>
+          <label className="field">Rows<select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
         </div>
-        {loading ? <p className="muted">Loading approval queue...</p> : null}
-        {!loading && pendingApprovals.length === 0 ? <p className="muted">No pending approvals.</p> : null}
-        {pendingApprovals.map((ticket) => (
+        {approvals.loading ? <p className="muted" role="status">Loading approval queue...</p> : null}
+        {!approvals.loading && !approvals.error && total === 0 ? <p className="muted">No pending approvals.</p> : null}
+        {approvals.data?.data.map((ticket) => (
           <section key={ticket.id} className="panel">
             <div className="stack">
               <TicketCard ticket={ticket} detailHref={`/projects/${projectId}/tickets/${ticket.id}`} />
@@ -91,6 +78,7 @@ export default function CrewApprovalsPage() {
             </div>
           </section>
         ))}
+        {!approvals.loading && total > 0 ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}
       </div>
     </Card>
   );

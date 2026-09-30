@@ -1,7 +1,7 @@
 import type { TicketPriority, TicketStatus, TicketType } from '../domain/types';
 
 export interface TicketQueryFilters {
-  queue?: 'all' | 'open' | 'assignment' | 'completed' | 'overdue';
+  queue?: 'all' | 'open' | 'assignment' | 'completed' | 'overdue' | 'fieldWork' | 'pcApprovals';
   crewId?: string;
   instrumentManId?: string;
   dateBasis?: 'needBy' | 'submitted' | 'completed';

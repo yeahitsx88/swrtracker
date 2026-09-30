@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
@@ -24,7 +24,7 @@ export default function MyRequestsPage() {
     setLoading(true);
     setError(null);
     try {
-      const page = await apiClient.listTickets(projectId, LIMIT, offset);
+      const page = await apiClient.listTickets(projectId, LIMIT, offset, { queue: 'all' });
       setTickets(page.data);
       setTotal(page.total);
     } catch (err) {
@@ -38,11 +38,6 @@ export default function MyRequestsPage() {
     void loadTickets();
   }, [projectId, offset]);
 
-  const submittedTickets = useMemo(
-    () => tickets.filter((ticket) => ticket.status !== 'DRAFT'),
-    [tickets],
-  );
-
   return (
     <Card
       title="Requests"
@@ -52,7 +47,7 @@ export default function MyRequestsPage() {
         <ScopedKpiEntry projectId={projectId} audience="requester" />
         {error ? <ErrorBanner message={error} /> : null}
         {loading ? <p className="muted">Loading tickets...</p> : null}
-        {!loading ? <TicketList projectId={projectId} tickets={submittedTickets} /> : null}
+        {!loading ? <TicketList projectId={projectId} tickets={tickets} /> : null}
         <PaginationControls
           offset={offset}
           limit={LIMIT}

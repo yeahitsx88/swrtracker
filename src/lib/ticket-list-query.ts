@@ -2,7 +2,7 @@ import { ValidationError } from '@/shared/errors';
 import type { TicketQueryFilters } from '@/modules/ticket/application/query-filters';
 
 const choices = {
-  queue: ['all', 'open', 'assignment', 'completed', 'overdue'],
+  queue: ['all', 'open', 'assignment', 'completed', 'overdue', 'fieldWork', 'pcApprovals'],
   status: ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'DELAYED', 'COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED', 'RETURNED_FOR_CORRECTION', 'PENDING_FIELD_VALIDATION'],
   priority: ['NORMAL', 'MEDIUM', 'MED_HIGH', 'HIGH'],
   ticketType: ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'],

@@ -41,6 +41,21 @@ test('queue filters distinguish approved unassigned, completed and overdue popul
   assert.deepEqual(ticketFilterClause({}, 1), { sql: '', params: [] });
 });
 
+test('role work queues select actionable statuses at the data layer', () => {
+  const parsed = parseTicketListQuery(new URLSearchParams('queue=fieldWork&limit=25&offset=50'));
+  assert.equal(parsed.filters.queue, 'fieldWork');
+  assert.equal(parsed.limit, 25);
+  assert.equal(parsed.offset, 50);
+  const clause = ticketFilterClause(parsed.filters, 5);
+  assert.equal(clause.sql, 't.status = ANY($5::text[])');
+  assert.deepEqual(clause.params, [['ASSIGNED', 'IN_PROGRESS', 'DELAYED']]);
+  const approval = parseTicketListQuery(new URLSearchParams('queue=pcApprovals'));
+  assert.equal(approval.filters.queue, 'pcApprovals');
+  const approvalClause = ticketFilterClause(approval.filters, 5);
+  assert.equal(approvalClause.sql, 't.status = ANY($5::text[])');
+  assert.deepEqual(approvalClause.params, [['PENDING_FIELD_VALIDATION', 'PENDING_PC_APPROVAL']]);
+});
+
 test('KPI detail filters validate dates and retain bounded crew/date predicates', () => {
   for (const query of ['crewId=bad','dateFrom=0000-01-01','dateBasis=bad','dateFrom=2026-02-30','dateFrom=2026-03-01&dateTo=2026-02-01']) {
     assert.throws(()=>parseTicketListQuery(new URLSearchParams(query)),{name:'ValidationError'});
@@ -73,4 +88,18 @@ test('filtered list count and page share authorization and narrowing with stable
   assert.match(calls[1]!.sql, /t.id ASC/);
   assert.match(calls[1]!.sql, /LIMIT \$7 OFFSET \$8/);
   assert.deepEqual(calls[1]!.values.slice(-2), [10, 20]);
+
+  calls.length = 0;
+  await new TicketRepository().list(db, 'tenant' as UUID, {
+    projectId: 'project' as UUID,
+    visibility: { actorId: 'actor' as UUID, actorRole: 'REQUESTER', companyId: 'company' as UUID, companyType: 'SUBCONTRACTOR' },
+    filters: { queue: 'fieldWork' }, sort: 'operations', limit: 25, offset: 50,
+  });
+  assert.equal(calls.length, 2);
+  for (const call of calls) {
+    assert.match(call.sql, /t.tenant_id = \$1 AND t.project_id = \$2 AND t.requester_id = \$3 AND t.company_id = \$4/);
+    assert.match(call.sql, /t.status = ANY\(\$5::text\[\]\)/);
+    assert.deepEqual(call.values[4], ['ASSIGNED', 'IN_PROGRESS', 'DELAYED']);
+  }
+  assert.deepEqual(calls[1]!.values.slice(-2), [25, 50]);
 });

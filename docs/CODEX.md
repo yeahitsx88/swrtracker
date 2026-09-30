@@ -2652,3 +2652,13 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Production behavior changed: yes, read-only on-demand chart access on two additional role routes.
 - Finish review: independent Impeccable reviewer returned Ship with no material UI blocker after inspecting four final captures and the code diff; this is not a live-backend authorization verdict.
 - Documentation check: independent read-only comparison found Axiom alignment and requested a narrow record of the two new role entry points; updated product, design and KPI brief text without changing tokens or the design sidecar.
+
+### 2026-09-30 — Batch 39 (bounded role work queues)
+- Intent: IMPLEMENTER in Ticket with claimed shared query parser and three role routes; prevent early list pages from hiding later actionable or submitted requests.
+- Files touched: ticket/application/query-filters.ts and infrastructure/ticket-filter-clause.ts; lib/ticket-list-query.ts; Crew Work, Crew Approvals and My Requests pages; tests/ticket/query-filters.test.ts; KPI_PERFORMANCE_PROGRESS.md and this log.
+- Behavior added: `fieldWork` and `pcApprovals` server queues select their actionable states after existing visibility; both crew pages use bounded, selectable server pages and refresh after actions. My Requests uses existing `queue=all` so draft exclusion applies to both count and page at the data layer.
+- Validation: baseline TypeScript/build pass and 286/287 native Windows tests; final TypeScript/build pass, focused Ticket query tests 7/7, native Windows tests 287/288 with the same pre-existing Unix attachment-mode mismatch. Mocked 390px browser checks verified all three queue parameters, both crew pages' offsets/row-size changes, no overflow or page errors. No new Linux or live-data run while Docker/WSL were unavailable.
+- Scope deviation: one shared Ticket query parser and three existing role UI pages changed alongside Ticket query code; no API route file, migration, workflow transition or audit event changed. Local browser acceptance script is ignored evidence, not a portable automated test.
+- Known gaps: full-objective acceptance, real-data review and separate Survey Authority staffing/dashboard policy remain pending.
+- Production behavior changed: yes, server-filtered personal/field work/approval pages and crew pagination.
+- Finish review: independent Impeccable review returned Ship without a material UI blocker; mocked-browser evidence remains separate from live authorization/data proof.
