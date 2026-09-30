@@ -1,5 +1,6 @@
 import type { DbClient, UUID } from '@/shared/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
+import type { TicketStatus } from '@/modules/ticket/domain/types';
 import { ForbiddenError } from '@/shared/errors';
 import { canAnalyzeSurveyPersonnel, type MetricsFilters } from './metrics-filters';
 
@@ -17,7 +18,7 @@ export interface MetricsCharts {
 
 export interface AmeliaMetrics {
   openTotal: number;
-  openByAreaStatus: Array<{ areaId: UUID; areaName: string; status: string; count: number }>;
+  openByAreaStatus: Array<{ areaId: UUID; areaName: string; status: TicketStatus; count: number }>;
   approvedWithoutInstrumentMan: number;
   overdueNeedBy: number;
   completedTotal: number;

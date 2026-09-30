@@ -32,13 +32,11 @@ export function ProjectReview({ projectId }: { projectId: string }) {
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
     const initial = Object.fromEntries(keys.filter(k => search.has(k)).map(k => [k,search.get(k)!]));
-    setFilters(initial); setDraft(initial); setReady(true);
+    setFilters(initial); setDraft(initial); setTab(search.get('view') === 'requests' ? 'requests' : 'overview'); setReady(true);
   },[]);
   useEffect(() => {
     if (!ready) return;
     let active = true;
-    const search = new URLSearchParams(filters);
-    window.history.replaceState(null,'',`${window.location.pathname}${search.size ? `?${search}` : ''}`);
     apiClient.reviewTickets(projectId,{...filters,limit:size,offset:(page-1)*size}).then(result => {
       if (!active) return;
       setSnapshot({key,data:result}); setFacets(result.facets);
@@ -46,6 +44,12 @@ export function ProjectReview({ projectId }: { projectId: string }) {
     }).catch(cause => { if(active) setSnapshot({key,error:getErrorMessage(cause,'Unable to load project review.')}); });
     return () => { active=false; };
   },[key,ready]);
+  useEffect(() => {
+    if (!ready) return;
+    const search = new URLSearchParams(filters);
+    if (tab === 'requests') search.set('view', 'requests');
+    window.history.replaceState(null,'',`${window.location.pathname}${search.size ? `?${search}` : ''}`);
+  },[filters,tab,ready]);
   function apply(next: Filters) {
     const clean = Object.fromEntries(Object.entries(next).filter(([,v]) => v.trim()).map(([k,v]) => [k,v.trim()]));
     setFilters(clean); setDraft(clean); setPage(1);

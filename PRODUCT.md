@@ -16,6 +16,8 @@ The owner confirmed a read-only Sabine Historical closeout review: all-history d
 
 Requester My Requests and field Crew Work expose the shared KPI explorer on demand, with audience-appropriate measures and default views. Chart populations and personnel controls remain server-scoped; ordinary page visits do not fetch analytics.
 
+Survey Manager Operations opens on a project-scoped command overview that separates all-date current request state from daily first-submission and recorded-completion activity. Area, request type, current status, and Party Chief narrow both; UTC activity dates narrow only the activity series (30 days by default, up to 90). Chart selections open the matching authorized Project Review requests; activity dates do not carry into that all-date request review. Show generated completion exclusions and avoid treating request distribution as assignment timing or employee productivity.
+
 ## Brand commitments
 
 Follow the supplied Axiom Brand Guide and the existing Live simulation display standards. DESIGN.md records that implemented identity. Favor compact navigation, expandable rows and selectable page sizes.

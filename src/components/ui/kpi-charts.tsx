@@ -62,3 +62,27 @@ function Gauge(p: ChartProps) {
 }
 const renderers: Record<ChartKind,(props:ChartProps)=>React.ReactNode>={heat:Heat,bar:Bars,trend:Trend,donut:Donut,gauge:Gauge};
 export function KpiChart({kind,...props}:ChartProps&{kind:ChartKind}) { const Renderer=renderers[kind]; return <Renderer {...props}/>; }
+
+export interface ComparisonPoint { key: string; primary: number; secondary: number }
+
+/** Two recorded event series, with a native table for exact daily values. */
+export function KpiComparisonTrend({ points, title, primaryLabel, secondaryLabel }: {
+  points: ComparisonPoint[]; title: string; primaryLabel: string; secondaryLabel: string;
+}) {
+  const max = Math.max(1, ...points.flatMap(point => [point.primary, point.secondary]));
+  const x = (index: number) => 42 + index * 550 / Math.max(1, points.length - 1);
+  const y = (count: number) => 156 - count / max * 126;
+  const series = (field: 'primary' | 'secondary') => points.map((point, index) => `${x(index)},${y(point[field])}`).join(' ');
+  if (!points.length) return <p className="muted">No recorded activity in this window. Broaden the dates to inspect another period.</p>;
+  return <div className="kpi-comparison">
+    <div className="kpi-comparison-legend"><span><i className="kpi-comparison-key kpi-comparison-primary" />{primaryLabel}</span><span><i className="kpi-comparison-key kpi-comparison-secondary" />{secondaryLabel}</span></div>
+    <svg viewBox="0 0 620 180" role="img" aria-label={`${title}; exact daily counts follow`}>
+      <path d="M42 30 V156 H592" fill="none" stroke="var(--line)" />
+      <text x="4" y="34">{max.toLocaleString()}</text><text x="20" y="160">0</text>
+      <polyline points={series('primary')} fill="none" stroke="var(--action)" strokeWidth="3" strokeLinejoin="round" />
+      <polyline points={series('secondary')} fill="none" stroke="var(--muted)" strokeWidth="3" strokeLinejoin="round" />
+    </svg>
+    <div className="kpi-comparison-range"><time dateTime={points[0]!.key}>{points[0]!.key}</time><time dateTime={points.at(-1)!.key}>{points.at(-1)!.key}</time></div>
+    <details><summary>Exact daily counts</summary><div className="kpi-comparison-table"><table><thead><tr><th scope="col">Date · UTC</th><th scope="col">{primaryLabel}</th><th scope="col">{secondaryLabel}</th></tr></thead><tbody>{points.map(point => <tr key={point.key}><th scope="row">{point.key}</th><td>{point.primary.toLocaleString()}</td><td>{point.secondary.toLocaleString()}</td></tr>)}</tbody></table></div></details>
+  </div>;
+}

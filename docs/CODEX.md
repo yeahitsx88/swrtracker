@@ -2697,3 +2697,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Scope deviation: one Reporting use case/reader plus one claimed metrics route and shared typed API client, directly tied to this endpoint. Documentation changes resolve the earlier narrow staffing deferral. No migration, UI, role enum, workflow transition or audit event changed.
 - Known gaps: command UI does not yet consume this series; Superintendent crew links and staffing workflow, unassigned-work policy and live SQL/HTTP performance proof remain. The full development objective is active.
 - Production behavior changed: yes, new read-only aggregate endpoint; no existing response shape changed.
+
+### 2026-09-30 — Batch 44 (Survey Manager command overview)
+- Intent: IMPLEMENTER in Survey Operations; provide the requested Axiom command dashboard without inferring productivity or expanding role scope.
+- Files touched: Survey Operations page, new command overview and view-link helper, shared KPI chart/styles, Project Review URL tab handling, metric status typing, helper tests, PRODUCT/DESIGN traceability, KPI_PERFORMANCE_PROGRESS.md and this log.
+- Behavior added: default Overview tab with current-status donut, recorded daily demand/completion trend, switchable Area/type/Party Chief bars, coordinated filters, authorized request-list drilldowns, and deferred queue-page fetch until its tab is selected. Activity dates never silently narrow all-time backlog counts.
+- Validation: TypeScript and production build pass; drilldown helper 2/2; native Windows tests 294/295 with only the pre-existing Unix attachment-mode mismatch. Mocked desktop/mobile browser acceptance verifies no overflow/JS error, no initial ticket-page fetch, date-only activity refetch, and request-list drilldown. Independent Impeccable finish review: Pass, no material blocker.
+- Known gaps: the browser used mocked API payloads; real PostgreSQL/HTTP activity execution and performance evidence await a container/database runtime. Manager staffing and explicit Superintendent reporting links remain unimplemented; unassigned-work policy is awaiting owner direction.
+- Production behavior changed: yes, Manager overview and read-only Project Review tab deep link; no role grant, ticket state, imported record, or project lifecycle changed.

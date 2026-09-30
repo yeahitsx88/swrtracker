@@ -161,6 +161,8 @@ Queue health uses five clickable measures and a native details dialog, with a bl
 
 Requester My Requests and field Crew Work reuse the KPI explorer through a compact chart-entry row and labeled native dialog. Requester opens on an authorized request-status donut; field opens on an open-request Area heat map. The entry leaves the queue visible and fetches charts only when opened. On narrow screens the Requester KPI field spans the dialog while visualization and grouping share a row when both fit; the dialog scrolls internally without horizontal page overflow.
 
+The Survey Manager command overview is a compact, filter-first panel below queue health. It pairs an all-date status donut with a UTC daily demand/completion comparison, then switches the current-request distribution among Area, type, and Party Chief without changing the page layout. Keep exact daily values in a native disclosure table, readable counts on bars and legends, and scoped chart selections linked to the request review. At narrow widths, stack the filters and chart panels while retaining the Apply/Reset controls and visible scope text.
+
 ### Keyboard Focus
 
 Focusable elements use a three-pixel solid Action Blue outline offset by three pixels. Retain this indicator across buttons, links, fields, and navigation; never remove it without an equally visible replacement.

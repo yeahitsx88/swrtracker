@@ -6,7 +6,6 @@ import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type {
-  AmeliaMetricsRecord,
   LocalNotificationPreviewRecord,
   ProjectMemberRecord,
   TicketRecord,
@@ -14,6 +13,8 @@ import type {
 import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { OperationsHealth } from '@/components/ui/operations-health';
+import { SurveyCommandOverview } from '@/components/ui/survey-command-overview';
+import type { AmeliaMetrics } from '@/modules/reporting/application/amelia-metrics';
 import { operationsServerPage, operationsPage, operationsStatusLabel } from '@/lib/operations-view';
 import { useTicketPage } from '@/lib/use-ticket-page';
 import type { TicketPriority, TicketStatus } from '@/lib/contracts';
@@ -23,13 +24,13 @@ export default function SurveyOperationsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [revision, setRevision] = useState(0);
   const [members, setMembers] = useState<ProjectMemberRecord[]>([]);
-  const [metrics, setMetrics] = useState<AmeliaMetricsRecord | null>(null);
+  const [metrics, setMetrics] = useState<AmeliaMetrics | null>(null);
   const [messages, setMessages] = useState<LocalNotificationPreviewRecord[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [tab, setTab] = useState<'assignment' | 'open' | 'messages'>('assignment');
+  const [tab, setTab] = useState<'overview' | 'assignment' | 'open' | 'messages'>('overview');
   const [query, setQuery] = useState('');
   const [area, setArea] = useState('');
   const [status, setStatus] = useState('');
@@ -46,7 +47,7 @@ export default function SurveyOperationsPage() {
     setLoading(true);
     setError(null);
     setMetrics(null);
-    apiClient.getProjectMetrics(projectId)
+    apiClient.getKpiCharts(projectId, {})
       .then(response => { if (active) setMetrics(response.metrics); })
       .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load Survey operations.')); })
       .finally(() => { if (active) setLoading(false); });
@@ -77,7 +78,7 @@ export default function SurveyOperationsPage() {
     queue: tab === 'assignment' ? 'assignment' : 'open', query: query.trim() || undefined,
     areaId: area || undefined, status: tab === 'open' && status ? status as TicketStatus : undefined,
     priority: priority ? priority as TicketPriority : undefined,
-  }, !!metrics && tab !== 'messages', revision);
+  }, !!metrics && (tab === 'assignment' || tab === 'open'), revision);
   useEffect(() => {
     if (ticketQuery.data && page > Math.max(1, Math.ceil(ticketQuery.data.total / pageSize))) setPage(Math.max(1, Math.ceil(ticketQuery.data.total / pageSize)));
   }, [ticketQuery.data, page, pageSize]);
@@ -113,18 +114,19 @@ export default function SurveyOperationsPage() {
       <div className="row"><Button variant="secondary" disabled={loading} onClick={() => void loadOperations()}>{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
 
       {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
-
-      <div className="ops-tabs" role="tablist" aria-label="Operations queues">
-        {([['assignment', 'Need Assignment', metrics?.approvedWithoutInstrumentMan ?? '—'], ['open', 'Open Requests', metrics?.openTotal ?? '—'], ['messages', 'Local Messages', messages.length || '—']] as const).map(([key, label, count], index) =>
+      <div className="ops-tabs" role="tablist" aria-label="Operations views">
+        {([['overview', 'Overview', null], ['assignment', 'Need Assignment', metrics?.approvedWithoutInstrumentMan ?? '—'], ['open', 'Open Requests', metrics?.openTotal ?? '—'], ['messages', 'Local Messages', messages.length || '—']] as const).map(([key, label, count], index) =>
           <button key={key} type="button" role="tab" id={`tab-${key}`} aria-controls={`panel-${key}`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1}
             onClick={() => selectTab(key)} onKeyDown={event => {
-              const keys = ['assignment', 'open', 'messages'] as const;
-              const next = event.key === 'ArrowRight' ? (index + 1) % 3 : event.key === 'ArrowLeft' ? (index + 2) % 3 : event.key === 'Home' ? 0 : event.key === 'End' ? 2 : -1;
+              const keys = ['overview', 'assignment', 'open', 'messages'] as const;
+              const next = event.key === 'ArrowRight' ? (index + 1) % 4 : event.key === 'ArrowLeft' ? (index + 3) % 4 : event.key === 'Home' ? 0 : event.key === 'End' ? 3 : -1;
               const nextTab = keys[next];
               if (nextTab) { event.preventDefault(); selectTab(nextTab); document.getElementById(`tab-${nextTab}`)?.focus(); }
-            }}>{label}<span>{count}</span></button>)}
+            }}>{label}{count !== null ? <span>{count}</span> : null}</button>)}
       </div>
-      <div className="ops-queue" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} ref={queueRef} aria-busy={loading || ticketQuery.loading || (tab === 'messages' && messagesLoading)}>
+      {tab === 'overview' ? <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
+        {metrics?.charts ? <SurveyCommandOverview projectId={projectId} initialMetrics={metrics} revision={revision} /> : null}
+      </div> : <div className="ops-queue" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} ref={queueRef} aria-busy={loading || ticketQuery.loading || (tab === 'messages' && messagesLoading)}>
       {ticketQuery.loading || (tab === 'messages' && messagesLoading) ? <p className="muted">Loading this view…</p> : null}
       <div className="ops-filters">
         <label className="ops-search">{tab === 'messages' ? 'Search messages' : 'Find a request'}<input type="search" placeholder={tab === 'messages' ? 'Subject, recipient or request number' : 'Number, details, contact or requester'} value={query} onChange={event => { setQuery(event.target.value); setPage(1); }} /></label>
@@ -214,7 +216,7 @@ export default function SurveyOperationsPage() {
           ))}
         </div>
       </Card> : null}
-      </div>
+      </div>}
     </div>
   );
 }
