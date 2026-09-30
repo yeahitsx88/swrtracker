@@ -808,7 +808,7 @@ Each project has a crew roster. Survey Manager manages Superintendent AOR assign
 - One Party Chief may have multiple Instrument Men
 - An Instrument Man is assigned to exactly one Party Chief per project
 - Reassignment of Instrument Man to a different Party Chief is audit logged as `crew.roster_changed`
-- **General-purpose roster admin UI: parked.** The owner has approved a narrow fixed-role Survey Manager staffing workflow for Party Chiefs, Areas and Instrument Men. This workflow may select existing project members only; account invitations remain IT-admin controlled.
+- **General-purpose roster admin UI: parked.** The owner has approved bounded Survey Manager Team Management for existing project members: fixed Superintendent/Party Chief/Instrument Man assignment/change/removal and named organizational teams. See Decision 13 and `TEAM_MANAGEMENT_INCREMENT.md`. Team membership does not establish Area authority or reporting links. Account invitations remain IT-admin controlled.
 
 ### Ticket Assignment
 
@@ -995,6 +995,13 @@ Log at every meaningful state transition. Structured format only.
 *Crew*
 - `crew.roster_changed` (Survey Manager or Superintendent reassigns Instrument Man to different Party Chief)
 
+*Owner-approved project Survey Team Management (project-level `survey_staffing_events`, not ticket transitions)*
+- `survey.staffing_saved` (existing fixed-role Chief/Area/reporting/IM transaction)
+- `survey.team_created`, `survey.team_updated` (organizational team name, Area, lead and members; previous state and version on edit)
+- `survey.team_deactivated` (confirmed soft deletion retains personnel, historical membership and all ticket records)
+- `survey.role_changed` (reserved for the approved fixed Superintendent/Chief/IM assignment/change/removal flow; no tenant-level role changes)
+- Named teams do not grant Area or reporting authority. One active team per person/project. The owner approved this bounded Team Management increment after Decision 12; see `TEAM_MANAGEMENT_INCREMENT.md`. General RBAC, invitations and HR administration remain deferred.
+
 *Help flags*
 - `help_flag.raised` (level, raised_by, project recorded)
 - `help_flag.escalated` (Level 1 → Level 2; escalated_by and original flag id recorded)
@@ -1042,7 +1049,7 @@ Do not log attachment content, passwords, or tokens.
 - Per-project voluntary pickup approval configuration (parked — post-v1)
 - Dig permit dependency/sequencing model
 - Scheduling model beyond basic assignment
-- General-purpose crew roster management UI; exception: the owner-approved fixed-role Survey Manager staffing flow for Party Chiefs, Areas and Instrument Men
+- General-purpose crew roster management UI; exception: the owner-approved bounded fixed-role Survey Manager Team Management increment in Decision 13 (named organizational teams and existing-member Superintendent/Party Chief/Instrument Man staffing)
 - Admin configuration panels beyond AOR tree and department management
 - Redis caching layer (add only if measurable cache pressure emerges)
 - Subcontracts Coordinator role subdivision (single role covers v1; divide if multiple coordinators needed in future)
