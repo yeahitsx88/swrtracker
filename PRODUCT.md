@@ -26,7 +26,7 @@ Survey Manager Team Management exposes compact, searchable, paginated Personnel 
 
 Follow the supplied Axiom Brand Guide and the existing Live simulation display standards. DESIGN.md records that implemented identity. Favor compact navigation, expandable rows and selectable page sizes.
 
-The authenticated shell greets the current user by name beside Axiom. Account navigation opens as a persistent right-side working column on wider screens and a focus-protected drawer on phones. Historical review charts default to a single-row scrollable lane with an optional expanded grid. Existing filters, drill-downs and permissions remain unchanged. The owner also requested report/print exports for measures and filtered request populations (for meeting action lists); this is lower priority and remains queued, not implemented by the navigation refinement.
+The authenticated shell greets the current user by name beside Axiom. Following the owner's GitHub menu recording and approval, account navigation opens as a full-height, focus-protected right overlay at all widths, with a dimmed backdrop and a quick slide; the page stays stationary. Close, Escape and backdrop clicks dismiss it; reduced motion removes the slide. This supersedes the earlier desktop push-column choice. Historical review charts default to a single-row scrollable lane with an optional expanded grid. Existing filters, drill-downs and permissions remain unchanged. The owner also requested report/print exports for measures and filtered request populations (for meeting action lists); this is lower priority and remains queued, not implemented by the navigation refinement.
 
 ## Evidence on hand
 

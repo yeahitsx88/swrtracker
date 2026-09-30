@@ -7,18 +7,18 @@ related_targets: ["src/app/(projects)/layout.tsx", "src/components/ui/account-me
 
 # Account shell refinement
 
-Mode: Operate. Precisely specified, code-first incumbent extension from the owner's annotated browser comments. See docs/ACCOUNT_SHELL_BRIEF.md for the complete source contract and scope boundaries.
+Mode: Operate. Precisely specified, code-first incumbent extension from the owner's annotated comments, GitHub menu recording and explicit overlay approval (Decision 16). See docs/ACCOUNT_SHELL_BRIEF.md for the complete source contract and scope boundaries.
 
 ## Direction contract
 
-THESIS: Personal wayfinding without covering the desktop working surface or dismissing navigation when the user returns to work.
+THESIS: Familiar account wayfinding in a full-height right overlay, leaving the working page stationary and restoring it on dismissal.
 
 OWN-WORLD: Inherit supplied Axiom artwork, Roboto, white surfaces, slate text, steel-blue structure and existing focus. No new tokens or raster assets.
 
 STORY: Greet the authenticated account by name; reveal the familiar account destinations, preserving project context and per-browser-session sign-out.
 
-FIRST VIEWPORT: Sticky header carries Axiom, Hello plus full name, and Menu at right. Open navigation fills a 280px right column below the header and narrows main content at widths >=768px. Smaller screens use a modal right drawer with Close, Escape and protected focus.
+FIRST VIEWPORT: Sticky header carries Axiom, Hello plus full name, and Menu at right. At every width, the native modal drawer overlays the header and working page from viewport top to bottom, meeting the right edge. Width caps at 320px with at least a 24px backdrop strip on small screens. A slate backdrop dims the unchanged page; scrollbar compensation prevents movement. Close, Escape and backdrop clicks dismiss; native focus protection returns to Menu without scrolling.
 
-FORM: Precisely specified incumbent extension; no concept seed. Persistent desktop working column versus native mobile dialog. Long names wrap; loading/failure never invents identity and failure exposes retry. No ornamental motion.
+FORM: Precisely specified incumbent extension; no concept seed. Right-edge slide and coordinated backdrop: 260ms decelerating entrance, 180ms exit, interrupted/repeated opening without timers. CSS display/overlay support enhances native behavior; absent support still permits immediate dismissal. Reduced motion removes spatial travel. Long names wrap; loading/failure never invents identity and failure exposes retry.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
