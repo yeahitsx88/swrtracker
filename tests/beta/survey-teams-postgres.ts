@@ -66,6 +66,16 @@ async function main() {
     const call=async(response:Promise<Response>,status:number)=>{
       const result=await response;const data=await result.json();assert.equal(result.status,status,JSON.stringify(data));scenarios++;return data;
     };
+    const context=await call(handleGetSurveyTeams(request('GET',undefined,'?mode=context'),ctx,deps),200);
+    assert.deepEqual(context.project,{status:'ACTIVE',crewBuild:'FULL'});
+    const pickerAreas=await call(handleGetSurveyTeams(request('GET',undefined,'?mode=areas&limit=10&search=Train'),ctx,deps),200);
+    assert.deepEqual(pickerAreas.data,[{id:area,name:'Train 1'}]);
+    assert.equal((await repo.areas(pool,tenant,otherProject,{search:'',limit:10,offset:0})).total,0);scenarios++;
+    assert.equal(await repo.projectContext(pool,tenant,otherProject),null);scenarios++;
+    await pool.query('UPDATE aor_nodes SET retired_at=NOW() WHERE id=$1',[area]);
+    assert.equal((await repo.areas(pool,tenant,project,{search:'',limit:10,offset:0})).total,0);scenarios++;
+    await pool.query('UPDATE aor_nodes SET retired_at=NULL WHERE id=$1',[area]);
+    await call(handleGetSurveyTeams(request('GET',undefined,'?mode=areas'),ctx,{...deps,requireAuth:()=>({...authUser,userId:chief})}),403);
     const createKey=randomUUID();
     const created=await call(handlePostSurveyTeam(request('POST',input,'',token,createKey),ctx,deps),201);
     const teamId=created.teamId as UUID;
@@ -86,6 +96,8 @@ async function main() {
     const personnel=await call(handleGetSurveyTeams(request('GET',undefined,'?mode=personnel&limit=10&search=Chief'),ctx,deps),200);
     assert.equal(personnel.total,2);assert.equal(personnel.data.find((p:{userId:string})=>p.userId===chief).teamId,teamId);
     assert.equal(personnel.data.find((p:{userId:string})=>p.userId===otherChief).teamId,null);
+    const chiefs=await call(handleGetSurveyTeams(request('GET',undefined,'?mode=personnel&limit=10&search=Party%20Chief'),ctx,deps),200);
+    assert.equal(chiefs.total,2);assert.ok(chiefs.data.every((person:{role:string})=>person.role==='PARTY_CHIEF'));
     const page=await call(handleGetSurveyTeams(request('GET',undefined,'?limit=10&offset=10'),ctx,deps),200);
     assert.equal(page.total,1);assert.equal(page.data.length,0);
     await call(handlePostSurveyTeam(request('POST',{...input,name:'Other',leadUserId:im,memberIds:[im]}),ctx,deps),409);

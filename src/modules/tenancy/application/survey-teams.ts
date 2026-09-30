@@ -11,6 +11,8 @@ export interface SurveyTeamSummary {
 export interface SurveyTeamDetail extends SurveyTeamSummary { members: TeamPerson[] }
 export interface TeamPersonnel extends TeamPerson { teamId: UUID | null; teamName: string | null; roleVersion: number }
 export interface TeamPageQuery { search: string; limit: number; offset: number }
+export interface TeamProjectContext { status: ProjectStatus; crewBuild: CrewBuild }
+export interface TeamArea { id: UUID; name: string }
 export interface SaveSurveyTeamInput {
   teamId: UUID | null; expectedVersion: number | null; name: string; areaId: UUID; leadUserId: UUID; memberIds: UUID[];
 }
@@ -18,6 +20,8 @@ export interface TeamActor { tenantId: UUID; projectId: UUID; actorId: UUID; act
 export type TeamEvent = 'survey.team_created' | 'survey.team_updated' | 'survey.team_deactivated' | 'survey.role_changed';
 
 export interface SurveyTeamsRepository {
+  projectContext(db: DbClient, tenantId: UUID, projectId: UUID): Promise<TeamProjectContext | null>;
+  areas(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery): Promise<Page<TeamArea>>;
   lockProject(db: DbClient, tenantId: UUID, projectId: UUID): Promise<{ status: ProjectStatus; crewBuild: CrewBuild } | null>;
   lockManager(db: DbClient, actor: TeamActor): Promise<boolean>;
   team(db: DbClient, tenantId: UUID, projectId: UUID, teamId: UUID): Promise<SurveyTeamDetail | null>;
@@ -107,4 +111,16 @@ export async function readSurveyTeams(repo: SurveyTeamsRepository, db: DbClient,
 export async function readTeamPersonnel(repo: SurveyTeamsRepository, db: DbClient, actor: TeamActor, query: TeamPageQuery) {
   assertManager(actor);
   return repo.personnel(db, actor.tenantId, actor.projectId, query);
+}
+
+export async function readTeamContext(repo: SurveyTeamsRepository, db: DbClient, actor: TeamActor) {
+  assertManager(actor);
+  const project = await repo.projectContext(db, actor.tenantId, actor.projectId);
+  if (!project) throw new NotFoundError('Project not found');
+  return { project };
+}
+
+export async function readTeamAreas(repo: SurveyTeamsRepository, db: DbClient, actor: TeamActor, query: TeamPageQuery) {
+  assertManager(actor);
+  return repo.areas(db, actor.tenantId, actor.projectId, query);
 }

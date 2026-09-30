@@ -2,7 +2,7 @@ import type { DbClient, Page, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import { ConflictError } from '@/shared/errors';
 import type { SaveSurveyTeamInput, SurveyTeamDetail, SurveyTeamSummary, SurveyTeamsRepository,
-  TeamActor, TeamEvent, TeamPageQuery, TeamPersonnel, TeamPerson } from '../application/survey-teams';
+  TeamActor, TeamEvent, TeamPageQuery, TeamPersonnel, TeamPerson, TeamProjectContext, TeamArea } from '../application/survey-teams';
 import { SurveyStaffingPgRepository } from './survey-staffing.repository';
 import type { ChangeSurveyRoleInput, SurveyRoleObligations, SurveyRoleRepository } from '../application/change-survey-role';
 
@@ -32,6 +32,21 @@ const teamSelect = `SELECT t.id,t.name,t.aor_node_id,n.name AS area_name,t.lead_
   WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL`;
 
 export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implements SurveyTeamsRepository, SurveyRoleRepository {
+  async projectContext(db: DbClient, tenantId: UUID, projectId: UUID): Promise<TeamProjectContext | null> {
+    const { rows } = await db.query<TeamProjectContext>(
+      `SELECT status,crew_build AS "crewBuild" FROM projects WHERE tenant_id=$1 AND id=$2`, [tenantId,projectId]);
+    return rows[0] ?? null;
+  }
+
+  async areas(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery) {
+    const from = `FROM aor_nodes n JOIN aor_levels l ON l.tenant_id=n.tenant_id AND l.project_id=n.project_id AND l.id=n.level_id
+      WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.retired_at IS NULL AND l.depth=0 AND n.name ILIKE $3`;
+    const values = [tenantId,projectId,`%${query.search}%`];
+    const count = await db.query<{ total: number }>(`SELECT COUNT(*)::int AS total ${from}`,values);
+    const { rows } = await db.query<TeamArea>(`SELECT n.id,n.name ${from} ORDER BY lower(n.name),n.id LIMIT $4 OFFSET $5`,[...values,query.limit,query.offset]);
+    return { data: rows, total: count.rows[0]!.total, limit: query.limit, offset: query.offset };
+  }
+
   override async activeArea(db: DbClient, tenantId: UUID, projectId: UUID, areaId: UUID): Promise<boolean> {
     const { rows } = await db.query<{ id: UUID }>(
       `SELECT n.id FROM aor_nodes n JOIN aor_levels l ON l.id=n.level_id AND l.project_id=n.project_id AND l.tenant_id=n.tenant_id
@@ -87,7 +102,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL
       JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
       WHERE pm.project_id=$2 AND pm.role IN ('REQUESTER','VIEWER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
-        AND (u.name ILIKE $3 OR u.email ILIKE $3)`;
+        AND (u.name ILIKE $3 OR u.email ILIKE $3 OR pm.role ILIKE $3 OR replace(pm.role,'_',' ') ILIKE $3)`;
     const values = [tenantId, projectId, `%${query.search}%`];
     const count = await db.query<{ total: number }>(`SELECT COUNT(*)::int AS total ${from}`, values);
     const { rows } = await db.query<PersonRow>(

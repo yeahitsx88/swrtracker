@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+const dbUrl=new URL(process.env.DATABASE_URL??'');
+if(process.env.SWR_TEAM_POSTGRES!=='1'||dbUrl.hostname!=='127.0.0.1'||dbUrl.port!=='15489'||dbUrl.pathname!=='/swr_team_isolated')throw new Error('Disposable team fixture only');
+const origin='http://127.0.0.1:3107',id=n=>`20000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const project=id(2),manager=id(3),tenant=id(1),candidate=id(20),area=id(5);
+const token=(user,version=1,userTenant=tenant)=>jwt.sign({sub:user,tenantId:userTenant,sv:version},process.env.JWT_SECRET,{expiresIn:'1h',jwtid:randomUUID()});
+const managerToken=token(manager,2),path=`/api/projects/${project}/survey/teams`;
+const timings=[];
+async function request(method,query='',body,expected=200,bearer=managerToken){
+  const start=performance.now(),response=await fetch(origin+path+query,{method,headers:{cookie:`swr_session=${bearer}`,'content-type':'application/json','idempotency-key':randomUUID()},...(body?{body:JSON.stringify(body)}:{})});
+  const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));timings.push({method,query,status:response.status,ms:Math.round(performance.now()-start)});return data;
+}
+assert.deepEqual((await request('GET','?mode=context')).project,{status:'ACTIVE',crewBuild:'FULL'});
+const people=await request('GET','?mode=personnel&limit=10');assert.ok(people.data.length<=10);assert.ok(people.data.some(person=>person.userId===candidate));
+await request('GET','?mode=context',undefined,403,token(id(7)));
+await request('GET','?mode=personnel',undefined,401,token(manager,1));
+await request('GET','?mode=areas',undefined,403,token(id(13),1,id(11)));
+const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+try{
+  const context=await browser.newContext({viewport:{width:1440,height:900}});
+  await context.addCookies([{name:'swr_session',value:managerToken,url:origin}]);
+  const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(`${origin}/projects/${project}/survey/teams`,{waitUntil:'networkidle'});
+  await page.getByRole('button',{name:'Change role for Role candidate',exact:true}).click();
+  await page.waitForFunction(()=>document.activeElement?.matches('h3[tabindex="-1"]'));
+  await page.getByLabel('New role',{exact:false}).selectOption('INSTRUMENT_MAN');
+  await page.getByLabel('I confirm this role change and understand this person must sign in again.').check();
+  await page.getByRole('button',{name:'Save role',exact:true}).click();
+  await page.getByText('Project role saved. The person must sign in again.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Change role for Role candidate',exact:true}).waitFor();
+  const changed=await request('GET','?mode=personnel&limit=10&search=Role%20candidate');
+  assert.equal(changed.data[0].role,'INSTRUMENT_MAN');
+  const input={name:'Isolated HTTP Team',areaId:area,leadUserId:candidate,memberIds:[candidate]};
+  const created=await request('POST','',input,201);
+  const edited=await request('POST','',{...input,teamId:created.teamId,expectedVersion:1,name:'Isolated HTTP Team Edited'});
+  assert.equal(edited.rowVersion,2);
+  const detail=await request('GET',`?teamId=${created.teamId}`);assert.equal(detail.team.lead.userId,candidate);
+  await request('DELETE','',{teamId:created.teamId,expectedVersion:2,confirmDelete:true});
+  await page.getByRole('button',{name:'Change role for Role candidate',exact:true}).click();
+  await page.getByLabel('New role',{exact:false}).selectOption('REQUESTER');
+  await page.getByLabel('I confirm this role change and understand this person must sign in again.').check();
+  await page.getByRole('button',{name:'Save role',exact:true}).click();
+  await page.getByText('Project role saved. The person must sign in again.',{exact:true}).waitFor();
+  assert.equal((await request('GET','?mode=personnel&limit=10&search=Role%20candidate')).data[0].role,'REQUESTER');
+  assert.deepEqual(errors,[]);await context.close();
+  console.log('Actual production HTTP and unmocked browser role/team scenarios passed against the disposable test database.');
+  console.log(JSON.stringify(timings));
+}finally{await browser.close();}

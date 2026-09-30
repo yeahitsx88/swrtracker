@@ -97,6 +97,30 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
 }
 
 export const apiClient = {
+  getTeamContext(projectId: string): Promise<{ project: import('@/modules/tenancy/application/survey-teams').TeamProjectContext }> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { mode: 'context' }));
+  },
+  listSurveyTeams(projectId: string, query: import('@/modules/tenancy/application/survey-teams').TeamPageQuery): Promise<import('@/shared/types').Page<import('@/modules/tenancy/application/survey-teams').SurveyTeamSummary>> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { ...query }));
+  },
+  listTeamPersonnel(projectId: string, query: import('@/modules/tenancy/application/survey-teams').TeamPageQuery): Promise<import('@/shared/types').Page<import('@/modules/tenancy/application/survey-teams').TeamPersonnel>> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { ...query, mode: 'personnel' }));
+  },
+  listTeamAreas(projectId: string, query: import('@/modules/tenancy/application/survey-teams').TeamPageQuery): Promise<import('@/shared/types').Page<import('@/modules/tenancy/application/survey-teams').TeamArea>> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { ...query, mode: 'areas' }));
+  },
+  getSurveyTeam(projectId: string, teamId: string): Promise<{ team: import('@/modules/tenancy/application/survey-teams').SurveyTeamDetail }> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { teamId }));
+  },
+  saveSurveyTeam(projectId: string, input: import('@/modules/tenancy/application/survey-teams').SaveSurveyTeamInput, idempotencyKey: string): Promise<{ teamId: string; rowVersion: number; changed: boolean }> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { method: 'POST', body: input, headers: { 'Idempotency-Key': idempotencyKey } });
+  },
+  deleteSurveyTeam(projectId: string, teamId: string, expectedVersion: number, idempotencyKey: string): Promise<{ success: boolean }> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { method: 'DELETE', body: { teamId, expectedVersion, confirmDelete: true }, headers: { 'Idempotency-Key': idempotencyKey } });
+  },
+  changeSurveyRole(projectId: string, input: import('@/modules/tenancy/application/change-survey-role').ChangeSurveyRoleInput, idempotencyKey: string): Promise<{ changed: boolean }> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { method: 'PATCH', body: { action: 'set-role', ...input }, headers: { 'Idempotency-Key': idempotencyKey } });
+  },
   reviewTickets(projectId: string, query: Record<string, string | number | undefined>): Promise<import('@/modules/ticket/application/review-tickets').ReviewResult> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/review`, query));
   },

@@ -18,6 +18,8 @@ Requester My Requests and field Crew Work expose the shared KPI explorer on dema
 
 Survey Manager Operations opens on a project-scoped command overview that separates all-date current request state from daily first-submission and recorded-completion activity. Area, request type, current status, and Party Chief narrow both; UTC activity dates narrow only the activity series (30 days by default, up to 90). Chart selections open the matching authorized Project Review requests; activity dates do not carry into that all-date request review. Show generated completion exclusions and avoid treating request distribution as assignment timing or employee productivity.
 
+Survey Manager Team Management exposes compact, searchable, paginated Personnel and Teams views. Use existing project members only; invitations remain IT controlled. Supported fixed Superintendent/Party Chief/Instrument Man changes require confirmation and sign-in renewal. Removing a survey role retains project membership as Requester. A person belongs to one active named team per project; its Area and member lead describe an organizational group, never automatic operational authority or reporting access. Preserve historical requests and explicit grants; resolve current obligations before role changes. Closed projects expose read-only team details.
+
 ## Brand commitments
 
 Follow the supplied Axiom Brand Guide and the existing Live simulation display standards. DESIGN.md records that implemented identity. Favor compact navigation, expandable rows and selectable page sizes.
@@ -28,4 +30,4 @@ Anonymized source exports underpin the historical simulation. Attachments and or
 
 ## Open decisions
 
-Superintendent dashboard crew scope requires an explicit Manager-assigned Superintendent-to-Party-Chief link intersected with the Superintendent's authorized Areas; never infer the link from Area overlap or historical ticket snapshots. The owner approved a narrow fixed-role Survey Manager staffing flow despite the previous roster-UI deferral. The Manager may assign only existing project members to Party Chief and Instrument Man roles; account invitations remain IT-admin controlled. Individual Sabine reporting assignments and the separate unassigned-work population rule remain unresolved.
+Superintendent dashboard crew scope requires an explicit Manager-assigned Superintendent-to-Party-Chief link intersected with the Superintendent's authorized Areas; never infer the link from Area overlap or historical ticket snapshots. The owner approved narrow fixed-role Team Management despite the previous roster-UI deferral, including Superintendent/Chief/IM roles. Explicit staffing/reporting and obligation cleanup controls still need completion. Individual Sabine reporting assignments and the separate unassigned-work population rule remain unresolved.

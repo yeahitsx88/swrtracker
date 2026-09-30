@@ -6,7 +6,7 @@ import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
 import { withTransaction } from '@/lib/with-transaction';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
-import { authorizeTeamMutation, deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, saveSurveyTeam,
+import { authorizeTeamMutation, deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamContext, readTeamAreas, saveSurveyTeam,
   type SaveSurveyTeamInput, type TeamActor, type TeamPageQuery } from '@/modules/tenancy/application/survey-teams';
 import { SurveyTeamsPgRepository } from '@/modules/tenancy/infrastructure/survey-teams.repository';
 import { changeSurveyRole, type ChangeSurveyRoleInput, type ManagedSurveyRole, type SurveyRoleRepository } from '@/modules/tenancy/application/change-survey-role';
@@ -85,11 +85,13 @@ export async function handleGetSurveyTeams(req: NextRequest, ctx: Context, deps:
   try {
     const query = parseTeamPage(req);
     const mode = req.nextUrl.searchParams.get('mode') ?? 'teams';
-    if (mode !== 'teams' && mode !== 'personnel') throw new ValidationError('Unknown Team Management view');
+    if (!['teams','personnel','context','areas'].includes(mode)) throw new ValidationError('Unknown Team Management view');
     const rawId = req.nextUrl.searchParams.get('teamId');
     const teamId = rawId === null ? undefined : uuid(rawId, 'Team');
-    if (mode === 'personnel' && teamId) throw new ValidationError('Team detail and personnel pages are separate views');
+    if (mode !== 'teams' && teamId) throw new ValidationError('Team detail and other pages are separate views');
     const result = await transact(req, ctx, deps, async (db, actor) => {
+      if (mode === 'context') return readTeamContext(deps.repo, db, actor);
+      if (mode === 'areas') return readTeamAreas(deps.repo, db, actor, query);
       if (mode === 'personnel') return readTeamPersonnel(deps.repo, db, actor, query);
       return readSurveyTeams(deps.repo, db, actor, query, teamId);
     });

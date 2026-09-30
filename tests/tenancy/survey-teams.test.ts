@@ -3,7 +3,7 @@ import test from 'node:test';
 import { NextRequest } from 'next/server';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
-import { deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, saveSurveyTeam,
+import { deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamContext, readTeamAreas, saveSurveyTeam,
   type SurveyTeamDetail, type TeamActor, type TeamPersonnel } from '@/modules/tenancy/application/survey-teams';
 import { handleDeleteSurveyTeam, handleGetSurveyTeams, handlePostSurveyTeam, parseTeamInput, parseTeamPage,
   handlePatchSurveyRole, parseSurveyRoleInput, type TeamDeps } from '@/app/api/projects/[projectId]/survey/teams/handler';
@@ -24,6 +24,8 @@ function fixture() {
   let current: SurveyTeamDetail | null=null;
   const people: [TeamPersonnel, TeamPersonnel]=[{...chief},{...im}];
   const repo: SurveyRoleRepository = {
+    projectContext:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
+    areas:async(_db,t,p,q)=>({data:t===tenantId&&p===projectId?[{id:areaId,name:'Train 1'}]:[],total:1,limit:q.limit,offset:q.offset}),
     lockProject: async()=>({status:'ACTIVE',crewBuild:'FULL'}), lockManager:async()=>true,
     team:async(_db,t,p)=> t===tenantId && p===projectId ? current : null,
     list:async(_db,t,p,q)=>({data:t===tenantId&&p===projectId&&current?[current]:[],total:current?1:0,limit:q.limit,offset:q.offset}),
@@ -53,7 +55,24 @@ test('all team reads and writes reject non-Manager roles before repository acces
   await assert.rejects(deactivateSurveyTeam(f.repo,db,wrong,teamId,1),ForbiddenError);
   await assert.rejects(readSurveyTeams(f.repo,db,wrong,{search:'',limit:25,offset:0}),ForbiddenError);
   await assert.rejects(readTeamPersonnel(f.repo,db,wrong,{search:'',limit:25,offset:0}),ForbiddenError);
+  await assert.rejects(readTeamContext(f.repo,db,wrong),ForbiddenError);
+  await assert.rejects(readTeamAreas(f.repo,db,wrong,{search:'',limit:10,offset:0}),ForbiddenError);
   assert.deepEqual(f.writes,[]);
+});
+
+test('Manager picker context and Area pages use scoped reads and reject incompatible detail parameters',async()=>{
+  const f=fixture();
+  const deps:TeamDeps={repo:f.repo,requireAuth:()=>({userId:actorId,tenantId,sessionVersion:1}),getProjectRole:async()=>actor.actorRole,
+    withTransaction:async fn=>fn(db),executeIdempotent:async(_db,_ctx,_input,fn)=>({...await fn(),replayed:false})};
+  const ctx={params:Promise.resolve({projectId})};
+  const request=(query:string)=>new NextRequest(`http://localhost/api/projects/${projectId}/survey/teams${query}`);
+  assert.deepEqual(await (await handleGetSurveyTeams(request('?mode=context'),ctx,deps)).json(),{project:{status:'ACTIVE',crewBuild:'FULL'}});
+  const areas=await handleGetSurveyTeams(request('?mode=areas&limit=10'),ctx,deps);
+  assert.equal(areas.status,200);assert.deepEqual((await areas.json()).data,[{id:areaId,name:'Train 1'}]);
+  assert.equal((await handleGetSurveyTeams(request(`?mode=context&teamId=${teamId}`),ctx,deps)).status,400);
+  assert.equal((await handleGetSurveyTeams(request('?mode=areas'),ctx,{...deps,getProjectRole:async()=>'REQUESTER'})).status,403);
+  f.repo.projectContext=async()=>null;
+  assert.equal((await handleGetSurveyTeams(request('?mode=context'),ctx,deps)).status,404);
 });
 
 test('team mutation rejects archived projects and a changed Manager assignment/session', async()=>{

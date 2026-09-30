@@ -34,6 +34,10 @@ const pcApprovals: ProjectNavigationItem = {
   label: 'PC Approvals',
   href: (projectId) => `/projects/${projectId}/crew/approvals`,
 };
+const teamManagement: ProjectNavigationItem = {
+  label: 'Team Management',
+  href: (projectId) => `/projects/${projectId}/survey/teams`,
+};
 const admin: ProjectNavigationItem = {
   label: 'Admin',
   href: (projectId) => `/projects/${projectId}/admin`,
@@ -41,7 +45,7 @@ const admin: ProjectNavigationItem = {
 
 const navigationByRole: Record<ProjectRole, readonly ProjectNavigationItem[]> = {
   REQUESTER: [newRequest, myRequests, drafts],
-  SURVEY_MANAGER: [surveyOperations, allRequests],
+  SURVEY_MANAGER: [surveyOperations, teamManagement, allRequests],
   PARTY_CHIEF: [crewWork, pcApprovals],
   INSTRUMENT_MAN: [crewWork],
   PROJECT_ADMIN: [admin],
