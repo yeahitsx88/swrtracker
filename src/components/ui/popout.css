@@ -1,0 +1,5 @@
+.popout-dialog[open] { display: flex; flex-direction: column; }
+.popout-dialog > .popout-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; flex: 0 0 auto; gap: 1rem; margin: 0; padding: var(--popout-inset); border-bottom: 1px solid var(--line); background: var(--bg-elevated); }
+.popout-header h2 { min-width: 0; overflow-wrap: anywhere; }
+.popout-header > button { flex-shrink: 0; }
+.popout-body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--popout-inset); scrollbar-color: var(--brand) var(--bg); scroll-padding-block: 1rem; }

@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { accountNavigation } from './account-navigation';
 import { ProductBrand } from './product-brand';
 import './account-menu.css';
+import './popout.css';
 
 export function AccountShell({ children }: { children: ReactNode }) {
   const params = useParams<{ projectId?: string }>();
@@ -50,17 +51,17 @@ export function AccountShell({ children }: { children: ReactNode }) {
     catch (cause) { setError(getErrorMessage(cause, 'Unable to sign out. Please try again.')); setBusy(false); }
   }
   const navigation = <>
-    <div className="account-panel-heading"><h2 id="account-navigation-title" className="panel-title">Your account</h2>
+    <div className="account-panel-heading popout-header"><h2 id="account-navigation-title" className="panel-title">Your account</h2>
       <button type="button" className="button button-secondary" onClick={close} aria-label="Close account menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
       </button></div>
-    <nav id="account-navigation" aria-label="Account navigation">
+    <div className="popout-body"><nav id="account-navigation" aria-label="Account navigation">
       {accountNavigation(context).map(item => <Link key={item.label} href={item.href}
         aria-current={pathname === item.href.split('?')[0] && (item.label !== 'Home' || !!context) ? 'page' : undefined}
         onClick={close}>{item.label}</Link>)}
       <button type="button" disabled={busy} onClick={() => void signOut()}>{busy ? 'Signing out…' : 'Sign out'}</button>
       {error && <p role="alert" className="error-banner">{error}</p>}
-    </nav>
+    </nav></div>
   </>;
   return <div className="application-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
@@ -78,7 +79,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
       </div>
     </header>
     <div className="application-workspace"><main id="main-content" tabIndex={-1}><div className="page-shell">{children}</div></main></div>
-    <dialog ref={dialog} className="account-menu-panel account-drawer" aria-labelledby="account-navigation-title"
+    <dialog ref={dialog} className="account-menu-panel account-drawer popout-dialog" aria-labelledby="account-navigation-title"
       onCancel={event => { event.preventDefault(); close(); }}
       onPointerDown={event => {
         const rect = event.currentTarget.getBoundingClientRect();

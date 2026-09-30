@@ -38,7 +38,7 @@
 .ops-queue-row summary:hover, .ops-queue-row[open] summary { background: #f0f5f9; }
 .ops-row-title { color: var(--muted); font-weight: 400; margin-left: .8rem; display: inline-block; max-width: calc(100% - 145px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 .ops-row-body { padding: .8rem .75rem 1.25rem; }
-.ops-dialog { width: min(950px, calc(100vw - 2rem)); max-height: 85dvh; overflow: auto; padding: 1.5rem; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); background: white; }
+.ops-dialog { --popout-inset: 1.5rem; width: min(950px, calc(100vw - 2rem)); max-height: 85dvh; overflow: hidden; padding: 0; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); background: white; }
 .ops-dialog::backdrop { background: rgb(24 38 50 / 48%); }
 .ops-breakdown { margin-top: 1rem; }
 .ops-breakdown > summary { cursor: pointer; padding: .6rem 0; font-weight: 600; }
@@ -59,7 +59,7 @@
   .ops-health, .ops-queue { padding: 1rem; }
   .ops-filters > label:not(.ops-search) { flex: 1 1 130px; }
   .ops-row-title { display: block; max-width: calc(100% - 1rem); margin-left: 1rem; margin-top: .3rem; }
-  .ops-dialog { padding: 1rem; }
+  .ops-dialog { --popout-inset: 1rem; }
   .ops-detail-list li { grid-template-columns: 1fr; }
   .ops-detail-list small { grid-column: 1; }
 }

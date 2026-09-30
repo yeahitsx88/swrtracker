@@ -17,3 +17,5 @@ FORM: Precisely specified incumbent extension; no concept seed. Signature intera
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 Boundaries: no new permissions, account API, invitations, role changes or session policy. Report/print exports are a separate, lower-priority backlog item; a future meeting report must cover the authorized filtered population, not silently just the visible page, and disclose provenance. No bulk export is claimed by this refinement.
+
+Owner-approved scroll refinement: the title and Close control form a non-scrolling header. Account destinations scroll independently beneath it when the viewport is short. Preserve native modal focus, right-edge motion, backdrop dismissal and stationary page behavior; Close remains reachable without returning to the top of the navigation content.

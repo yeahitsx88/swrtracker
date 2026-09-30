@@ -21,4 +21,6 @@ FIRST VIEWPORT: Sticky header carries Axiom, Hello plus full name, and Menu at r
 
 FORM: Precisely specified incumbent extension; no concept seed. Right-edge slide and coordinated backdrop: 260ms decelerating entrance, 180ms exit, interrupted/repeated opening without timers. CSS display/overlay support enhances native behavior; absent support still permits immediate dismissal. Reduced motion removes spatial travel. Long names wrap; loading/failure never invents identity and failure exposes retry.
 
+Owner-approved scroll refinement: title and Close stay in a non-scrolling header while the account destinations scroll beneath it. The same shared popout frame keeps analytics Close controls visible at every content scroll position, without obscuring body controls or changing native modal behavior.
+
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

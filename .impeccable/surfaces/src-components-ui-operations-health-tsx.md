@@ -21,6 +21,8 @@ FIRST VIEWPORT: Existing dialog heading/Close at top; compact visualization/grou
 
 FORM: Precise local extension, not a concept tournament; no seed required. Heat map, bar, trend, donut and completed-share gauge use a common typed result. Mean hours are not additive: no donut or arbitrary SLA gauge for turnaround.
 
+Owner-approved scroll refinement: title and Close remain in a non-scrolling header while the explorer body scrolls beneath it. This applies to Queue Health, Requester and field Crew Work dialogs; mobile titles wrap beside an unchanged full-size Close control. Native focus/dismissal, filters and scoped analytics are preserved.
+
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Approved Superintendent population extension

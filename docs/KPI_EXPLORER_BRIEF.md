@@ -17,3 +17,5 @@ FORM: Precise local extension, not a concept tournament; no seed required. Heat 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 Shipped extension: Requester My Requests and field Crew Work have a compact, on-demand entry to the same explorer. Requester starts on status donut with own/authorized request measures; field starts on the open-request Area heat map. The server result continues to determine personnel control availability. This extends the Operations dialog, not its visual language or backend authorization policy.
+
+Owner-approved scroll refinement: all KPI explorers retain the title and Close in a non-scrolling header while filters, charts, coverage and bounded matching requests scroll inside the body. The shared frame also covers account navigation. Keep mobile title wrapping and the full Close hit target, without overlaying charts or changing authorized populations, Escape dismissal or launcher focus restoration.

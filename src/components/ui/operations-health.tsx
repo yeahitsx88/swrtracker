@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import type { AmeliaMetricsRecord } from '@/lib/contracts';
 import { Button } from './button';
 import type { KpiMeasure } from './kpi-explorer';
+import './popout.css';
 
 const KpiExplorer = dynamic(()=>import('./kpi-explorer').then(module=>module.KpiExplorer), { loading:()=> <p role="status">Loading analytics controls…</p> });
 type Metric = Exclude<KpiMeasure,'all'>;
@@ -27,9 +28,9 @@ export function OperationsHealth({metrics,projectId,areaWide=false}:{metrics:Ame
         <span>{titles[key]}</span><strong>{values[key]}</strong><span className="ops-metric-link">View details</span>
       </button>)}</div><p className="ops-note">Work demand and flow, not employee productivity. Cycle averages exclude generated or invalid date pairs.</p>
     </section>
-    <dialog ref={dialog} className="ops-dialog" aria-labelledby="metric-heading" onClose={()=>setOpened(false)}>
-      <div className="ops-section-heading"><h2 id="metric-heading">Explore queue health</h2><Button variant="secondary" onClick={()=>dialog.current?.close()}>Close</Button></div>
-      {opened?<KpiExplorer key={metric} projectId={projectId} initialMeasure={metric}/>:null}
+    <dialog ref={dialog} className="ops-dialog popout-dialog" aria-labelledby="metric-heading" onClose={()=>setOpened(false)}>
+      <div className="ops-section-heading popout-header"><h2 id="metric-heading">Explore queue health</h2><Button variant="secondary" onClick={()=>dialog.current?.close()}>Close</Button></div>
+      <div className="popout-body">{opened?<KpiExplorer key={metric} projectId={projectId} initialMeasure={metric}/>:null}</div>
     </dialog>
   </>;
 }

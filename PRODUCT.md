@@ -28,6 +28,8 @@ Follow the supplied Axiom Brand Guide and the existing Live simulation display s
 
 The authenticated shell greets the current user by name beside Axiom. Following the owner's GitHub menu recording and approval, account navigation opens as a full-height, focus-protected right overlay at all widths, with a dimmed backdrop and a quick slide; the page stays stationary. Close, Escape and backdrop clicks dismiss it; reduced motion removes the slide. This supersedes the earlier desktop push-column choice. Historical review charts default to a single-row scrollable lane with an optional expanded grid. Existing filters, drill-downs and permissions remain unchanged. The owner also requested report/print exports for measures and filtered request populations (for meeting action lists); this is lower priority and remains queued, not implemented by the navigation refinement.
 
+Scrollable popouts must keep their title and Close control in a non-scrolling header, with independently scrolling content beneath it. Apply this consistently to account navigation and all KPI explorer entry points; users must not need to scroll back to the top to dismiss a popout. Preserve native keyboard dismissal/focus restoration and keep the Close target reachable on mobile.
+
 ## Evidence on hand
 
 Anonymized source exports underpin the historical simulation. Attachments and original prose are omitted. Some completion dates and Instrument Man assignments are simulated; source cancellation subtype is unknown. These limits must remain visible. Historical snapshots are not verified audit transition histories or employee-performance evidence.
