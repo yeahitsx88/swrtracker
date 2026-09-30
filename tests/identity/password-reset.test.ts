@@ -48,6 +48,8 @@ function makeResetToken(overrides?: Partial<PasswordResetToken>): PasswordResetT
 function makeRepo(overrides?: Partial<IPasswordResetRepository>): IPasswordResetRepository {
   return {
     findByEmail: async () => null,
+    lockPasswordResetUser: async () => undefined,
+    findRecentActivePasswordResetToken: async () => null,
     savePasswordResetToken: async () => undefined,
     findActivePasswordResetTokenByHash: async () => null,
     markPasswordResetTokenUsed: async () => undefined,
@@ -81,7 +83,24 @@ test('requestPasswordReset saves hashed token for LOCAL users', async () => {
   assert.equal(result.resetToken, 'known-reset-token');
   assert.equal(savedTokens.length, 1);
   assert.equal(savedTokens[0]?.tokenHash, hashPasswordResetToken('known-reset-token'));
-  assert.deepEqual(revoked, [{ tenantId, userId }]);
+  assert.deepEqual(revoked, []); // issuing another link never invalidates one already sent
+});
+
+test('requestPasswordReset preserves an unexpired recently issued link', async () => {
+  let invalidations = 0;
+  let newTokens = 0;
+  const repo = makeRepo({
+    findByEmail: async () => makeUser(),
+    findRecentActivePasswordResetToken: async () => makeResetToken(),
+    markActivePasswordResetTokensUsedForUser: async () => { invalidations += 1; },
+    savePasswordResetToken: async () => { newTokens += 1; },
+  });
+  const result = await requestPasswordReset(repo, db, {
+    tenantId, email: 'field.user@example.com', now: new Date('2026-03-04T12:03:00Z'),
+  });
+  assert.equal(result.resetToken, null);
+  assert.equal(invalidations, 0);
+  assert.equal(newTokens, 0);
 });
 
 test('requestPasswordReset returns null token when user is missing or non-local', async () => {

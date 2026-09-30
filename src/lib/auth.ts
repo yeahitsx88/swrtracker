@@ -8,7 +8,9 @@
  * Token lifetime: TOKEN_TTL_SECONDS
  */
 import jwt from 'jsonwebtoken';
+import { createHash, randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
+import { pool } from '@/lib/db';
 import { UnauthorizedError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 
@@ -27,6 +29,7 @@ export interface AuthContext {
   userId: UUID;
   tenantId: UUID;
   sessionVersion: number;
+  expiresAt?: Date;
 }
 
 function getSecret(): string {
@@ -38,6 +41,7 @@ function getSecret(): string {
 export function signToken(userId: UUID, tenantId: UUID, sessionVersion = 1): string {
   return jwt.sign({ sub: userId, tenantId, sv: sessionVersion }, getSecret(), {
     expiresIn: TOKEN_TTL_SECONDS,
+    jwtid: randomUUID(),
   });
 }
 
@@ -50,13 +54,37 @@ function verifyToken(token: string): AuthContext {
     userId: payload.sub as UUID,
     tenantId: payload.tenantId as UUID,
     sessionVersion: payload.sv,
+    expiresAt: new Date(payload.exp * 1000),
   };
+}
+
+export function sessionTokenHash(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+/** Enforces per-token logout revocation on every protected API request. */
+export async function requireActiveAuth(req: NextRequest, db: DbClient = pool): Promise<AuthContext> {
+  const auth = requireAuth(req);
+  const token = req.cookies.get(COOKIE_NAME)?.value;
+  if (!token) throw new UnauthorizedError();
+  const { rows } = await db.query<{ revoked: boolean }>(
+    `SELECT EXISTS (
+       SELECT 1 FROM revoked_auth_sessions
+       WHERE token_hash = $1 AND expires_at > NOW()
+     ) AS revoked`,
+    [sessionTokenHash(token)],
+  );
+  if (!rows[0] || rows[0].revoked) {
+    throw new UnauthorizedError('Session is no longer valid', 'AUTH_SESSION_REVOKED');
+  }
+  return auth;
 }
 
 /**
  * Extracts and validates the JWT from the request cookie.
  * Throws UnauthorizedError if missing or invalid.
- * Call this at the top of any protected route handler.
+ * Signature/cookie decoding only. Protected route handlers must use
+ * requireActiveAuth so a logged-out bearer token is rejected.
  */
 export function requireAuth(req: NextRequest): AuthContext {
   const token = req.cookies.get(COOKIE_NAME)?.value;

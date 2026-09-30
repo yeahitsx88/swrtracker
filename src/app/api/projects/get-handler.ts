@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { assertActiveSession, requireAuth } from '@/lib/auth';
+import { assertActiveSession, requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import type { AuthContext } from '@/lib/auth';
 import type { ProjectRole } from '@/modules/identity/domain/types';
@@ -14,13 +14,13 @@ interface ProjectMembershipRow {
 }
 
 export interface ProjectListRouteDeps {
-  requireAuth(req: NextRequest): AuthContext;
+  requireAuth(req: NextRequest): AuthContext | Promise<AuthContext>;
   assertActiveSession(db: DbClient, auth: AuthContext): Promise<void>;
   db: DbClient;
 }
 
 const defaultDeps: ProjectListRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   assertActiveSession,
   db: pool,
 };
@@ -30,7 +30,7 @@ export async function handleGetProjects(
   deps: ProjectListRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     await deps.assertActiveSession(deps.db, auth);
 
     const { rows } = await deps.db.query<ProjectMembershipRow>(

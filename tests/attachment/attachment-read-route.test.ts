@@ -365,11 +365,24 @@ test('attachment upload handler rejects invalid multipart input before writing b
   }
 });
 
-test('attachment upload handler cleans up a rejected file type without persisting metadata', async () => {
-  const { deps, calls, key } = makeUploadHarness();
+test('attachment upload handler rejects file type before staging bytes', async () => {
+  const { deps, calls } = makeUploadHarness();
   const response = await handlePostTicketAttachments(makeUploadRequest('REQUEST_INSTRUCTION', 'script.html'), { params: Promise.resolve({ ticketId }) }, deps);
   assert.equal(response.status, 400);
-  assert.deepEqual(calls.removed, [key]);
+  assert.equal(calls.writes, 0);
+  assert.deepEqual(calls.removed, []);
   assert.equal(calls.saved.length, 0);
   assert.equal(calls.audits, 0);
+});
+
+test('attachment upload handler refuses an over-limit request before multipart parsing or storage', async () => {
+  const { deps, calls } = makeUploadHarness();
+  const request = makeUploadRequest();
+  request.headers.set('content-length', String(32 * 1024 * 1024));
+  const response = await handlePostTicketAttachments(
+    request, { params: Promise.resolve({ ticketId }) }, deps,
+  );
+  assert.equal(response.status, 400);
+  assert.equal(calls.writes, 0);
+  assert.deepEqual(calls.removed, []);
 });

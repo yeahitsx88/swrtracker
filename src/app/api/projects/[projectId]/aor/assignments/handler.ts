@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import {
@@ -24,7 +24,7 @@ import {
 type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
 export interface AorAssignmentsRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   resolveProjectSetupActorRole: typeof resolveProjectSetupActorRole;
   assertProjectSetupMutable: typeof assertProjectSetupMutable;
   createRepo: () => ITenancyRepository;
@@ -32,7 +32,7 @@ export interface AorAssignmentsRouteDeps {
 }
 
 const defaultDeps: AorAssignmentsRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   resolveProjectSetupActorRole,
   assertProjectSetupMutable,
   createRepo: () => new TenancyRepository(),
@@ -66,7 +66,7 @@ export async function handlePostAorAssignments(
   deps: AorAssignmentsRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as Record<string, unknown>;
     const kind = requireSetupKind(body?.kind);
@@ -138,7 +138,7 @@ export async function handleDeleteAorAssignments(
   deps: AorAssignmentsRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as Record<string, unknown>;
     const kind = requireSetupKind(body?.kind);

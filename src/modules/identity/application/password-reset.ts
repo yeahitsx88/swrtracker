@@ -15,6 +15,7 @@ import type { UserWithCredentials } from '../domain/types';
 const RESET_TOKEN_BYTES = 32;
 const RESET_TOKEN_TTL_MINUTES = 60;
 const BCRYPT_ROUNDS = 12;
+const RESET_RESEND_COOLDOWN_MINUTES = 10;
 
 export interface PasswordResetToken {
   id: UUID;
@@ -28,6 +29,10 @@ export interface PasswordResetToken {
 
 export interface IPasswordResetRepository {
   findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null>;
+  lockPasswordResetUser(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
+  findRecentActivePasswordResetToken(
+    db: DbClient, tenantId: UUID, userId: UUID, issuedAfter: Date, now: Date,
+  ): Promise<PasswordResetToken | null>;
   savePasswordResetToken(db: DbClient, token: PasswordResetToken): Promise<void>;
   findActivePasswordResetTokenByHash(
     db: DbClient,
@@ -73,11 +78,19 @@ export async function requestPasswordReset(
     return { resetToken: null };
   }
 
+  // Serialize competing requests before checking the cooldown. A repeat request
+  // must not invalidate a link that was already delivered to the user.
+  await repo.lockPasswordResetUser(db, user.tenantId, user.id);
+  const recent = await repo.findRecentActivePasswordResetToken(
+    db, user.tenantId, user.id,
+    new Date(now.getTime() - RESET_RESEND_COOLDOWN_MINUTES * 60_000), now,
+  );
+  if (recent) return { resetToken: null };
+
   const resetToken = params.generateToken?.() ?? randomBytes(RESET_TOKEN_BYTES).toString('hex');
   const tokenHash = hashPasswordResetToken(resetToken);
   const expiresAt = new Date(now.getTime() + (RESET_TOKEN_TTL_MINUTES * 60 * 1000));
 
-  await repo.markActivePasswordResetTokensUsedForUser(db, user.tenantId, user.id, now);
   await repo.savePasswordResetToken(db, {
     id: randomUUID() as UUID,
     tenantId: user.tenantId,

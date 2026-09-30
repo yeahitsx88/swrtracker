@@ -6,7 +6,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { listProjectTemplates } from '@/modules/tenancy/application/list-project-templates';
@@ -20,13 +20,13 @@ export const dynamic = 'force-dynamic';
 const VALID_CREW_BUILDS: CrewBuild[] = ['FULL', 'MEDIUM', 'SLIM'];
 
 export interface ProjectTemplatesRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getTenantRole: typeof getTenantRole;
   createRepo: () => ITenancyRepository;
 }
 
 const defaultDeps: ProjectTemplatesRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   getTenantRole,
   createRepo: () => new TenancyRepository(),
 };
@@ -36,7 +36,7 @@ export async function handleGetProjectTemplates(
   deps: ProjectTemplatesRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = deps.createRepo();
     const templates = await listProjectTemplates(repo, pool, {
@@ -55,7 +55,7 @@ export async function handlePostProjectTemplates(
   deps: ProjectTemplatesRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const body = await req.json() as Record<string, unknown>;
     if (
       !body ||

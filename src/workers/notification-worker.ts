@@ -4,11 +4,14 @@ import { logError, logInfo } from '@/lib/observability';
 import { runNotificationWorkerCycle } from '@/modules/notification/application/worker';
 import { NotificationRepository, EmailNotificationTransport } from '@/modules/notification/infrastructure';
 import { PgBackgroundJobRunRepository } from '@/modules/notification/infrastructure/job-run.repository';
+import { dispatchPasswordResetEmails, pruneExpiredAuthSecurityRecords } from '@/modules/identity/infrastructure/password-reset-email-outbox';
 import type { UUID } from '@/shared/types';
 
 const SYSTEM_ACTOR_ID = (process.env.SYSTEM_ACTOR_ID || '00000000-0000-0000-0000-000000000001') as UUID;
 
 async function main(): Promise<void> {
+  await pruneExpiredAuthSecurityRecords(pool);
+  await dispatchPasswordResetEmails(pool);
   const result = await runNotificationWorkerCycle({
     repo: new NotificationRepository(),
     transport: new EmailNotificationTransport(createEmailTransportFromEnv()),

@@ -64,6 +64,11 @@ export async function sendPasswordResetEmail(
     appBaseUrl: string;
   },
 ): Promise<void> {
+  // A console delivery would discard the only usable link after removing it
+  // from API responses and logs. Keep the queued message retryable instead.
+  if (transport instanceof ConsoleEmailTransport) {
+    throw new Error('EMAIL_WEBHOOK_URL is required for password reset delivery');
+  }
   const resetLink = `${params.appBaseUrl.replace(/\/+$/, '')}/reset-password?token=${encodeURIComponent(params.resetToken)}`;
   await transport.send({
     to: [params.recipientEmail],
@@ -71,7 +76,6 @@ export async function sendPasswordResetEmail(
     text: `Use this link to reset your password: ${resetLink}`,
     metadata: {
       tenantId: params.tenantId,
-      resetLink,
     },
   });
 }

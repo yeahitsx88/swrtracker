@@ -5,7 +5,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ForbiddenError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { getProjectRole } from '@/lib/get-project-role';
@@ -26,7 +26,7 @@ export async function GET(
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
     const tenantRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
@@ -58,7 +58,7 @@ export async function POST(
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as unknown;
 

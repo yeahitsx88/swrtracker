@@ -6,7 +6,7 @@ import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpe
 import { pool } from '@/lib/db';
 import { uploadAttachment } from '@/modules/attachment/application';
 import type { AttachmentMetadataValidator, IAttachmentRepository } from '@/modules/attachment/application';
-import { AttachmentRepository, LocalAttachmentStorage, validateAttachmentObjectMetadata } from '@/modules/attachment/infrastructure';
+import { AttachmentRepository, LocalAttachmentStorage, MAX_ATTACHMENT_BYTES, validateAttachmentObjectMetadata, validateAttachmentUploadCandidate } from '@/modules/attachment/infrastructure';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
 import type { DbClient, UUID } from '@/shared/types';
@@ -60,6 +60,46 @@ function parsePurpose(value: FormDataEntryValue | null): AttachmentPurpose {
   throw new ValidationError('purpose must be REQUEST_INSTRUCTION or FIELD_SUPPORT');
 }
 
+// Multipart parsers buffer the entire request. Bound the stream before invoking one,
+// including when Content-Length is absent or dishonest.
+const MAX_MULTIPART_BYTES = MAX_ATTACHMENT_BYTES + 1024 * 1024;
+
+async function boundedMultipartForm(req: NextRequest): Promise<FormData> {
+  const contentType = req.headers.get('content-type');
+  if (!contentType?.toLowerCase().startsWith('multipart/form-data;')) {
+    throw new ValidationError('multipart/form-data is required');
+  }
+  const declaredLength = Number(req.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_MULTIPART_BYTES) {
+    throw new ValidationError('Attachment request exceeds the upload limit');
+  }
+  if (!req.body) throw new ValidationError('file is required');
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_MULTIPART_BYTES) {
+        await reader.cancel();
+        throw new ValidationError('Attachment request exceeds the upload limit');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new Response(body, { headers: { 'content-type': contentType } }).formData();
+}
+
 export async function handlePostTicketAttachments(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
@@ -70,10 +110,11 @@ export async function handlePostTicketAttachments(
   try {
     const { ticketId } = await params;
     const ctx = await deps.getTicketRouteContext(req, ticketId);
-    const form = await req.formData();
+    const form = await boundedMultipartForm(req);
     const file = form.get('file');
     if (!(file instanceof File) || file.size <= 0) throw new ValidationError('file is required');
     const purpose = parsePurpose(form.get('purpose'));
+    validateAttachmentUploadCandidate(file.name, file.type || 'application/octet-stream', file.size);
     const bytes = new Uint8Array(await file.arrayBuffer());
     storage = deps.createStorage();
     const stored = await storage.write(ctx.tenantId, ctx.ticketId, bytes);

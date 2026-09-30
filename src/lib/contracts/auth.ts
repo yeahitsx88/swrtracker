@@ -30,7 +30,6 @@ export interface ForgotPasswordRequest {
 
 export interface ForgotPasswordResponse {
   success: boolean;
-  debugResetToken?: string | null;
 }
 
 export interface ResetPasswordRequest {

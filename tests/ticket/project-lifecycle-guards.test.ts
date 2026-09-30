@@ -188,6 +188,7 @@ test('POST /api/tickets blocks direct-assignment creation while the project is i
   }>();
 
   pool.query = async (sql: string, params?: unknown[]) => {
+    if (sql.includes('FROM revoked_auth_sessions')) return { rows: [{ revoked: false }] };
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };
     }
@@ -281,6 +282,7 @@ test('POST /api/tickets blocks requester draft creation on archived projects', a
   }>();
 
   pool.query = async (sql: string) => {
+    if (sql.includes('FROM revoked_auth_sessions')) return { rows: [{ revoked: false }] };
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };
     }

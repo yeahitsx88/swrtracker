@@ -92,6 +92,7 @@ test('direct-assignment tickets move through create, assign, start, and direct c
   const originalIsActiveProjectMemberWithRole = TicketRepository.prototype.isActiveProjectMemberWithRole;
 
   pool.query = async (sql: string, params?: unknown[]) => {
+    if (sql.includes('FROM revoked_auth_sessions')) return { rows: [{ revoked: false }] };
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };
     }

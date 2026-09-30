@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import { getProjectRole } from '@/lib/get-project-role';
@@ -15,7 +15,7 @@ import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
 import type { UUID } from '@/shared/types';
 
 export interface ProjectRequestConfigRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getProjectRole: typeof getProjectRole;
   getTenantRole: typeof getTenantRole;
   createRepo: () => TenancyRepository;
@@ -23,7 +23,7 @@ export interface ProjectRequestConfigRouteDeps {
 }
 
 const defaultDeps: ProjectRequestConfigRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   getProjectRole,
   getTenantRole,
   createRepo: () => new TenancyRepository(),
@@ -52,7 +52,7 @@ export async function handleGetProjectRequestConfig(
   deps: ProjectRequestConfigRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
 
@@ -82,7 +82,7 @@ export async function handlePatchProjectRequestConfig(
   deps: ProjectRequestConfigRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
     const body = await req.json() as Record<string, unknown>;

@@ -8,7 +8,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { withTransaction } from '@/lib/with-transaction';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { withRequestCorrelation } from '@/lib/correlation';
@@ -32,7 +32,7 @@ const VALID_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'P
 export async function POST(req: NextRequest) {
   return withRequestCorrelation(req, async () => {
     try {
-      const auth = requireAuth(req);
+    const auth = await requireAuth(req);
       const idempotencyKey = requireIdempotencyKey(req);
       const body = await req.json() as unknown;
       const b = body as Record<string, unknown>;
@@ -283,7 +283,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   return withRequestCorrelation(req, async () => {
     try {
-      const auth = requireAuth(req);
+    const auth = await requireAuth(req);
       const { searchParams } = new URL(req.url);
       const projectId = searchParams.get('projectId');
       if (!projectId) throw new ValidationError('projectId query parameter is required');

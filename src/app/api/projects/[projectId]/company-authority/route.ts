@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ConflictError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { assertAccessAdministrator } from '@/lib/access-administrator';
 import { withTransaction } from '@/lib/with-transaction';
 import { CompanyAccessRepository } from '@/modules/identity/infrastructure/company-access.repository';
@@ -14,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await params;
     const repo = new CompanyAccessRepository();
     const overview = await withTransaction(async (db) => {
@@ -32,7 +32,7 @@ export async function POST(
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as Record<string, unknown>;
     if (!body || typeof body.userId !== 'string' || !body.userId.trim()) {

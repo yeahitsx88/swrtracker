@@ -54,15 +54,22 @@ export class AttachmentRepository implements IAttachmentRepository {
   }
 }
 
-export const validateAttachmentObjectMetadata: AttachmentMetadataValidator = (metadata: AttachmentObjectMetadata) => {
-  const extension = path.extname(metadata.filename).toLowerCase();
-  const allowedMimeTypes = ALLOWED_TYPES.get(extension);
-  if (!allowedMimeTypes || !allowedMimeTypes.has(metadata.mimeType.toLowerCase())) {
-    throw new ValidationError('File type is not allowed for the Amelia beta');
+export function validateAttachmentUploadCandidate(filename: string, mimeType: string, sizeBytes: number): void {
+  if (!Number.isInteger(sizeBytes) || sizeBytes <= 0) {
+    throw new ValidationError('Attachment must contain a file');
   }
-  if (metadata.sizeBytes > MAX_ATTACHMENT_BYTES) {
+  if (sizeBytes > MAX_ATTACHMENT_BYTES) {
     throw new ValidationError('Attachment exceeds the 30 MB per-file limit');
   }
+  const extension = path.extname(filename).toLowerCase();
+  const allowedMimeTypes = ALLOWED_TYPES.get(extension);
+  if (!allowedMimeTypes || !allowedMimeTypes.has(mimeType.toLowerCase())) {
+    throw new ValidationError('File type is not allowed for the Amelia beta');
+  }
+}
+
+export const validateAttachmentObjectMetadata: AttachmentMetadataValidator = (metadata: AttachmentObjectMetadata) => {
+  validateAttachmentUploadCandidate(metadata.filename, metadata.mimeType, metadata.sizeBytes);
 };
 
 export class LocalAttachmentStorage {

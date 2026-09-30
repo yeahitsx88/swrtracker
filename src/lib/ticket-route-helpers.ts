@@ -3,7 +3,7 @@
  */
 import { type NextRequest } from 'next/server';
 import { NotFoundError } from '@/shared/errors';
-import { requireAuth } from './auth';
+import { requireActiveAuth as requireAuth } from './auth';
 import { withTransaction } from './with-transaction';
 import { pool } from './db';
 import { getProjectRole } from './get-project-role';
@@ -29,7 +29,7 @@ export async function getTicketRouteContext(
   req: NextRequest,
   ticketId: string,
 ): Promise<TicketRouteContext> {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
 
   const { rows } = await pool.query<{ project_id: string }>(
     `SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1`,

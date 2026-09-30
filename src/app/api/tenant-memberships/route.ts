@@ -6,7 +6,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import {
@@ -23,7 +23,7 @@ const VALID_TENANT_ROLES: TenantMembership['role'][] = ['TENANT_ADMIN', 'BILLING
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const body = await req.json() as Record<string, unknown>;
     if (
       !body ||
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const body = await req.json() as Record<string, unknown>;
     if (!body || typeof body !== 'object' || typeof body.userId !== 'string') {
       throw new ValidationError('userId is required');

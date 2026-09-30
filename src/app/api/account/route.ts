@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { errorResponse } from '@/lib/api-error';
 import { ValidationError } from '@/shared/errors';
@@ -10,7 +10,7 @@ import { SqlMyAccountReader } from '@/modules/tenancy/infrastructure/my-account.
 export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const ids = req.nextUrl.searchParams.getAll('projectId');
     if (ids.length > 1 || (ids[0] !== undefined && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ids[0]))) {
       throw new ValidationError('Select a valid project.');

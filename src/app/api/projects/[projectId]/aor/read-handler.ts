@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import type { UUID } from '@/shared/types';
@@ -20,14 +20,14 @@ interface AorNodeRow {
 }
 
 export interface AorReadRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getProjectRole: typeof getProjectRole;
   queryLevels: (tenantId: UUID, projectId: UUID) => Promise<AorLevelRow[]>;
   queryNodes: (tenantId: UUID, projectId: UUID) => Promise<AorNodeRow[]>;
 }
 
 const defaultAorReadDeps: AorReadRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   getProjectRole,
   queryLevels: async (tenantId, projectId) => {
     const levelsResult = await pool.query<AorLevelRow>(
@@ -60,7 +60,7 @@ export async function handleGetAor(
   deps: AorReadRouteDeps = defaultAorReadDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
 

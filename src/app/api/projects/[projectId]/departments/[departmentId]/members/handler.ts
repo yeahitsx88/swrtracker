@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { getTenantRole } from '@/lib/get-tenant-role';
@@ -19,7 +19,7 @@ type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>
 type DepartmentMembershipActorRole = 'TENANT_ADMIN' | ProjectRole;
 
 export interface DepartmentMembersRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   resolveActorRole: typeof resolveDepartmentMembershipActorRole;
   assertProjectSetupMutable: typeof assertProjectSetupMutable;
   createRepo: () => ITenancyRepository;
@@ -27,7 +27,7 @@ export interface DepartmentMembersRouteDeps {
 }
 
 const defaultDeps: DepartmentMembersRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   resolveActorRole: resolveDepartmentMembershipActorRole,
   assertProjectSetupMutable,
   createRepo: () => new TenancyRepository(),
@@ -54,7 +54,7 @@ export async function handlePostDepartmentMembers(
   deps: DepartmentMembersRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId, departmentId } = await params;
     const body = await req.json() as Record<string, unknown>;
     if (typeof body.userId !== 'string') {
@@ -93,7 +93,7 @@ export async function handlePatchDepartmentMembers(
   deps: DepartmentMembersRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId, departmentId } = await params;
     const body = await req.json() as Record<string, unknown>;
     if (typeof body.kind !== 'string' || typeof body.userId !== 'string') {

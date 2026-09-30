@@ -1,8 +1,5 @@
 -- Explicit project reporting links. Area overlap alone never establishes a
 -- Superintendent -> Party Chief relationship.
-ALTER TABLE aor_nodes
-  ADD CONSTRAINT aor_nodes_tenant_project_id_key UNIQUE (tenant_id, project_id, id);
-
 CREATE TABLE survey_reporting_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL,

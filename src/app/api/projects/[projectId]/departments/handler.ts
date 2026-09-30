@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import { createDepartment } from '@/modules/tenancy/application/create-department';
@@ -17,7 +17,7 @@ import {
 type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
 export interface DepartmentsRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   resolveProjectSetupActorRole: typeof resolveProjectSetupActorRole;
   assertProjectSetupMutable: typeof assertProjectSetupMutable;
   createRepo: () => ITenancyRepository;
@@ -25,7 +25,7 @@ export interface DepartmentsRouteDeps {
 }
 
 const defaultDeps: DepartmentsRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   resolveProjectSetupActorRole,
   assertProjectSetupMutable,
   createRepo: () => new TenancyRepository(),
@@ -38,7 +38,7 @@ export async function handlePostDepartments(
   deps: DepartmentsRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as Record<string, unknown>;
 
@@ -80,7 +80,7 @@ export async function handleGetDepartments(
   deps: DepartmentsRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const actorRole = await deps.resolveProjectSetupActorRole(
       pool,

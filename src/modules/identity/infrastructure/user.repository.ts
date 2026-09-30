@@ -9,7 +9,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { AuthMethod, User, UserWithCredentials } from '../domain/types';
 import type { IUserRepository } from '../application/ports';
 import type { PasswordResetToken } from '../application/password-reset';
-import { ConflictError } from '@/shared/errors';
+import { ConflictError, ValidationError } from '@/shared/errors';
 
 interface DbRow {
   id: string;
@@ -249,6 +249,32 @@ export class UserRepository implements IUserRepository {
     );
   }
 
+  async lockPasswordResetUser(db: DbClient, tenantId: UUID, userId: UUID): Promise<void> {
+    await db.query(
+      `SELECT id FROM users WHERE tenant_id = $1 AND id = $2 FOR UPDATE`,
+      [tenantId, userId],
+    );
+  }
+
+  async findRecentActivePasswordResetToken(
+    db: DbClient, tenantId: UUID, userId: UUID, issuedAfter: Date, now: Date,
+  ): Promise<PasswordResetToken | null> {
+    const { rows } = await db.query<PasswordResetTokenRow>(
+      `SELECT id, tenant_id, user_id, token_hash, expires_at, used_at, created_at
+       FROM password_reset_tokens
+       WHERE tenant_id = $1 AND user_id = $2
+         AND used_at IS NULL AND expires_at > $3 AND created_at > $4
+       ORDER BY created_at DESC LIMIT 1`,
+      [tenantId, userId, now, issuedAfter],
+    );
+    const row = rows[0];
+    return row ? {
+      id: row.id as UUID, tenantId: row.tenant_id as UUID, userId: row.user_id as UUID,
+      tokenHash: row.token_hash, expiresAt: row.expires_at,
+      usedAt: row.used_at, createdAt: row.created_at,
+    } : null;
+  }
+
   async findActivePasswordResetTokenByHash(
     db: DbClient,
     tokenHash: string,
@@ -260,7 +286,7 @@ export class UserRepository implements IUserRepository {
        WHERE token_hash = $1
          AND used_at IS NULL
          AND expires_at > $2
-       LIMIT 1`,
+       LIMIT 1 FOR UPDATE`,
       [tokenHash, now],
     );
 
@@ -281,13 +307,15 @@ export class UserRepository implements IUserRepository {
   }
 
   async markPasswordResetTokenUsed(db: DbClient, tokenId: UUID, usedAt: Date): Promise<void> {
-    await db.query(
+    const { rows } = await db.query<{ id: UUID }>(
       `UPDATE password_reset_tokens
        SET used_at = $2
        WHERE id = $1
-         AND used_at IS NULL`,
+         AND used_at IS NULL
+       RETURNING id`,
       [tokenId, usedAt],
     );
+    if (rows.length !== 1) throw new ValidationError('Reset token is invalid or expired');
   }
 
   async markActivePasswordResetTokensUsedForUser(

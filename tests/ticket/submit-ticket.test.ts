@@ -132,7 +132,7 @@ test('createTicket leaves ticketNumber null until submission', async () => {
   assert.equal(ticket.ticketNumber, null);
   assert.equal(savedTickets[0]?.ticketNumber, null);
   assert.equal(nextSequenceCalls, 0);
-  assert.equal(findAorNodeCodeCalls, 0);
+  assert.equal(findAorNodeCodeCalls, 1); // validate project ownership even for drafts
   assert.equal(dbCalls.length, 1);
   assert.match(dbCalls[0] ?? '', /INSERT INTO ticket_events/);
 });

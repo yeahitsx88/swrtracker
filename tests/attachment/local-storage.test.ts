@@ -20,8 +20,10 @@ test('LocalAttachmentStorage round-trips bytes behind a server-generated key and
     assert.match(stored.contentSha256, /^[a-f0-9]{64}$/);
     assert.deepEqual(await storage.read(stored.storageKey), Buffer.from(bytes));
     const storedFile = path.join(root, ...stored.storageKey.split('/'));
-    assert.equal((await stat(storedFile)).mode & 0o777, 0o600);
-    assert.equal((await stat(path.dirname(storedFile))).mode & 0o777, 0o700);
+    if (process.platform !== 'win32') {
+      assert.equal((await stat(storedFile)).mode & 0o777, 0o600);
+      assert.equal((await stat(path.dirname(storedFile))).mode & 0o777, 0o700);
+    }
     await storage.remove(stored.storageKey);
     await assert.rejects(() => storage.read(stored.storageKey));
   } finally {

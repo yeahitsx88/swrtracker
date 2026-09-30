@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import {
@@ -16,14 +16,14 @@ import { resolveProjectSetupActorRole } from '../aor/shared';
 type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
 export interface ProjectActivationRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   resolveProjectSetupActorRole: typeof resolveProjectSetupActorRole;
   createRepo: () => ITenancyRepository;
   withTransaction: TransactionRunner;
 }
 
 const defaultDeps: ProjectActivationRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   resolveProjectSetupActorRole,
   createRepo: () => new TenancyRepository(),
   withTransaction,
@@ -54,7 +54,7 @@ export async function handlePostProjectActivation(
   deps: ProjectActivationRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as Record<string, unknown>;
 

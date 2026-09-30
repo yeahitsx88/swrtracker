@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ForbiddenError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { logInfo } from '@/lib/observability';
@@ -22,7 +22,7 @@ interface JobRunRow {
 }
 
 export interface OpsDiagnosticsDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getTenantRole: typeof getTenantRole;
   countStaleSubmitted: (tenantId: UUID) => Promise<number>;
   countStalePcApproval: (tenantId: UUID) => Promise<number>;
@@ -36,7 +36,7 @@ export interface OpsDiagnosticsDeps {
 }
 
 const defaultDeps: OpsDiagnosticsDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   getTenantRole,
   countStaleSubmitted: async (tenantId) => {
     const { rows } = await pool.query<CountRow>(
@@ -160,7 +160,7 @@ const defaultDeps: OpsDiagnosticsDeps = {
     const { rows } = await pool.query<JobRunRow>(
       `SELECT id, job_name, status, started_at::text, finished_at::text, error_message, details
        FROM background_job_runs
-       WHERE tenant_id = $1 OR tenant_id IS NULL
+       WHERE tenant_id = $1
        ORDER BY started_at DESC
        LIMIT 20`,
       [tenantId],
@@ -171,7 +171,7 @@ const defaultDeps: OpsDiagnosticsDeps = {
     const { rows } = await pool.query<JobRunRow>(
       `SELECT id, job_name, status, started_at::text, finished_at::text, error_message, details
        FROM background_job_runs
-       WHERE (tenant_id = $1 OR tenant_id IS NULL)
+       WHERE tenant_id = $1
          AND status = 'FAILED'
        ORDER BY started_at DESC
        LIMIT 20`,
@@ -186,7 +186,7 @@ export async function handleGetOpsDiagnostics(
   deps: OpsDiagnosticsDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const tenantRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     if (tenantRole !== 'TENANT_ADMIN') {
       throw new ForbiddenError('Only TENANT_ADMIN can access operational diagnostics');

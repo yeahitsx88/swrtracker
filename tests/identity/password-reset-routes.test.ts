@@ -26,6 +26,8 @@ function makeRequest(url: string, body: Record<string, unknown>): NextRequest {
 function makeRepo(): IPasswordResetRepository {
   return {
     findByEmail: async () => null,
+    lockPasswordResetUser: async () => undefined,
+    findRecentActivePasswordResetToken: async () => null,
     savePasswordResetToken: async () => undefined,
     findActivePasswordResetTokenByHash: async () => null,
     markPasswordResetTokenUsed: async () => undefined,
@@ -40,9 +42,9 @@ function makeForgotDeps(overrides?: Partial<ForgotPasswordRouteDeps>): ForgotPas
     createRepo: () => makeRepo(),
     requestPasswordReset: async () => ({ resetToken: 'debug-token' }),
     withTransaction: async (fn) => fn(db),
-    includeDebugToken: () => true,
-    sendResetEmail: async () => undefined,
+    enqueueResetEmail: async () => undefined,
     resolveAppBaseUrl: () => 'http://localhost:3000',
+    allowAttempt: async () => true,
     ...overrides,
   };
 }
@@ -56,7 +58,7 @@ function makeResetDeps(overrides?: Partial<ResetPasswordRouteDeps>): ResetPasswo
   };
 }
 
-test('handlePostForgotPassword returns success and debug token when enabled', async () => {
+test('handlePostForgotPassword never returns a reset bearer token', async () => {
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
       tenantId: 'tenant-1',
@@ -66,26 +68,22 @@ test('handlePostForgotPassword returns success and debug token when enabled', as
   );
 
   assert.equal(response.status, 200);
-  const json = await response.json() as { success: boolean; debugResetToken?: string | null };
-  assert.equal(json.success, true);
-  assert.equal(json.debugResetToken, 'debug-token');
+  assert.deepEqual(await response.json(), { success: true });
 });
 
-test('handlePostForgotPassword hides debug token when disabled', async () => {
+test('handlePostForgotPassword returns the same response without a generated token', async () => {
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
       tenantId: 'tenant-1',
       email: 'field.user@example.com',
     }),
     makeForgotDeps({
-      includeDebugToken: () => false,
+      requestPasswordReset: async () => ({ resetToken: null }),
     }),
   );
 
   assert.equal(response.status, 200);
-  const json = await response.json() as { success: boolean; debugResetToken?: string | null };
-  assert.equal(json.success, true);
-  assert.equal('debugResetToken' in json, false);
+  assert.deepEqual(await response.json(), { success: true });
 });
 
 test('handlePostForgotPassword returns 400 for invalid payload', async () => {
@@ -99,8 +97,8 @@ test('handlePostForgotPassword returns 400 for invalid payload', async () => {
   assert.equal(response.status, 400);
 });
 
-test('handlePostForgotPassword sends reset email only when token is generated', async () => {
-  let sendCount = 0;
+test('handlePostForgotPassword enqueues reset email only when token is generated', async () => {
+  let queuedCount = 0;
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
       tenantId: 'tenant-1',
@@ -108,13 +106,31 @@ test('handlePostForgotPassword sends reset email only when token is generated', 
     }),
     makeForgotDeps({
       requestPasswordReset: async () => ({ resetToken: 'email-token' }),
-      sendResetEmail: async () => {
-        sendCount += 1;
+      enqueueResetEmail: async () => {
+        queuedCount += 1;
       },
     }),
   );
   assert.equal(response.status, 200);
-  assert.equal(sendCount, 1);
+  assert.equal(queuedCount, 1);
+});
+
+test('handlePostForgotPassword silently throttles attempts before account lookup', async () => {
+  let lookupCount = 0;
+  let queuedCount = 0;
+  const response = await handlePostForgotPassword(
+    makeRequest('http://localhost/api/auth/forgot-password', {
+      tenantId: 'tenant-1', email: 'field.user@example.com',
+    }),
+    makeForgotDeps({
+      allowAttempt: async () => false,
+      requestPasswordReset: async () => { lookupCount += 1; return { resetToken: 'nope' }; },
+      enqueueResetEmail: async () => { queuedCount += 1; },
+    }),
+  );
+  assert.deepEqual(await response.json(), { success: true });
+  assert.equal(lookupCount, 0);
+  assert.equal(queuedCount, 0);
 });
 
 test('handlePostResetPassword returns success for valid token and password', async () => {

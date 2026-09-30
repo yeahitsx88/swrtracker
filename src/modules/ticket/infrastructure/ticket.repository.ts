@@ -222,10 +222,10 @@ export class TicketRepository implements ITicketRepository {
     return row.last_seq;
   }
 
-  async findAorNodeCode(db: DbClient, tenantId: UUID, aorNodeId: UUID): Promise<string | null> {
+  async findAorNodeCode(db: DbClient, tenantId: UUID, projectId: UUID, aorNodeId: UUID): Promise<string | null> {
     const { rows } = await db.query<{ code: string }>(
-      `SELECT code FROM aor_nodes WHERE id = $1 AND tenant_id = $2 LIMIT 1`,
-      [aorNodeId, tenantId],
+      `SELECT code FROM aor_nodes WHERE id = $1 AND tenant_id = $2 AND project_id = $3 AND retired_at IS NULL LIMIT 1`,
+      [aorNodeId, tenantId, projectId],
     );
     return rows[0]?.code ?? null;
   }

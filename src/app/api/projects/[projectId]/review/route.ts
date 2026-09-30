@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
@@ -13,7 +13,7 @@ import type { UUID } from '@/shared/types';
 export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest, context: { params: Promise<{ projectId: string }> }) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await context.params;
     if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(projectId)) throw new ValidationError('Invalid project');
     const options = parseReviewQuery(req.nextUrl.searchParams);

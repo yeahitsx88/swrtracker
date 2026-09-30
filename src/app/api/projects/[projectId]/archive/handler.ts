@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { withTransaction } from '@/lib/with-transaction';
@@ -12,14 +12,14 @@ import type { DbClient, UUID } from '@/shared/types';
 type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
 export interface ProjectArchiveRouteDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getTenantRole: typeof getTenantRole;
   createRepo: () => ITenancyRepository;
   withTransaction: TransactionRunner;
 }
 
 const defaultDeps: ProjectArchiveRouteDeps = {
-  requireAuth,
+  requireAuth: requireActiveAuth,
   getTenantRole,
   createRepo: () => new TenancyRepository(),
   withTransaction,
@@ -31,7 +31,7 @@ export async function handlePostProjectArchive(
   deps: ProjectArchiveRouteDeps = defaultDeps,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = deps.createRepo();

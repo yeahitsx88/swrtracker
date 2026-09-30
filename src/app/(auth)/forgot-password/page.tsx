@@ -13,7 +13,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [debugResetToken, setDebugResetToken] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,15 +24,13 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    setDebugResetToken(null);
 
     try {
-      const response = await apiClient.forgotPassword({
+      await apiClient.forgotPassword({
         tenantId: tenantId.trim(),
         email: email.trim().toLowerCase(),
       });
-      setSuccess('If an eligible account exists, a reset link has been generated.');
-      setDebugResetToken(response.debugResetToken ?? null);
+      setSuccess('If an eligible account exists, a reset link will be sent to its email address.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to process password reset request right now.'));
     } finally {
@@ -65,15 +62,6 @@ export default function ForgotPasswordPage() {
           {loading ? 'Submitting...' : 'Request Reset'}
         </Button>
       </form>
-
-      {debugResetToken ? (
-        <p className="muted" style={{ marginTop: '0.8rem' }}>
-          Dev link:{' '}
-          <Link className="app-link" href={`/reset-password?token=${encodeURIComponent(debugResetToken)}`}>
-            Continue to Reset Password
-          </Link>
-        </p>
-      ) : null}
 
       <div className="row" style={{ marginTop: '0.8rem' }}>
         <Link href="/login" className="app-link">Back to Login</Link>

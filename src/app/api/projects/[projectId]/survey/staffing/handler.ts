@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
 import { withTransaction } from '@/lib/with-transaction';
 import { saveSurveyStaffing, type SurveyStaffingInput, type SurveyStaffingRepository } from '@/modules/tenancy/application/save-survey-staffing';
@@ -10,12 +10,12 @@ import { SurveyStaffingPgRepository } from '@/modules/tenancy/infrastructure/sur
 
 type TransactionRunner = <T>(fn: (db: DbClient) => Promise<T>) => Promise<T>;
 export interface StaffingDeps {
-  requireAuth: typeof requireAuth;
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getProjectRole: typeof getProjectRole;
   withTransaction: TransactionRunner;
   repo: SurveyStaffingRepository;
 }
-const defaults: StaffingDeps = { requireAuth, getProjectRole, withTransaction, repo: new SurveyStaffingPgRepository() };
+const defaults: StaffingDeps = { requireAuth: requireActiveAuth, getProjectRole, withTransaction, repo: new SurveyStaffingPgRepository() };
 
 function parseInput(value: unknown): SurveyStaffingInput {
   if (!value || typeof value !== 'object') throw new ValidationError('Staffing details are required');
@@ -41,7 +41,7 @@ export async function handlePostSurveyStaffing(
   deps: StaffingDeps = defaults,
 ) {
   try {
-    const auth = deps.requireAuth(req);
+    const auth = await deps.requireAuth(req);
     const { projectId } = await params;
     const input = parseInput(await req.json());
     const result = await deps.withTransaction(async db => {
