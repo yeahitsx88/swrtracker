@@ -1,0 +1,60 @@
+# Survey Manager Team Management — bounded V1 increment
+
+## Authority and sequence
+
+Owner brief: `C:/Users/xwall/.codex/attachments/c9e3ea04-6caf-4df2-9672-f969d815db2e/Pasted text.txt`, received 2026-09-30. Finish the current clean checkpoint, then prioritize this increment. This expands Decision 12's earlier Party Chief/Instrument Man-only staffing flow; it does not authorize a general RBAC editor, account invitations, cross-project discovery, or tenant-permission changes. The earlier KPI/performance objective remains unfinished, not replaced or declared complete.
+
+## Required outcomes and acceptance evidence
+
+| Requirement | Evidence required before claiming completion |
+|---|---|
+| Manager-only Team Management menu/page | Actual Manager navigation and rendered page; direct route/API denial for other roles and out-of-project users |
+| Project personnel with name, email and survey role | Tenant/project-scoped read API and UI; no duplicate underlying identities or deactivated users offered for assignment |
+| Assign/edit/change/remove Superintendent, Party Chief and Instrument Man roles | Authorized atomic mutations, explicit role-change confirmation, session invalidation, invalid-role/tenant/project tests; no changes to tenant membership |
+| Named teams with Area, lead and members | Reuse existing project AOR nodes and user IDs; persisted model and API tested against PostgreSQL |
+| Lead belongs to the team and role remains visible | Server validation plus UI; reject removing the lead until another lead is designated |
+| Available/currently assigned/assigned elsewhere personnel | Consistent scoped list/search and bounded pagination; labels match the approved membership policy |
+| View/edit team name, Area, lead and members | Current-data UI and successful/rejected HTTP transactions; stale-write conflict and audit rollback coverage |
+| Delete team safely | Explicit confirmation, soft-deactivation consistent with current staffing conventions, append-only audit; no account or historical ticket deletion |
+| Preserve assignment/history and references | No rewritten ticket assignment snapshots/events; no dangling active-team references after role removal/deletion |
+| Authorization/isolation | Wrong tenant/project, forged person/Area/lead IDs, wrong role, revoked/stale session and archived-project tests |
+| UX and non-regression | Axiom/Impeccable existing Operate identity; loading/error/empty/mobile/keyboard checks, typecheck, full tests and production build |
+| Completion checkpoint and handoff | Exact commit/branch; schema/auth/tests/assumptions/decisions/deferred items and next logical development point reported |
+
+## Authoritative repository evidence at inspection
+
+- `db/migrations/001_initial_schema.sql`: `project_memberships` is unique on `(project_id, user_id)` with one `role` column. There is no independent survey-role assignment table. Later migrations extend role values, not this cardinality.
+- `src/lib/get-project-role.ts`: that membership role controls project authorization. Reusing it for promotion/demotion changes project operational permissions; it must never change tenant-level permissions. Do not present survey-role changes as cosmetic labels.
+- `src/app/api/projects/[projectId]/members/route.ts` and `tenancy/application/add-project-member.ts`: generic membership writes are IT/TENANT_ADMIN controlled. Do not relax this endpoint for Team Management. Manager reads already exist, but the new increment needs bounded, explicitly project-scoped selection and status metadata.
+- `db/migrations/005_pre_phase3_schema_fixes.sql`: each Instrument Man has one Party Chief per project via `crew_rosters`. These rows are not named teams and cannot represent the requested example of one Superintendent, three Party Chiefs and six Instrument Men as a single team.
+- `db/migrations/024_survey_staffing_links.sql`: one active explicit Superintendent link per Party Chief, tenant/project/Area foreign keys, and project-level staffing events. Area overlap is not proof of reporting ownership.
+- `tenancy/application/save-survey-staffing.ts`: the existing narrow write path accepts compatible Requester/Viewer-to-Chief/IM changes only, with confirmation; it rejects another chief's Instrument Man and another existing chief Area. It does not yet provide named-team CRUD, Superintendent promotions, demotions/removals, or a UI.
+- `src/components/ui/project-navigation.ts`: Manager currently sees Operations and All Requests, not Team Management.
+- AOR and staffing records use deactivation/retirement; archived projects are immutable. Team deletion should preserve history using the same convention.
+
+## Owner decisions — confirmed 2026-09-30
+
+1. One active named team per person per project. This is a new named-team rule, not an inference from roster uniqueness.
+2. Teams are organizational groups only. Area authorization and Superintendent → Party Chief → Instrument Man reporting links remain explicitly managed. Team membership does not establish or widen those relationships.
+3. Removing a survey role leaves the existing project member as Requester. No project-membership or account deletion is implied.
+
+These answers were supplied directly by the owner. Existing Survey Manager and unrelated elevated roles must not be mutable through this bounded feature. Role changes affecting a current team lead or active reporting/crew obligations must be blocked until those obligations are explicitly resolved; historical actions remain immutable.
+
+## Implementation plan after the decision boundary
+
+1. Record the owner's decisions and amend the narrow staffing spec, without relaxing general membership/invitation APIs.
+2. Implement the smallest tenant/project-bound named-team model and append-only audit contract in one logical migration. Reuse user identities, AOR nodes, existing fixed role values and explicit reporting links. Add stale-write/version control for editable teams.
+3. Implement Tenancy use cases and repositories, then thin Manager-only read/command API mappings. Validate complete proposed membership/lead/Area state before writes; commit changes and audit atomically. Bound lists and searches.
+4. Extend only the approved fixed-role project staffing transitions, with confirmation and session invalidation. Protect lead/reporting references and archived projects; preserve historical ticket snapshots.
+5. Add Team Management navigation and a compact Personnel/Teams/Create/Edit flow using the existing Axiom design system. Do not fetch the request dataset to render staffing.
+6. Verify SQL, transaction rollback/concurrency, HTTP authorization/isolation, UI keyboard/mobile/states and existing tests. Checkpoint and report remaining broader-objective work separately.
+
+## Explicitly out of scope
+
+Scheduling, shifts, timekeeping, performance/productivity analytics, automated balancing, organization-wide HR, custom role definitions, cross-project personnel discovery, advanced historical staffing reports and a drag-and-drop organization chart. No invitation/account creation, ticket reassignment, historical data rewrite, or automatic analytics permission expansion is implied by team CRUD.
+
+## Current verification and next point
+
+At inspection: phase5 production checkpoint `f01040b`; clean worktree; TypeScript passes with write access for its incremental cache; all 317 tests pass; production build passes. These checks verify the existing checkpoint, not the unimplemented Team Management feature. The local preview still uses the earlier demo image and is not proof of current source behavior.
+
+Next logical point: the Tenancy model/use cases under the confirmed decisions above. Full KPI/performance acceptance and Superintendent personnel analytics remain separate unfinished requirements.
