@@ -13,7 +13,8 @@ export interface MetricsFilters {
   dateTo?: string;
 }
 
-/** A read-only or administrative role alone does not grant personnel analysis. */
+/** Personnel comparison requires a crew scope backed by an explicit reporting link.
+ * Superintendent Area scope alone cannot establish that link. */
 export function canAnalyzeSurveyPersonnel(role: ProjectRole): boolean {
-  return role === 'SURVEY_MANAGER' || role === 'SURVEY_SUPERINTENDENT' || role === 'PARTY_CHIEF';
+  return role === 'SURVEY_MANAGER' || role === 'PARTY_CHIEF';
 }

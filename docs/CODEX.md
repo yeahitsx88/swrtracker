@@ -2679,3 +2679,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Validation: documentation-only change; TypeScript passes and native Windows tests remain 288/289 with the same documented attachment permission-mode failure.
 - Known gaps: individual links, unassigned-work population, and whether CLAUDE.md §15 may be amended to allow the requested Survey Team staffing UI remain unresolved. No relationship table, API, menu, role grant or metric scope changed.
 - Production behavior changed: no.
+
+### 2026-09-30 — Batch 42 (Superintendent personnel analytics fail-closed)
+- Intent: IMPLEMENTER in Reporting; enforce the owner's explicit reporting-link rule without inferring crew ownership from Area scope.
+- Files touched: reporting/application/metrics-filters.ts; tests/reporting/amelia-metrics.test.ts; tests/beta/scoped-metrics-postgres.ts; KPI_PERFORMANCE_PROGRESS.md and this log.
+- Behavior added: Superintendent request counts remain Area-scoped, but personnel filters are rejected before querying and chart personnel groups/facets are omitted until an explicit Manager-assigned Party Chief relationship exists. Survey Manager and Party Chief behavior is unchanged.
+- Validation: baseline TypeScript pass, native Windows tests 288/289. Final TypeScript and production build pass; focused Reporting tests 9/9; native Windows tests 288/289 with only the documented Unix attachment-mode assertion. PostgreSQL fixture assertions were added but not run because Docker/WSL were unavailable.
+- Scope deviation: opt-in PostgreSQL fixture follows the repository's existing tests/beta convention; no API route, migration, ticket visibility predicate, ticket state or audit event changed.
+- Known gaps: explicit relationship persistence/mutation/UI, unassigned-work rule, real PostgreSQL/HTTP recheck and full Survey Authority dashboard remain pending.
+- Production behavior changed: yes, narrower read-only personnel analytics capability for Superintendents.

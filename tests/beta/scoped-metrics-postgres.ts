@@ -99,6 +99,9 @@ async function main() {
     await check('wrong project', { projectId: id('unknown-project') }, [], 't', 'unknown-project');
     await check('chief cannot select other crew', { actorRole: 'PARTY_CHIEF', actorId: id('chief') }, [], 't', 'p', { crewId: 'other-chief' });
     await check('Area intersects filters', { actorRole: 'SURVEY_SUPERINTENDENT', aorNodeIds: [id('a'), id('child')] }, [], 't', 'p', { areaId: 'b' });
+    await assert.rejects(getAmeliaMetrics(new AmeliaMetricsReader(), db, { tenantId: id('t'), projectId: id('p'),
+      visibility: { ...base, actorRole: 'SURVEY_SUPERINTENDENT', aorNodeIds: [id('a'), id('child')] },
+      filters: { crewId: 'chief' } }), { name: 'ForbiddenError' }); scenarios++;
     await check('requester filtered completed', { actorRole: 'REQUESTER' }, [8], 't', 'p', { population: 'completed', ticketType: 'LAYOUT' });
     await check('combined supervisory filters', { actorRole: 'SURVEY_MANAGER' }, [1], 't', 'p', { crewId: 'chief', instrumentManId: 'im', areaId: 'a', status: 'SUBMITTED' });
     await check('assignment population', {}, [2], 't', 'p', { population: 'assignment' });
@@ -110,6 +113,12 @@ async function main() {
       tenantId: id('t'), projectId: id('p'), today: '2026-09-29', visibility, filters, includeCharts: true,
     });
     const view = await chartsFor(base);
+    const superintendentCharts = await chartsFor({ ...base, actorRole: 'SURVEY_SUPERINTENDENT', aorNodeIds: [id('a'), id('child')] });
+    assert.deepEqual(superintendentCharts.charts!.crews, []);
+    assert.deepEqual(superintendentCharts.charts!.instrumentMen, []);
+    assert.deepEqual(superintendentCharts.charts!.facets.crews, []);
+    assert.deepEqual(superintendentCharts.charts!.facets.instrumentMen, []);
+    scenarios++;
     const gauge = await chartsFor(base,{population:'open',areaId:'a'});
     assert.equal(gauge.total,1); assert.equal(gauge.populationTotal,2); scenarios++;
     assert.equal(view.total, 7);

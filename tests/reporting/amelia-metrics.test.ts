@@ -78,9 +78,9 @@ test('analytics query rejects malformed, duplicate, unknown and draft filters', 
   const filters = parseMetricsQuery(new URLSearchParams('population=completed&dateFrom=2024-02-29&dateTo=2024-02-29&dateBasis=completed&ticketType=TOPO'));
   assert.equal(filters.dateTo, '2024-02-29'); assert.equal(filters.ticketType, 'TOPO');
 });
-test('analytics rejects personnel filters before querying for non-supervisory roles', async () => {
+test('analytics rejects personnel filters before querying without explicit crew authority', async () => {
   const db = database(() => { throw new Error('must not query'); });
-  for (const actorRole of ['REQUESTER', 'INSTRUMENT_MAN', 'VIEWER', 'AREA_VIEWER', 'CAD_LEAD', 'DEPARTMENT_MANAGER'] as const) {
+  for (const actorRole of ['REQUESTER', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'VIEWER', 'AREA_VIEWER', 'CAD_LEAD', 'DEPARTMENT_MANAGER'] as const) {
     for (const filters of [{ crewId: 'chief' }, { instrumentManId: 'im' }]) {
       await assert.rejects(getAmeliaMetrics(new AmeliaMetricsReader(), db, { ...base, filters, visibility: { ...base.visibility, actorRole } }), { name: 'ForbiddenError' });
     }
@@ -113,4 +113,10 @@ test('chart SQL is opt-in and personnel series are omitted server-side for reade
   assert.ok(charts.includes('LIMIT 200'));
   assert.ok(charts.includes("INTERVAL '119 months'"));
   assert.ok(charts.includes("completionDateGenerated"));
+  const superintendent = buildMetricsQuery({ ...base, includeCharts: true, visibility: { ...base.visibility,
+    actorRole: 'SURVEY_SUPERINTENDENT', aorNodeIds: [id('area')] } }).sql;
+  assert.ok(superintendent.includes('t.aor_node_id IN ($5)'));
+  assert.ok(superintendent.includes("'crews', '[]'::jsonb"));
+  assert.ok(superintendent.includes("'instrumentMen', '[]'::jsonb"));
+  assert.ok(!superintendent.includes('LEFT JOIN users'));
 });
