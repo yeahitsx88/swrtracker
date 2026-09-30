@@ -3,6 +3,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { CrewBuild, ProjectStatus } from '../domain/types';
 import type { StaffingActor, SurveyStaffingMember, SurveyStaffingRepository } from '../application/save-survey-staffing';
 import type { StaffingReadQuery, SurveyStaffingDetail, SurveyStaffingReadRepository } from '../application/read-survey-staffing';
+import type { StaffingLink, StaffingLinkKind, SurveyStaffingUnlinkRepository } from '../application/unlink-survey-staffing';
 
 // Opaque state checksum, not a credential. Project-wide by design: a form must
 // reload after another staffing/role/Area change. Pagination/search do not change it.
@@ -27,7 +28,7 @@ const snapshotCte = `snapshot AS (
   )::text) AS token FROM projects p WHERE p.tenant_id=$1 AND p.id=$2
 )`;
 
-export class SurveyStaffingPgRepository implements SurveyStaffingRepository, SurveyStaffingReadRepository {
+export class SurveyStaffingPgRepository implements SurveyStaffingRepository, SurveyStaffingReadRepository, SurveyStaffingUnlinkRepository {
   async readStaffing(db: DbClient, tenantId: UUID, projectId: UUID, partyChiefId: UUID, query: StaffingReadQuery): Promise<SurveyStaffingDetail | null> {
     const { rows } = await db.query<{ staffing: SurveyStaffingDetail }>(
       `WITH ${snapshotCte}, chief AS (
@@ -37,11 +38,14 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
          JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
          WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='PARTY_CHIEF'
        ), areas AS (
-         SELECT DISTINCT n.id,n.name,(n.retired_at IS NOT NULL) AS retired FROM aor_assignments aa
+         SELECT n.id,n.name,(n.retired_at IS NOT NULL) AS retired,
+           CASE WHEN COUNT(*) FILTER (WHERE aa.department_id IS NULL)=1 THEN MIN(aa.id::text) FILTER (WHERE aa.department_id IS NULL) END AS individual_assignment_id
+         FROM aor_assignments aa
          JOIN aor_nodes n ON n.tenant_id=aa.tenant_id AND n.project_id=aa.project_id AND n.id=aa.aor_node_id
          WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL
+         GROUP BY n.id,n.name,n.retired_at
        ), roster AS (
-         SELECT u.id,u.name,u.email,pm.role,(u.deactivated_at IS NULL) AS active FROM crew_rosters cr
+         SELECT cr.id AS roster_link_id,u.id,u.name,u.email,pm.role,(u.deactivated_at IS NULL) AS active FROM crew_rosters cr
          JOIN users u ON u.tenant_id=cr.tenant_id AND u.id=cr.instrument_man_id
          LEFT JOIN project_memberships pm ON pm.project_id=cr.project_id AND pm.user_id=u.id
          WHERE cr.tenant_id=$1 AND cr.project_id=$2 AND cr.party_chief_id=$3 AND cr.deactivated_at IS NULL
@@ -60,11 +64,11 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
            JOIN aor_nodes n ON n.tenant_id=rl.tenant_id AND n.project_id=rl.project_id AND n.id=rl.aor_node_id
            WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.party_chief_id=$3 AND rl.deactivated_at IS NULL
          ),
-         'areas',jsonb_build_object('data',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a.name,'retired',a.retired) ORDER BY lower(a.name),a.id)
+         'areas',jsonb_build_object('data',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a.name,'retired',a.retired,'individualAssignmentId',a.individual_assignment_id) ORDER BY lower(a.name),a.id)
            FROM (SELECT * FROM areas ORDER BY lower(name),id LIMIT 100) a),'[]'::jsonb),
            'total',(SELECT COUNT(*) FROM areas),'limit',100,'truncated',(SELECT COUNT(*)>100 FROM areas)),
          'instrumentManTotal',(SELECT COUNT(*) FROM roster),
-         'instrumentMen',jsonb_build_object('data',COALESCE((SELECT jsonb_agg(jsonb_build_object('userId',m.id,'name',m.name,'email',m.email,'role',m.role,'active',m.active) ORDER BY lower(m.name),m.id)
+         'instrumentMen',jsonb_build_object('data',COALESCE((SELECT jsonb_agg(jsonb_build_object('userId',m.id,'name',m.name,'email',m.email,'role',m.role,'active',m.active,'rosterLinkId',m.roster_link_id) ORDER BY lower(m.name),m.id)
            FROM (SELECT * FROM matching ORDER BY lower(name),id LIMIT $5 OFFSET $6) m),'[]'::jsonb),
            'total',(SELECT COUNT(*) FROM matching),'limit',$5::int,'offset',$6::int)
        ) AS staffing FROM chief CROSS JOIN snapshot`, [tenantId,projectId,partyChiefId,`%${query.search}%`,query.limit,query.offset]);
@@ -197,5 +201,33 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
       `INSERT INTO survey_staffing_events (tenant_id,project_id,actor_id,event_type,payload)
        VALUES ($1,$2,$3,'survey.staffing_saved',$4::jsonb)`,
       [tenantId, projectId, actorId, JSON.stringify(payload)]);
+  }
+
+  async lockLink(db: DbClient, tenantId: UUID, projectId: UUID, chiefId: UUID, kind: StaffingLinkKind, linkId: UUID): Promise<StaffingLink | null> {
+    // SQL fragments come exclusively from the fixed, handler-validated kind enum.
+    const table = kind === 'roster' ? 'crew_rosters' : kind === 'reporting' ? 'survey_reporting_links' : 'aor_assignments';
+    const chiefColumn = kind === 'area' ? 'user_id' : 'party_chief_id';
+    const values = kind === 'roster' ? 'instrument_man_id AS "instrumentManId"' : kind === 'reporting' ? 'superintendent_id AS "superintendentId",aor_node_id AS "areaId"' : 'aor_node_id AS "areaId",department_id AS "departmentId"';
+    const { rows } = await db.query<StaffingLink>(`SELECT id,${chiefColumn} AS "partyChiefId",${values} FROM ${table}
+      WHERE tenant_id=$1 AND project_id=$2 AND ${chiefColumn}=$3 AND id=$4 AND deactivated_at IS NULL FOR UPDATE`, [tenantId,projectId,chiefId,linkId]);
+    return rows[0] ?? null;
+  }
+
+  async hasDependentReporting(db: DbClient, tenantId: UUID, projectId: UUID, chiefId: UUID, areaId: UUID): Promise<boolean> {
+    const { rows } = await db.query<{ id: UUID }>(`WITH RECURSIVE covered AS (
+      SELECT id FROM aor_nodes WHERE tenant_id=$1 AND project_id=$2 AND id=$4
+      UNION ALL SELECT n.id FROM aor_nodes n JOIN covered c ON n.parent_id=c.id WHERE n.tenant_id=$1 AND n.project_id=$2
+    ) SELECT rl.id FROM survey_reporting_links rl JOIN covered c ON c.id=rl.aor_node_id
+      WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.party_chief_id=$3 AND rl.deactivated_at IS NULL FOR UPDATE OF rl`, [tenantId,projectId,chiefId,areaId]);
+    return rows.length > 0;
+  }
+
+  async deactivateLink(db: DbClient, tenantId: UUID, projectId: UUID, chiefId: UUID, kind: StaffingLinkKind, linkId: UUID): Promise<boolean> {
+    const table = kind === 'roster' ? 'crew_rosters' : kind === 'reporting' ? 'survey_reporting_links' : 'aor_assignments';
+    const chiefColumn = kind === 'area' ? 'user_id' : 'party_chief_id';
+    const { rows } = await db.query<{ id: UUID }>(`UPDATE ${table} SET deactivated_at=NOW()
+      WHERE tenant_id=$1 AND project_id=$2 AND ${chiefColumn}=$3 AND id=$4 AND deactivated_at IS NULL
+      ${kind === 'area' ? 'AND department_id IS NULL' : ''} RETURNING id`, [tenantId,projectId,chiefId,linkId]);
+    return rows.length === 1;
   }
 }

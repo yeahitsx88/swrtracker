@@ -50,9 +50,11 @@ try {
     await capture('current'); checks += 4;
     await page.getByText(`Current Instrument Men (${rosterCount})`,{exact:true}).click(); await settle();
     await page.getByLabel('Search current roster',{exact:true}).fill('Safety');
+    const rosterSearchResponse = page.waitForResponse(response => response.request().method() === 'GET' && response.url().includes('/survey/staffing?') && response.url().includes('search=Safety'));
     await page.getByLabel('Search current roster',{exact:true}).locator('..').locator('..').getByRole('button',{name:'Search',exact:true}).click();
+    await rosterSearchResponse; await settle();
     await page.waitForFunction(() => [...document.querySelectorAll('.tm-list strong')].filter(node => node.textContent === 'Safety INSTRUMENT_MAN').length >= 2);
-    assert.ok(await page.getByText('Safety INSTRUMENT_MAN',{exact:true}).count() >= 2);
+    assert.ok(await page.locator('.tm-list strong').filter({hasText:/^Safety INSTRUMENT_MAN$/}).count() >= 2);
     await page.getByLabel('Search current roster',{exact:true}).fill('no match');
     await page.getByLabel('Search current roster',{exact:true}).locator('..').locator('..').getByRole('button',{name:'Search',exact:true}).click(); await settle();
     await page.getByText('No current roster members match this search.',{exact:true}).waitFor();

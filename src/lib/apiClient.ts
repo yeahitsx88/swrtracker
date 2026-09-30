@@ -103,6 +103,9 @@ export const apiClient = {
   saveSurveyStaffing(projectId: string, input: import('@/modules/tenancy/application/save-survey-staffing').SurveyStaffingInput, idempotencyKey: string): Promise<{ success: boolean; changed: boolean }> {
     return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { method: 'POST', body: input, headers: { 'Idempotency-Key': idempotencyKey } });
   },
+  unlinkSurveyStaffing(projectId: string, input: import('@/modules/tenancy/application/unlink-survey-staffing').StaffingUnlinkInput, idempotencyKey: string): Promise<{ success: boolean; changed: boolean }> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { method: 'PATCH', body: input, headers: { 'Idempotency-Key': idempotencyKey } });
+  },
   getTeamContext(projectId: string): Promise<{ project: import('@/modules/tenancy/application/survey-teams').TeamProjectContext }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { mode: 'context' }));
   },

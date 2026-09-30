@@ -50,7 +50,8 @@ async function main(){
       VALUES ($1,$2,$3,$4,$5,$6)`,[tenant,project,superintendent,chief,area,manager]);
     await pool.query('INSERT INTO crew_rosters (tenant_id,project_id,party_chief_id,instrument_man_id) VALUES ($1,$2,$3,$4)',[tenant,project,chief,im]);
     const linked=await call('&limit=10');assert.equal(linked.reporting.superintendent.userId,superintendent);assert.equal(linked.reporting.area.id,area);
-    assert.deepEqual(linked.areas.data,[{id:area,name:'Train 1',retired:false}]);assert.equal(linked.instrumentMen.data[0].userId,im);
+    assert.deepEqual(linked.areas.data,[{id:area,name:'Train 1',retired:false,individualAssignmentId:linked.areas.data[0].individualAssignmentId}]);
+    assert.match(linked.areas.data[0].individualAssignmentId,/^[a-f0-9-]{36}$/);assert.match(linked.instrumentMen.data[0].rosterLinkId,/^[a-f0-9-]{36}$/);assert.equal(linked.instrumentMen.data[0].userId,im);
     for(let n=0;n<25;n++){
       const user=id(1000+n),name=`Fixture IM ${String(n).padStart(2,'0')}`;
       await pool.query(`INSERT INTO users (id,tenant_id,company_id,email,name,password_hash) VALUES ($1,$2,$3,$4,$5,'not-a-login-hash')`,[user,tenant,company,`fixture-${n}@example.test`,name]);

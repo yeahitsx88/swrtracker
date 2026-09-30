@@ -17,3 +17,7 @@ Area detachment must refuse a still-dependent reporting link; the Manager must e
 The alternative is to keep these links administration-only and leave the Manager editor additive. That avoids new staffing permissions but does not complete the requested Manager role-removal workflow. An automatic "clear all obligations" action is not recommended: its authority and effects cannot safely be inferred.
 
 Gate: new public command contract and removal permissions. Wait for owner approval before coding the detach path or amending its audit contract. The current checkpoint can be shipped independently; the broader objective remains unfinished.
+
+## Owner approval follow-up
+
+The owner approved this recommendation on 2026-09-30 (Decision 18). The implementation contract is PATCH on the existing staffing resource with `action: unlink`, `kind: roster|reporting|area`, exact `linkId`, selected `partyChiefId`, `expectedSnapshot` and `confirmUnlink: true`, plus Idempotency-Key. All targets are current tenant/project/Chief-scoped rows; only individual (department-null) Area assignments may be unlinked. Bounded reads expose exact eligible identities; duplicate individual assignments require administrative resolution rather than guessing a row. Department, responsibility and acting grants remain protected. This approval resolves the command gate, not the broader objective or chart-tier decision.

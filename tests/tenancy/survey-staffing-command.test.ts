@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
-import { handleGetSurveyStaffing, handlePostSurveyStaffing, type StaffingDeps } from '@/app/api/projects/[projectId]/survey/staffing/handler';
+import { handleGetSurveyStaffing, handlePostSurveyStaffing, handlePatchSurveyStaffing, type StaffingDeps } from '@/app/api/projects/[projectId]/survey/staffing/handler';
 import { SurveyStaffingPgRepository } from '@/modules/tenancy/infrastructure/survey-staffing.repository';
 import { executeIdempotentHttpMutation } from '@/lib/idempotency';
 import type { DbClient, UUID } from '@/shared/types';
@@ -41,7 +41,7 @@ function fixture(){
   const ctx={params:Promise.resolve({projectId})};
   const request=(value:unknown=input,key:string|null='key')=>new NextRequest(`http://localhost/api/projects/${projectId}/survey/staffing`,{
     method:'POST',headers:{'content-type':'application/json',...(key===null?{}:{'Idempotency-Key':key})},body:JSON.stringify(value)});
-  return {deps,input,ctx,request,writes,lockOrder,ledgerCalls:()=>ledgerCalls,setToken:(value:string)=>{token=value;},
+  return {deps,repo,input,ctx,request,writes,lockOrder,ledgerCalls:()=>ledgerCalls,setToken:(value:string)=>{token=value;},
     setRole:(value:ProjectRole)=>{role=value;},revoke:()=>{authorized=false;},archive:()=>{archived=true;}};
 }
 
@@ -91,4 +91,48 @@ test('a staffing change during eligibility validation is caught before the first
   const f=fixture();f.deps.repo.activeArea=async()=>{f.setToken(changed);return true;};
   const response=await handlePostSurveyStaffing(f.request(),f.ctx,f.deps);
   assert.equal(response.status,409);assert.equal((await response.json()).error.code,'STALE_STAFFING');assert.deepEqual(f.writes,[]);
+});
+
+function unlinkFixture(kind: 'roster'|'area'|'reporting' = 'roster') {
+  const f=fixture(), linkId=id(8);
+  f.repo.lockLink=async()=>({id:linkId,partyChiefId:chief,instrumentManId:im,areaId:area,departmentId:null});
+  f.repo.hasDependentReporting=async()=>false;
+  f.repo.deactivateLink=async()=>{f.writes.push('unlink');return true;};
+  const input={action:'unlink',kind,linkId,partyChiefId:chief,expectedSnapshot:initial,confirmUnlink:true};
+  const patch=(value:unknown=input,key:string|null='unlink-key')=>handlePatchSurveyStaffing(f.request(value,key),f.ctx,{...f.deps,repo:f.repo});
+  return {...f,input,patch};
+}
+test('targeted unlink retries return the original result with one deactivation and audit',async()=>{
+  for(const kind of ['roster','reporting','area'] as const){
+    const f=unlinkFixture(kind);assert.equal((await f.patch()).status,200);assert.equal((await f.patch()).status,200);
+    assert.deepEqual(f.writes,['unlink','audit']);assert.deepEqual(f.lockOrder,[[chief]]);
+    assert.equal((await f.patch({...f.input,linkId:id(9)})).status,409);
+    assert.equal((await f.patch(f.input,'new-key')).status,409);
+  }
+});
+test('unlink requires deliberate confirmation, exact supported fields and valid identities',async()=>{
+  const f=unlinkFixture();
+  for(const patch of [{confirmUnlink:false},{expectedSnapshot:undefined},{linkId:'bad'},{kind:'responsibility'},{departmentId:id(9)},{action:'clear-all'}]){
+    assert.equal((await f.patch({...f.input,...patch})).status,400);
+  }
+  assert.equal((await f.patch(f.input,null)).status,400);assert.equal(f.ledgerCalls(),0);assert.deepEqual(f.writes,[]);
+});
+test('unlink guards current Chief, exact target, department scope and dependent reporting before writes',async()=>{
+  for(const denial of ['chief','missing','department','dependent','changed','write-race'] as const){
+    const f=unlinkFixture('area');
+    if(denial==='chief')f.repo.member=async()=>null;
+    if(denial==='missing')f.repo.lockLink=async()=>null;
+    if(denial==='department')f.repo.lockLink=async()=>({id:id(8),partyChiefId:chief,areaId:area,departmentId:id(9)});
+    if(denial==='dependent')f.repo.hasDependentReporting=async()=>true;
+    if(denial==='changed')f.repo.hasDependentReporting=async()=>{f.setToken(changed);return false;};
+    if(denial==='write-race')f.repo.deactivateLink=async()=>false;
+    assert.equal((await f.patch()).status,denial==='chief'?400:denial==='missing'?404:409);assert.deepEqual(f.writes,[]);
+  }
+});
+test('cached unlink is denied after Manager role/session loss or project closure',async()=>{
+  for(const denial of ['role','revoke','archive'] as const){
+    const f=unlinkFixture();assert.equal((await f.patch()).status,200);const before=f.ledgerCalls();
+    if(denial==='role')f.setRole('SURVEY_SUPERINTENDENT');else if(denial==='revoke')f.revoke();else f.archive();
+    assert.equal((await f.patch()).status,denial==='archive'?409:403);assert.equal(f.ledgerCalls(),before);assert.deepEqual(f.writes,['unlink','audit']);
+  }
 });

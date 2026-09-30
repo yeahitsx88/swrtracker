@@ -7,6 +7,7 @@ import type { Page, UUID } from '@/shared/types';
 import type { TeamArea, TeamPersonnel, TeamPerson, TeamProjectContext, SurveyTeamDetail, SurveyTeamSummary } from '@/modules/tenancy/application/survey-teams';
 import type { ManagedSurveyRole } from '@/modules/tenancy/application/change-survey-role';
 import type { SurveyStaffingDetail } from '@/modules/tenancy/application/read-survey-staffing';
+import type { StaffingLinkKind } from '@/modules/tenancy/application/unlink-survey-staffing';
 import { addTeamSelection, canEditSurveyRole, removeTeamSelection, roleLabel, supportedTeamRoles } from '@/lib/team-management-view';
 import { Button, ErrorBanner, SuccessBanner } from '@/components/ui';
 import { PaginationControls } from '@/components/forms';
@@ -156,6 +157,10 @@ function StaffingEditor({ projectId, person, project, cancel, saved }: { project
   const [area,setArea] = useState<TeamArea | null>(null), [superintendent,setSuperintendent] = useState<{ userId: UUID; name: string } | null>(null);
   const [selected,setSelected] = useState<TeamPersonnel[]>([]), [confirmed,setConfirmed] = useState(false);
   const [picker,setPicker] = useState<'area' | 'superintendent' | 'instrument' | null>(null), [rosterOpen,setRosterOpen] = useState(false);
+  const [unlink,setUnlink] = useState<{ kind: StaffingLinkKind; linkId: UUID; label: string } | null>(null), [unlinkConfirmed,setUnlinkConfirmed] = useState(false);
+  const [unlinkSuccess,setUnlinkSuccess] = useState<string | null>(null);
+  const [staleDetected,setStaleDetected] = useState(false);
+  const currentHeading = useRef<HTMLHeadingElement>(null), unlinkHeading = useEditorHeadingFocus(!!unlink);
   const initialized = useRef(false), command = useTeamCommand(), editorHeading = useEditorHeadingFocus();
   const readOnly = project.status === 'ARCHIVED';
   const areas = useTeamPage<TeamArea>(projectId,'areas',!readOnly && picker === 'area',revision);
@@ -180,12 +185,29 @@ function StaffingEditor({ projectId, person, project, cancel, saved }: { project
   const roster: PageControls = { data: detail?.instrumentMen ?? null,error,loading,draft,limit,offset,setDraft,setOffset,
     search: event => { event.preventDefault(); setSearch(draft.trim()); setOffset(0); setRevision(value => value + 1); },
     resize: value => { setLimit(value); setOffset(0); }, retry: () => setRevision(value => value + 1) };
-  const stale = command.failure?.code === 'STALE_STAFFING' || (!!baseline && !!detail && baseline.snapshotToken !== detail.snapshotToken);
+  const staleEvidence = command.failure?.code === 'STALE_STAFFING' || (!!baseline && !!detail && baseline.snapshotToken !== detail.snapshotToken);
+  useEffect(() => { if (staleEvidence) setStaleDetected(true); },[staleEvidence]);
+  const stale = staleDetected || staleEvidence;
   const blockedAreas = !!baseline && (baseline.areas.truncated || baseline.areas.total > 1);
   function reload() {
     command.reset();
+    setStaleDetected(false);
+    setUnlink(null); setUnlinkConfirmed(false);
     initialized.current = false; setBaseline(null); setDetail(null); setSelected([]); setArea(null); setSuperintendent(null); setConfirmed(false);
     setDraft(''); setSearch(''); setOffset(0); setPicker(null); setRevision(value => value + 1); editorHeading.current?.focus();
+  }
+  function chooseUnlink(kind: StaffingLinkKind, linkId: UUID, label: string) {
+    command.reset(); setUnlinkSuccess(null); setUnlinkConfirmed(false); setUnlink({ kind,linkId,label }); setPicker(null);
+  }
+  function keepLink() { command.reset(); setUnlink(null); setUnlinkConfirmed(false); currentHeading.current?.focus(); }
+  function submitUnlink(event: FormEvent) {
+    event.preventDefault();
+    if (!baseline || !detail || !unlink || stale || readOnly || loading || error || !unlinkConfirmed) return;
+    const input = { action: 'unlink' as const, kind: unlink.kind, linkId: unlink.linkId, partyChiefId: person.userId,
+      expectedSnapshot: baseline.snapshotToken, confirmUnlink: true as const };
+    void command.run('unlink',input,key => apiClient.unlinkSurveyStaffing(projectId,input,key),() => {
+      setUnlinkSuccess(`${unlink.label} unlinked. Roles, accounts and request history are unchanged.`); reload();
+    });
   }
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -198,15 +220,20 @@ function StaffingEditor({ projectId, person, project, cancel, saved }: { project
   return <div className="tm-editor stack" aria-label={`Staffing for ${person.name}`}>
     <div className="tm-heading"><div><h3 className="panel-title" ref={editorHeading} tabIndex={-1}>Staffing for {person.name}</h3><p className="muted">{person.email}</p></div><Button type="button" variant="secondary" disabled={command.busy} onClick={cancel}>Back to personnel</Button></div>
     <p className="muted">Explicit operational assignments, independent of named teams. {readOnly ? 'Closed project — read only.' : 'Roster saves add people; they never remove existing Instrument Men or alter request history.'}</p>
-    {baseline ? <section className="tm-section"><h4>Current assignments</h4>
+    {unlinkSuccess ? <SuccessBanner message={unlinkSuccess} /> : null}
+    {baseline ? <section className="tm-section"><h4 ref={currentHeading} tabIndex={-1}>Current assignments</h4>
       <p><strong>Area:</strong> {baseline.areas.total === 0 ? 'No explicit Area assignment' : baseline.areas.data.map(item => `${item.name}${item.retired ? ' (retired)' : ''}`).join(', ')}{baseline.areas.truncated ? ` · Showing ${baseline.areas.data.length} of ${baseline.areas.total}` : ''}</p>
       <p><strong>Reports to:</strong> {baseline.reporting ? `${baseline.reporting.superintendent.name} · ${baseline.reporting.area.name}${!baseline.reporting.superintendent.active ? ' · Inactive' : ''}${baseline.reporting.area.retired ? ' · Retired Area' : ''}${baseline.reporting.superintendent.role !== 'SURVEY_SUPERINTENDENT' ? ' · Role changed' : ''}` : 'No explicit Superintendent link'}</p>
-      <details className="tm-area-picker" open={rosterOpen} onToggle={event => setRosterOpen(event.currentTarget.open)}><summary>Current Instrument Men ({baseline.instrumentManTotal})</summary><div className="stack"><SearchControls page={roster} label="Search current roster" disabled={command.busy} /><PageState page={roster} empty="No current roster members match this search." /><ul className="tm-list">{detail?.instrumentMen.data.map(item => <li className="tm-person" key={item.userId}><div><strong>{item.name}</strong><span className="tm-email muted">{item.email}</span></div><div>{item.role ? roleLabel(item.role) : 'No project role'}{!item.active ? ' · Inactive' : ''}</div></li>)}</ul><PageFooter page={roster} /></div></details>
+      {!readOnly && !unlink ? <div className="stack">{baseline.reporting ? <div><Button type="button" variant="secondary" disabled={command.busy || stale || loading || !!error} onClick={() => chooseUnlink('reporting',baseline.reporting!.id,`Superintendent link to ${baseline.reporting!.superintendent.name}`)}>Unlink Superintendent</Button></div> : null}
+        <details className="tm-area-picker"><summary>Manage current Area assignments ({baseline.areas.total})</summary><div className="stack"><p className="muted">Unlink one individual Area assignment. Department scope stays unchanged. A dependent Superintendent link must be unlinked or replaced first.</p><ul className="tm-selected">{baseline.areas.data.map(item => <li key={item.id}><span>{item.name}{item.retired ? ' · Retired' : ''}{!item.individualAssignmentId ? <span className="tm-email muted">Department scope or duplicate individual assignments — IT must resolve</span> : null}</span>{item.individualAssignmentId ? <Button type="button" variant="secondary" aria-label={`Unlink Area ${item.name}`} disabled={command.busy || stale || loading || !!error} onClick={() => chooseUnlink('area',item.individualAssignmentId!,`Area assignment: ${item.name}`)}>Unlink Area</Button> : null}</li>)}</ul>{baseline.areas.truncated ? <p className="muted">Only the first {baseline.areas.data.length} of {baseline.areas.total} Areas are shown. This is not a complete assignment list; IT must resolve undisplayed scope.</p> : null}</div></details>
+      </div> : null}
+      <details className="tm-area-picker" open={rosterOpen} onToggle={event => setRosterOpen(event.currentTarget.open)}><summary>Current Instrument Men ({baseline.instrumentManTotal})</summary><div className="stack"><SearchControls page={roster} label="Search current roster" disabled={command.busy || !!unlink} /><PageState page={roster} empty="No current roster members match this search." /><ul className="tm-list">{detail?.instrumentMen.data.map(item => <li className="tm-person" key={item.userId}><div><strong>{item.name}</strong><span className="tm-email muted">{item.email}</span></div><div>{item.role ? roleLabel(item.role) : 'No project role'}{!item.active ? ' · Inactive' : ''}</div>{!readOnly && item.rosterLinkId && !unlink ? <Button type="button" variant="secondary" aria-label={`Unlink Instrument Man ${item.name}`} disabled={command.busy || stale || loading || !!error} onClick={() => chooseUnlink('roster',item.rosterLinkId!,`Crew link: ${item.name}`)}>Unlink crew member</Button> : null}</li>)}</ul><PageFooter page={roster} /></div></details>
     </section> : <PageState page={roster} empty="" />}
     {baseline && error && !rosterOpen ? <div className="stack"><ErrorBanner message={error} /><Button type="button" variant="secondary" onClick={roster.retry}>Retry staffing read</Button></div> : null}
     {stale ? <ErrorBanner message="Project staffing changed while you were reviewing it. Reload current staffing before saving; your draft will be discarded." /> : null}
-    {blockedAreas && !readOnly ? <p role="status">This Chief has multiple Area assignments. Staffing saves cannot reassign or replace them. Use a separate authorized Area-reassignment workflow.</p> : null}
-    {baseline && !readOnly && !blockedAreas ? <>
+    {blockedAreas && !readOnly ? <p role="status">This Chief has multiple Area assignments. Staffing saves cannot reassign or replace them. You may explicitly unlink a displayed individual assignment; undisplayed or protected scope needs IT review.</p> : null}
+    {unlink && baseline && !readOnly ? <form className="tm-section stack" onSubmit={submitUnlink}><h4 ref={unlinkHeading} tabIndex={-1}>Unlink {unlink.label}?</h4><p>This removes only this current operational link from {person.name}. The account, project membership, role, named teams and request history remain unchanged. Role removal is a separate action.</p>{selected.length || confirmed ? <p className="muted">A successful unlink reloads current staffing and discards proposed additions.</p> : null}<label className="tm-check"><input type="checkbox" checked={unlinkConfirmed} disabled={command.busy} onChange={event => setUnlinkConfirmed(event.target.checked)} /><span>I confirm unlinking {unlink.label}.</span></label>{command.error && !stale ? <ErrorBanner message={command.error} /> : null}<div className="row"><Button type="submit" variant="danger" disabled={command.busy || stale || loading || !!error || !detail || !unlinkConfirmed}>{command.busy ? 'Unlinking…' : 'Confirm unlink'}</Button><Button type="button" variant="secondary" disabled={command.busy} onClick={keepLink}>Keep link</Button><Button type="button" variant="secondary" disabled={command.busy} onClick={reload}>Reload current staffing</Button></div><p className="muted">After an uncertain response, retry this unchanged confirmation. Reload discards the draft.</p></form> : null}
+    {baseline && !readOnly && !blockedAreas && !unlink ? <>
       <section className="tm-section"><h4>Proposed assignments</h4><p className="muted">Area: <strong>{area?.name ?? 'Select an active Area'}</strong>{project.crewBuild === 'FULL' ? <> · Superintendent: <strong>{superintendent?.name ?? 'Select a Superintendent'}</strong></> : null}</p>
         <p className="muted">Choosing a Superintendent replaces the current reporting link. The server checks their Area authority. A different existing Chief Area cannot be reassigned here.</p>
         <div className="row"><Button type="button" variant="secondary" disabled={command.busy} aria-expanded={picker === 'area'} id="tm-select-staffing-area" aria-controls={picker === 'area' ? 'tm-staffing-area' : undefined} onClick={() => setPicker(picker === 'area' ? null : 'area')}>Select Area</Button>{project.crewBuild === 'FULL' ? <Button type="button" variant="secondary" disabled={command.busy} aria-expanded={picker === 'superintendent'} id="tm-select-staffing-superintendent" aria-controls={picker === 'superintendent' ? 'tm-staffing-people' : undefined} onClick={() => setPicker(picker === 'superintendent' ? null : 'superintendent')}>Select Superintendent</Button> : null}<Button type="button" variant="secondary" disabled={command.busy} aria-expanded={picker === 'instrument'} aria-controls={picker === 'instrument' ? 'tm-staffing-people' : undefined} onClick={() => setPicker(picker === 'instrument' ? null : 'instrument')}>Add Instrument Men</Button></div>
@@ -220,7 +247,7 @@ function StaffingEditor({ projectId, person, project, cancel, saved }: { project
       </section>
       <section className="tm-section"><h4>Instrument Man additions ({selected.length}/100)</h4>{selected.length === 0 ? <p className="muted">None selected. Existing roster members stay assigned.</p> : <ul className="tm-selected">{selected.map(item => <li key={item.userId}><span><strong>{item.name}</strong><span className="tm-email muted">{roleLabel(item.role)}{item.role !== 'INSTRUMENT_MAN' ? ' → Instrument Man · must sign in again' : ''}</span></span><Button type="button" variant="secondary" aria-label={`Remove addition ${item.name}`} disabled={command.busy} onClick={() => { setSelected(previous => previous.filter(value => value.userId !== item.userId)); setConfirmed(false); }}>Remove addition</Button></li>)}</ul>}</section>
       <form onSubmit={submit} className="stack"><label className="tm-check"><input type="checkbox" checked={confirmed} disabled={command.busy} onChange={event => setConfirmed(event.target.checked)} /><span>I confirm the explicit assignments and any role replacements. Promoted personnel must sign in again.</span></label>{command.error && !stale ? <ErrorBanner message={command.error} /> : null}<div className="row"><Button type="submit" disabled={command.busy || loading || !!error || !detail || stale || !area || !confirmed || (project.crewBuild === 'FULL' && !superintendent)}>{command.busy ? 'Saving…' : 'Save staffing additions'}</Button><Button type="button" variant="secondary" disabled={command.busy} onClick={reload}>Reload current staffing</Button></div><p className="muted">After an uncertain response, retry the unchanged form. Reload discards your draft and reads the latest assignments.</p></form>
-    </> : baseline && !readOnly ? <Button type="button" variant="secondary" onClick={reload}>Reload current staffing</Button> : null}
+    </> : baseline && !readOnly && !unlink ? <Button type="button" variant="secondary" onClick={reload}>Reload current staffing</Button> : null}
   </div>;
 }
 

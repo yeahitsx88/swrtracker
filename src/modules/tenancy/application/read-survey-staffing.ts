@@ -4,8 +4,9 @@ import { ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors'
 
 export interface StaffingPerson {
   userId: UUID; name: string; email: string; role: ProjectRole | null; active: boolean;
+  rosterLinkId?: UUID;
 }
-export interface StaffingArea { id: UUID; name: string; retired: boolean }
+export interface StaffingArea { id: UUID; name: string; retired: boolean; individualAssignmentId?: UUID | null }
 export interface StaffingReadQuery { search: string; limit: number; offset: number }
 export interface SurveyStaffingDetail {
   snapshotToken: string;
