@@ -9,13 +9,13 @@ export interface SurveyTeamSummary {
   id: UUID; name: string; areaId: UUID; areaName: string; lead: TeamPerson; memberCount: number; rowVersion: number;
 }
 export interface SurveyTeamDetail extends SurveyTeamSummary { members: TeamPerson[] }
-export interface TeamPersonnel extends TeamPerson { teamId: UUID | null; teamName: string | null }
+export interface TeamPersonnel extends TeamPerson { teamId: UUID | null; teamName: string | null; roleVersion: number }
 export interface TeamPageQuery { search: string; limit: number; offset: number }
 export interface SaveSurveyTeamInput {
   teamId: UUID | null; expectedVersion: number | null; name: string; areaId: UUID; leadUserId: UUID; memberIds: UUID[];
 }
 export interface TeamActor { tenantId: UUID; projectId: UUID; actorId: UUID; actorRole: ProjectRole; sessionVersion: number }
-export type TeamEvent = 'survey.team_created' | 'survey.team_updated' | 'survey.team_deactivated';
+export type TeamEvent = 'survey.team_created' | 'survey.team_updated' | 'survey.team_deactivated' | 'survey.role_changed';
 
 export interface SurveyTeamsRepository {
   lockProject(db: DbClient, tenantId: UUID, projectId: UUID): Promise<{ status: ProjectStatus; crewBuild: CrewBuild } | null>;
@@ -45,8 +45,8 @@ async function lockWritableProject(repo: SurveyTeamsRepository, db: DbClient, ac
 }
 
 /** Also check authorization on an idempotent replay before returning its data. */
-export async function authorizeTeamMutation(repo: SurveyTeamsRepository, db: DbClient, actor: TeamActor): Promise<void> {
-  await lockWritableProject(repo, db, actor);
+export async function authorizeTeamMutation(repo: SurveyTeamsRepository, db: DbClient, actor: TeamActor): Promise<{ status: ProjectStatus; crewBuild: CrewBuild }> {
+  return lockWritableProject(repo, db, actor);
 }
 
 const teamRoles = new Set<ProjectRole>(['SURVEY_SUPERINTENDENT', 'PARTY_CHIEF', 'INSTRUMENT_MAN']);

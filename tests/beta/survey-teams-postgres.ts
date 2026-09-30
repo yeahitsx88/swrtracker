@@ -6,8 +6,9 @@ import { getProjectRole } from '../../src/lib/get-project-role';
 import { signToken, requireActiveAuth, sessionTokenHash } from '../../src/lib/auth';
 import { executeIdempotentHttpMutation } from '../../src/lib/idempotency';
 import { SurveyTeamsPgRepository } from '../../src/modules/tenancy/infrastructure/survey-teams.repository';
-import { handleDeleteSurveyTeam, handleGetSurveyTeams, handlePostSurveyTeam, type TeamDeps } from '../../src/app/api/projects/[projectId]/survey/teams/handler';
+import { handleDeleteSurveyTeam, handleGetSurveyTeams, handlePostSurveyTeam, handlePatchSurveyRole, type TeamDeps } from '../../src/app/api/projects/[projectId]/survey/teams/handler';
 import { saveSurveyTeam, type TeamActor } from '../../src/modules/tenancy/application/survey-teams';
+import { changeSurveyRole } from '../../src/modules/tenancy/application/change-survey-role';
 import type { DbClient, UUID } from '../../src/shared/types';
 
 // Deliberately separate from Sabine: use a fresh disposable database, migrate
@@ -15,6 +16,7 @@ import type { DbClient, UUID } from '../../src/shared/types';
 const id=(n:number)=>`20000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
 const tenant=id(1), project=id(2), manager=id(3), company=id(4), area=id(5), level=id(6);
 const chief=id(7),im=id(8),superintendent=id(9),otherProject=id(10),otherTenant=id(11),otherCompany=id(12),outsider=id(13),otherArea=id(14),otherLevel=id(15),otherChief=id(16),sameTenantProject=id(17);
+const candidate=id(20),admin=id(21),inactive=id(22),outsideProject=id(23),crossManager=id(24);
 
 async function main() {
   const url=new URL(process.env.DATABASE_URL ?? '');
@@ -37,9 +39,14 @@ async function main() {
     for(const [user,userTenant,userCompany,name] of [
       [manager,tenant,company,'Manager'],[chief,tenant,company,'Chief'],[im,tenant,company,'Instrument Man'],
       [superintendent,tenant,company,'Superintendent'],[outsider,otherTenant,otherCompany,'Outsider'],[otherChief,tenant,company,'Other Chief'],
+      [candidate,tenant,company,'Role candidate'],[admin,tenant,company,'Project admin'],[inactive,tenant,company,'Inactive'],
+      [outsideProject,tenant,company,'Other project requester'],[crossManager,tenant,company,'Other project manager'],
     ]) await pool.query(`INSERT INTO users (id,tenant_id,company_id,email,name,password_hash) VALUES ($1,$2,$3,$4,$5,'not-a-login-hash')`,[user,userTenant,userCompany,`${user}@example.test`,name]);
     for(const [user,role,projectId] of [[manager,'SURVEY_MANAGER',project],[chief,'PARTY_CHIEF',project],[im,'INSTRUMENT_MAN',project],
-      [superintendent,'SURVEY_SUPERINTENDENT',project],[otherChief,'PARTY_CHIEF',project],[outsider,'SURVEY_MANAGER',otherProject]]) {
+      [superintendent,'SURVEY_SUPERINTENDENT',project],[otherChief,'PARTY_CHIEF',project],[outsider,'SURVEY_MANAGER',otherProject],
+      [candidate,'REQUESTER',project],[admin,'PROJECT_ADMIN',project],[inactive,'REQUESTER',project],
+      [outsideProject,'REQUESTER',sameTenantProject],[crossManager,'SURVEY_MANAGER',sameTenantProject],[crossManager,'REQUESTER',project],
+      [manager,'REQUESTER',sameTenantProject]]) {
       await pool.query('INSERT INTO project_memberships (project_id,user_id,role) VALUES ($1,$2,$3)',[projectId,user,role]);
     }
     for(const [levelId,projectId,tenantId,areaId] of [[level,project,tenant,area],[otherLevel,otherProject,otherTenant,otherArea]]) {
@@ -127,9 +134,75 @@ async function main() {
       handlePostSurveyTeam(request('POST',{...input,name:'Exclusive B',memberIds:[otherChief],leadUserId:otherChief}),ctx,deps),
     ]);
     assert.deepEqual(exclusiveRace.map(r=>r.status).sort(),[201,409]);scenarios++;
+    const roleBody={action:'set-role',userId:candidate,role:'INSTRUMENT_MAN',expectedRole:'REQUESTER',expectedRoleVersion:1,confirmRoleChanges:true};
+    const roleKey=randomUUID();
+    const changed=await call(handlePatchSurveyRole(request('PATCH',roleBody,'',token,roleKey),ctx,deps),200);
+    assert.equal(changed.roleVersion,2);
+    const replayRole=await call(handlePatchSurveyRole(request('PATCH',roleBody,'',token,roleKey),ctx,deps),200);
+    assert.equal(replayRole.roleVersion,2);
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM survey_staffing_events WHERE event_type=\'survey.role_changed\'')).rows[0].count,1);
+    await call(handlePatchSurveyRole(request('PATCH',roleBody),ctx,deps),409);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'PARTY_CHIEF',confirmRoleChanges:false}),ctx,deps),400);
+    const protectedRole=(userId:UUID)=>({...roleBody,userId});
+    await call(handlePatchSurveyRole(request('PATCH',protectedRole(admin)),ctx,deps),409);
+    await call(handlePatchSurveyRole(request('PATCH',protectedRole(manager)),ctx,deps),409);
+    await call(handlePatchSurveyRole(request('PATCH',protectedRole(outsider)),ctx,deps),404);
+    await call(handlePatchSurveyRole(request('PATCH',protectedRole(outsideProject)),ctx,deps),404);
+    await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[inactive]);
+    await call(handlePatchSurveyRole(request('PATCH',protectedRole(inactive)),ctx,deps),404);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,userId:im,expectedRole:'INSTRUMENT_MAN',role:'REQUESTER'}),ctx,deps),409);
+    const brokenRole=new SurveyTeamsPgRepository();brokenRole.recordTeamEvent=async()=>{throw new Error('role audit rejected');};
+    await assert.rejects(transaction(db=>changeSurveyRole(brokenRole,db,actor,{userId:candidate,role:'PARTY_CHIEF',expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,confirmRoleChanges:true})),/role audit rejected/);
+    assert.equal((await pool.query('SELECT session_version FROM users WHERE id=$1',[candidate])).rows[0].session_version,2);
+    assert.equal((await pool.query('SELECT role FROM project_memberships WHERE user_id=$1',[candidate])).rows[0].role,'INSTRUMENT_MAN');scenarios++;
+    await pool.query('INSERT INTO aor_assignments (tenant_id,project_id,user_id,aor_node_id) VALUES ($1,$2,$3,$4)',[tenant,project,candidate,area]);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'PARTY_CHIEF'}),ctx,deps),409);
+    await pool.query('UPDATE aor_assignments SET deactivated_at=NOW() WHERE user_id=$1',[candidate]);
+    await pool.query(`INSERT INTO project_responsibility_grants (tenant_id,project_id,aor_node_id,user_id,responsibility,granted_by)
+      VALUES ($1,$2,$3,$4,'FIELD_COORDINATOR',$5)`,[tenant,project,area,candidate,manager]);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'PARTY_CHIEF'}),ctx,deps),409);
+    await pool.query('UPDATE project_responsibility_grants SET revoked_at=NOW(),revoked_by=$2 WHERE user_id=$1',[candidate,manager]);
+    await pool.query('INSERT INTO crew_rosters (tenant_id,project_id,party_chief_id,instrument_man_id) VALUES ($1,$2,$3,$4)',[tenant,project,chief,candidate]);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'PARTY_CHIEF'}),ctx,deps),409);
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM crew_rosters WHERE instrument_man_id=$1 AND deactivated_at IS NULL',[candidate])).rows[0].count,1);
+    await pool.query('UPDATE crew_rosters SET deactivated_at=NOW() WHERE instrument_man_id=$1',[candidate]);
+    await pool.query(`INSERT INTO survey_reporting_links (tenant_id,project_id,superintendent_id,party_chief_id,aor_node_id,assigned_by)
+      VALUES ($1,$2,$3,$4,$5,$6)`,[tenant,project,superintendent,chief,area,manager]);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,userId:chief,expectedRole:'PARTY_CHIEF'}),ctx,deps),409);
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM survey_reporting_links WHERE party_chief_id=$1 AND deactivated_at IS NULL',[chief])).rows[0].count,1);
+    await pool.query('UPDATE survey_reporting_links SET deactivated_at=NOW() WHERE party_chief_id=$1',[chief]);
+    await pool.query(`INSERT INTO acting_grants (tenant_id,project_id,user_id,role,trigger,granted_by,granted_reason)
+      VALUES ($1,$2,$3,'PARTY_CHIEF','VACANCY',$4,'Isolated test grant')`,[tenant,project,candidate,manager]);
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'PARTY_CHIEF'}),ctx,deps),409);
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM acting_grants WHERE user_id=$1 AND revoked_at IS NULL',[candidate])).rows[0].count,1);
+    await pool.query('UPDATE acting_grants SET revoked_at=NOW(),revoked_by=$2 WHERE user_id=$1',[candidate,manager]);
+    const roleRace=await Promise.all([
+      handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'PARTY_CHIEF'}),ctx,deps),
+      handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,role:'SURVEY_SUPERINTENDENT'}),ctx,deps),
+    ]);
+    assert.deepEqual(roleRace.map(r=>r.status).sort(),[200,409]);scenarios++;
+    const currentRole=(await pool.query('SELECT role FROM project_memberships WHERE user_id=$1',[candidate])).rows[0].role;
+    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:currentRole,expectedRoleVersion:3,role:'REQUESTER'}),ctx,deps),200);
+    assert.equal((await pool.query('SELECT role FROM project_memberships WHERE user_id=$1',[candidate])).rows[0].role,'REQUESTER');
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM users WHERE id=$1',[candidate])).rows[0].count,1);
+    await assert.rejects(getProjectRole(pool,tenant,project,candidate,1),{name:'UnauthorizedError'});scenarios++;
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM tenant_memberships')).rows[0].count,0);scenarios++;
+    // Two Managers are valid Requesters in each other's project. Synchronize
+    // their subject lookup to expose actor-user/subject-user lock inversion.
+    const crossRepo=new SurveyTeamsPgRepository();const actualMembers=crossRepo.members.bind(crossRepo);
+    let arrived=0;let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
+    crossRepo.members=async(...args)=>{arrived++;if(arrived===2)release();await gate;return actualMembers(...args);};
+    const crossDeps={...deps,repo:crossRepo};
+    const crossToken=signToken(crossManager,tenant);
+    const crossResults=await Promise.all([
+      handlePatchSurveyRole(request('PATCH',{...roleBody,userId:crossManager}),ctx,crossDeps),
+      handlePatchSurveyRole(request('PATCH',{...roleBody,userId:manager},'',crossToken),{params:Promise.resolve({projectId:sameTenantProject})},crossDeps),
+    ]);
+    assert.deepEqual(crossResults.map(r=>r.status),[200,200],'Cross-project Manager role edits must not deadlock');scenarios++;
+    const latestManagerToken=signToken(manager,tenant,2);
     await pool.query('INSERT INTO revoked_auth_sessions (token_hash,tenant_id,user_id,expires_at) VALUES ($1,$2,$3,NOW()+interval \'8 hours\')',[sessionTokenHash(token),tenant,manager]);
     await call(handleGetSurveyTeams(request('GET',undefined),ctx,deps),401);
-    await call(handleGetSurveyTeams(request('GET',undefined,'',signToken(manager,tenant)),ctx,deps),200);
+    await call(handleGetSurveyTeams(request('GET',undefined,'',latestManagerToken),ctx,deps),200);
     console.log(`Survey team PostgreSQL/route scenarios passed: ${scenarios}`);
   } finally {await pool.end();}
 }
