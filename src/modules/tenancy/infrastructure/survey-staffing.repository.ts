@@ -2,8 +2,51 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { CrewBuild, ProjectStatus } from '../domain/types';
 import type { SurveyStaffingMember, SurveyStaffingRepository } from '../application/save-survey-staffing';
+import type { StaffingReadQuery, SurveyStaffingDetail, SurveyStaffingReadRepository } from '../application/read-survey-staffing';
 
-export class SurveyStaffingPgRepository implements SurveyStaffingRepository {
+export class SurveyStaffingPgRepository implements SurveyStaffingRepository, SurveyStaffingReadRepository {
+  async readStaffing(db: DbClient, tenantId: UUID, projectId: UUID, partyChiefId: UUID, query: StaffingReadQuery): Promise<SurveyStaffingDetail | null> {
+    const { rows } = await db.query<{ staffing: SurveyStaffingDetail }>(
+      `WITH chief AS (
+         SELECT u.id,u.name,u.email,pm.role FROM project_memberships pm
+         JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
+         JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL
+         JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
+         WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='PARTY_CHIEF'
+       ), areas AS (
+         SELECT DISTINCT n.id,n.name,(n.retired_at IS NOT NULL) AS retired FROM aor_assignments aa
+         JOIN aor_nodes n ON n.tenant_id=aa.tenant_id AND n.project_id=aa.project_id AND n.id=aa.aor_node_id
+         WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL
+       ), roster AS (
+         SELECT u.id,u.name,u.email,pm.role,(u.deactivated_at IS NULL) AS active FROM crew_rosters cr
+         JOIN users u ON u.tenant_id=cr.tenant_id AND u.id=cr.instrument_man_id
+         LEFT JOIN project_memberships pm ON pm.project_id=cr.project_id AND pm.user_id=u.id
+         WHERE cr.tenant_id=$1 AND cr.project_id=$2 AND cr.party_chief_id=$3 AND cr.deactivated_at IS NULL
+       ), matching AS (
+         SELECT * FROM roster WHERE name ILIKE $4 OR email ILIKE $4
+       ) SELECT jsonb_build_object(
+         'partyChief',jsonb_build_object('userId',chief.id,'name',chief.name,'email',chief.email,'role',chief.role,'active',true),
+         'reporting',(
+           SELECT jsonb_build_object('id',rl.id,'assignedAt',rl.assigned_at,
+             'superintendent',jsonb_build_object('userId',u.id,'name',u.name,'email',u.email,'role',pm.role,'active',u.deactivated_at IS NULL),
+             'area',jsonb_build_object('id',n.id,'name',n.name,'retired',n.retired_at IS NOT NULL))
+           FROM survey_reporting_links rl
+           JOIN users u ON u.tenant_id=rl.tenant_id AND u.id=rl.superintendent_id
+           LEFT JOIN project_memberships pm ON pm.project_id=rl.project_id AND pm.user_id=u.id
+           JOIN aor_nodes n ON n.tenant_id=rl.tenant_id AND n.project_id=rl.project_id AND n.id=rl.aor_node_id
+           WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.party_chief_id=$3 AND rl.deactivated_at IS NULL
+         ),
+         'areas',jsonb_build_object('data',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a.name,'retired',a.retired) ORDER BY lower(a.name),a.id)
+           FROM (SELECT * FROM areas ORDER BY lower(name),id LIMIT 100) a),'[]'::jsonb),
+           'total',(SELECT COUNT(*) FROM areas),'limit',100,'truncated',(SELECT COUNT(*)>100 FROM areas)),
+         'instrumentManTotal',(SELECT COUNT(*) FROM roster),
+         'instrumentMen',jsonb_build_object('data',COALESCE((SELECT jsonb_agg(jsonb_build_object('userId',m.id,'name',m.name,'email',m.email,'role',m.role,'active',m.active) ORDER BY lower(m.name),m.id)
+           FROM (SELECT * FROM matching ORDER BY lower(name),id LIMIT $5 OFFSET $6) m),'[]'::jsonb),
+           'total',(SELECT COUNT(*) FROM matching),'limit',$5::int,'offset',$6::int)
+       ) AS staffing FROM chief`, [tenantId,projectId,partyChiefId,`%${query.search}%`,query.limit,query.offset]);
+    return rows[0]?.staffing ?? null;
+  }
+
   async lockProject(db: DbClient, tenantId: UUID, projectId: UUID): Promise<{ status: ProjectStatus; crewBuild: CrewBuild } | null> {
     const { rows } = await db.query<{ status: ProjectStatus; crew_build: CrewBuild }>(
       `SELECT status, crew_build FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE`, [tenantId, projectId]);

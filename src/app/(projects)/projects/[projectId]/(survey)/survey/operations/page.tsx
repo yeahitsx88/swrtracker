@@ -14,6 +14,7 @@ import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { OperationsHealth } from '@/components/ui/operations-health';
 import { SurveyCommandOverview } from '@/components/ui/survey-command-overview';
+import { KpiExplorer } from '@/components/ui/kpi-explorer';
 import type { AmeliaMetrics } from '@/modules/reporting/application/amelia-metrics';
 import { operationsServerPage, operationsPage, operationsStatusLabel } from '@/lib/operations-view';
 import { useTicketPage } from '@/lib/use-ticket-page';
@@ -25,6 +26,8 @@ export default function SurveyOperationsPage() {
   const [revision, setRevision] = useState(0);
   const [members, setMembers] = useState<ProjectMemberRecord[]>([]);
   const [metrics, setMetrics] = useState<AmeliaMetrics | null>(null);
+  const [scopeSnapshot, setScopeSnapshot] = useState<Awaited<ReturnType<typeof apiClient.getKpiCharts>> | null>(null);
+  const superintendent = scopeSnapshot?.analytics.supportsLinkedCrewScope === true;
   const [messages, setMessages] = useState<LocalNotificationPreviewRecord[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,21 +50,22 @@ export default function SurveyOperationsPage() {
     setLoading(true);
     setError(null);
     setMetrics(null);
+    setScopeSnapshot(null);
     apiClient.getKpiCharts(projectId, {})
-      .then(response => { if (active) setMetrics(response.metrics); })
+      .then(response => { if (active) { setMetrics(response.metrics); setScopeSnapshot(response); } })
       .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load Survey operations.')); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [projectId, revision]);
 
   useEffect(() => {
-    if (!metrics || tab !== 'assignment') return;
+    if (!metrics || superintendent || tab !== 'assignment') return;
     let active = true;
     setMembers([]);
     apiClient.listProjectMembers(projectId).then(response => { if (active) setMembers(response.members); })
       .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load crew choices.')); });
     return () => { active = false; };
-  }, [projectId, metrics, tab]);
+  }, [projectId, metrics, superintendent, tab]);
 
   const [messagesLoading, setMessagesLoading] = useState(false);
   useEffect(() => {
@@ -90,6 +94,7 @@ export default function SurveyOperationsPage() {
   const ticketPage = operationsServerPage(ticketQuery.data?.data ?? [], ticketQuery.data?.total ?? 0, page, pageSize);
   const messagePage = operationsPage(filteredMessages, page, pageSize);
   const currentPage = tab === 'messages' ? messagePage : ticketPage;
+  const tabs = ([['overview', 'Overview', null], ['assignment', 'Need Assignment', metrics?.approvedWithoutInstrumentMan ?? '—'], ['open', 'Open Requests', metrics?.openTotal ?? '—'], ['messages', 'Local Messages', messages.length || '—']] as const).filter(([key]) => !superintendent || key !== 'messages');
   function selectTab(next: typeof tab) { setTab(next); setQuery(''); setPage(1); }
   function expandRows(open: boolean) { queueRef.current?.querySelectorAll('details.ops-queue-row').forEach(row => { (row as HTMLDetailsElement).open = open; }); }
 
@@ -113,19 +118,19 @@ export default function SurveyOperationsPage() {
       {success ? <SuccessBanner message={success} /> : null}
       <div className="row"><Button variant="secondary" disabled={loading} onClick={() => void loadOperations()}>{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
 
-      {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
+      {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} areaWide={scopeSnapshot?.analytics.supportsLinkedCrewScope} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
       <div className="ops-tabs" role="tablist" aria-label="Operations views">
-        {([['overview', 'Overview', null], ['assignment', 'Need Assignment', metrics?.approvedWithoutInstrumentMan ?? '—'], ['open', 'Open Requests', metrics?.openTotal ?? '—'], ['messages', 'Local Messages', messages.length || '—']] as const).map(([key, label, count], index) =>
+        {tabs.map(([key, label, count], index) =>
           <button key={key} type="button" role="tab" id={`tab-${key}`} aria-controls={`panel-${key}`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1}
             onClick={() => selectTab(key)} onKeyDown={event => {
-              const keys = ['overview', 'assignment', 'open', 'messages'] as const;
-              const next = event.key === 'ArrowRight' ? (index + 1) % 4 : event.key === 'ArrowLeft' ? (index + 3) % 4 : event.key === 'Home' ? 0 : event.key === 'End' ? 3 : -1;
+              const keys = tabs.map(([key]) => key);
+              const next = event.key === 'ArrowRight' ? (index + 1) % keys.length : event.key === 'ArrowLeft' ? (index + keys.length - 1) % keys.length : event.key === 'Home' ? 0 : event.key === 'End' ? keys.length - 1 : -1;
               const nextTab = keys[next];
               if (nextTab) { event.preventDefault(); selectTab(nextTab); document.getElementById(`tab-${nextTab}`)?.focus(); }
             }}>{label}{count !== null ? <span>{count}</span> : null}</button>)}
       </div>
       {tab === 'overview' ? <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
-        {metrics?.charts ? <SurveyCommandOverview projectId={projectId} initialMetrics={metrics} revision={revision} /> : null}
+        {metrics?.charts ? scopeSnapshot?.analytics.supportsLinkedCrewScope ? <KpiExplorer key={`${projectId}:${revision}`} projectId={projectId} initialMeasure="all" initialData={scopeSnapshot} /> : <SurveyCommandOverview projectId={projectId} initialMetrics={metrics} revision={revision} /> : null}
       </div> : <div className="ops-queue" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} ref={queueRef} aria-busy={loading || ticketQuery.loading || (tab === 'messages' && messagesLoading)}>
       {ticketQuery.loading || (tab === 'messages' && messagesLoading) ? <p className="muted">Loading this view…</p> : null}
       <div className="ops-filters">
@@ -146,17 +151,18 @@ export default function SurveyOperationsPage() {
       </div>
       <div className="ops-disclosure-controls"><Button variant="secondary" onClick={() => expandRows(true)}>Expand page</Button><Button variant="secondary" onClick={() => expandRows(false)}>Collapse all</Button></div>
 
-      {tab === 'assignment' ? <Card className="ops-list" title="Need Assignment" description="Approved requests awaiting an Instrument Man. Expand a row to assign crew.">
+      {tab === 'assignment' ? <Card className="ops-list" title="Need Assignment" description={superintendent ? 'Area-wide approved requests awaiting an Instrument Man. Expand a row to review the request.' : 'Approved requests awaiting an Instrument Man. Expand a row to assign crew.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
           {ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket} partyChiefs={partyChiefs} instrumentMen={instrumentMen}
+              readOnly={superintendent} projectId={projectId}
               busy={busy === ticket.id || members.length === 0} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
           ))}
         </div>
       </Card> : null}
 
-      {tab === 'open' ? <Card className="ops-list" title="Open Requests" description="High priority first, then earliest Need-By. Expand a row for review actions.">
+      {tab === 'open' ? <Card className="ops-list" title="Open Requests" description={superintendent ? 'Area-wide workload, high priority first, then earliest Need-By. Open a request for applicable actions.' : 'High priority first, then earliest Need-By. Expand a row for review actions.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
           {ticketPage.items.map((ticket) => (
@@ -169,7 +175,7 @@ export default function SurveyOperationsPage() {
                 </div>
                 <p>{ticket.description}</p>
                 <p className="muted">Need-By {new Date(ticket.requestedDate).toLocaleDateString()} · Priority {ticket.priority}</p>
-                <div className="row">
+                {!superintendent ? <div className="row">
                   {ticket.status === 'SUBMITTED' ? <Button disabled={busy === ticket.id} onClick={() => void run(ticket.id, () => apiClient.approveTicket(ticket.id), 'SWR approved.')}>Approve</Button> : null}
                   {['SUBMITTED', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED'].includes(ticket.status) ? (
                     <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
@@ -191,7 +197,7 @@ export default function SurveyOperationsPage() {
                     const reason = window.prompt('Cancellation reason');
                     if (reason?.trim()) void run(ticket.id, () => apiClient.surveyCancel(ticket.id, reason), 'SWR canceled.');
                   }}>Cancel</Button>
-                </div>
+                </div> : null}
               </div>
             </details>
           ))}
@@ -221,9 +227,10 @@ export default function SurveyOperationsPage() {
   );
 }
 
-function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign }: {
+function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign, readOnly, projectId }: {
   ticket: TicketRecord; partyChiefs: ProjectMemberRecord[]; instrumentMen: ProjectMemberRecord[]; busy: boolean;
   onAssign: (partyChiefId: string | null, instrumentManId: string | null) => Promise<void>;
+  readOnly?: boolean; projectId: string;
 }) {
   const [partyChiefId, setPartyChiefId] = useState(ticket.assignedPartyChiefId ?? '');
   const [instrumentManId, setInstrumentManId] = useState(ticket.assignedInstrumentManId ?? '');
@@ -232,11 +239,11 @@ function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign }: {
       <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
       <div className="stack ops-row-body">
         <p>{ticket.description}</p>
-        <div className="row">
+        {readOnly ? <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link> : <div className="row">
           <label>Party Chief <select value={partyChiefId} onChange={(event) => setPartyChiefId(event.target.value)}><option value="">None</option>{partyChiefs.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
           <label>Instrument Man <select value={instrumentManId} onChange={(event) => setInstrumentManId(event.target.value)}><option value="">Unassigned</option>{instrumentMen.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
           <Button disabled={busy} onClick={() => void onAssign(partyChiefId || null, instrumentManId || null)}>{busy ? 'Saving…' : 'Save Assignment'}</Button>
-        </div>
+        </div>}
       </div>
     </details>
   );

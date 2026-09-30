@@ -1,6 +1,7 @@
 import type { TicketPriority, TicketStatus, TicketType } from '../domain/types';
 
 export interface TicketQueryFilters {
+  cohort?: 'areaWorkload' | 'linkedCrews';
   queue?: 'all' | 'open' | 'assignment' | 'completed' | 'overdue' | 'fieldWork' | 'pcApprovals';
   crewId?: string;
   instrumentManId?: string;

@@ -2,14 +2,14 @@ import { ValidationError } from '@/shared/errors';
 import type { MetricsFilters } from '@/modules/reporting/application/metrics-filters';
 import { parseTicketListQuery } from './ticket-list-query';
 
-const keys = ['areaId', 'ticketType', 'status', 'crewId', 'instrumentManId', 'population', 'dateBasis', 'dateFrom', 'dateTo'];
+const keys = ['cohort', 'areaId', 'ticketType', 'status', 'crewId', 'instrumentManId', 'population', 'dateBasis', 'dateFrom', 'dateTo'];
 export function parseMetricsQuery(search: URLSearchParams): MetricsFilters {
   for (const key of search.keys()) {
     if (!keys.includes(key)) throw new ValidationError(`Unsupported analytics filter: ${key}`);
     if (search.getAll(key).length !== 1) throw new ValidationError(`Duplicate analytics filter: ${key}`);
   }
   const base = parseTicketListQuery(search).filters;
-  const filters: MetricsFilters = { areaId: base.areaId, ticketType: base.ticketType, status: base.status };
+  const filters: MetricsFilters = { areaId: base.areaId, ticketType: base.ticketType, status: base.status, ...(base.cohort ? { cohort: base.cohort } : {}) };
   if (filters.status === 'DRAFT') throw new ValidationError('Drafts are not operational analytics');
   for (const key of ['crewId', 'instrumentManId'] as const) {
     const value = search.get(key);

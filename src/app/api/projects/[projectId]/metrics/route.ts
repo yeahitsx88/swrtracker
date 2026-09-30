@@ -26,12 +26,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
     const view = search.get('view');
     const includeCharts = view === 'charts';
     search.delete('view');
-    if (view === 'activity' && (search.has('population') || search.has('dateBasis'))) throw new ValidationError('Activity uses event dates across all request statuses');
+    if (view === 'activity' && (search.has('cohort') || search.has('population') || search.has('dateBasis'))) throw new ValidationError('Activity uses event dates across all request statuses');
     const filters = parseMetricsQuery(search);
     const role = await resolveProjectInsightRole(auth, projectUuid);
     if (role === 'BILLING_VIEWER') throw new ForbiddenError('Billing access does not grant request analytics');
     // Tenant administrators retain read-only project health, not workflow authority.
-    const visibility = await resolveVisibility(pool, auth.tenantId, projectUuid, auth.userId, role === 'TENANT_ADMIN' ? 'VIEWER' : role);
+    const visibility = await resolveVisibility(pool, auth.tenantId, projectUuid, auth.userId, role === 'TENANT_ADMIN' ? 'VIEWER' : role, filters.cohort);
     if (view === 'activity') {
       const activity = await getCommandActivity(new PostgresCommandActivityReader(), pool, {
         tenantId: auth.tenantId, projectId: projectUuid, visibility, filters,
@@ -40,7 +40,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
     }
     return NextResponse.json({ metrics: await getAmeliaMetrics(new AmeliaMetricsReader(), pool, {
       tenantId: auth.tenantId, projectId: projectUuid, visibility, filters, includeCharts,
-    }), analytics: { filters, personnelFilters: canAnalyzeSurveyPersonnel(visibility.actorRole), dateTimezone: 'UTC' } }, { headers: { 'Cache-Control': 'private, no-store' } });
+    }), analytics: { filters, personnelFilters: canAnalyzeSurveyPersonnel(visibility.actorRole, !!visibility.linkedCrewAssignments?.length),
+      supportsLinkedCrewScope: visibility.actorRole === 'SURVEY_SUPERINTENDENT',
+      scopeKind: visibility.actorRole === 'SURVEY_SUPERINTENDENT' ? filters.cohort ?? 'areaWorkload' : 'authorized',
+      ...(visibility.linkedCrewAssignments ? { linkedCrewCount: new Set(visibility.linkedCrewAssignments.map(row=>row.partyChiefId)).size } : {}), dateTimezone: 'UTC' } }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     return errorResponse(error);
   }

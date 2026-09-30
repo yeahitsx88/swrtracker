@@ -22,3 +22,7 @@ FIRST VIEWPORT: Existing dialog heading/Close at top; compact visualization/grou
 FORM: Precise local extension, not a concept tournament; no seed required. Heat map, bar, trend, donut and completed-share gauge use a common typed result. Mean hours are not additive: no donut or arbitrary SLA gauge for turnaround.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+
+## Approved Superintendent population extension
+
+Decision 14 keeps the same Operate world. The native Workload view select distinguishes Area-wide workload (including unassigned and unlinked crews) from Linked-crew KPIs (explicit reporting links intersected with authorized Areas). Scope copy stays visible beside each aggregate, and the request drill-down carries the same cohort. Changing views clears personnel filters, preserves common filters and hides stale details. Queue-health tiles remain explicitly Area-wide. The Superintendent Overview reuses its initial snapshot, not the Manager-only activity endpoint. No new tokens, imagery, motion or authority grants.

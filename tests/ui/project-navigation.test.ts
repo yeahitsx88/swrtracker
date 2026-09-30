@@ -14,6 +14,7 @@ function labels(role: ProjectRole): string[] {
 test('Amelia pilot roles receive only their relevant project navigation', () => {
   assert.deepEqual(labels('REQUESTER'), ['New Request', 'Requests', 'Drafts']);
   assert.deepEqual(labels('SURVEY_MANAGER'), ['Survey Operations', 'Team Management', 'All Requests']);
+  assert.deepEqual(labels('SURVEY_SUPERINTENDENT'), ['All Requests', 'Survey Operations', 'Crew Work']);
   assert.deepEqual(labels('PARTY_CHIEF'), ['Crew Work', 'PC Approvals']);
   assert.deepEqual(labels('INSTRUMENT_MAN'), ['Crew Work']);
   assert.deepEqual(labels('PROJECT_ADMIN'), ['Admin']);
@@ -37,6 +38,7 @@ test('other supported project roles retain a read or operational entry point', (
 test('project landing follows the first authorized navigation destination', () => {
   assert.equal(getProjectLandingHref('amelia', 'REQUESTER'), '/projects/amelia/request/new');
   assert.equal(getProjectLandingHref('amelia', 'SURVEY_MANAGER'), '/projects/amelia/survey/operations');
+  assert.equal(getProjectLandingHref('amelia', 'SURVEY_SUPERINTENDENT'), '/projects/amelia/requests');
   assert.equal(getProjectLandingHref('amelia', 'PARTY_CHIEF'), '/projects/amelia/crew/work');
   assert.equal(getProjectLandingHref('amelia', 'PROJECT_ADMIN'), '/projects/amelia/admin');
 });

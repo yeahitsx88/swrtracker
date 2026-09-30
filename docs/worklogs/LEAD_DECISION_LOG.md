@@ -105,3 +105,8 @@
 - Boundary: no account creation/invitation, tenant role edits, unrelated elevated-role editing, general RBAC builder, cross-project discovery, scheduling or productivity feature is authorized. Existing project role values control operational permissions; role changes are not cosmetic titles and require confirmation/session invalidation. Historical ticket responsibility remains unchanged.
 - Validation guard: reject lead removal without replacement, out-of-project people/Areas, duplicate people, stale writes, incompatible project crew builds, unresolved active reporting obligations and archived-project mutations. No hierarchy is inferred from team membership.
 - Checkpoint sequence: `5025e2d` recorded the verified source baseline and confirmed decisions before named-team implementation began. The broader KPI/performance goal remains active.
+
+### Decision 14 — separate Superintendent workload and linked-crew analytics
+- Provenance: owner response on 2026-09-30, "Let's go with the Separate Area-Wide workload and linked-cre KPIs", to the two-population versus crew-only dashboard question.
+- Approved: preserve Area-wide workload, including unassigned and unlinked Area demand, separately from linked-crew KPIs. The latter requires explicit current Superintendent → Party Chief reporting links intersected with authorized Areas. Counts, all chart forms, filters and matching-request drilldowns use the same selected population; Area-wide workload exposes no personnel comparisons.
+- Boundary: this resolves population presentation, not person-level Sabine reporting assignments, account invitations, named-team authority, role/Area grants, or additional review/assignment powers. No existing historical request or reporting link is rewritten or inferred.

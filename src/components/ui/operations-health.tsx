@@ -10,7 +10,7 @@ const KpiExplorer = dynamic(()=>import('./kpi-explorer').then(module=>module.Kpi
 type Metric = Exclude<KpiMeasure,'all'>;
 const titles: Record<Metric,string> = { open:'Open requests',assignment:'Need assignment',overdue:'Overdue Need-By',completed:'Completed',cycle:'Average cycle' };
 
-export function OperationsHealth({metrics,projectId}:{metrics:AmeliaMetricsRecord;projectId:string}) {
+export function OperationsHealth({metrics,projectId,areaWide=false}:{metrics:AmeliaMetricsRecord;projectId:string;areaWide?:boolean}) {
   const dialog=useRef<HTMLDialogElement>(null);
   const [metric,setMetric]=useState<Metric>('open');
   const [opened,setOpened]=useState(false);
@@ -21,7 +21,7 @@ export function OperationsHealth({metrics,projectId}:{metrics:AmeliaMetricsRecor
   };
   return <>
     <section className="ops-health" aria-labelledby="queue-health-heading">
-      <div className="ops-section-heading"><h2 id="queue-health-heading">Queue health</h2><span className="muted">Select a measure to explore</span></div>
+      <div className="ops-section-heading"><h2 id="queue-health-heading">{areaWide?'Area-wide workload':'Queue health'}</h2><span className="muted">Select a measure to explore</span></div>
       <div className="ops-metrics">{(Object.keys(titles) as Metric[]).map(key=><button type="button" className={`ops-metric ${key==='overdue'?'ops-attention':''}`} key={key}
         onClick={()=>{setMetric(key);setOpened(true);dialog.current?.showModal();}} aria-haspopup="dialog">
         <span>{titles[key]}</span><strong>{values[key]}</strong><span className="ops-metric-link">View details</span>

@@ -10,7 +10,7 @@ export function buildMetricsQuery(scope: MetricsScope) {
   const filters = metricsFilterClause(scope.filters ?? {}, 5 + visibility.params.length);
   const denominator = metricsFilterClause({ ...scope.filters, population: 'all' }, 5 + visibility.params.length + filters.params.length);
   const terminal = ['COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED', 'REJECTED'];
-  const personnel = canAnalyzeSurveyPersonnel(scope.visibility.actorRole);
+  const personnel = canAnalyzeSurveyPersonnel(scope.visibility.actorRole, !!scope.visibility.linkedCrewAssignments?.length);
   const areaJoin = 'LEFT JOIN aor_nodes n ON n.id=t.aor_node_id AND n.tenant_id=$1 AND n.project_id=$2';
   const personJoin = (column: string) => `LEFT JOIN users u ON u.id=t.${column} AND u.tenant_id=$1`;
   const grouped = (column: string, label: string, join = '', cell = false) => `(

@@ -61,6 +61,8 @@ export interface VisibilityScope {
   companyType?: string;
   /** AOR node IDs the actor may see — includes descendants for AOR-scoped roles. */
   aorNodeIds?: UUID[];
+  /** Optional, server-resolved explicit reporting + Area intersection for linked-crew views. */
+  linkedCrewAssignments?: Array<{ partyChiefId: UUID; areaId: UUID }>;
   /**
    * The Party Chief ID the actor reports to — required for INSTRUMENT_MAN role
    * so the repository can filter to that Party Chief's tickets.

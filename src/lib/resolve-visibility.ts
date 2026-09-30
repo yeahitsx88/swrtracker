@@ -11,6 +11,9 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { ForbiddenError } from '@/shared/errors';
+import { readSuperintendentCrews } from '@/modules/tenancy/application/read-superintendent-crews';
+import { SuperintendentCrewsPgRepository } from '@/modules/tenancy/infrastructure/superintendent-crews.repository';
 
 const repo = new TicketRepository();
 
@@ -29,7 +32,9 @@ export async function resolveVisibility(
   projectId: UUID,
   actorId: UUID,
   actorRole: ProjectRole,
+  cohort?: 'areaWorkload' | 'linkedCrews',
 ): Promise<VisibilityScope> {
+  if (cohort && actorRole !== 'SURVEY_SUPERINTENDENT') throw new ForbiddenError('Separate Area and linked-crew views require Superintendent authority');
   const companyInfo = await repo.findUserCompanyInfo(db, tenantId, actorId);
   const companyId = (companyInfo?.companyId ?? '') as UUID;
 
@@ -66,6 +71,12 @@ export async function resolveVisibility(
   if (actorRole === 'DEPARTMENT_LEAD') {
     const aorNodeIds = await repo.findAorNodeIdsForUser(db, projectId, actorId);
     scope.aorNodeIds = aorNodeIds;
+  }
+
+  if (cohort === 'linkedCrews') {
+    scope.linkedCrewAssignments = await readSuperintendentCrews(new SuperintendentCrewsPgRepository(), db, {
+      tenantId, projectId, actorId, actorRole, authorizedAreaIds: scope.aorNodeIds ?? [],
+    });
   }
 
   return scope;

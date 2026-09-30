@@ -2,6 +2,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
 import type { TicketStatus } from '@/modules/ticket/domain/types';
 import { ForbiddenError } from '@/shared/errors';
+import { assertVisibilityCohort } from '@/lib/ticket-visibility-clause';
 import { canAnalyzeSurveyPersonnel, type MetricsFilters } from './metrics-filters';
 
 export interface MetricBucket {
@@ -49,7 +50,8 @@ export async function getAmeliaMetrics(reader: MetricsReader, db: DbClient, scop
   if (scope.visibility.projectId !== scope.projectId) {
     throw new ForbiddenError('Analytics scope must be resolved for this project');
   }
-  if ((scope.filters?.crewId || scope.filters?.instrumentManId) && !canAnalyzeSurveyPersonnel(scope.visibility.actorRole)) {
+  assertVisibilityCohort(scope.visibility, scope.filters?.cohort);
+  if ((scope.filters?.crewId || scope.filters?.instrumentManId) && !canAnalyzeSurveyPersonnel(scope.visibility.actorRole, !!scope.visibility.linkedCrewAssignments?.length)) {
     throw new ForbiddenError('Personnel analytics filters require survey supervisory authority');
   }
   return reader.read(db, scope);

@@ -298,7 +298,7 @@ export async function GET(req: NextRequest) {
         auth.sessionVersion,
       );
       const visibility = await resolveVisibility(
-        pool, auth.tenantId, projectId as UUID, auth.userId, actorRole,
+        pool, auth.tenantId, projectId as UUID, auth.userId, actorRole, listQuery.filters.cohort,
       );
 
       const ticketRepo = new TicketRepository();

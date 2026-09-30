@@ -1,4 +1,13 @@
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
+import { ForbiddenError } from '@/shared/errors';
+
+/** A query cannot request the linked population without a server-resolved fence. */
+export function assertVisibilityCohort(scope: VisibilityScope, cohort?: 'areaWorkload' | 'linkedCrews'): void {
+  if (((cohort || scope.linkedCrewAssignments !== undefined) && scope.actorRole !== 'SURVEY_SUPERINTENDENT') ||
+      ((cohort === 'linkedCrews') !== (scope.linkedCrewAssignments !== undefined))) {
+    throw new ForbiddenError('Query population must match its server-resolved reporting scope');
+  }
+}
 
 /** Shared data-access predicate. Use only a server-resolved scope, with alias t,
  * and explicit tenant/project constraints in the enclosing query. */
@@ -47,6 +56,14 @@ export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): 
     case 'INSTRUMENT_MAN':
       return isolate({ sql: `AND (t.assigned_party_chief_id = $${baseIdx} OR t.assigned_instrument_man_id = $${baseIdx + 1})`, params: [partyChiefId ?? actorId, actorId] });
     case 'SURVEY_SUPERINTENDENT':
+      if (!aorNodeIds?.length || scope.linkedCrewAssignments?.length === 0) return isolate({ sql: 'AND 1 = 0', params: [] });
+      if (scope.linkedCrewAssignments !== undefined) {
+        return isolate({ sql: `AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')})
+          AND EXISTS (SELECT 1 FROM jsonb_to_recordset($${baseIdx+aorNodeIds.length}::jsonb) AS crew("partyChiefId" uuid,"areaId" uuid)
+            WHERE crew."partyChiefId"=t.assigned_party_chief_id AND crew."areaId"=t.aor_node_id)`,
+          params: [...aorNodeIds,JSON.stringify(scope.linkedCrewAssignments)] });
+      }
+      return isolate({ sql: `AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')})`, params: aorNodeIds });
     case 'AREA_VIEWER':
       if (!aorNodeIds?.length) return isolate({ sql: 'AND 1 = 0', params: [] });
       return isolate({ sql: `AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')})`, params: aorNodeIds });

@@ -354,7 +354,12 @@ export const apiClient = {
   },
   getKpiCharts(projectId: string, filters: import('@/modules/reporting/application/metrics-filters').MetricsFilters): Promise<{
     metrics: import('@/modules/reporting/application/amelia-metrics').AmeliaMetrics;
-    analytics: { personnelFilters: boolean };
+    analytics: {
+      personnelFilters: boolean;
+      supportsLinkedCrewScope?: boolean;
+      scopeKind?: 'areaWorkload' | 'linkedCrews' | 'authorized';
+      linkedCrewCount?: number;
+    };
   }> {
     return apiRequest(withQuery(`/api/projects/${projectId}/metrics`, { ...filters, view: 'charts' }));
   },

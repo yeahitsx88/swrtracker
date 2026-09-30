@@ -19,7 +19,7 @@ import type {
 } from '../application/ports';
 import { ConflictError } from '@/shared/errors';
 import { ticketFilterClause } from './ticket-filter-clause';
-import { buildVisibilityClause } from '@/lib/ticket-visibility-clause';
+import { assertVisibilityCohort, buildVisibilityClause } from '@/lib/ticket-visibility-clause';
 import { buildReviewQuery } from './review-query';
 import type { ReviewOptions, ReviewResult } from '../application/review-tickets';
 
@@ -372,6 +372,7 @@ export class TicketRepository implements ITicketRepository {
   }
 
   async list(db: DbClient, tenantId: UUID, opts: ListTicketsOptions): Promise<Page<Ticket>> {
+    assertVisibilityCohort(opts.visibility, opts.filters?.cohort);
     const baseVals: unknown[] = [tenantId, opts.projectId];
     const conditions: string[] = ['t.tenant_id = $1', 't.project_id = $2'];
 

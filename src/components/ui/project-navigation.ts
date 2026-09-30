@@ -49,7 +49,7 @@ const navigationByRole: Record<ProjectRole, readonly ProjectNavigationItem[]> = 
   PARTY_CHIEF: [crewWork, pcApprovals],
   INSTRUMENT_MAN: [crewWork],
   PROJECT_ADMIN: [admin],
-  SURVEY_SUPERINTENDENT: [allRequests, crewWork],
+  SURVEY_SUPERINTENDENT: [allRequests, surveyOperations, crewWork],
   CAD_TECHNICIAN: [allRequests],
   CAD_LEAD: [allRequests],
   DEPARTMENT_MANAGER: [allRequests],

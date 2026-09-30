@@ -2,14 +2,15 @@ import { ValidationError } from '@/shared/errors';
 import type { TicketQueryFilters } from '@/modules/ticket/application/query-filters';
 
 const choices = {
+  cohort: ['areaWorkload', 'linkedCrews'],
   queue: ['all', 'open', 'assignment', 'completed', 'overdue', 'fieldWork', 'pcApprovals'],
   status: ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'DELAYED', 'COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED', 'RETURNED_FOR_CORRECTION', 'PENDING_FIELD_VALIDATION'],
   priority: ['NORMAL', 'MEDIUM', 'MED_HIGH', 'HIGH'],
   ticketType: ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'],
-} as const satisfies { [K in 'queue' | 'status' | 'priority' | 'ticketType']: readonly NonNullable<TicketQueryFilters[K]>[] };
+} as const satisfies { [K in 'cohort' | 'queue' | 'status' | 'priority' | 'ticketType']: readonly NonNullable<TicketQueryFilters[K]>[] };
 
 export function parseTicketListQuery(search: URLSearchParams): { filters: TicketQueryFilters; sort: 'created' | 'operations'; limit: number; offset: number } {
-  for (const key of ['limit', 'offset', 'queue', 'status', 'priority', 'ticketType', 'areaId', 'query', 'sort', 'crewId', 'instrumentManId', 'dateBasis', 'dateFrom', 'dateTo']) {
+  for (const key of ['cohort', 'limit', 'offset', 'queue', 'status', 'priority', 'ticketType', 'areaId', 'query', 'sort', 'crewId', 'instrumentManId', 'dateBasis', 'dateFrom', 'dateTo']) {
     if (search.getAll(key).length > 1) throw new ValidationError(`Duplicate ${key} filter`);
   }
   const integer = (key: string, initial: number, min: number, max: number) => {
