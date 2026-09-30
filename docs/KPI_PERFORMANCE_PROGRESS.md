@@ -220,3 +220,9 @@ Crew Work previously fetched only the first 50 authorized tickets, then selected
 Validation: focused Ticket query tests pass 7/7, including count/page scope intersection and bound statuses for both queues; final TypeScript and production build pass. Native Windows suite improves from 286/287 to 287/288, with only the previously documented Unix attachment-mode assertion failing. Mocked mobile browser checks observed `fieldWork` and `pcApprovals` with 25/50-row page offsets, `all` on Requester, no horizontal overflow or page errors. This is a UI/request-shape check, not a real-database load benchmark. The prior SQL/HTTP role-scope evidence is unchanged; a fresh Linux test gate and live Sabine review await an available container runtime.
 
 Independent Impeccable finish review returned Ship with no material UI blocker for the three role queues. It confirmed the labeled page-size controls and visible loading/error states; the verdict does not establish live API/data correctness.
+
+## Draft count/page alignment — Batch 40
+
+The separate Drafts page had the inverse pagination error to My Requests: it fetched and counted every status, then discarded non-drafts in the browser. It now uses the Ticket API's existing `status=DRAFT` filter so the visible page and total have the same server-side population and authorization. No new endpoint, status, role permission or draft lifecycle behavior was added.
+
+Final TypeScript and production build pass. The targeted parser/filter test confirms a bound DRAFT predicate; native Windows tests are 288/289 with only the same documented Unix attachment-mode mismatch. A mocked 390px browser check verified the Drafts request shape and no page overflow or JavaScript errors. This does not substitute for a live Sabine data review or a fresh Linux gate.

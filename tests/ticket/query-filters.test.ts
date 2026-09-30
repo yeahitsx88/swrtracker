@@ -56,6 +56,16 @@ test('role work queues select actionable statuses at the data layer', () => {
   assert.deepEqual(approvalClause.params, [['PENDING_FIELD_VALIDATION', 'PENDING_PC_APPROVAL']]);
 });
 
+test('draft status filter is bound for count and page queries', () => {
+  const parsed = parseTicketListQuery(new URLSearchParams('status=DRAFT&limit=20&offset=40'));
+  assert.equal(parsed.filters.status, 'DRAFT');
+  assert.equal(parsed.limit, 20);
+  assert.equal(parsed.offset, 40);
+  const clause = ticketFilterClause(parsed.filters, 3);
+  assert.equal(clause.sql, 't.status = $3');
+  assert.deepEqual(clause.params, ['DRAFT']);
+});
+
 test('KPI detail filters validate dates and retain bounded crew/date predicates', () => {
   for (const query of ['crewId=bad','dateFrom=0000-01-01','dateBasis=bad','dateFrom=2026-02-30','dateFrom=2026-03-01&dateTo=2026-02-01']) {
     assert.throws(()=>parseTicketListQuery(new URLSearchParams(query)),{name:'ValidationError'});

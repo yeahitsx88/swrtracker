@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
@@ -24,7 +24,7 @@ export default function DraftsPage() {
     setLoading(true);
     setError(null);
     try {
-      const page = await apiClient.listTickets(projectId, LIMIT, offset);
+      const page = await apiClient.listTickets(projectId, LIMIT, offset, { status: 'DRAFT' });
       setTickets(page.data);
       setTotal(page.total);
     } catch (err) {
@@ -38,17 +38,12 @@ export default function DraftsPage() {
     void loadDrafts();
   }, [projectId, offset]);
 
-  const draftTickets = useMemo(
-    () => tickets.filter((ticket) => ticket.status === 'DRAFT'),
-    [tickets],
-  );
-
   return (
     <Card title="Drafts" description="Requester draft surface. Backend remains source-of-truth for draft lifecycle.">
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
         {loading ? <p className="muted">Loading drafts...</p> : null}
-        {!loading ? <TicketList projectId={projectId} tickets={draftTickets} /> : null}
+        {!loading ? <TicketList projectId={projectId} tickets={tickets} /> : null}
         {error ? (
           <Button variant="secondary" onClick={() => void loadDrafts()}>
             Retry

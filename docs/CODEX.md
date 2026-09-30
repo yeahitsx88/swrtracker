@@ -2662,3 +2662,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Known gaps: full-objective acceptance, real-data review and separate Survey Authority staffing/dashboard policy remain pending.
 - Production behavior changed: yes, server-filtered personal/field work/approval pages and crew pagination.
 - Finish review: independent Impeccable review returned Ship without a material UI blocker; mocked-browser evidence remains separate from live authorization/data proof.
+
+### 2026-09-30 — Batch 40 (draft page population alignment)
+- Intent: IMPLEMENTER in Ticket's Requester route; make Drafts count and page use the same DRAFT population rather than hiding non-drafts after pagination.
+- Files touched: Requester Drafts page; tests/ticket/query-filters.test.ts; KPI_PERFORMANCE_PROGRESS.md and this log.
+- Behavior added: use the existing server-side `status=DRAFT` filter and display the returned bounded page directly. The repository's existing visibility predicate remains the outer scope.
+- Validation: TypeScript and production build pass; targeted bound-filter test added. Native Windows tests are 288/289, with only the pre-existing Unix attachment file-mode assertion failing. Mocked 390px browser request-shape check passed without overflow or page errors. Fresh Linux and real-data acceptance remain unavailable while Docker/WSL are down.
+- Scope deviation: Requester UI and its directly tied Ticket test changed; no production domain, API route, migration, state transition or audit event changed.
+- Known gaps: separate Survey Authority dashboard/staffing decisions and full-objective acceptance remain pending.
+- Production behavior changed: yes, Drafts count/page now match the server-filtered DRAFT population.
