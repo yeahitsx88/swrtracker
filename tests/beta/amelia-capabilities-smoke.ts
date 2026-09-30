@@ -13,6 +13,7 @@ import { uploadAttachment } from '@/modules/attachment/application';
 import { AttachmentRepository, LocalAttachmentStorage, validateAttachmentObjectMetadata } from '@/modules/attachment/infrastructure';
 import { captureQueuedNotifications, listLocalNotificationPreviews } from '@/modules/notification/application/local-preview';
 import { getAmeliaMetrics } from '@/modules/reporting/application/amelia-metrics';
+import { AmeliaMetricsReader } from '@/modules/reporting/infrastructure/amelia-metrics.reader';
 import { ConflictError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 
@@ -114,7 +115,9 @@ async function main(): Promise<void> {
 
     assert.deepEqual(await storage.read(instructionStored.storageKey), Buffer.from(instructionBytes));
     assert.deepEqual(await storage.read(evidenceStored.storageKey), Buffer.from(evidenceBytes));
-    const metrics = await getAmeliaMetrics(pool, { tenantId: id('tenant'), projectId: id('project') });
+    const metrics = await getAmeliaMetrics(new AmeliaMetricsReader(), pool, { tenantId: id('tenant'), projectId: id('project'),
+      visibility: { actorId: id('manager'), actorRole: 'SURVEY_MANAGER', projectId: id('project'), companyId: id('gc'), companyType: 'GC' },
+    });
     assert.equal(metrics.openTotal, 0);
     assert.equal(metrics.completedTotal, 1);
     assert.ok(metrics.averageSubmissionToCompletionHours !== null);

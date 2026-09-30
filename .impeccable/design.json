@@ -1,0 +1,259 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-30T00:09:50.251Z",
+  "title": "Design System: SWRTracker",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Steel Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0993 245.74)",
+          "oklch(26% 0.0993 245.74)",
+          "oklch(38% 0.0993 245.74)",
+          "oklch(49% 0.0993 245.74)",
+          "oklch(61% 0.0993 245.74)",
+          "oklch(72% 0.0993 245.74)",
+          "oklch(84% 0.0993 245.74)",
+          "oklch(95% 0.0993 245.74)"
+        ]
+      },
+      "action": {
+        "role": "primary",
+        "displayName": "Action Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0800 245.57)",
+          "oklch(26% 0.0800 245.57)",
+          "oklch(38% 0.0800 245.57)",
+          "oklch(49% 0.0800 245.57)",
+          "oklch(61% 0.0800 245.57)",
+          "oklch(72% 0.0800 245.57)",
+          "oklch(84% 0.0800 245.57)",
+          "oklch(95% 0.0800 245.57)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Orange",
+        "tonalRamp": [
+          "oklch(15% 0.1710 70.67)",
+          "oklch(26% 0.1710 70.67)",
+          "oklch(38% 0.1710 70.67)",
+          "oklch(49% 0.1710 70.67)",
+          "oklch(61% 0.1710 70.67)",
+          "oklch(72% 0.1710 70.67)",
+          "oklch(84% 0.1710 70.67)",
+          "oklch(95% 0.1710 70.67)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Slate",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Slate",
+        "tonalRamp": [
+          "oklch(15% 0.0223 248.28)",
+          "oklch(26% 0.0223 248.28)",
+          "oklch(38% 0.0223 248.28)",
+          "oklch(49% 0.0223 248.28)",
+          "oklch(61% 0.0223 248.28)",
+          "oklch(72% 0.0223 248.28)",
+          "oklch(84% 0.0223 248.28)",
+          "oklch(95% 0.0223 248.28)"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Cool Background",
+        "tonalRamp": [
+          "oklch(15% 0.0034 247.86)",
+          "oklch(26% 0.0034 247.86)",
+          "oklch(38% 0.0034 247.86)",
+          "oklch(49% 0.0034 247.86)",
+          "oklch(61% 0.0034 247.86)",
+          "oklch(72% 0.0034 247.86)",
+          "oklch(84% 0.0034 247.86)",
+          "oklch(95% 0.0034 247.86)"
+        ]
+      },
+      "bg-elevated": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Divider",
+        "tonalRamp": [
+          "oklch(15% 0.0112 243.67)",
+          "oklch(26% 0.0112 243.67)",
+          "oklch(38% 0.0112 243.67)",
+          "oklch(49% 0.0112 243.67)",
+          "oklch(61% 0.0112 243.67)",
+          "oklch(72% 0.0112 243.67)",
+          "oklch(84% 0.0112 243.67)",
+          "oklch(95% 0.0112 243.67)"
+        ]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(15% 0.1590 26.59)",
+          "oklch(26% 0.1590 26.59)",
+          "oklch(38% 0.1590 26.59)",
+          "oklch(49% 0.1590 26.59)",
+          "oklch(61% 0.1590 26.59)",
+          "oklch(72% 0.1590 26.59)",
+          "oklch(84% 0.1590 26.59)",
+          "oklch(95% 0.1590 26.59)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Title",
+        "purpose": "Existing panel titles; size follows the heading level."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Shared interface text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Inputs, selects, and textareas."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "control-color",
+        "value": "150ms ease",
+        "purpose": "Button background and border transitions; disabled under prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-max",
+        "value": "600px"
+      },
+      {
+        "name": "wide-min",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing shared button variant; preview labels are illustrative.",
+      "html": "<button class=\"ds-control ds-button\" type=\"button\">Save Draft</button>",
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: 10px; font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .8rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; background: var(--action, #315f85); color: var(--brand-ink, #ffffff); border-color: transparent; } .ds-button:hover { background: #264a68; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Existing shared button variant; preview labels are illustrative.",
+      "html": "<button class=\"ds-control ds-button\" type=\"button\">Cancel</button>",
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: 10px; font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .8rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; background: #ffffff; color: var(--ink, #2e2e2e); border-color: var(--line, #d8dfe5); } .ds-button:hover { background: #edf3f8; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Existing shared button variant; preview labels are illustrative.",
+      "html": "<button class=\"ds-control ds-button\" type=\"button\">Delete</button>",
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: 10px; font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .8rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; background: var(--danger, #b23833); color: #ffffff; border-color: transparent; } .ds-button:hover { background: #8f2b27; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Label above a full-width field with persistent keyboard focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Description</span><input class=\"ds-control ds-input\" placeholder=\"Description\"></label>",
+      "css": ".ds-field { display:grid; gap:.35rem; font-family: var(--font-body, Roboto, sans-serif); } .ds-label { font-size:.82rem; color:var(--muted, #58636e); font-weight:600; } .ds-input { width:100%; border:1px solid #81909d; border-radius:10px; font-family: var(--font-body, Roboto, sans-serif); font-size:16px; line-height:1.35; color:var(--ink, #2e2e2e); background:#fff; padding:.62rem .7rem; caret-color:var(--action, #315f85); } .ds-input::placeholder { color:var(--muted, #58636e); opacity:1; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "refersTo": "navigation-link",
+      "description": "Current route treatment using the existing active-link primitive.",
+      "html": "<nav aria-label=\"Preview\"><a class=\"ds-control ds-link\" href=\"#preview\" aria-current=\"page\">Projects</a></nav>",
+      "css": ".ds-link { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--brand, #4682b4); border-radius:6px; display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.45rem .75rem; font-size:.875rem; font-weight:700; color:var(--action, #315f85); background:#edf3f8; white-space:nowrap; text-decoration:none; } .ds-link:hover { background:#edf3f8; border-color:var(--brand, #4682b4); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+    },
+    {
+      "name": "Neutral Status Badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Non-interactive neutral status badge; readable text carries the meaning.",
+      "html": "<span class=\"ds-badge\">Draft</span>",
+      "css": ".ds-badge { font-family: var(--font-body, Roboto, sans-serif); display:inline-flex; border-radius:999px; padding:.2rem .55rem; font-size:.74rem; font-weight:700; line-height:1.5; border:1px solid #c8d2dc; background:#edf2f6; color:#334155; }"
+    },
+    {
+      "name": "Ticket Card",
+      "kind": "card",
+      "refersTo": "ticket-card",
+      "description": "Existing linked ticket container, without invented ticket data.",
+      "html": "<a class=\"ds-control ds-card\" href=\"#preview\"><span class=\"ds-title\">Ticket</span><span class=\"ds-muted\">Description</span></a>",
+      "css": ".ds-card { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--line, #d8dfe5); border-radius:12px; background:#fff; padding:.7rem; display:grid; gap:.45rem; color:var(--ink, #2e2e2e); text-decoration:none; } .ds-card:hover { background:#edf3f8; border-color:var(--brand, #4682b4); } .ds-title { font-family:var(--font-display, Roboto, sans-serif); font-weight:700; } .ds-muted { color:var(--muted, #58636e); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Axiom Civil Services",
+    "overview": "The pinned visual authority is the Axiom Civil Services Brand Guide, version 1.0, September 2026, supplied at `D:/Programming/_references/Axiom Brand/Axiom_Civil_Services_2026_Brand_Guide.pdf`. Future UI work must follow that identity. This document records the implemented shared foundation; it does not create a replacement identity or introduce product claims.\n\nWhite dominates the interface, with slate text, steel blue structure, restrained orange attention, and Roboto throughout. Existing task flows retain their content and behavior. This is a scan of `src/app/globals.css`, `src/components/ui/product-brand.tsx`, and the authentication and projects layouts, not a claim that every screen has been visually audited.",
+    "keyCharacteristics": [
+      "White surfaces and slate text.",
+      "Steel blue structure and darker blue actions.",
+      "Supplied Axiom artwork and self-hosted Roboto.",
+      "Compact task controls with visible keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The Brand Authority Rule",
+        "body": "Preserve the pinned Axiom palette and artwork when extending the interface.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do follow the Axiom Civil Services Brand Guide v1.0, September 2026, for future UI work.",
+      "Do keep white dominant, slate readable, steel blue structural, and orange limited to attention.",
+      "Do preserve the supplied logo, its proportions, and at least A cap-height clear space.",
+      "Do retain self-hosted Roboto and its OFL license.",
+      "Do retain visible keyboard focus, reduced-motion support, and readable state labels."
+    ],
+    "donts": [
+      "Don't substitute a new brand palette, font pairing, or invented logo.",
+      "Don't use Steel Blue in place of Action Blue for small white button labels.",
+      "Don't treat generated tonal previews as approved application colors.",
+      "Don't introduce marketing claims or change task flows through visual refinement."
+    ]
+  }
+}

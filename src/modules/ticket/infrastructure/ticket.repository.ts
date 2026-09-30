@@ -18,6 +18,10 @@ import type {
   VisibilityScope,
 } from '../application/ports';
 import { ConflictError } from '@/shared/errors';
+import { ticketFilterClause } from './ticket-filter-clause';
+import { buildVisibilityClause } from '@/lib/ticket-visibility-clause';
+import { buildReviewQuery } from './review-query';
+import type { ReviewOptions, ReviewResult } from '../application/review-tickets';
 
 // ---------------------------------------------------------------------------
 // Row mapper
@@ -117,132 +121,20 @@ function rowToTicket(r: TicketRow): Ticket {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Visibility WHERE clause builder (CLAUDE.md §7A)
-// ---------------------------------------------------------------------------
-
-/**
- * Builds the additional SQL condition fragment that enforces role-based visibility.
- * baseIdx is the next positional $N parameter index to use.
- * Returns empty sql+params for full-visibility roles.
- */
-function buildVisibilityClause(
-  scope: VisibilityScope,
-  baseIdx: number,
-): { sql: string; params: unknown[] } {
-  const { actorId, actorRole, projectId, departmentId, aorNodeIds, partyChiefId, companyId, companyType } = scope;
-
-  const withSubcontractorIsolation = (
-    clause: { sql: string; params: unknown[] },
-  ): { sql: string; params: unknown[] } => {
-    if (companyType !== 'SUBCONTRACTOR') return clause;
-
-    const placeholder = `$${baseIdx + clause.params.length}`;
-    const isolationSql = `AND t.company_id = ${placeholder}`;
-
-    return {
-      sql: clause.sql ? `${clause.sql} ${isolationSql}` : isolationSql,
-      params: [...clause.params, companyId],
-    };
-  };
-
-  switch (actorRole) {
-    // Full project visibility — no additional WHERE clause
-    case 'SURVEY_MANAGER':
-    case 'CAD_LEAD':
-    case 'CAD_TECHNICIAN':
-    case 'VIEWER':
-      return withSubcontractorIsolation({ sql: '', params: [] });
-
-    case 'SUBCONTRACTS_COORDINATOR':
-      return withSubcontractorIsolation({
-        sql: "AND EXISTS (SELECT 1 FROM companies c WHERE c.id = t.company_id AND c.type = 'SUBCONTRACTOR')",
-        params: [],
-      });
-
-    case 'REQUESTER':
-      if (companyType === 'SUBCONTRACTOR' && projectId) {
-        return {
-          sql: `AND (t.requester_id = $${baseIdx} OR (
-            t.company_id = $${baseIdx + 1} AND t.project_id = $${baseIdx + 2}
-            AND EXISTS (
-              SELECT 1 FROM company_authority_grants g
-              JOIN project_memberships pm
-                ON pm.project_id = g.project_id AND pm.user_id = g.user_id
-              JOIN users u ON u.id = g.user_id AND u.tenant_id = g.tenant_id
-              WHERE g.tenant_id = t.tenant_id AND g.project_id = t.project_id
-                AND g.company_id = t.company_id AND g.user_id = $${baseIdx}
-                AND g.revoked_at IS NULL AND pm.role = 'REQUESTER'
-                AND u.deactivated_at IS NULL
-            )
-          ))`,
-          params: [actorId, companyId, projectId],
-        };
-      }
-      return withSubcontractorIsolation({
-        sql:    `AND t.requester_id = $${baseIdx}`,
-        params: [actorId],
-      });
-
-    case 'DEPARTMENT_MANAGER': {
-      if (!departmentId) {
-        return withSubcontractorIsolation({ sql: 'AND 1 = 0', params: [] });
-      }
-      return withSubcontractorIsolation({
-        sql:    `AND t.department_id = $${baseIdx}`,
-        params: [departmentId],
-      });
-    }
-
-    case 'DEPARTMENT_LEAD': {
-      if (!departmentId || !aorNodeIds || aorNodeIds.length === 0) {
-        return withSubcontractorIsolation({ sql: 'AND 1 = 0', params: [] });
-      }
-      const aorPlaceholders = aorNodeIds.map((_, i) => `$${baseIdx + i + 1}`).join(', ');
-      return withSubcontractorIsolation({
-        sql:    `AND t.department_id = $${baseIdx} AND t.aor_node_id IN (${aorPlaceholders})`,
-        params: [departmentId, ...aorNodeIds],
-      });
-    }
-
-    case 'PARTY_CHIEF':
-      return withSubcontractorIsolation({
-        sql:    `AND t.assigned_party_chief_id = $${baseIdx}`,
-        params: [actorId],
-      });
-
-    case 'INSTRUMENT_MAN': {
-      // Sees: Party Chief's tickets + tickets where they are explicitly assigned_instrument_man
-      const pcId = partyChiefId ?? actorId; // partyChiefId resolved by caller from crew_rosters
-      return withSubcontractorIsolation({
-        sql:    `AND (t.assigned_party_chief_id = $${baseIdx} OR t.assigned_instrument_man_id = $${baseIdx + 1})`,
-        params: [pcId, actorId],
-      });
-    }
-
-    case 'SURVEY_SUPERINTENDENT':
-    case 'AREA_VIEWER': {
-      if (!aorNodeIds || aorNodeIds.length === 0) {
-        // No AOR assignments — sees nothing
-        return withSubcontractorIsolation({ sql: 'AND 1 = 0', params: [] });
-      }
-      const placeholders = aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ');
-      return withSubcontractorIsolation({
-        sql:    `AND t.aor_node_id IN (${placeholders})`,
-        params: aorNodeIds,
-      });
-    }
-
-    default:
-      return withSubcontractorIsolation({ sql: 'AND 1 = 0', params: [] });
-  }
-}
+// Visibility is shared with reporting; no chart owns a separate access policy.
 
 // ---------------------------------------------------------------------------
 // Repository
 // ---------------------------------------------------------------------------
 
 export class TicketRepository implements ITicketRepository {
+  async review(db: DbClient, tenantId: UUID, options: ReviewOptions): Promise<ReviewResult> {
+    const query = buildReviewQuery(tenantId, options, buildVisibilityClause(options.visibility, 3));
+    const { rows } = await db.query<{ result: ReviewResult }>(query.sql, query.params);
+    if (!rows[0]) throw new Error('Review aggregate query returned no result');
+    return rows[0].result;
+  }
+
   async findById(
     db: DbClient,
     tenantId: UUID,
@@ -492,6 +384,9 @@ export class TicketRepository implements ITicketRepository {
       baseVals.push(...visParams);
     }
 
+    const filter = ticketFilterClause(opts.filters ?? {}, baseVals.length + 1);
+    if (filter.sql) conditions.push(filter.sql);
+    baseVals.push(...filter.params);
     const where = conditions.join(' AND ');
 
     const { rows: countRows } = await db.query<{ total: string }>(
@@ -506,7 +401,7 @@ export class TicketRepository implements ITicketRepository {
     const { rows } = await db.query<TicketRow>(
       `SELECT t.* FROM tickets t
        WHERE ${where}
-       ORDER BY t.created_at DESC
+       ORDER BY ${opts.sort === 'operations' ? "(t.priority = 'HIGH') DESC, t.requested_date ASC, t.id ASC" : 't.created_at DESC, t.id DESC'}
        LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
       [...baseVals, opts.limit, opts.offset],
     );

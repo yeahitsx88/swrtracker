@@ -1,6 +1,11 @@
 .git
 .next
 node_modules
+.data
+.codex
+.agents
+.impeccable
+tsconfig.tsbuildinfo
 .pnpm-store
 coverage
 tmp

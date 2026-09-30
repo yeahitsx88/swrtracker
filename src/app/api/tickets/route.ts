@@ -15,6 +15,7 @@ import { withRequestCorrelation } from '@/lib/correlation';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { resolveVisibility } from '@/lib/resolve-visibility';
+import { parseTicketListQuery } from '@/lib/ticket-list-query';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { createTicket } from '@/modules/ticket/application/create-ticket';
@@ -287,8 +288,7 @@ export async function GET(req: NextRequest) {
       const projectId = searchParams.get('projectId');
       if (!projectId) throw new ValidationError('projectId query parameter is required');
 
-      const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10), 200);
-      const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10), 0);
+      const listQuery = parseTicketListQuery(searchParams);
 
       const actorRole = await getProjectRole(
         pool,
@@ -305,8 +305,7 @@ export async function GET(req: NextRequest) {
       const page = await ticketRepo.list(pool, auth.tenantId, {
         projectId: projectId as UUID,
         visibility,
-        limit,
-        offset,
+        ...listQuery,
       });
 
       const requesterNames = await new UserRepository().findNamesByIds(

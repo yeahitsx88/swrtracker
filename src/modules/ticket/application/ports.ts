@@ -7,6 +7,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus } from '../domain/types';
 import type { ProjectStatus } from '@/modules/tenancy/domain/types';
 import type { ProjectLeadTimeConfig } from '../domain/lead-time-policy';
+import type { TicketQueryFilters } from './query-filters';
 
 export interface TicketStatusPatch {
   status:                   TicketStatus;
@@ -68,6 +69,8 @@ export interface VisibilityScope {
 }
 
 export interface ListTicketsOptions {
+  filters?: TicketQueryFilters;
+  sort?: 'created' | 'operations';
   projectId:         UUID;
   visibility:        VisibilityScope;
   limit:             number;

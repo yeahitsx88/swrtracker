@@ -34,9 +34,11 @@ export async function performTransition(
     eventType:      AuditEventType;
     eventPayload?:  Record<string, unknown>;
     visibility?:    VisibilityScope;
+    authorizeTicket?: (ticket: Ticket) => Promise<Record<string, unknown>>;
   },
 ): Promise<Ticket> {
   const { tenantId, ticketId, actorId, actorRole, permittedRoles, to, patch, eventType } = options;
+  const eventPayload = { ...options.eventPayload };
   return executeWorkflowTransition(db, {
     tenantId,
     ticketId,
@@ -46,12 +48,17 @@ export async function performTransition(
     to,
     patch,
     eventType,
-    eventPayload: options.eventPayload,
-    readTicket: () => (
-      options.visibility
+    eventPayload,
+    readTicket: async () => {
+      const ticket = await (options.visibility
         ? repo.findById(db, tenantId, ticketId, options.visibility)
         : repo.findByIdInternal(db, tenantId, ticketId)
-    ),
+      );
+      if (ticket && options.authorizeTicket) {
+        eventPayload.reviewAuthority = await options.authorizeTicket(ticket);
+      }
+      return ticket;
+    },
     patchTicket: (nextPatch, expected) =>
       repo.patchTicket(
         db,

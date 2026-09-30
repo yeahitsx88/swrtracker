@@ -1,6 +1,6 @@
 /**
  * ApproveTicket — SUBMITTED → APPROVED.
- * Permitted actor: SURVEY_MANAGER.
+ * Survey Manager or an explicitly granted Area Survey Superintendent.
  */
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
@@ -8,6 +8,7 @@ import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
 import { enqueueRequesterNotification } from './amelia-notifications';
+import { requireSurveyReviewAuthority } from '@/lib/survey-review-authority';
 
 export async function approveTicket(
   repo: ITicketRepository,
@@ -25,11 +26,12 @@ export async function approveTicket(
     ticketId:       params.ticketId,
     actorId:        params.actorId,
     actorRole:      params.actorRole,
-    permittedRoles: ['SURVEY_MANAGER'],
+    permittedRoles: ['SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT'],
     to:             'APPROVED',
     patch:          { approvedAt: new Date() },
     eventType:      'ticket.approved',
     visibility:     params.visibility,
+    authorizeTicket: (ticket) => requireSurveyReviewAuthority(db, ticket, params),
   });
   await enqueueRequesterNotification(db, {
     tenantId: params.tenantId,

@@ -1,0 +1,86 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@/lib/apiClient';
+import { getErrorMessage } from '@/lib/errors';
+import { operationsStatusLabel } from '@/lib/operations-view';
+import { useTicketPage } from '@/lib/use-ticket-page';
+import type { MetricsFilters } from '@/modules/reporting/application/metrics-filters';
+import { KpiChart, chartNames, type ChartKind } from './kpi-charts';
+import { Button } from './button';
+import './kpi-explorer.css';
+
+export type KpiMeasure='all'|'open'|'assignment'|'overdue'|'completed'|'cycle';
+const titles:Record<KpiMeasure,string>={all:'All requests',open:'Open requests',assignment:'Need assignment',overdue:'Overdue Need-By',completed:'Completed requests',cycle:'Average turnaround'};
+const typeNames:Record<string,string>={LAYOUT:'Layout',CHECK_OUT:'Check Out',AS_BUILT:'As Built',TOPO:'Topo',PERMIT:'Permit'};
+type Group='areas'|'types'|'statuses'|'crews'|'instrumentMen';
+const groups:Record<Group,string>={areas:'Area',types:'Request type',statuses:'Status',crews:'Party Chief / crew',instrumentMen:'Assigned Instrument Man'};
+const groupFilter:Record<Group,keyof MetricsFilters>={areas:'areaId',types:'ticketType',statuses:'status',crews:'crewId',instrumentMen:'instrumentManId'};
+type Result=Awaited<ReturnType<typeof apiClient.getKpiCharts>>;
+const defaults=(metric:KpiMeasure):MetricsFilters=>({population:metric==='cycle'?'completed':metric,dateBasis:metric==='cycle'?'completed':'needBy'});
+
+export function KpiExplorer({projectId,initialMeasure}:{projectId:string;initialMeasure:KpiMeasure}) {
+  const [measure,setMeasure]=useState(initialMeasure);
+  const [kind,setKind]=useState<ChartKind>(initialMeasure==='open'?'heat':'bar');
+  const [group,setGroup]=useState<Group>('areas');
+  const [filters,setFilters]=useState<MetricsFilters>(defaults(initialMeasure));
+  const [draft,setDraft]=useState(filters);
+  const [revision,setRevision]=useState(0);
+  const [snapshot,setSnapshot]=useState<{key:string;data?:Result;error?:string}>();
+  const [details,setDetails]=useState(false);
+  const [page,setPage]=useState(1); const [size,setSize]=useState(10);
+  const key=JSON.stringify({projectId,filters,revision});
+  useEffect(()=>{ let active=true; const input=JSON.parse(key) as {projectId:string;filters:MetricsFilters};
+    apiClient.getKpiCharts(input.projectId,input.filters).then(data=>{if(active)setSnapshot({key,data});})
+      .catch(error=>{if(active)setSnapshot({key,error:getErrorMessage(error,'Unable to load analytics. Retry the request.')});});
+    return()=>{active=false;};
+  },[key]);
+  const current=snapshot?.key===key?snapshot:undefined;
+  const result=current?.data; const metrics=result?.metrics; const charts=metrics?.charts;
+  const {population,...rest}=filters;
+  const request=useTicketPage(projectId,page,size,{...rest,queue:population??'all'},details&&!!metrics,revision);
+  const pages=Math.max(1,Math.ceil((request.data?.total??0)/size));
+  useEffect(()=>{if(request.data&&page>pages)setPage(pages);},[request.data,page,pages]);
+  const apply=(next:MetricsFilters,showDetails=false)=>{setFilters(next);setDraft(next);setPage(1);setDetails(showDetails);};
+  const change=(field:keyof MetricsFilters,value:string)=>setDraft(previous=>({...previous,[field]:value||undefined}));
+  const cycle=measure==='cycle';
+  const select=(value:string,status?:string)=>apply({...filters,[kind==='heat'?'areaId':groupFilter[group]]:value,...(status?{status:status as MetricsFilters['status']}:{})},true);
+  const selectMonth=(month:string)=>{const from=`${month}-01`;const end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),0)).toISOString().slice(0,10);
+    apply({...filters,dateFrom:filters.dateFrom&&filters.dateFrom>from?filters.dateFrom:from,dateTo:filters.dateTo&&filters.dateTo<end?filters.dateTo:end},true);
+  };
+  const rows=(charts?.[group]??[]).map(row=>({...row,label:group==='statuses'?operationsStatusLabel(row.label):group==='types'?(typeNames[row.label]??row.label):row.label}));
+  const selectedLabels=Object.entries(filters).filter(([field,value])=>value&&!['population','dateBasis','dateFrom','dateTo'].includes(field)).map(([field,value])=>{
+    const options=field==='areaId'?charts?.facets.areas:field==='crewId'?charts?.facets.crews:field==='instrumentManId'?charts?.facets.instrumentMen:undefined;
+    return field==='status'?operationsStatusLabel(value):field==='ticketType'?(typeNames[value]??value):options?.find(o=>o.key===value)?.label??'Selected filter';
+  });
+  return <section className="kpi-explorer" aria-label="KPI explorer">
+    <div className="kpi-controls">
+      <label>KPI<select value={measure} onChange={e=>{const next=e.target.value as KpiMeasure;setMeasure(next);if(next==='cycle'&&(kind==='donut'||kind==='gauge'))setKind('bar');apply(defaults(next));}}>{Object.entries(titles).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      <label>Visualization<select value={kind} onChange={e=>setKind(e.target.value as ChartKind)}>{Object.entries(chartNames).filter(([value])=>!cycle||!['donut','gauge'].includes(value)).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      {['bar','donut'].includes(kind)?<label>Group by<select value={group} onChange={e=>setGroup(e.target.value as Group)}>{Object.entries(groups).filter(([value])=>result?.analytics.personnelFilters||!['crews','instrumentMen'].includes(value)).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>:null}
+    </div>
+    <form onSubmit={e=>{e.preventDefault();apply(draft);}}><details><summary>Filters and date range{selectedLabels.length?` · ${selectedLabels.length} selected`:''}</summary><div className="kpi-controls">
+      <label>Area<select value={draft.areaId??''} onChange={e=>change('areaId',e.target.value)}><option value="">All authorized Areas</option>{charts?.facets.areas.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label>
+      <label>Request type<select value={draft.ticketType??''} onChange={e=>change('ticketType',e.target.value)}><option value="">All request types</option>{Object.entries(typeNames).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      <label>Status<select value={draft.status??''} onChange={e=>change('status',e.target.value)}><option value="">All matching statuses</option>{['SUBMITTED','APPROVED','ASSIGNED','IN_PROGRESS','RETURNED_FOR_CORRECTION','PENDING_FIELD_VALIDATION','DELAYED','COMPLETED','REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED','REJECTED','PENDING_PC_APPROVAL'].map(value=><option key={value} value={value}>{operationsStatusLabel(value)}</option>)}</select></label>
+      {result?.analytics.personnelFilters?<><label>Party Chief / crew<select value={draft.crewId??''} onChange={e=>change('crewId',e.target.value)}><option value="">All authorized crews</option>{charts?.facets.crews.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label><label>Assigned Instrument Man<select value={draft.instrumentManId??''} onChange={e=>change('instrumentManId',e.target.value)}><option value="">All authorized assignments</option>{charts?.facets.instrumentMen.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label></>:null}
+      <label>Date basis<select value={draft.dateBasis??'needBy'} onChange={e=>change('dateBasis',e.target.value)}><option value="needBy">Need-By</option><option value="submitted">First submission</option><option value="completed">Completion</option></select></label>
+      <label>From<input type="date" value={draft.dateFrom??''} onChange={e=>change('dateFrom',e.target.value)}/></label><label>Through<input type="date" min={draft.dateFrom} value={draft.dateTo??''} onChange={e=>change('dateTo',e.target.value)}/></label>
+      <Button type="submit">Apply filters</Button>
+    </div></details></form>
+    <p className="kpi-scope">{titles[measure]} · {cycle?'hours from first submission to completion':'request count'} · authorized requests only · {filters.dateBasis==='submitted'?'First submission':filters.dateBasis==='completed'?'Completion':'Need-By'} {filters.dateFrom??'all dates'}{filters.dateTo?` through ${filters.dateTo}`:''} (UTC for timestamps){selectedLabels.length?` · ${selectedLabels.join(' · ')}`:''}</p>
+    <Button variant="secondary" onClick={()=>apply(defaults(measure))}>Reset filters</Button>
+    {!current?<div className="kpi-loading" role="status">Loading the authorized chart population…</div>:current.error?<div role="alert"><p>{current.error}</p><Button onClick={()=>setRevision(n=>n+1)}>Retry analytics</Button></div>:metrics&&charts?<>
+      <p aria-live="polite"><strong>{(metrics.total??0).toLocaleString()}</strong> matching requests{cycle?` · ${metrics.coverage?.cycleSamples??0} valid turnaround samples`:''}</p>
+      {metrics.total===0?<p>No matching requests. Reset filters or widen the date range.</p>:<KpiChart kind={kind} rows={rows} months={charts.months} cells={charts.cells} cycle={cycle} total={metrics.total??0} denominator={metrics.populationTotal??0} title={titles[measure]} select={select} selectMonth={selectMonth}/>}
+      {charts.limits.truncated?<p role="status">Partial chart: up to {charts.limits.groups} groups and the latest {charts.limits.months} months. Summary totals remain complete. Narrow the filters to inspect omitted groups.</p>:null}
+      <details><summary>Data coverage and interpretation</summary><p>{metrics.coverage?.cycleSamples??0} valid turnaround samples; {metrics.coverage?.syntheticCompletions??0} generated completion dates, {metrics.coverage?.missingCycleDates??0} missing date pairs and {metrics.coverage?.invalidCycleDates??0} invalid date pairs excluded. Exclusion categories can overlap. {metrics.coverage?.undated??0} records lack the selected trend date.</p><p>{metrics.coverage?.imported??0} imported snapshots. Imports do not reconstruct audit transitions. Personnel groups show current request assignments, not who completed the work or employee productivity. Donut percentages describe displayed groups; the gauge uses the full population matching other filters.</p></details>
+      <Button variant="secondary" onClick={()=>{setDetails(!details);setPage(1);}}>{details?'Hide matching requests':'Show matching requests'}</Button>
+      {details?<section aria-label="Matching KPI requests"><p className="kpi-scope">{cycle?'Completed population, including samples excluded from the average. ':''}Live records may change after this aggregate snapshot.</p>
+        <div className="ops-pagination"><span>{request.data?.total??'…'} matching requests · page {page} of {pages}</span><label>Rows<select value={size} onChange={e=>{setSize(Number(e.target.value));setPage(1);}}>{[10,25,50,100].map(n=><option key={n}>{n}</option>)}</select></label><Button variant="secondary" disabled={page===1} onClick={()=>setPage(n=>n-1)}>Previous</Button><Button variant="secondary" disabled={page>=pages} onClick={()=>setPage(n=>n+1)}>Next</Button></div>
+        {request.loading?<p role="status">Loading matching requests…</p>:request.error?<p role="alert">{request.error} <Button onClick={()=>setRevision(n=>n+1)}>Retry</Button></p>:<ul className="ops-detail-list">{request.data?.data.map(ticket=><li key={ticket.id}><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber}</Link><span>{ticket.description}</span><small>{operationsStatusLabel(ticket.status)} · Need-By {ticket.requestedDate.slice(0,10)}</small></li>)}</ul>}
+      </section>:null}
+    </>:null}
+  </section>;
+}

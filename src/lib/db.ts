@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { createLazyPool } from './lazy-pool';
 
 // Lazy singleton — pool is created on first access, not at module load.
 // This prevents build-time failures when DATABASE_URL is not set.
@@ -16,8 +17,4 @@ export function getPool(): Pool {
 }
 
 /** Convenience alias — use getPool() in modules that need explicit error context. */
-export const pool = new Proxy({} as Pool, {
-  get(_target, prop) {
-    return (getPool() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
+export const pool = createLazyPool(getPool);

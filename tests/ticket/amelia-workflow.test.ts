@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ForbiddenError } from '@/shared/errors';
 import { assignTicket } from '@/modules/ticket/application/assign-ticket';
+import { approveTicket } from '@/modules/ticket/application/approve-ticket';
 import { completeTicket } from '@/modules/ticket/application/complete-ticket';
 import { reportFieldInability } from '@/modules/ticket/application/field-inability';
 import { returnTicketForCorrection } from '@/modules/ticket/application/return-ticket-for-correction';
@@ -19,6 +20,44 @@ const requesterId = 'requester-1' as UUID;
 const managerId = 'manager-1' as UUID;
 const pcId = 'pc-1' as UUID;
 const imId = 'im-1' as UUID;
+
+test('Area review requires an explicit grant even for a Superintendent', async () => {
+  const h = harness(ticket({ status: 'SUBMITTED' }));
+  await assert.rejects(() => approveTicket(h.repo, h.db, {
+    tenantId, ticketId, actorId: pcId, actorRole: 'SURVEY_SUPERINTENDENT',
+  }), ForbiddenError);
+  assert.equal(h.current().status, 'SUBMITTED');
+  assert.equal(h.queries.filter(q => /INSERT INTO ticket_events/.test(q.sql)).length, 0);
+});
+
+test('Area approval snapshots the grant used by the actual transition', async () => {
+  const h = harness(ticket({ status: 'SUBMITTED' }));
+  const originalQuery = h.db.query;
+  h.db.query = async <T extends object>(sql: string, params?: unknown[]) => {
+    if (sql.includes('FROM project_responsibility_grants')) {
+      assert.deepEqual(params, [tenantId, projectId, 'aor-1', pcId]);
+      assert.match(sql, /g.revoked_at IS NULL/);
+      assert.match(sql, /FOR SHARE OF g/);
+      return { rows: [{ id: 'grant-1', aor_node_id: 'aor-1', granted_by: managerId, granted_at: new Date('2026-09-29') }] as unknown as T[] };
+    }
+    return originalQuery<T>(sql, params);
+  };
+  const result = await approveTicket(h.repo, h.db, { tenantId, ticketId, actorId: pcId, actorRole: 'SURVEY_SUPERINTENDENT' });
+  assert.equal(result.status, 'APPROVED');
+  const event = h.queries.find(q => /INSERT INTO ticket_events/.test(q.sql));
+  assert.ok(event);
+  const payload = JSON.parse(String(event.params?.[5]));
+  assert.equal(payload.reviewAuthority.grantId, 'grant-1');
+  assert.equal(payload.reviewAuthority.ticketAorNodeId, 'aor-1');
+});
+
+test('Area review grants do not replace the captured field-inability reviewer', async () => {
+  const h = harness(ticket({ status: 'PENDING_FIELD_VALIDATION', fieldValidationReviewerId: managerId }));
+  await assert.rejects(() => returnTicketForCorrection(h.repo, h.db, {
+    tenantId, ticketId, actorId: pcId, actorRole: 'SURVEY_SUPERINTENDENT', reason: 'Review', origin: 'FIELD_INABILITY',
+  }), ForbiddenError);
+  assert.equal(h.current().status, 'PENDING_FIELD_VALIDATION');
+});
 
 function ticket(overrides: Partial<Ticket> = {}): Ticket {
   const now = new Date('2026-09-24T12:00:00Z');

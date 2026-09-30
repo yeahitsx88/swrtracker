@@ -16,7 +16,7 @@ export function ProjectNav({ projectId, role }: ProjectNavProps) {
   const tabs = getProjectNavigation(role);
 
   return (
-    <nav className="app-links" aria-label="Project navigation">
+    <nav className="app-links" aria-label="Project" style={{ marginTop: '0.75rem' }}>
       {tabs.map((tab) => {
         const href = tab.href(projectId);
         const isActive = pathname === href;

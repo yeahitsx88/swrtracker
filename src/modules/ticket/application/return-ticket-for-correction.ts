@@ -5,6 +5,7 @@ import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
 import { enqueueAssignedFieldNotifications, enqueueRequesterNotification } from './amelia-notifications';
+import { requireSurveyReviewAuthority } from '@/lib/survey-review-authority';
 
 export type ReturnOrigin = 'INITIAL_REVIEW' | 'SURVEY_CHANGE' | 'FIELD_INABILITY';
 
@@ -37,8 +38,8 @@ export async function returnTicketForCorrection(
         !['PARTY_CHIEF', 'SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT'].includes(params.actorRole)) {
       throw new ForbiddenError('Only the captured field-inability reviewer may validate this return');
     }
-  } else if (params.actorRole !== 'SURVEY_MANAGER') {
-    throw new ForbiddenError('Only the Survey Lead may return an SWR for correction');
+  } else if (params.actorRole !== 'SURVEY_MANAGER' && params.actorRole !== 'SURVEY_SUPERINTENDENT') {
+    throw new ForbiddenError('Only an authorized Survey reviewer may return an SWR for correction');
   }
 
   const origin: ReturnOrigin = params.origin === 'FIELD_INABILITY'
@@ -55,7 +56,7 @@ export async function returnTicketForCorrection(
     actorRole: params.actorRole,
     permittedRoles: params.origin === 'FIELD_INABILITY'
       ? ['PARTY_CHIEF', 'SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT']
-      : ['SURVEY_MANAGER'],
+      : ['SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT'],
     to: 'RETURNED_FOR_CORRECTION',
     patch: {
       returnCycle: cycleNumber,
@@ -71,6 +72,12 @@ export async function returnTicketForCorrection(
     eventType: 'ticket.returned_for_correction',
     eventPayload: { cycleNumber, origin, reason },
     visibility: params.visibility,
+    authorizeTicket: params.origin === 'FIELD_INABILITY' ? undefined : async (current) => {
+      if (params.actorRole === 'SURVEY_SUPERINTENDENT' && !['SUBMITTED', 'APPROVED'].includes(current.status)) {
+        throw new ForbiddenError('Delegated review returns apply only before field assignment');
+      }
+      return requireSurveyReviewAuthority(db, current, params);
+    },
   });
 
   await db.query(

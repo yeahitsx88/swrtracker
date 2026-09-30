@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
-import { LogoutButton } from '@/components/ui';
+import { AccountMenu } from '@/components/ui/account-menu';
+import { ProductBrand } from '@/components/ui/product-brand';
 
 export default function ProjectsRootLayout({ children }: { children: ReactNode }) {
   return (
@@ -8,11 +8,8 @@ export default function ProjectsRootLayout({ children }: { children: ReactNode }
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="app-nav">
         <div className="app-nav-inner">
-          <div className="app-brand">SWRTracker</div>
-          <div className="row">
-            <Link className="app-link" href="/projects">Projects</Link>
-            <LogoutButton />
-          </div>
+          <ProductBrand />
+          <AccountMenu />
         </div>
       </header>
       <main id="main-content" tabIndex={-1}>

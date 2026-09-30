@@ -27,6 +27,7 @@ import type {
   ProjectListResponse,
 } from '@/lib/contracts/projects';
 import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
+import type { TicketQueryFilters } from '@/modules/ticket/application/query-filters';
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -96,6 +97,13 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
 }
 
 export const apiClient = {
+  reviewTickets(projectId: string, query: Record<string, string | number | undefined>): Promise<import('@/modules/ticket/application/review-tickets').ReviewResult> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/review`, query));
+  },
+  getMyAccount(projectId?: string): Promise<import('@/modules/tenancy/application/my-account').MyAccount> {
+    return apiRequest(withQuery('/api/account', { projectId }));
+  },
+
   login(input: LoginRequest): Promise<AuthResponse> {
     return apiRequest<AuthResponse>('/api/auth/login', { method: 'POST', body: input });
   },
@@ -124,9 +132,9 @@ export const apiClient = {
     return apiRequest<ProjectListResponse>('/api/projects');
   },
 
-  listTickets(projectId: string, limit = 20, offset = 0): Promise<TicketListResponse> {
+  listTickets(projectId: string, limit = 20, offset = 0, filters: TicketQueryFilters & { sort?: 'created' | 'operations' } = {}): Promise<TicketListResponse> {
     return apiRequest<TicketListResponse>(
-      withQuery('/api/tickets', { projectId, limit, offset }),
+      withQuery('/api/tickets', { ...filters, projectId, limit, offset }),
     );
   },
 
@@ -319,6 +327,12 @@ export const apiClient = {
 
   getProjectMetrics(projectId: string): Promise<AmeliaMetricsResponse> {
     return apiRequest<AmeliaMetricsResponse>(`/api/projects/${projectId}/metrics`);
+  },
+  getKpiCharts(projectId: string, filters: import('@/modules/reporting/application/metrics-filters').MetricsFilters): Promise<{
+    metrics: import('@/modules/reporting/application/amelia-metrics').AmeliaMetrics;
+    analytics: { personnelFilters: boolean };
+  }> {
+    return apiRequest(withQuery(`/api/projects/${projectId}/metrics`, { ...filters, view: 'charts' }));
   },
 
   listLocalNotificationPreviews(projectId: string): Promise<LocalNotificationPreviewResponse> {
