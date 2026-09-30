@@ -10,7 +10,7 @@ OWN-WORLD: Inherit DESIGN.md and Live's white/slate/steel-blue controls, Roboto,
 
 STORY: A reviewer sees scope and provenance, narrows history, selects a status/Area/type/month, then opens a supporting request. Missing source history is explicit; simulated dates are not performance evidence.
 
-FIRST VIEWPORT: Below existing project navigation, a compact read-only review heading and search/filter form precede a summary strip and complementary status/Area charts. Overview and Requests tabs share filters; Requests uses expandable rows and 10/25/50/100 page sizes. Mobile stacks chart regions and keeps filters in a disclosure.
+FIRST VIEWPORT: Below existing project navigation, a compact read-only review heading and search/filter form precede a summary strip and a single-row, horizontally scrollable chart lane. Previous/Next chart controls and an Expand chart grid toggle expose all four existing charts without default vertical stacking. Expanded charts use the incumbent responsive grid. Overview and Requests tabs share filters; Requests uses expandable rows and 10/25/50/100 page sizes. Mobile retains the chart lane and keeps filters in a disclosure.
 
 FORM: Precisely specified extension of the existing request workspace; no concept-seed tournament or new visual world. Signature interaction: any chart selection narrows the shared request population and opens the request tab. No decorative motion.
 

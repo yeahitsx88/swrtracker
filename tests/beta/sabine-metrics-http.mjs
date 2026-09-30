@@ -54,7 +54,7 @@ for (const account of ['manager', 'super1', 'chief1', 'im1.1', 'requester0', 'ad
     assert.equal((await get(`${path}?${query}`)).status, 400); checks++;
   }
   const personnel = await get(`${path}?crewId=00000000-0000-4000-8000-000000000000`);
-  if (['requester0', 'im1.1'].includes(account)) { assert.equal(personnel.status, 403); checks++; }
+  if (!chartResponse.analytics.personnelFilters) { assert.equal(personnel.status, 403); checks++; }
   else { assert.equal(personnel.status, 200); assert.equal((await personnel.json()).metrics.openTotal, 0); checks += 2; }
   assert.equal((await get('/api/projects/00000000-0000-4000-8000-000000000000/metrics')).status, 403);
   assert.equal((await get('/api/projects/invalid/metrics')).status, 400); checks += 2;

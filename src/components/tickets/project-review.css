@@ -22,6 +22,12 @@
 .review-summary meter::-webkit-meter-optimum-value { background:var(--action); }
 .review-summary meter::-moz-meter-bar { background:var(--action); }
 .review-chart-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:1rem; align-items:start; }
+.review-chart-workspace { min-width:0; display:grid; gap:.75rem; }
+.review-chart-toolbar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; }
+.review-chart-toolbar .muted { font-size:.875rem; }
+.review-chart-lane { position:relative; grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:min(380px, calc(100% - 16px)); overflow-x:auto; scroll-snap-type:x proximity; scrollbar-color:var(--brand) var(--bg); padding:4px 4px .75rem; }
+.review-chart-lane > .review-chart { height:32rem; overflow-y:auto; align-content:start; scroll-snap-align:start; scrollbar-color:var(--brand) var(--bg); }
+.review-chart-lane .review-bars { max-height:none; overflow-y:visible; }
 .review-chart h3 { font-size:1.25rem; }
 .review-chart .muted { font-size:.875rem; }
 .review-bars { max-height:340px; overflow-y:auto; }
@@ -49,5 +55,5 @@
 .review-request summary:hover { background:#edf3f8; }
 .review-request > div { padding:0 .5rem 1rem; overflow-wrap:anywhere; }
 .review-request p { margin:.3rem 0; }
-@media (max-width:760px) { .review-chart-grid { grid-template-columns:minmax(0,1fr); } .review-filter-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .review-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .review-request summary { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } }
+@media (max-width:760px) { .review-chart-expanded { grid-template-columns:minmax(0,1fr); } .review-filter-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .review-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .review-request summary { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } }
 @media (max-width:420px) { .review-filter-grid { grid-template-columns:minmax(0,1fr); } }
