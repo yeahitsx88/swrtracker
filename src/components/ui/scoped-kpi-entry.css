@@ -1,0 +1,9 @@
+.kpi-entry { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; border-block:1px solid var(--line); padding:1rem 0; }
+.kpi-entry > div { min-width:0; }
+.kpi-entry strong { color:var(--ink); }
+.kpi-entry p { max-width:65ch; }
+.kpi-entry-dialog { width:min(950px,calc(100vw - 2rem)); max-height:85dvh; overflow:auto; padding:1.5rem; border:1px solid var(--line); border-radius:14px; color:var(--ink); background:var(--bg-elevated); }
+.kpi-entry-dialog::backdrop { background:rgb(24 38 50 / 48%); }
+.kpi-entry-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.kpi-entry-heading h2 { margin:0; font-size:1.25rem; }
+@media(max-width:600px) { .kpi-entry-dialog { padding:1rem; } .kpi-entry-heading h2 { max-width:18ch; } }

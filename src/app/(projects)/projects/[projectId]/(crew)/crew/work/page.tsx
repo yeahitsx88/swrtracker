@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/lib/errors';
 import type { TicketRecord } from '@/lib/contracts';
 import { CrewWorkActions, TicketCard } from '@/components/tickets';
 import { Button, Card, ErrorBanner } from '@/components/ui';
+import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
 
 export default function CrewWorkPage() {
   const params = useParams<{ projectId: string }>();
@@ -57,6 +58,7 @@ export default function CrewWorkPage() {
       description="Assigned Party Chief and Instrument Man actions. Backend validates transitions and permissions."
     >
       <div className="stack">
+        <ScopedKpiEntry projectId={projectId} audience="field" />
         {error ? <ErrorBanner message={error} /> : null}
         <div className="row">
           <Button variant="secondary" onClick={() => void loadTickets()} disabled={loading}>

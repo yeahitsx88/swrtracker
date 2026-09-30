@@ -159,6 +159,8 @@ Status badges carry readable labels and semantic colors. Step chips use muted la
 
 Queue health uses five clickable measures and a native details dialog, with a blue count heat map carrying numeric labels. Work queues use keyboard-navigable tabs, labeled filters, selectable page sizes, and native disclosure rows. Collapsed descriptions are ellipsized; expanded rows retain full descriptions and workflow controls. Metric values use 1.8rem tabular numerals; section headings use 1.25rem, summary rows 0.9rem, metric labels 0.875rem, and detail links 0.75rem. These are compact data-display roles, not a replacement type system. Overdue measures reuse the existing warning badge colors. Controls retain the 10px radius; tabs use a square bottom selection rule.
 
+Requester My Requests and field Crew Work reuse the KPI explorer through a compact chart-entry row and labeled native dialog. Requester opens on an authorized request-status donut; field opens on an open-request Area heat map. The entry leaves the queue visible and fetches charts only when opened. On narrow screens the Requester KPI field spans the dialog while visualization and grouping share a row when both fit; the dialog scrolls internally without horizontal page overflow.
+
 ### Keyboard Focus
 
 Focusable elements use a three-pixel solid Action Blue outline offset by three pixels. Retain this indicator across buttons, links, fields, and navigation; never remove it without an equally visible replacement.

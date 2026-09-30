@@ -2641,3 +2641,14 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Scope deviation: cross-cutting UI conflict resolution was necessary to publish the earlier checkpoint on the current branch; no migrations, ticket state changes, or fixture records were touched.
 - Known gaps: the active development objective remains incomplete as recorded in KPI_PERFORMANCE_PROGRESS.md. A fresh Linux test run should be completed when its runtime is available.
 - Production behavior changed: existing presentation and accessibility changes combined; no new mutation path.
+
+### 2026-09-30 — Batch 38 (role-specific KPI entry)
+- Intent: IMPLEMENTER; extend the shared, server-scoped KPI explorer to Requester and field workspaces without loading chart data on ordinary page visits.
+- Files touched: Requester My Requests and field Crew Work pages; scoped-kpi-entry.tsx/.css; kpi-explorer.tsx/.css; PRODUCT.md, DESIGN.md, KPI_EXPLORER_BRIEF.md, KPI_PERFORMANCE_PROGRESS.md and this append-only log.
+- Behavior added: compact chart entry and accessible pop-out on both routes; audience-appropriate KPI choices/default charts; self-contained heat/detail/pagination styling and mobile Requester control layout. Existing server authorization and bounded drill-down remain unchanged.
+- Validation: final TypeScript and production build passed. Native Windows tests passed 286/287, with only the documented Unix attachment file-mode mismatch; Docker/WSL unavailable for a new Linux gate. Mocked desktop/mobile browser checks verified lazy chart request, restricted choices, close behavior, no overflow and no page errors. The mocks do not replace live authorization tests.
+- Scope deviation: two existing UI routes and shared components/styles changed together for the same role-entry feature; no domain module, API route, migration, state transition or audit-event path changed. No new automated test file was added; browser acceptance was run from an ignored local script.
+- Known gaps: full objective and real Sabine preview acceptance remain pending; Survey Manager staffing workflow is separate and unfinished. No imported data or project lifecycle changes.
+- Production behavior changed: yes, read-only on-demand chart access on two additional role routes.
+- Finish review: independent Impeccable reviewer returned Ship with no material UI blocker after inspecting four final captures and the code diff; this is not a live-backend authorization verdict.
+- Documentation check: independent read-only comparison found Axiom alignment and requested a narrow record of the two new role entry points; updated product, design and KPI brief text without changing tokens or the design sidecar.

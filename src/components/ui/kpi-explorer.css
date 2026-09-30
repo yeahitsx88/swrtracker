@@ -25,4 +25,18 @@
 .kpi-gauge meter::-moz-meter-bar { background:var(--action); }
 .kpi-gauge strong { font-size:1.8rem; color:var(--action); }
 .kpi-loading { min-height:220px; background:var(--bg); padding:1rem; }
+.kpi-explorer .ops-heatmap { border-collapse:collapse; width:100%; font-size:.8rem; font-variant-numeric:tabular-nums; }
+.kpi-explorer .ops-heatmap caption { text-align:left; padding:.5rem 0; color:var(--muted); }
+.kpi-explorer .ops-heatmap th,.kpi-explorer .ops-heatmap td { border:1px solid var(--line); padding:.55rem .7rem; }
+.kpi-explorer .ops-heatmap th { text-align:left; background:var(--bg); }
+.kpi-explorer .ops-heatmap td { text-align:center; font-weight:600; }
+.kpi-explorer .ops-detail-list { list-style:none; padding:0; margin:0; }
+.kpi-explorer .ops-detail-list li { display:grid; grid-template-columns:160px 1fr; gap:.4rem 1rem; border-top:1px solid var(--line); padding:.8rem 0; overflow-wrap:anywhere; }
+.kpi-explorer .ops-detail-list small { grid-column:2; color:var(--muted); }
+.kpi-explorer .ops-pagination { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; padding:.9rem 0; font-size:.85rem; font-variant-numeric:tabular-nums; }
+.kpi-explorer .ops-pagination > span:first-child { margin-right:auto; color:var(--muted); }
+.kpi-explorer .ops-pagination label { display:flex; align-items:center; }
+.kpi-explorer .ops-pagination select { min-height:44px; border:1px solid #81909d; border-radius:10px; padding:.5rem .6rem; background:var(--bg-elevated); color:var(--ink); font:inherit; font-size:1rem; }
 @media(max-width:600px) { .kpi-controls { grid-template-columns:1fr; } .kpi-donut { grid-template-columns:1fr; } .kpi-donut svg { margin:auto; } }
+@media(max-width:600px) { .kpi-explorer[data-audience="requester"] > .kpi-controls { grid-template-columns:repeat(2,minmax(0,1fr)); } .kpi-explorer[data-audience="requester"] > .kpi-controls > label:first-child { grid-column:1/-1; } }
+@media(max-width:600px) { .kpi-explorer .ops-detail-list li { grid-template-columns:1fr; } .kpi-explorer .ops-detail-list small { grid-column:1; } }

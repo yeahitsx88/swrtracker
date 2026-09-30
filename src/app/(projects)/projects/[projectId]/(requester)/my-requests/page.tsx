@@ -8,6 +8,7 @@ import type { TicketRecord } from '@/lib/contracts';
 import { PaginationControls } from '@/components/forms';
 import { TicketList } from '@/components/tickets';
 import { Card, ErrorBanner } from '@/components/ui';
+import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
 
 const LIMIT = 20;
 export default function MyRequestsPage() {
@@ -48,6 +49,7 @@ export default function MyRequestsPage() {
       description="Your SWRs and any additional company SWRs granted to your account."
     >
       <div className="stack">
+        <ScopedKpiEntry projectId={projectId} audience="requester" />
         {error ? <ErrorBanner message={error} /> : null}
         {loading ? <p className="muted">Loading tickets...</p> : null}
         {!loading ? <TicketList projectId={projectId} tickets={submittedTickets} /> : null}

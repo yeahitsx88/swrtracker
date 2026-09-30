@@ -12,7 +12,9 @@ import { Button } from './button';
 import './kpi-explorer.css';
 
 export type KpiMeasure='all'|'open'|'assignment'|'overdue'|'completed'|'cycle';
+export type KpiAudience='operations'|'requester'|'field';
 const titles:Record<KpiMeasure,string>={all:'All requests',open:'Open requests',assignment:'Need assignment',overdue:'Overdue Need-By',completed:'Completed requests',cycle:'Average turnaround'};
+const measures:Record<KpiAudience,readonly KpiMeasure[]>={operations:['all','open','assignment','overdue','completed','cycle'],requester:['all','open','completed','cycle'],field:['all','open','overdue','completed','cycle']};
 const typeNames:Record<string,string>={LAYOUT:'Layout',CHECK_OUT:'Check Out',AS_BUILT:'As Built',TOPO:'Topo',PERMIT:'Permit'};
 type Group='areas'|'types'|'statuses'|'crews'|'instrumentMen';
 const groups:Record<Group,string>={areas:'Area',types:'Request type',statuses:'Status',crews:'Party Chief / crew',instrumentMen:'Assigned Instrument Man'};
@@ -20,10 +22,10 @@ const groupFilter:Record<Group,keyof MetricsFilters>={areas:'areaId',types:'tick
 type Result=Awaited<ReturnType<typeof apiClient.getKpiCharts>>;
 const defaults=(metric:KpiMeasure):MetricsFilters=>({population:metric==='cycle'?'completed':metric,dateBasis:metric==='cycle'?'completed':'needBy'});
 
-export function KpiExplorer({projectId,initialMeasure}:{projectId:string;initialMeasure:KpiMeasure}) {
+export function KpiExplorer({projectId,initialMeasure,audience='operations'}:{projectId:string;initialMeasure:KpiMeasure;audience?:KpiAudience}) {
   const [measure,setMeasure]=useState(initialMeasure);
-  const [kind,setKind]=useState<ChartKind>(initialMeasure==='open'?'heat':'bar');
-  const [group,setGroup]=useState<Group>('areas');
+  const [kind,setKind]=useState<ChartKind>(audience==='requester'?'donut':initialMeasure==='open'?'heat':'bar');
+  const [group,setGroup]=useState<Group>(audience==='requester'?'statuses':'areas');
   const [filters,setFilters]=useState<MetricsFilters>(defaults(initialMeasure));
   const [draft,setDraft]=useState(filters);
   const [revision,setRevision]=useState(0);
@@ -54,9 +56,9 @@ export function KpiExplorer({projectId,initialMeasure}:{projectId:string;initial
     const options=field==='areaId'?charts?.facets.areas:field==='crewId'?charts?.facets.crews:field==='instrumentManId'?charts?.facets.instrumentMen:undefined;
     return field==='status'?operationsStatusLabel(value):field==='ticketType'?(typeNames[value]??value):options?.find(o=>o.key===value)?.label??'Selected filter';
   });
-  return <section className="kpi-explorer" aria-label="KPI explorer">
+  return <section className="kpi-explorer" data-audience={audience} aria-label="KPI explorer">
     <div className="kpi-controls">
-      <label>KPI<select value={measure} onChange={e=>{const next=e.target.value as KpiMeasure;setMeasure(next);if(next==='cycle'&&(kind==='donut'||kind==='gauge'))setKind('bar');apply(defaults(next));}}>{Object.entries(titles).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      <label>KPI<select value={measure} onChange={e=>{const next=e.target.value as KpiMeasure;setMeasure(next);if(next==='cycle'&&(kind==='donut'||kind==='gauge'))setKind('bar');apply(defaults(next));}}>{measures[audience].map(value=><option key={value} value={value}>{titles[value]}</option>)}</select></label>
       <label>Visualization<select value={kind} onChange={e=>setKind(e.target.value as ChartKind)}>{Object.entries(chartNames).filter(([value])=>!cycle||!['donut','gauge'].includes(value)).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       {['bar','donut'].includes(kind)?<label>Group by<select value={group} onChange={e=>setGroup(e.target.value as Group)}>{Object.entries(groups).filter(([value])=>result?.analytics.personnelFilters||!['crews','instrumentMen'].includes(value)).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>:null}
     </div>

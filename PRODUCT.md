@@ -14,6 +14,8 @@ Construction-project survey teams submit, review, assign and trace survey work r
 
 The owner confirmed a read-only Sabine Historical closeout review: all-history dashboard, coordinated filters, chart drill-downs and compact searchable requests. Leave imported records and lifecycle status unchanged. Preserve server-enforced tenant/project/role/company visibility. Use bounded request pages and database aggregates rather than downloading all records. Existing architecture and approved workflow requirements in docs remain authoritative.
 
+Requester My Requests and field Crew Work expose the shared KPI explorer on demand, with audience-appropriate measures and default views. Chart populations and personnel controls remain server-scoped; ordinary page visits do not fetch analytics.
+
 ## Brand commitments
 
 Follow the supplied Axiom Brand Guide and the existing Live simulation display standards. DESIGN.md records that implemented identity. Favor compact navigation, expandable rows and selectable page sizes.
