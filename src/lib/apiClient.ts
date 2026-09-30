@@ -97,6 +97,12 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
 }
 
 export const apiClient = {
+  getSurveyStaffing(projectId: string, partyChiefId: string, query: import('@/modules/tenancy/application/read-survey-staffing').StaffingReadQuery): Promise<{ staffing: import('@/modules/tenancy/application/read-survey-staffing').SurveyStaffingDetail }> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { partyChiefId, ...query }));
+  },
+  saveSurveyStaffing(projectId: string, input: import('@/modules/tenancy/application/save-survey-staffing').SurveyStaffingInput, idempotencyKey: string): Promise<{ success: boolean; changed: boolean }> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { method: 'POST', body: input, headers: { 'Idempotency-Key': idempotencyKey } });
+  },
   getTeamContext(projectId: string): Promise<{ project: import('@/modules/tenancy/application/survey-teams').TeamProjectContext }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { mode: 'context' }));
   },

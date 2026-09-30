@@ -6,6 +6,7 @@ import { getProjectRole } from '../../src/lib/get-project-role';
 import { SurveyStaffingPgRepository } from '../../src/modules/tenancy/infrastructure/survey-staffing.repository';
 import { handleGetSurveyStaffing, type StaffingDeps } from '../../src/app/api/projects/[projectId]/survey/staffing/handler';
 import type { DbClient, UUID } from '../../src/shared/types';
+import { executeIdempotentHttpMutation } from '../../src/lib/idempotency';
 
 // Run survey-teams-postgres.ts first on its fresh fixture. Never target Sabine.
 const id=(n:number)=>`20000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
@@ -26,7 +27,7 @@ async function main(){
     assert.equal((await pool.query('SELECT session_version FROM users WHERE id=$1',[manager])).rows[0]?.session_version,2);
     assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM users WHERE id=$1',[id(1000)])).rows[0].count,0,'Fresh base fixture required; do not rerun on populated staffing fixture');
     const repo=new SurveyStaffingPgRepository();
-    const deps:StaffingDeps={repo,getProjectRole,withTransaction:transaction,requireAuth:(req:NextRequest)=>requireActiveAuth(req,pool)};
+    const deps:StaffingDeps={repo,getProjectRole,withTransaction:transaction,requireAuth:(req:NextRequest)=>requireActiveAuth(req,pool),executeIdempotent:executeIdempotentHttpMutation};
     const ctx={params:Promise.resolve({projectId:project})},token=signToken(manager,tenant,2);
     const request=(query='',bearer=token)=>new NextRequest(`http://localhost/api/projects/${project}/survey/staffing?partyChiefId=${chief}${query}`,{headers:{cookie:`swr_session=${bearer}`}});
     const call=async(query='',expected=200,bearer=token,context=ctx)=>{

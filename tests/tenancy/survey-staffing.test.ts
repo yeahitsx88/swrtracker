@@ -8,7 +8,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}` as UUID;
 const tenantId = id(1), projectId = id(2), actorId = id(3), chiefId = id(4), areaId = id(5), superintendentId = id(6), instrumentManId = id(7);
 const db = {} as DbClient;
-const input = () => ({ partyChiefId: chiefId, areaId, superintendentId, instrumentManIds: [instrumentManId], confirmRoleChanges: true });
+const input = () => ({ expectedSnapshot: 'a'.repeat(32), partyChiefId: chiefId, areaId, superintendentId, instrumentManIds: [instrumentManId], confirmRoleChanges: true });
 
 function fixture() {
   const writes: string[] = [];
@@ -18,6 +18,7 @@ function fixture() {
   let link = false;
   let covered = true;
   const repo: SurveyStaffingRepository = {
+    lockManager: async () => true, snapshot: async () => 'a'.repeat(32), lockSubjects: async () => {},
     lockProject: async () => ({ status: 'ACTIVE', crewBuild: 'FULL' }),
     member: async (_db, _tenant, _project, userId) => roles.has(userId) ? { userId, role: roles.get(userId)! } : null,
     activeArea: async () => true,
@@ -30,7 +31,7 @@ function fixture() {
     addInstrumentMan: async () => { rosterChief = chiefId; writes.push('roster'); },
     record: async () => { writes.push('audit'); },
   };
-  const save = (actorRole: ProjectRole = 'SURVEY_MANAGER') => saveSurveyStaffing(repo, db, { tenantId, projectId, actorId, actorRole, input: input() });
+  const save = (actorRole: ProjectRole = 'SURVEY_MANAGER') => saveSurveyStaffing(repo, db, { tenantId, projectId, actorId, actorRole, sessionVersion: 1, input: input() });
   return { repo, roles, areas, writes, save, setCovered: (value: boolean) => { covered = value; }, setRosterChief: (value: UUID) => { rosterChief = value; } };
 }
 
@@ -64,7 +65,7 @@ test('selected people must already be project members with compatible roles', as
 test('replacement of existing project roles requires an explicit confirmation', async () => {
   const f = fixture();
   await assert.rejects(saveSurveyStaffing(f.repo, db, {
-    tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', input: { ...input(), confirmRoleChanges: false },
+    tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', sessionVersion: 1, input: { ...input(), confirmRoleChanges: false },
   }), ValidationError);
   assert.deepEqual(f.writes, []);
 });
@@ -82,7 +83,7 @@ test('Manager assignment changes only fixed roles and records one atomic staffin
 test('Full builds require an explicit Superintendent; Medium builds reject one', async () => {
   const f = fixture();
   await assert.rejects(saveSurveyStaffing(f.repo, db, {
-    tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', input: { ...input(), superintendentId: null },
+    tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', sessionVersion: 1, input: { ...input(), superintendentId: null },
   }), ValidationError);
   const original = f.repo.lockProject;
   f.repo.lockProject = async () => ({ status: 'ACTIVE', crewBuild: 'MEDIUM' });

@@ -5,11 +5,12 @@ import { readSurveyStaffing, type SurveyStaffingDetail, type SurveyStaffingReadR
 import { SurveyStaffingPgRepository } from '@/modules/tenancy/infrastructure/survey-staffing.repository';
 import { handleGetSurveyStaffing, type StaffingDeps } from '@/app/api/projects/[projectId]/survey/staffing/handler';
 import type { DbClient, UUID } from '@/shared/types';
+import { executeIdempotentHttpMutation } from '@/lib/idempotency';
 
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
 const tenantId=id(1),projectId=id(2),partyChiefId=id(3),actorId=id(4);
 const query={search:'',limit:10,offset:0};
-const detail:SurveyStaffingDetail={partyChief:{userId:partyChiefId,name:'Chief',email:'chief@example.test',role:'PARTY_CHIEF',active:true},
+const detail:SurveyStaffingDetail={snapshotToken:'a'.repeat(32),partyChief:{userId:partyChiefId,name:'Chief',email:'chief@example.test',role:'PARTY_CHIEF',active:true},
   reporting:null,areas:{data:[],total:0,limit:100,truncated:false},instrumentMen:{data:[],total:0,limit:10,offset:0},instrumentManTotal:0};
 const db={} as DbClient;
 const params={tenantId,projectId,partyChiefId,actorRole:'SURVEY_MANAGER' as const,query};
@@ -41,7 +42,7 @@ test('staffing snapshot SQL bounds related populations and never infers from nam
     assert.ok(sql.includes('rl.tenant_id=$1 AND rl.project_id=$2'));assert.ok(sql.includes('rl.deactivated_at IS NULL'));
     assert.ok(sql.includes('aa.deactivated_at IS NULL'));assert.ok(sql.includes('LIMIT 100'));
     assert.ok(sql.includes('LIMIT $5 OFFSET $6'));assert.ok(sql.includes("'truncated'"));
-    assert.ok(!/FOR UPDATE|survey_team|\btickets\b/.test(sql));
+    assert.ok(!/FOR UPDATE|survey_team|\btickets\b/.test(sql)); assert.ok(sql.includes('snapshot.token'));
     return {rows:[{staffing:detail}] as T[]};}};
   assert.deepEqual(await new SurveyStaffingPgRepository().readStaffing(database,tenantId,projectId,partyChiefId,{search:'needle',limit:25,offset:50}),detail);
   assert.equal(calls,1);
@@ -51,6 +52,7 @@ function fixture(actorRole:'SURVEY_MANAGER'|'PARTY_CHIEF'='SURVEY_MANAGER'){
   let reads=0,authorizations=0;
   const repo=new SurveyStaffingPgRepository();repo.readStaffing=async()=>{reads++;return detail;};
   const deps:StaffingDeps={repo,requireAuth:()=>({userId:actorId,tenantId,sessionVersion:1}),
+    executeIdempotent:executeIdempotentHttpMutation,
     getProjectRole:async()=>{authorizations++;return actorRole;},withTransaction:async fn=>fn(db)};
   const ctx={params:Promise.resolve({projectId})};
   const request=(suffix='')=>new NextRequest(`http://localhost/api/projects/${projectId}/survey/staffing?partyChiefId=${partyChiefId}${suffix}`);

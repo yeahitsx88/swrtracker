@@ -8,6 +8,7 @@ export interface StaffingPerson {
 export interface StaffingArea { id: UUID; name: string; retired: boolean }
 export interface StaffingReadQuery { search: string; limit: number; offset: number }
 export interface SurveyStaffingDetail {
+  snapshotToken: string;
   partyChief: StaffingPerson;
   reporting: { id: UUID; superintendent: StaffingPerson; area: StaffingArea; assignedAt: string } | null;
   areas: { data: StaffingArea[]; total: number; limit: number; truncated: boolean };

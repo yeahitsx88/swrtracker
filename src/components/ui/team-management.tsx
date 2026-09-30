@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { apiClient } from '@/lib/apiClient';
-import { getErrorMessage } from '@/lib/errors';
+import { ApiClientError, getErrorMessage } from '@/lib/errors';
 import type { Page, UUID } from '@/shared/types';
 import type { TeamArea, TeamPersonnel, TeamPerson, TeamProjectContext, SurveyTeamDetail, SurveyTeamSummary } from '@/modules/tenancy/application/survey-teams';
 import type { ManagedSurveyRole } from '@/modules/tenancy/application/change-survey-role';
+import type { SurveyStaffingDetail } from '@/modules/tenancy/application/read-survey-staffing';
 import { addTeamSelection, canEditSurveyRole, removeTeamSelection, roleLabel, supportedTeamRoles } from '@/lib/team-management-view';
 import { Button, ErrorBanner, SuccessBanner } from '@/components/ui';
 import { PaginationControls } from '@/components/forms';
@@ -40,7 +41,7 @@ function useTeamPage<T extends TeamPersonnel | SurveyTeamSummary | TeamArea>(pro
     search: (event: FormEvent) => { event.preventDefault(); setSearch(draft.trim()); setOffset(0); setRetry(value => value + 1); },
     resize: (value: number) => { setLimit(value); setOffset(0); }, retry: () => setRetry(value => value + 1) };
 }
-type PageControls = ReturnType<typeof useTeamPage>;
+type PageControls = Omit<ReturnType<typeof useTeamPage>, 'data'> & { data: { total: number } | null };
 function SearchControls({ page, label, disabled = false }: { page: PageControls; label: string; disabled?: boolean }) {
   return <form className="tm-search" onSubmit={page.search}>
     <label className="field tm-search-text"><span className="field-label">{label}</span><input className="input" maxLength={120} value={page.draft} onChange={event => page.setDraft(event.target.value)} disabled={disabled} /></label>
@@ -58,17 +59,18 @@ function PageFooter({ page }: { page: PageControls }) {
 /** Retry the same command with the same key after an uncertain response. */
 function useTeamCommand() {
   const [busy,setBusy] = useState(false), [error,setError] = useState<string | null>(null);
+  const [failure,setFailure] = useState<ApiClientError | null>(null);
   const running = useRef(false), attempt = useRef<{ fingerprint: string; key: string } | null>(null);
   async function run(kind: string, payload: unknown, execute: (key: string) => Promise<unknown>, done: () => void) {
     if (running.current) return;
     const fingerprint = JSON.stringify([kind,payload]);
     if (attempt.current?.fingerprint !== fingerprint) attempt.current = { fingerprint, key: crypto.randomUUID() };
-    running.current = true; setBusy(true); setError(null);
+    running.current = true; setBusy(true); setError(null); setFailure(null);
     try { await execute(attempt.current.key); attempt.current = null; done(); }
-    catch (err) { setError(getErrorMessage(err, 'Unable to save. Retry without changing the form, or reload current data.')); }
+    catch (err) { setFailure(err instanceof ApiClientError ? err : null); setError(getErrorMessage(err, 'Unable to save. Retry without changing the form, or reload current data.')); }
     finally { running.current = false; setBusy(false); }
   }
-  return { busy,error,run };
+  return { busy,error,failure,run,reset: () => { if (!running.current) { setError(null); setFailure(null); attempt.current = null; } } };
 }
 function RoleEditor({ projectId, person, project, cancel, saved }: { projectId: string; person: TeamPersonnel; project: TeamProjectContext; cancel: () => void; saved: () => void }) {
   const roles = [...supportedTeamRoles(project.crewBuild),'REQUESTER'] as ManagedSurveyRole[];
@@ -147,9 +149,85 @@ function ClosedTeamDetail({ team, back }: { team: SurveyTeamDetail; back: () => 
   </div>;
 }
 
+function StaffingEditor({ projectId, person, project, cancel, saved }: { projectId: string; person: TeamPersonnel; project: TeamProjectContext; cancel: () => void; saved: () => void }) {
+  const [detail,setDetail] = useState<SurveyStaffingDetail | null>(null), [baseline,setBaseline] = useState<SurveyStaffingDetail | null>(null);
+  const [loading,setLoading] = useState(false), [error,setError] = useState<string | null>(null), [revision,setRevision] = useState(0);
+  const [search,setSearch] = useState(''), [draft,setDraft] = useState(''), [limit,setLimit] = useState(10), [offset,setOffset] = useState(0);
+  const [area,setArea] = useState<TeamArea | null>(null), [superintendent,setSuperintendent] = useState<{ userId: UUID; name: string } | null>(null);
+  const [selected,setSelected] = useState<TeamPersonnel[]>([]), [confirmed,setConfirmed] = useState(false);
+  const [picker,setPicker] = useState<'area' | 'superintendent' | 'instrument' | null>(null), [rosterOpen,setRosterOpen] = useState(false);
+  const initialized = useRef(false), command = useTeamCommand(), editorHeading = useEditorHeadingFocus();
+  const readOnly = project.status === 'ARCHIVED';
+  const areas = useTeamPage<TeamArea>(projectId,'areas',!readOnly && picker === 'area',revision);
+  const candidates = useTeamPage<TeamPersonnel>(projectId,'personnel',!readOnly && (picker === 'superintendent' || picker === 'instrument'),revision);
+  useEffect(() => {
+    let active = true; setLoading(true); setError(null); setDetail(null);
+    apiClient.getSurveyStaffing(projectId,person.userId,{search,limit,offset}).then(({staffing}) => {
+      if (!active) return;
+      if (offset > 0 && offset >= staffing.instrumentMen.total) { setOffset(Math.max(0,Math.ceil(staffing.instrumentMen.total / limit) - 1) * limit); return; }
+      setDetail(staffing);
+      if (!initialized.current) {
+        initialized.current = true; setBaseline(staffing);
+        const currentArea = staffing.areas.total === 1 ? staffing.areas.data[0] : null;
+        setArea(currentArea && !currentArea.retired ? currentArea : null);
+        const currentSuper = staffing.reporting?.superintendent;
+        setSuperintendent(currentSuper?.active && currentSuper.role === 'SURVEY_SUPERINTENDENT' ? currentSuper : null);
+      }
+    }).catch(err => { if (active) setError(getErrorMessage(err,'Unable to load staffing. Retry or return to personnel.')); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  },[projectId,person.userId,search,limit,offset,revision]);
+  const roster: PageControls = { data: detail?.instrumentMen ?? null,error,loading,draft,limit,offset,setDraft,setOffset,
+    search: event => { event.preventDefault(); setSearch(draft.trim()); setOffset(0); setRevision(value => value + 1); },
+    resize: value => { setLimit(value); setOffset(0); }, retry: () => setRevision(value => value + 1) };
+  const stale = command.failure?.code === 'STALE_STAFFING' || (!!baseline && !!detail && baseline.snapshotToken !== detail.snapshotToken);
+  const blockedAreas = !!baseline && (baseline.areas.truncated || baseline.areas.total > 1);
+  function reload() {
+    command.reset();
+    initialized.current = false; setBaseline(null); setDetail(null); setSelected([]); setArea(null); setSuperintendent(null); setConfirmed(false);
+    setDraft(''); setSearch(''); setOffset(0); setPicker(null); setRevision(value => value + 1); editorHeading.current?.focus();
+  }
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!baseline || !detail || !area || stale || blockedAreas || readOnly || loading || !confirmed) return;
+    const input = { partyChiefId: person.userId, expectedSnapshot: baseline.snapshotToken, areaId: area.id,
+      superintendentId: project.crewBuild === 'FULL' ? superintendent?.userId ?? null : null,
+      instrumentManIds: selected.map(item => item.userId).sort(), confirmRoleChanges: confirmed };
+    void command.run('staffing',input,key => apiClient.saveSurveyStaffing(projectId,input,key),saved);
+  }
+  return <div className="tm-editor stack" aria-label={`Staffing for ${person.name}`}>
+    <div className="tm-heading"><div><h3 className="panel-title" ref={editorHeading} tabIndex={-1}>Staffing for {person.name}</h3><p className="muted">{person.email}</p></div><Button type="button" variant="secondary" disabled={command.busy} onClick={cancel}>Back to personnel</Button></div>
+    <p className="muted">Explicit operational assignments, independent of named teams. {readOnly ? 'Closed project — read only.' : 'Roster saves add people; they never remove existing Instrument Men or alter request history.'}</p>
+    {baseline ? <section className="tm-section"><h4>Current assignments</h4>
+      <p><strong>Area:</strong> {baseline.areas.total === 0 ? 'No explicit Area assignment' : baseline.areas.data.map(item => `${item.name}${item.retired ? ' (retired)' : ''}`).join(', ')}{baseline.areas.truncated ? ` · Showing ${baseline.areas.data.length} of ${baseline.areas.total}` : ''}</p>
+      <p><strong>Reports to:</strong> {baseline.reporting ? `${baseline.reporting.superintendent.name} · ${baseline.reporting.area.name}${!baseline.reporting.superintendent.active ? ' · Inactive' : ''}${baseline.reporting.area.retired ? ' · Retired Area' : ''}${baseline.reporting.superintendent.role !== 'SURVEY_SUPERINTENDENT' ? ' · Role changed' : ''}` : 'No explicit Superintendent link'}</p>
+      <details className="tm-area-picker" open={rosterOpen} onToggle={event => setRosterOpen(event.currentTarget.open)}><summary>Current Instrument Men ({baseline.instrumentManTotal})</summary><div className="stack"><SearchControls page={roster} label="Search current roster" disabled={command.busy} /><PageState page={roster} empty="No current roster members match this search." /><ul className="tm-list">{detail?.instrumentMen.data.map(item => <li className="tm-person" key={item.userId}><div><strong>{item.name}</strong><span className="tm-email muted">{item.email}</span></div><div>{item.role ? roleLabel(item.role) : 'No project role'}{!item.active ? ' · Inactive' : ''}</div></li>)}</ul><PageFooter page={roster} /></div></details>
+    </section> : <PageState page={roster} empty="" />}
+    {baseline && error && !rosterOpen ? <div className="stack"><ErrorBanner message={error} /><Button type="button" variant="secondary" onClick={roster.retry}>Retry staffing read</Button></div> : null}
+    {stale ? <ErrorBanner message="Project staffing changed while you were reviewing it. Reload current staffing before saving; your draft will be discarded." /> : null}
+    {blockedAreas && !readOnly ? <p role="status">This Chief has multiple Area assignments. Staffing saves cannot reassign or replace them. Use a separate authorized Area-reassignment workflow.</p> : null}
+    {baseline && !readOnly && !blockedAreas ? <>
+      <section className="tm-section"><h4>Proposed assignments</h4><p className="muted">Area: <strong>{area?.name ?? 'Select an active Area'}</strong>{project.crewBuild === 'FULL' ? <> · Superintendent: <strong>{superintendent?.name ?? 'Select a Superintendent'}</strong></> : null}</p>
+        <p className="muted">Choosing a Superintendent replaces the current reporting link. The server checks their Area authority. A different existing Chief Area cannot be reassigned here.</p>
+        <div className="row"><Button type="button" variant="secondary" disabled={command.busy} aria-expanded={picker === 'area'} id="tm-select-staffing-area" aria-controls={picker === 'area' ? 'tm-staffing-area' : undefined} onClick={() => setPicker(picker === 'area' ? null : 'area')}>Select Area</Button>{project.crewBuild === 'FULL' ? <Button type="button" variant="secondary" disabled={command.busy} aria-expanded={picker === 'superintendent'} id="tm-select-staffing-superintendent" aria-controls={picker === 'superintendent' ? 'tm-staffing-people' : undefined} onClick={() => setPicker(picker === 'superintendent' ? null : 'superintendent')}>Select Superintendent</Button> : null}<Button type="button" variant="secondary" disabled={command.busy} aria-expanded={picker === 'instrument'} aria-controls={picker === 'instrument' ? 'tm-staffing-people' : undefined} onClick={() => setPicker(picker === 'instrument' ? null : 'instrument')}>Add Instrument Men</Button></div>
+        {picker === 'area' ? <div id="tm-staffing-area" className="stack"><SearchControls page={areas} label="Search active Areas" disabled={command.busy} /><PageState page={areas} empty="No active Areas match. IT manages Area setup." /><div className="tm-area-options">{areas.data?.data.map(item => <Button key={item.id} type="button" variant="secondary" disabled={command.busy} aria-pressed={area?.id === item.id} onClick={() => { setArea(item); setConfirmed(false); setPicker(null); document.getElementById('tm-select-staffing-area')?.focus(); }}>{item.name}</Button>)}</div><PageFooter page={areas} /></div> : null}
+        {picker === 'instrument' || picker === 'superintendent' ? <div id="tm-staffing-people" className="stack"><SearchControls page={candidates} label="Search project name, email or role" disabled={command.busy} /><PageState page={candidates} empty="No project personnel match. Try a name or role; IT manages membership." /><p className="muted">{picker === 'superintendent' ? 'Only active Survey Superintendents can be selected.' : 'Choose active Instrument Men, Requesters or Viewers. A person already linked to another Chief cannot be added; the server verifies this on save.'}</p><ul className="tm-list">{candidates.data?.data.map(item => {
+          const picked = selected.some(value => value.userId === item.userId);
+          const eligible = item.active && (picker === 'superintendent' ? item.role === 'SURVEY_SUPERINTENDENT' : ['INSTRUMENT_MAN','REQUESTER','VIEWER'].includes(item.role));
+          const current = detail?.instrumentMen.data.some(value => value.userId === item.userId);
+          return <li className="tm-person" key={item.userId}><div><strong>{item.name}</strong><span className="tm-email muted">{item.email}</span></div><div>{roleLabel(item.role)}{picker === 'instrument' && current ? <span className="tm-email muted">Already in this roster</span> : null}</div><Button type="button" variant="secondary" aria-label={`${picker === 'superintendent' ? 'Select Superintendent' : 'Add Instrument Man'} ${item.name}`} disabled={command.busy || !eligible || (picker === 'instrument' && (picked || current || selected.length >= 100))} onClick={() => { setConfirmed(false); if (picker === 'superintendent') { setSuperintendent(item); setPicker(null); document.getElementById('tm-select-staffing-superintendent')?.focus(); } else setSelected(previous => [...previous,item]); }}>{picker === 'superintendent' ? 'Select' : picked ? 'Selected' : current ? 'Linked' : 'Add'}</Button></li>;
+        })}</ul><PageFooter page={candidates} /></div> : null}
+      </section>
+      <section className="tm-section"><h4>Instrument Man additions ({selected.length}/100)</h4>{selected.length === 0 ? <p className="muted">None selected. Existing roster members stay assigned.</p> : <ul className="tm-selected">{selected.map(item => <li key={item.userId}><span><strong>{item.name}</strong><span className="tm-email muted">{roleLabel(item.role)}{item.role !== 'INSTRUMENT_MAN' ? ' → Instrument Man · must sign in again' : ''}</span></span><Button type="button" variant="secondary" aria-label={`Remove addition ${item.name}`} disabled={command.busy} onClick={() => { setSelected(previous => previous.filter(value => value.userId !== item.userId)); setConfirmed(false); }}>Remove addition</Button></li>)}</ul>}</section>
+      <form onSubmit={submit} className="stack"><label className="tm-check"><input type="checkbox" checked={confirmed} disabled={command.busy} onChange={event => setConfirmed(event.target.checked)} /><span>I confirm the explicit assignments and any role replacements. Promoted personnel must sign in again.</span></label>{command.error && !stale ? <ErrorBanner message={command.error} /> : null}<div className="row"><Button type="submit" disabled={command.busy || loading || !!error || !detail || stale || !area || !confirmed || (project.crewBuild === 'FULL' && !superintendent)}>{command.busy ? 'Saving…' : 'Save staffing additions'}</Button><Button type="button" variant="secondary" disabled={command.busy} onClick={reload}>Reload current staffing</Button></div><p className="muted">After an uncertain response, retry the unchanged form. Reload discards your draft and reads the latest assignments.</p></form>
+    </> : baseline && !readOnly ? <Button type="button" variant="secondary" onClick={reload}>Reload current staffing</Button> : null}
+  </div>;
+}
+
 export function TeamManagement({ projectId }: { projectId: string }) {
   const [project,setProject] = useState<TeamProjectContext | null>(null), [contextError,setContextError] = useState<string | null>(null), [revision,setRevision] = useState(0);
   const [tab,setTab] = useState<'personnel' | 'teams'>('personnel');
+  const [staffingPerson,setStaffingPerson] = useState<TeamPersonnel | null>(null);
   const [person,setPerson] = useState<TeamPersonnel | null>(null), [editor,setEditor] = useState<{ team: SurveyTeamDetail | null } | null>(null);
   const [detailBusy,setDetailBusy] = useState(false), [detailError,setDetailError] = useState<string | null>(null), [success,setSuccess] = useState<string | null>(null);
   const detailRequest = useRef(0), heading = useRef<HTMLHeadingElement>(null);
@@ -158,17 +236,17 @@ export function TeamManagement({ projectId }: { projectId: string }) {
     apiClient.getTeamContext(projectId).then(result => { if (active) setProject(result.project); }).catch(err => { if (active) setContextError(getErrorMessage(err,'Unable to open Team Management. Sign in with a current project Survey Manager account.')); });
     return () => { active = false; detailRequest.current++; };
   }, [projectId,revision]);
-  const people = useTeamPage<TeamPersonnel>(projectId,'personnel',!!project && tab === 'personnel' && !person,revision);
+  const people = useTeamPage<TeamPersonnel>(projectId,'personnel',!!project && tab === 'personnel' && !person && !staffingPerson,revision);
   const teams = useTeamPage<SurveyTeamSummary>(projectId,'teams',!!project && tab === 'teams' && !editor,revision);
   const readOnly = project?.status === 'ARCHIVED';
-  function refresh(message?: string) { setPerson(null); setEditor(null); setDetailError(null); setRevision(value => value + 1); if (message) setSuccess(message); heading.current?.focus(); }
+  function refresh(message?: string) { setStaffingPerson(null); setPerson(null); setEditor(null); setDetailError(null); setRevision(value => value + 1); if (message) setSuccess(message); heading.current?.focus(); }
   async function openTeam(teamId: string) {
     const request = ++detailRequest.current; setDetailBusy(true); setDetailError(null); setSuccess(null);
     try { const result = await apiClient.getSurveyTeam(projectId,teamId); if (request === detailRequest.current) setEditor({ team: result.team }); }
     catch (err) { if (request === detailRequest.current) setDetailError(getErrorMessage(err,'Unable to load current team details. Retry View team.')); }
     finally { if (request === detailRequest.current) setDetailBusy(false); }
   }
-  function switchTab(next: typeof tab) { detailRequest.current++; setDetailBusy(false); setTab(next); setPerson(null); setEditor(null); setSuccess(null); setDetailError(null); }
+  function switchTab(next: typeof tab) { detailRequest.current++; setDetailBusy(false); setTab(next); setStaffingPerson(null); setPerson(null); setEditor(null); setSuccess(null); setDetailError(null); }
   function tabKey(event: KeyboardEvent<HTMLButtonElement>) {
     if (!['ArrowRight','ArrowLeft','Home','End'].includes(event.key)) return;
     event.preventDefault(); const next = event.key === 'Home' ? 'personnel' : event.key === 'End' ? 'teams' : tab === 'personnel' ? 'teams' : 'personnel';
@@ -179,11 +257,11 @@ export function TeamManagement({ projectId }: { projectId: string }) {
     {!project && !contextError ? <p role="status" className="muted">Checking project access…</p> : null}
     {contextError ? <div className="stack"><ErrorBanner message={contextError} /><Button type="button" variant="secondary" onClick={() => refresh()}>Retry project access</Button></div> : null}
     {project ? <>
-      <div className="tm-tabs" role="tablist" aria-label="Team Management views">{(['personnel','teams'] as const).map(value => <button type="button" role="tab" className="tm-tab" key={value} id={`tm-tab-${value}`} aria-selected={tab === value} aria-controls={`tm-panel-${value}`} tabIndex={tab === value ? 0 : -1} disabled={!!person || !!editor} onKeyDown={tabKey} onClick={() => switchTab(value)}>{value === 'personnel' ? 'Personnel' : 'Teams'}</button>)}</div>
+      <div className="tm-tabs" role="tablist" aria-label="Team Management views">{(['personnel','teams'] as const).map(value => <button type="button" role="tab" className="tm-tab" key={value} id={`tm-tab-${value}`} aria-selected={tab === value} aria-controls={`tm-panel-${value}`} tabIndex={tab === value ? 0 : -1} disabled={!!person || !!editor || !!staffingPerson} onKeyDown={tabKey} onClick={() => switchTab(value)}>{value === 'personnel' ? 'Personnel' : 'Teams'}</button>)}</div>
       <p className="muted tm-scope">{project.crewBuild === 'FULL' ? 'Full' : project.crewBuild === 'MEDIUM' ? 'Medium' : 'Slim'} crew build · One active named team per person{readOnly ? ' · Closed project — read only' : ''}</p>
       {success ? <SuccessBanner message={success} /> : null}{detailError ? <ErrorBanner message={detailError} /> : null}
       <div role="tabpanel" id={`tm-panel-${tab}`} aria-labelledby={`tm-tab-${tab}`}>
-        {tab === 'personnel' ? person ? <RoleEditor key={person.userId} projectId={projectId} person={person} project={project} cancel={() => refresh()} saved={() => refresh('Project role saved. The person must sign in again.')} /> : <div className="stack"><SearchControls page={people} label="Search name, email or role" /><PageState page={people} empty="No personnel match. Try another search; IT manages project membership and invitations." /><ul className="tm-list">{people.data?.data.map(item => <li className="tm-person" key={item.userId}><div><strong>{item.name}</strong><span className="tm-email muted">{item.email}</span></div><div><span>{roleLabel(item.role)}</span><span className="tm-email muted">{item.teamName ? `Team: ${item.teamName}` : supportedTeamRoles(project.crewBuild).includes(item.role) ? 'Available for a team' : 'No named team'}</span></div><Button type="button" variant="secondary" aria-label={`Change role for ${item.name}`} disabled={readOnly || !canEditSurveyRole(item.role)} onClick={() => { setPerson(item); setSuccess(null); }}>Change role</Button></li>)}</ul><PageFooter page={people} /></div> : editor && readOnly && editor.team ? <ClosedTeamDetail team={editor.team} back={() => refresh()} /> : editor ? <TeamEditor key={editor.team?.id ?? 'new'} projectId={projectId} project={project} initial={editor.team} cancel={() => refresh()} saved={() => refresh('Team changes saved. Operational authority and request history are unchanged.')} /> : <div className="stack"><div className="tm-heading"><p className="muted">Named groups with a project Area, member lead and selected survey personnel.</p><Button type="button" disabled={readOnly || detailBusy} onClick={() => { setEditor({ team: null }); setSuccess(null); }}>Create team</Button></div><SearchControls page={teams} label="Search team name or Area" /><PageState page={teams} empty="No teams match. Create a team from existing survey personnel, or change the search." />{detailBusy ? <p role="status" className="muted">Loading current team details…</p> : null}<ul className="tm-list">{teams.data?.data.map(item => <li className="tm-person" key={item.id}><div><strong>{item.name}</strong><span className="tm-email muted">{item.areaName} · {item.memberCount} members</span></div><div><span>{item.lead.name}</span><span className="tm-email muted">Team lead · {roleLabel(item.lead.role)}</span></div><Button type="button" variant="secondary" disabled={detailBusy} onClick={() => void openTeam(item.id)}>{readOnly ? 'View team' : 'View / edit team'}</Button></li>)}</ul><PageFooter page={teams} /></div>}
+        {tab === 'personnel' ? staffingPerson ? <StaffingEditor key={staffingPerson.userId} projectId={projectId} person={staffingPerson} project={project} cancel={() => refresh()} saved={() => refresh('Staffing saved. Existing roster members and request history are retained.')} /> : person ? <RoleEditor key={person.userId} projectId={projectId} person={person} project={project} cancel={() => refresh()} saved={() => refresh('Project role saved. The person must sign in again.')} /> : <div className="stack"><SearchControls page={people} label="Search name, email or role" /><PageState page={people} empty="No personnel match. Try another search; IT manages project membership and invitations." /><ul className="tm-list">{people.data?.data.map(item => <li className="tm-person" key={item.userId}><div><strong>{item.name}</strong><span className="tm-email muted">{item.email}</span></div><div><span>{roleLabel(item.role)}</span><span className="tm-email muted">{item.teamName ? `Team: ${item.teamName}` : supportedTeamRoles(project.crewBuild).includes(item.role) ? 'Available for a team' : 'No named team'}</span></div><div className="tm-person-actions">{item.role === 'PARTY_CHIEF' && project.crewBuild !== 'SLIM' ? <Button type="button" variant="secondary" aria-label={`Staffing for ${item.name}`} disabled={!item.active} onClick={() => { setStaffingPerson(item); setSuccess(null); }}>Staffing</Button> : null}<Button type="button" variant="secondary" aria-label={`Change role for ${item.name}`} disabled={readOnly || !canEditSurveyRole(item.role)} onClick={() => { setPerson(item); setSuccess(null); }}>Change role</Button></div></li>)}</ul><PageFooter page={people} /></div> : editor && readOnly && editor.team ? <ClosedTeamDetail team={editor.team} back={() => refresh()} /> : editor ? <TeamEditor key={editor.team?.id ?? 'new'} projectId={projectId} project={project} initial={editor.team} cancel={() => refresh()} saved={() => refresh('Team changes saved. Operational authority and request history are unchanged.')} /> : <div className="stack"><div className="tm-heading"><p className="muted">Named groups with a project Area, member lead and selected survey personnel.</p><Button type="button" disabled={readOnly || detailBusy} onClick={() => { setEditor({ team: null }); setSuccess(null); }}>Create team</Button></div><SearchControls page={teams} label="Search team name or Area" /><PageState page={teams} empty="No teams match. Create a team from existing survey personnel, or change the search." />{detailBusy ? <p role="status" className="muted">Loading current team details…</p> : null}<ul className="tm-list">{teams.data?.data.map(item => <li className="tm-person" key={item.id}><div><strong>{item.name}</strong><span className="tm-email muted">{item.areaName} · {item.memberCount} members</span></div><div><span>{item.lead.name}</span><span className="tm-email muted">Team lead · {roleLabel(item.lead.role)}</span></div><Button type="button" variant="secondary" disabled={detailBusy} onClick={() => void openTeam(item.id)}>{readOnly ? 'View team' : 'View / edit team'}</Button></li>)}</ul><PageFooter page={teams} /></div>}
       </div>
     </> : null}
   </section>;
