@@ -26,4 +26,4 @@ Anonymized source exports underpin the historical simulation. Attachments and or
 
 ## Open decisions
 
-Individual Superintendent-to-Party-Chief mappings and manager-led account invitation authority remain unresolved. Do not infer them from Area overlap or historical ticket snapshots.
+Superintendent dashboard crew scope requires an explicit Manager-assigned Superintendent-to-Party-Chief link intersected with the Superintendent's authorized Areas; never infer the link from Area overlap or historical ticket snapshots. The individual assignments and manager-led account invitation authority remain unresolved.

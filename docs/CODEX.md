@@ -2671,3 +2671,11 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Scope deviation: Requester UI and its directly tied Ticket test changed; no production domain, API route, migration, state transition or audit event changed.
 - Known gaps: separate Survey Authority dashboard/staffing decisions and full-objective acceptance remain pending.
 - Production behavior changed: yes, Drafts count/page now match the server-filtered DRAFT population.
+
+### 2026-09-30 — Batch 41 (Superintendent crew-scope decision)
+- Intent: record the owner's authorization decision before changing Survey Authority dashboard or staffing code.
+- Files touched: PRODUCT.md, KPI_PERFORMANCE_PROGRESS.md and this append-only log.
+- Decision: Superintendent dashboard crew scope requires an explicit Manager-assigned Superintendent → Party Chief relationship intersected with authorized Areas; Area overlap or historical ticket assignment is insufficient evidence.
+- Validation: documentation-only change; TypeScript passes and native Windows tests remain 288/289 with the same documented attachment permission-mode failure.
+- Known gaps: individual links, unassigned-work population, and whether CLAUDE.md §15 may be amended to allow the requested Survey Team staffing UI remain unresolved. No relationship table, API, menu, role grant or metric scope changed.
+- Production behavior changed: no.

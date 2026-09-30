@@ -91,7 +91,9 @@ Two questions have been put to the owner: whether to introduce explicit supervis
 
 Owner clarification (Decision 11): Sabine follows Survey Manager → Survey Superintendent → Party Chief → Instrument Man. This confirms a real reporting chain rather than assuming Area overlap constitutes crew supervision. The dataset is incomplete evidence for individual reporting relationships. Preserve existing rosters and Area boundaries; retain missing Superintendent/Party Chief mappings explicitly. The clarification does not yet settle the separate unassigned-work population question or grant broader workflow permissions.
 
-- [ ] Confirm authority-to-crew and unassigned-work population rules without overwriting the existing Area-delegated review decision.
+Owner clarification (Decision 12): a Superintendent dashboard may include a crew only through an explicit Manager-assigned Superintendent → Party Chief link **and** within the Superintendent's authorized Areas. Area overlap alone does not establish crew ownership. Individual Sabine links are still unprovided; do not synthesize them from imported requests. The unassigned-work population and the proposed staffing UI's conflict with the current CLAUDE.md §15 deferral remain pending owner decisions.
+
+- [ ] Confirm the unassigned-work population and how to persist the now-confirmed explicit Superintendent → Party Chief link without overwriting the existing Area-delegated review decision.
 - [ ] Establish server-derived landing capability; verify Survey Authorities receive the overview and other roles retain their current destinations.
 - [ ] Build a coherent Axiom management overview from the shared charts/aggregates, with coordinated defaults and no initial detail-dataset download.
 - [ ] Verify dashboard-to-request drill-down population equality, unauthorized crew/Area rejection, multi-crew/date combinations, mobile layout, and supported/deferred metric definitions.
