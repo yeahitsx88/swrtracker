@@ -808,7 +808,7 @@ Each project has a crew roster. Survey Manager manages Superintendent AOR assign
 - One Party Chief may have multiple Instrument Men
 - An Instrument Man is assigned to exactly one Party Chief per project
 - Reassignment of Instrument Man to a different Party Chief is audit logged as `crew.roster_changed`
-- **General-purpose roster admin UI: parked.** The owner has approved a narrow fixed-role Survey Manager staffing workflow for Party Chiefs, Areas and Instrument Men. Account invitation/creation authority remains a separate decision.
+- **General-purpose roster admin UI: parked.** The owner has approved a narrow fixed-role Survey Manager staffing workflow for Party Chiefs, Areas and Instrument Men. This workflow may select existing project members only; account invitations remain IT-admin controlled.
 
 ### Ticket Assignment
 

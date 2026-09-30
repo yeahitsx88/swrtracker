@@ -2705,3 +2705,12 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Validation: TypeScript and production build pass; drilldown helper 2/2; native Windows tests 294/295 with only the pre-existing Unix attachment-mode mismatch. Mocked desktop/mobile browser acceptance verifies no overflow/JS error, no initial ticket-page fetch, date-only activity refetch, and request-list drilldown. Independent Impeccable finish review: Pass, no material blocker.
 - Known gaps: the browser used mocked API payloads; real PostgreSQL/HTTP activity execution and performance evidence await a container/database runtime. Manager staffing and explicit Superintendent reporting links remain unimplemented; unassigned-work policy is awaiting owner direction.
 - Production behavior changed: yes, Manager overview and read-only Project Review tab deep link; no role grant, ticket state, imported record, or project lifecycle changed.
+
+### 2026-09-30 — Batch 46 (fixed-role Survey staffing foundation)
+- Intent: IMPLEMENTER in Tenancy; lay the explicit, audited Manager staffing transaction without extending account invitations or general admin role editing.
+- Files touched: migration 024, Tenancy staffing use case/repository, manager-only Survey staffing API route, focused tests, PRODUCT.md, CLAUDE.md, LEAD_DECISION_LOG.md, KPI_PERFORMANCE_PROGRESS.md and this log.
+- Owner decision: the Manager may select existing project members only; IT retains account invitation authority. Compatible role replacement requires explicit confirmation.
+- Behavior added: atomic Manager-only Party Chief/Area/Superintendent/Instrument Man assignment, Full/Medium/Slim build validation, explicit Superintendent Area-coverage check, conflicting crew/Area rejection, affected-user session invalidation and an append-only project staffing event. The new reporting-link table is not yet consumed by Superintendent analytics.
+- Validation: focused staffing tests 7/7 and TypeScript pass. PostgreSQL migration/API execution and live authorization/performance checks are pending a database runtime; no UI acceptance claim is made for this batch.
+- Known gaps: Manager-facing staffing form/menu, read path, explicit Superintendent personnel metric intersection, unassigned-work policy and full acceptance remain open.
+- Production behavior changed: yes, a new narrowly authorized API write endpoint and migration; no ticket state or imported record was changed.
