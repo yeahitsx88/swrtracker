@@ -8,7 +8,7 @@
 
 **Tech Stack:** Existing Next.js15, React19, TypeScript5, PostgreSQL15, pg, node:test/tsx, pnpm and external Playwright harness. No dependency, migration or infrastructure additions.
 
-**Spec:** [Approved written specification](../specs/2026-10-01-superintendent-area-unlink-design.md), approved by the owner's "Approved" after f9560f5607f9b58345cb8ef5689446c4727fa18a; Decision30 records this stage approval. Implementation-plan review remains pending. Preserve the owner's Native execution preference.
+**Spec:** [Approved written specification](../specs/2026-10-01-superintendent-area-unlink-design.md), approved by the owner's "Approved" after f9560f5607f9b58345cb8ef5689446c4727fa18a; Decision30 records this stage approval. Decision31 approves this plan and Native execution. Task1 e03f9d2 and Task2 0c1e1b8 are freshly verified, committed and pushed; final whole-range review/completion evidence follows in CODEX Batch79.
 
 ## Global Constraints
 
@@ -183,7 +183,7 @@ The browser's complete John-to-Jason path must first use the existing explicit r
 - [x] **Step 6: complete required regressions.** Fresh full tests/nonincremental TypeScript/Windows/Linux builds, Task1 SQL/race/session/HTTP and incumbent staffing/team/workforce/reviewer browser acceptance with valid disposable prerequisites. Use fresh owned profiles where a harness requires initial state; never loosen guards or use Sabine.
 - [x] **Step 7: obtain independent final review.** Request read-only consequential review of Task2 and the whole API/UI range; reconcile findings against approved sources, TDD approved fixes and rerun appropriate/full verification. No implementation delegated or parallel shared-state edits.
 - [x] **Step 8: update actual completion evidence.** CODEX/status/audits record behavior, fresh counts/runtime, review rulings and remaining lifecycle/deployment gates. Mark plan steps only from completed evidence; do not certify full departure or hosted/device acceptance.
-- [ ] **Step 9: commit/push UI checkpoint.** Apply verification-before-completion; review/stage exact paths, commit feat: expose Manager Superintendent Area cleanup; push origin phase5:phase5, fetch/verify matching SHA,0/0,clean. Reassess the authoritative queue before another subsystem.
+- [x] **Step 9: commit/push UI checkpoint.** Apply verification-before-completion; review/stage exact paths, commit feat: expose Manager Superintendent Area cleanup; push origin phase5:phase5, fetch/verify matching SHA,0/0,clean. Reassess the authoritative queue before another subsystem.
 
 ## Disposable Verification and Checkpoint Commands
 
@@ -237,4 +237,4 @@ Coverage: spec authority/read/query/checksum to Task1 Steps1-4; exact coverage/d
 
 Self-review corrections: preserve incumbent handlers/deps and body stream via transport dispatcher; cache metadata is additive at the resource boundary. Keep uncertain-role freezing local to RoleEditor rather than changing other command consumers. Parent guards read synchronous lock refs, not only post-render props. Sibling successful commands invalidate old drafts instead of clearing stale latches or rebasing tokens. Actual existing writer incompatibility is an explicit stop condition, not permission for unapproved locking architecture.
 
-Plan prepared on clean fetched f9560f5, fresh424 tests/nonincremental TypeScript/native Windows production build pass. This is a documentation checkpoint: no new SQL/HTTP/browser/Linux result or production implementation claimed. Current owner approval closes the written spec only. Preserve Native execution; ask owner to review this concrete plan before invoking executing-plans. Broader Phase5, inactive/other protected/full multi-Area departure, retention and deployment remain separate gates.
+Historical preparation record, superseded by Decision31 and completed Task1/Task2 checkpoints above: plan prepared on clean fetched f9560f5, fresh424 tests/nonincremental TypeScript/native Windows production build pass. This is a documentation checkpoint: no new SQL/HTTP/browser/Linux result or production implementation claimed. Current owner approval closes the written spec only. Preserve Native execution; ask owner to review this concrete plan before invoking executing-plans. Broader Phase5, inactive/other protected/full multi-Area departure, retention and deployment remain separate gates.

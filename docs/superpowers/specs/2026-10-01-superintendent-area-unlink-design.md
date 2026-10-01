@@ -1,6 +1,6 @@
 # Superintendent individual Area unlink - narrow departure follow-up
 
-Status: approved written specification. On2026-10-01 the owner said "Approved" after the f9560f5607f9b58345cb8ef5689446c4727fa18a written-design checkpoint and remote-readable summary. Decision30 records this written-contract approval; Decision29 records the earlier option1 direction. The implementation plan is prepared for owner review, with the previously supplied Native execution preference preserved. No implementation, production behavior or retained staffing change is authorized from an unseen plan.
+Status: approved and implemented bounded contract. Decision30 records written-spec approval after f9560f5607f9b58345cb8ef5689446c4727fa18a; Decision31 records plan approval after deb74eff6652327bdea5ddea748b9b3d765e86b3 and Native execution. The API checkpoint e03f9d2c71b575ce94ac2dfc3d748bc08d3d8d21 and Manager UI checkpoint 0c1e1b81b715c81a010ebf2c362cdc279f61c952 are pushed and fetched equal to origin/phase5 at their respective checkpoints. CODEX Batch77/78 and the completion audit retain actual evidence and limits; the final committed-range review is recorded separately.
 
 Design basis: phase5 at0f3ab1ee8cb7303c7fb3054d8e4ee757689f92aa, fetched origin matches0/0. Decisions27/28 handover is implemented and pushed (API42f84b5, UI4cbf08e, final guard0f3ab1e). Current Chief staffing save/unlink, role guard, aor_assignments, survey_reporting_links and survey.staffing_saved remain the implementation basis; older broad lifecycle proposals are not authority for this increment.
 

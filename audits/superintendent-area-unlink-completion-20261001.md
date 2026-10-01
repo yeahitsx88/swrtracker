@@ -115,3 +115,44 @@ Task2: minor (deferred): pre-existing design sidecar preview radii10px button/6p
 Task2: Ruling: broader lifecycle/IT-only/full-departure declined review scope remains excluded — approved contract is actual Manager exact individual assignment only — cost: unsupported personnel/other protected blockers stay gated.
 Task2: Ruling: future writer compatibility remains outside current evidence — tests prove only named current application writers and labelled raw DB updates — cost: future lifecycle writer needs its own authority/concurrency acceptance.
 Task2: Ruling: hosted/physical-device/assistive/soak outcomes remain unverified — actual runtime evidence is local loopback/native Windows plus Linux build — cost: deployment acceptance remains separate.
+
+
+## Pushed Task2 and current-state queue (2026-10-01)
+
+CURRENT HEAD: 0c1e1b81b715c81a010ebf2c362cdc279f61c952, phase5; root ordinary push and fetch verified exact origin/phase5 equality, 0/0 divergence and clean checkout. Task1 is e03f9d2c71b575ce94ac2dfc3d748bc08d3d8d21. Task2 task-done freshly reran pnpm test with441 passing, no failed/cancelled/skipped; fresh nonincremental TypeScript also exits0.
+
+KNOWN-GOOD BASELINE: actual root Windows/Linux builds, SQL/HTTP/browser and incumbent acceptance counts are the preceding Task2 record; builds/SQL were not repeated for documentation-only completion.
+
+COMPLETED / DO NOT REPEAT: approved reviewer handover with explicit temporary additional Area coverage; exact Manager Superintendent individual Area unlink API and UI; separate Chief reporting save/unlink and fixed-role guards; bounded reporting/KPI populations, workforce/repair and prior requester/attachment/account-shell increments. Retained historical evidence is not fresh certification of every subsystem.
+
+APPROVED + UNBLOCKED: finish the required final committed-range review and durable completion record. No additional sufficiently specified implementation remains in Decision31's completed two-task plan.
+
+APPROVED BUT GATED: acting/FIELD_COORDINATOR/department and inactive/former-person cleanup require concrete replacement/target/audit/lifecycle rules; central IT account/company/member/invitation lifecycle and consolidated permission investigation require a bounded approved design; individual Sabine reporting needs authoritative mappings; scoped print/export direction requires an output contract; hosted recovery/ACL/proxy/soak/device/assistive acceptance needs a controlled environment and actual evidence. Existing broad authority boundaries are not approval of unspecified commands.
+
+DEFERRED: automatic draft/temporary-coverage expiry, permanent draft deletion, attachment purge/orphan cleanup without retention approval, fabricated personnel/reporting, display-title/team-derived authority, broad Manager grants/invitations, generalized roles/RBAC, unapproved tiers/infrastructure/indexes/refactors.
+
+NEXT RECOMMENDED INCREMENT: owner-selected bounded central IT lifecycle/permission investigation written design. WHY THIS IS NEXT: it addresses a remaining documented Phase5 objective without reopening the completed staffing slice or inventing unsupported resolution rules. Primary downside: unsupported staffing blockers remain gated. Viable alternatives are a separately scoped protected-blocker design or controlled deployment acceptance preparation. Exact decision is the next design direction, not approval of an unseen specification or implementation. Read-only investigation and acceptance preparation can proceed independently; mutation may not cross these gates. Sabine data, attachments, backups, original dirty checkout and running retained preview remain unchanged.
+
+
+## Final committed-range review (2026-10-01)
+
+Fresh read-only most-capable reviewer inspected deb74eff6652327bdea5ddea748b9b3d765e86b3..0c1e1b81b715c81a010ebf2c362cdc279f61c952: no Critical, Important or Minor findings; ready for checkpoint completion. This authorizes no merge or deployment. Independently17 focused pure tests pass, no failures/cancellations/skips; committed diff-check passes. Mutation harness/build evidence remains root execution, not reviewer claims.
+
+All five review-focus conditions were deliberately checked: canonical subject checksum and persistent original-token/stale latch; inactive/wrong-role Chiefs and retired descendants; legacy no-event eligibility with explicit duplicate/overlap evidence; held exact reused witnesses and atomic conditional assignment/audit/ledger; current Manager/session gates before historical replay and six-direction synchronous UI guards with exact uncertain retry. No second review or speculative code repair is needed after this clean final review.
+
+Declined to judge (every item ruled below): complete departure/inactive-former/other protected/automatic role removal; IT-only cleanup/generalized lifecycle administration; future writers/arbitrary DB mutation; generic authentication/per-token logout/Chief redesign; retention/hard deletion/ticket reassignment/Sabine changes; hosted/device/assistive/soak/production-scale performance; pre-existing sidecar radius drift; completion-document edits after the immutable reviewed head.
+
+### Final ledger additions retained before scratch cleanup
+
+Task 2: complete (commits e03f9d2..0c1e1b8, tests: pnpm test → ℹ duration_ms 3577.8774)
+Final review: fresh-context whole committed range deb74eff6652327bdea5ddea748b9b3d765e86b3..0c1e1b81b715c81a010ebf2c362cdc279f61c952; no Critical/Important/Minor findings, all five focus conditions checked; reviewer independently17 pure tests and diff-check. Root evidence remains separate.
+Final: Ruling: complete departure/inactive-former/other protected/automatic role removal excluded — exact Manager assignment cleanup and separate role guard satisfy Decision31 — cost if wrong: unsupported obligations remain blocked.
+Final: Ruling: IT-only cleanup/generalized lifecycle-permissions administration excluded — no authority granted by this contract; existing IT handover retained — cost if wrong: separate design still required.
+Final: Ruling: future writers/arbitrary DB mutation not certified — actual acceptance covers named application writers and labelled raw compatibility cases only — cost if wrong: future writers require their own concurrency acceptance.
+Final: Ruling: generic auth/per-token logout/incumbent Chief redesign preserved — current-session postwait gates and integration tested without unrelated redesign — cost if wrong: no stronger global serialization guarantee.
+Final: Ruling: retention/hard deletion/ticket reassignment/Sabine mutation excluded — preserved historical and retained state matches approved scope — cost if wrong: retention and real-data acceptance remain gated.
+Final: Ruling: hosted/device/assistive/soak/production-scale performance unclaimed — loopback and Linux build cannot establish these — cost if wrong: operational acceptance remains unfinished.
+Final: Ruling: pre-existing design-sidecar radius drift stays deferred — normative DESIGN and rendered existing controls preserved; no unrelated system repair — cost if wrong: preview/documentation inconsistency remains.
+Final: Ruling: post-0c1e1b8 completion docs reviewed by root separately — immutable code review excludes later documentation; only exact status/evidence/rulings/queue edited — cost if wrong: documentation wording relies on executor review, not independent code verdict.
+
+Final documentation precommit verification: root pnpm test441/441, no failures/cancellations/skips; pnpm tsc --noEmit --incremental false exit0; current and committed-range diff-check exit0. No production/test changes since verified0c1e1b8, no build/SQL/browser rerun claim for documentation-only changes.
