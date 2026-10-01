@@ -7,7 +7,7 @@ import type { DbClient, UUID } from '@/shared/types';
 
 test('ticket query parser preserves defaults and validates bounded integer pages', () => {
   assert.deepEqual(parseTicketListQuery(new URLSearchParams()), { filters: {}, sort: 'created', limit: 50, offset: 0 });
-  for (const query of ['limit=0', 'limit=-1', 'limit=201', 'limit=10abc', 'limit=1.2', 'limit=', 'offset=-1', 'offset=Infinity', 'offset=2147483648', 'limit=10&limit=20']) {
+  for (const query of ['limit=0', 'limit=-1', 'limit=201', 'limit=10abc', 'limit=1.2', 'limit=', 'offset=-1', 'offset=Infinity', 'offset=2147483648', 'limit=10&limit=20', 'projectId=one&projectId=two', 'projectId=one&projectId=one']) {
     assert.throws(() => parseTicketListQuery(new URLSearchParams(query)), /Invalid|Duplicate/);
   }
 });

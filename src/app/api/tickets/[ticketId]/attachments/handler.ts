@@ -3,6 +3,7 @@ import { NotFoundError, ValidationError } from '@/shared/errors';
 import { appendAuditEvent } from '@/modules/audit/application';
 import { errorResponse } from '@/lib/api-error';
 import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { requireResourceUuid } from '@/lib/resource-uuid';
 import { pool } from '@/lib/db';
 import { uploadAttachment } from '@/modules/attachment/application';
 import type { AttachmentMetadataValidator, IAttachmentRepository } from '@/modules/attachment/application';
@@ -232,6 +233,7 @@ export async function handleDownloadTicketAttachment(
   try {
     const { ticketId, attachmentId } = await params;
     const ctx = await findVisibleTicket(req, ticketId, deps);
+    requireResourceUuid(attachmentId, 'attachmentId');
     const attachment = await deps.findAttachment(ctx.tenantId, ctx.ticketId, attachmentId);
     if (!attachment) throw new NotFoundError('Attachment not found');
     const bytes = await deps.createStorage().read(attachment.storage_key);

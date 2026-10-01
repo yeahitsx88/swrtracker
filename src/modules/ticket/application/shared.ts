@@ -34,6 +34,7 @@ export async function performTransition(
     eventType:      AuditEventType;
     eventPayload?:  Record<string, unknown>;
     visibility?:    VisibilityScope;
+    assertTicket?: (ticket: Ticket) => void;
     authorizeTicket?: (ticket: Ticket) => Promise<Record<string, unknown>>;
   },
 ): Promise<Ticket> {
@@ -54,6 +55,7 @@ export async function performTransition(
         ? repo.findById(db, tenantId, ticketId, options.visibility)
         : repo.findByIdInternal(db, tenantId, ticketId)
       );
+      if (ticket && options.assertTicket) options.assertTicket(ticket);
       if (ticket && options.authorizeTicket) {
         eventPayload.reviewAuthority = await options.authorizeTicket(ticket);
       }

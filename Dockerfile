@@ -15,6 +15,7 @@ RUN pnpm build
 
 FROM base AS runtime
 ENV NODE_ENV=production
+ENV SWR_ATTACHMENT_ROOT=/var/lib/swr/attachments
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/.next ./.next

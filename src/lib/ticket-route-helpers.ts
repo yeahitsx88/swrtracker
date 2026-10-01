@@ -2,12 +2,14 @@
  * Shared helpers for ticket transition route handlers.
  */
 import { type NextRequest } from 'next/server';
-import { NotFoundError } from '@/shared/errors';
+import { ForbiddenError, NotFoundError } from '@/shared/errors';
 import { requireActiveAuth as requireAuth } from './auth';
 import { withTransaction } from './with-transaction';
 import { pool } from './db';
 import { getProjectRole } from './get-project-role';
 import { resolveVisibility } from './resolve-visibility';
+import { buildVisibilityClause } from './ticket-visibility-clause';
+import { requireResourceUuid } from './resource-uuid';
 import type { UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
@@ -30,6 +32,7 @@ export async function getTicketRouteContext(
   ticketId: string,
 ): Promise<TicketRouteContext> {
   const auth = await requireAuth(req);
+  requireResourceUuid(ticketId, 'ticketId');
 
   const { rows } = await pool.query<{ project_id: string }>(
     `SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1`,
@@ -38,13 +41,31 @@ export async function getTicketRouteContext(
   if (!rows[0]) throw new NotFoundError(`Ticket ${ticketId} not found`);
   const projectId = rows[0].project_id as UUID;
 
-  const actorRole = await getProjectRole(
-    pool, auth.tenantId, projectId, auth.userId, auth.sessionVersion,
-  );
+  let actorRole: ProjectRole;
+  try {
+    actorRole = await getProjectRole(
+      pool, auth.tenantId, projectId, auth.userId, auth.sessionVersion,
+    );
+  } catch (error) {
+    // Missing membership must not reveal the existence of a ticket. Preserve
+    // authentication/session errors and unexpected failures without masking them.
+    if (error instanceof ForbiddenError) throw new NotFoundError(`Ticket ${ticketId} not found`);
+    throw error;
+  }
 
   const visibility = await resolveVisibility(
     pool, auth.tenantId, projectId, auth.userId, actorRole,
   );
+
+  // Hide inaccessible resources before any route performs role/state checks or
+  // replays a mutation. The use case still rechecks visibility at its own read.
+  const clause = buildVisibilityClause(visibility, 4);
+  const visible = await pool.query(
+    `SELECT t.id FROM tickets t
+     WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 ${clause.sql} LIMIT 1`,
+    [ticketId, auth.tenantId, projectId, ...clause.params],
+  );
+  if (!visible.rows[0]) throw new NotFoundError(`Ticket ${ticketId} not found`);
 
   return {
     tenantId:  auth.tenantId,

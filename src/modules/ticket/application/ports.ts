@@ -79,7 +79,14 @@ export interface ListTicketsOptions {
   offset:            number;
 }
 
+export interface DirectAssignmentAuthority {
+  tenantId: UUID; projectId: UUID; actorId: UUID; actorRole: ProjectRole;
+  aorNodeId: UUID; sessionVersion?: number;
+}
+
 export interface ITicketRepository {
+  /** Locks current leadership and Area authority inside the creation transaction. */
+  lockDirectAssignmentAuthority?(db: DbClient, scope: DirectAssignmentAuthority): Promise<boolean>;
   /** Returns null if ticket doesn't exist or actor cannot see it under visibility rules. */
   findById(db: DbClient, tenantId: UUID, ticketId: UUID, visibility: VisibilityScope): Promise<Ticket | null>;
 

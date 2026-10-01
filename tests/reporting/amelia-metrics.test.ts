@@ -39,14 +39,20 @@ test('metrics retain requester, crew, Area and department visibility', async () 
   const cases: Array<[ProjectRole, string, unknown[]]> = [
     ['REQUESTER', 't.requester_id = $5', ['actor']],
     ['PARTY_CHIEF', 't.assigned_party_chief_id = $5', ['actor']],
-    ['INSTRUMENT_MAN', 't.assigned_party_chief_id = $5 OR t.assigned_instrument_man_id = $6', ['chief', 'actor']],
+    ['INSTRUMENT_MAN', 't.assigned_instrument_man_id = $6 OR (', ['chief', 'actor']],
     ['SURVEY_SUPERINTENDENT', 't.aor_node_id IN ($5, $6)', ['area', 'child']],
     ['AREA_VIEWER', 't.aor_node_id IN ($5, $6)', ['area', 'child']],
     ['DEPARTMENT_MANAGER', 't.department_id = $5', ['department']],
     ['DEPARTMENT_LEAD', 't.department_id = $5 AND t.aor_node_id IN ($6, $7)', ['department', 'area', 'child']],
   ];
   for (const [actorRole, clause, values] of cases) {
-    const db = database((sql, params) => { assert.ok(sql.includes(clause)); assert.deepEqual(params.slice(4), values); });
+    const db = database((sql, params) => {
+      assert.ok(sql.includes(clause)); assert.deepEqual(params.slice(4), values);
+      if (actorRole === 'INSTRUMENT_MAN') {
+        assert.ok(sql.includes('cr.tenant_id = t.tenant_id AND cr.project_id = t.project_id'));
+        assert.ok(sql.includes('cr.deactivated_at IS NULL'));
+      }
+    });
     await getAmeliaMetrics(new AmeliaMetricsReader(), db, { ...base, visibility: { ...base.visibility, actorRole,
       partyChiefId: id('chief'), departmentId: id('department'), aorNodeIds: [id('area'), id('child')] } });
   }

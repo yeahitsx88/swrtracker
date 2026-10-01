@@ -37,6 +37,7 @@ function makeRepo(overrides?: Partial<ITicketRepository>): ITicketRepository {
     findPartyChiefForInstrumentMan: async () => null,
     findAorNodeIdsForUser: async () => [],
     isActiveProjectMemberWithRole: async () => true,
+    lockDirectAssignmentAuthority: async () => true,
     ...overrides,
   };
 }

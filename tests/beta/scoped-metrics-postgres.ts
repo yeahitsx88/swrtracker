@@ -45,6 +45,7 @@ async function main() {
     CREATE TEMP TABLE project_memberships (project_id text, user_id text, role text) ON COMMIT DROP;
     CREATE TEMP TABLE users (id text, tenant_id text, deactivated_at timestamptz, company_id text, session_version integer, name text) ON COMMIT DROP;
     CREATE TEMP TABLE projects (id text, tenant_id text) ON COMMIT DROP;
+    CREATE TEMP TABLE crew_rosters (tenant_id text, project_id text, party_chief_id text, instrument_man_id text, deactivated_at timestamptz) ON COMMIT DROP;
     CREATE TEMP TABLE ticket_events (ticket_id bigint, tenant_id text, payload jsonb) ON COMMIT DROP;
     SET LOCAL search_path = pg_temp;`);
     // Explicit pg_temp qualification ensures writes cannot fall through to public.
@@ -53,6 +54,7 @@ async function main() {
       INSERT INTO pg_temp.companies VALUES ('gc','t','GC'),('sub','t','SUBCONTRACTOR'),('other-sub','t','SUBCONTRACTOR');
       INSERT INTO pg_temp.users VALUES ('s','t',NULL,'sub',1,'Requester'),('chief','t',NULL,'gc',1,'Chief'),('im','t',NULL,'gc',1,'Instrument Man');
       INSERT INTO pg_temp.projects VALUES ('p','t');
+      INSERT INTO pg_temp.crew_rosters VALUES ('t','p','chief','im',NULL);
       INSERT INTO pg_temp.project_memberships VALUES ('p','s','REQUESTER');`);
     const base: VisibilityScope = { actorId: id('r'), actorRole: 'VIEWER', projectId: id('p'), companyId: id('gc'), companyType: 'GC' };
     async function check(label: string, patch: Partial<VisibilityScope>, indexes: number[], tenantId = 't', projectId = 'p', filters: MetricsFilters = {}) {
@@ -78,6 +80,12 @@ async function main() {
     await check('chief', { actorRole: 'PARTY_CHIEF', actorId: id('chief') }, [1,2,8,10]);
     await check('IM crew plus direct', { actorRole: 'INSTRUMENT_MAN', actorId: id('im'), partyChiefId: id('chief') }, [1,2,3,8,10]);
     await check('IM no roster', { actorRole: 'INSTRUMENT_MAN', actorId: id('im') }, [1,3,8,10]);
+    await db.query('UPDATE pg_temp.crew_rosters SET deactivated_at=NOW()');
+    await check('IM revoked roster with stale Chief scope', { actorRole: 'INSTRUMENT_MAN', actorId: id('im'), partyChiefId: id('chief') }, [1,3,8,10]);
+    await db.query(`INSERT INTO pg_temp.crew_rosters VALUES ('other-tenant','p','chief','im',NULL),('t','other-project','chief','im',NULL)`);
+    await check('IM foreign roster does not restore inheritance', { actorRole: 'INSTRUMENT_MAN', actorId: id('im'), partyChiefId: id('chief') }, [1,3,8,10]);
+    await db.query(`UPDATE pg_temp.crew_rosters SET deactivated_at=NULL WHERE tenant_id='t' AND project_id='p'`);
+    await check('IM explicitly restored active crew', { actorRole: 'INSTRUMENT_MAN', actorId: id('im'), partyChiefId: id('chief') }, [1,2,3,8,10]);
     for (const actorRole of ['SURVEY_SUPERINTENDENT', 'AREA_VIEWER'] as const) {
       await check(actorRole, { actorRole, aorNodeIds: [id('a'), id('child')] }, [1,2,8,10]);
       await check(`${actorRole} missing scope`, { actorRole }, []);

@@ -13,7 +13,7 @@ export interface ProjectRequestConfigResponse {
 
 export interface LocalNotificationPreviewRecord {
   id: string;
-  ticketId: string;
+  ticketId: string | null;
   ticketNumber: string | null;
   recipientUserId: string;
   recipientName: string | null;

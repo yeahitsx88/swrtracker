@@ -6,7 +6,7 @@ export type NotificationDeliveryState = 'QUEUED' | 'CAPTURED' | 'SENT' | 'FAILED
 
 export interface LocalNotificationPreview {
   id: UUID;
-  ticketId: UUID;
+  ticketId: UUID | null;
   ticketNumber: string | null;
   recipientUserId: UUID;
   recipientName: string | null;
@@ -23,7 +23,7 @@ export interface LocalNotificationPreview {
 
 interface PreviewRow {
   id: UUID;
-  ticket_id: UUID;
+  ticket_id: UUID | null;
   ticket_number: string | null;
   recipient_user_id: UUID;
   recipient_name: string | null;
@@ -68,10 +68,14 @@ export async function listLocalNotificationPreviews(
   const limit = params.limit ?? 100;
   if (!Number.isInteger(limit) || limit < 1 || limit > 200) throw new ValidationError('limit must be between 1 and 200');
   const fullAccess = FULL_PREVIEW_ROLES.includes(params.actorRole);
+  const deliveryOnly = params.actorRole === 'TENANT_ADMIN' || params.actorRole === 'PROJECT_ADMIN';
   const { rows } = await db.query<PreviewRow>(
-    `SELECT o.id, o.ticket_id, t.ticket_number, o.recipient_user_id,
-            u.name AS recipient_name, u.email AS recipient_email, o.event_type, o.payload,
-            o.delivery_state, o.attempt_count, o.created_at, o.delivered_at, o.last_error
+    `SELECT o.id, CASE WHEN $6::boolean THEN NULL ELSE o.ticket_id END AS ticket_id,
+            CASE WHEN $6::boolean THEN NULL ELSE t.ticket_number END AS ticket_number,
+            o.recipient_user_id, u.name AS recipient_name, u.email AS recipient_email, o.event_type,
+            CASE WHEN $6::boolean THEN '{}'::jsonb ELSE o.payload END AS payload,
+            o.delivery_state, o.attempt_count, o.created_at, o.delivered_at,
+            CASE WHEN $6::boolean AND o.last_error IS NOT NULL THEN 'Delivery failed; inspect protected transport logs.' ELSE o.last_error END AS last_error
      FROM notification_outbox o
      JOIN tickets t ON t.tenant_id = o.tenant_id AND t.id = o.ticket_id
      JOIN users u ON u.tenant_id = o.tenant_id AND u.id = o.recipient_user_id
@@ -79,18 +83,20 @@ export async function listLocalNotificationPreviews(
        AND ($3::boolean OR o.recipient_user_id = $4)
      ORDER BY o.created_at DESC, o.id DESC
      LIMIT $5`,
-    [params.tenantId, params.projectId, fullAccess, params.actorId, limit],
+    [params.tenantId, params.projectId, fullAccess, params.actorId, limit, deliveryOnly],
   );
   return rows.map((row) => {
-    const payload = typeof row.payload === 'string' ? JSON.parse(row.payload) as Record<string, unknown> : row.payload;
-    const content = describeEvent(row.event_type, payload, row.ticket_number ?? row.ticket_id);
+    const payload = deliveryOnly ? {} : typeof row.payload === 'string' ? JSON.parse(row.payload) as Record<string, unknown> : row.payload;
+    const content = deliveryOnly
+      ? { subject: `${row.event_type} delivery`, body: 'Delivery health only. Request content is restricted to operational recipients.' }
+      : describeEvent(row.event_type, payload, row.ticket_number ?? row.ticket_id ?? 'Request');
     return {
-      id: row.id, ticketId: row.ticket_id, ticketNumber: row.ticket_number,
+      id: row.id, ticketId: deliveryOnly ? null : row.ticket_id, ticketNumber: deliveryOnly ? null : row.ticket_number,
       recipientUserId: row.recipient_user_id, recipientName: row.recipient_name,
       recipientEmail: row.recipient_email, eventType: row.event_type,
       deliveryState: row.delivery_state, attemptCount: row.attempt_count,
       subject: content.subject, body: content.body, createdAt: row.created_at,
-      deliveredAt: row.delivered_at, lastError: row.last_error,
+      deliveredAt: row.delivered_at, lastError: deliveryOnly && row.last_error !== null ? 'Delivery failed; inspect protected transport logs.' : row.last_error,
     };
   });
 }

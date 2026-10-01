@@ -54,7 +54,17 @@ export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): 
     case 'PARTY_CHIEF':
       return isolate({ sql: `AND t.assigned_party_chief_id = $${baseIdx}`, params: [actorId] });
     case 'INSTRUMENT_MAN':
-      return isolate({ sql: `AND (t.assigned_party_chief_id = $${baseIdx} OR t.assigned_instrument_man_id = $${baseIdx + 1})`, params: [partyChiefId ?? actorId, actorId] });
+      // Recheck the relationship at the data read, not only when resolving the
+      // request context. A previously resolved Chief must not survive unlinking.
+      // Exact direct assignments remain readable without any roster relationship.
+      return isolate({ sql: `AND (t.assigned_instrument_man_id = $${baseIdx + 1} OR (
+        t.assigned_party_chief_id = $${baseIdx} AND EXISTS (
+          SELECT 1 FROM crew_rosters cr
+          WHERE cr.tenant_id = t.tenant_id AND cr.project_id = t.project_id
+            AND cr.party_chief_id = $${baseIdx} AND cr.instrument_man_id = $${baseIdx + 1}
+            AND cr.deactivated_at IS NULL
+        )
+      ))`, params: [partyChiefId ?? null, actorId] });
     case 'SURVEY_SUPERINTENDENT':
       if (!aorNodeIds?.length || scope.linkedCrewAssignments?.length === 0) return isolate({ sql: 'AND 1 = 0', params: [] });
       if (scope.linkedCrewAssignments !== undefined) {

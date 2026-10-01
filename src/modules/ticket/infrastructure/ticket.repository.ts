@@ -478,10 +478,48 @@ export class TicketRepository implements ITicketRepository {
     const { rows } = await db.query<{ party_chief_id: string }>(
       `SELECT party_chief_id FROM crew_rosters
        WHERE tenant_id = $1 AND project_id = $2 AND instrument_man_id = $3
+         AND deactivated_at IS NULL
        LIMIT 1`,
       [tenantId, projectId, instrumentManId],
     );
     return (rows[0]?.party_chief_id as UUID) ?? null;
+  }
+
+  async lockDirectAssignmentAuthority(
+    db: DbClient,
+    scope: import('../application/ports').DirectAssignmentAuthority,
+  ): Promise<boolean> {
+    // Caller owns the transaction. Project/member locks serialize normal
+    // staffing changes; the grant lock also fences a direct grant revocation.
+    const { rows: actors } = await db.query<{ role: ProjectRole }>(
+      `SELECT pm.role FROM projects p
+       JOIN project_memberships pm ON pm.project_id=p.id AND pm.user_id=$3
+       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id
+       JOIN companies c ON c.id=u.company_id AND c.tenant_id=p.tenant_id
+       WHERE p.tenant_id=$1 AND p.id=$2 AND p.status='ACTIVE'
+         AND pm.role=$4 AND pm.role IN ('SURVEY_MANAGER','SURVEY_SUPERINTENDENT')
+         AND u.deactivated_at IS NULL AND c.type<>'SUBCONTRACTOR'
+         AND ($5::int IS NULL OR u.session_version=$5)
+       FOR SHARE OF p,pm,u,c`,
+      [scope.tenantId,scope.projectId,scope.actorId,scope.actorRole,scope.sessionVersion ?? null]);
+    if (!actors[0]) return false;
+    const { rows: nodes } = await db.query<{ id: UUID }>(
+      `WITH RECURSIVE ancestors AS (
+         SELECT id,parent_id FROM aor_nodes WHERE tenant_id=$1 AND project_id=$2 AND id=$3 AND retired_at IS NULL
+         UNION
+         SELECT n.id,n.parent_id FROM aor_nodes n JOIN ancestors a ON a.parent_id=n.id
+         WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.retired_at IS NULL
+       ) SELECT n.id FROM aor_nodes n JOIN ancestors a ON a.id=n.id
+         WHERE n.tenant_id=$1 AND n.project_id=$2 FOR SHARE OF n`,
+      [scope.tenantId,scope.projectId,scope.aorNodeId]);
+    if (!nodes.length) return false;
+    if (actors[0].role === 'SURVEY_MANAGER') return true;
+    const { rows: grants } = await db.query<{ id: UUID }>(
+      `SELECT id FROM aor_assignments
+       WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3
+         AND aor_node_id=ANY($4::uuid[]) AND deactivated_at IS NULL
+       FOR SHARE`, [scope.tenantId,scope.projectId,scope.actorId,nodes.map(node => node.id)]);
+    return grants.length > 0;
   }
 
   async findAorNodeIdsForUser(

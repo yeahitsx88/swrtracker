@@ -14,7 +14,7 @@ import type { DbClient, UUID } from '@/shared/types';
 const tenantId = 'tenant-1' as UUID;
 const projectId = 'project-1' as UUID;
 const requesterId = 'requester-1' as UUID;
-const parentTicketId = 'parent-1' as UUID;
+const parentTicketId = '88000000-0000-4000-8000-000000000001' as UUID;
 
 function completedTicket(overrides: Partial<Ticket> = {}): Ticket {
   const now = new Date('2026-09-20T12:00:00Z');
@@ -209,6 +209,7 @@ test('follow-up route replays an idempotency key without creating a second draft
   pool.query = async (sql: string) => {
     if (sql.includes('FROM revoked_auth_sessions')) return { rows: [{ revoked: false }] };
     if (/SELECT project_id FROM tickets/.test(sql)) return { rows: [{ project_id: projectId }] };
+    if (/SELECT t.id FROM tickets t/.test(sql)) return { rows: [{ id: parentTicketId }] };
     if (/FROM users/.test(sql)) return { rows: [{ session_version: 1, deactivated_at: null }] };
     if (/SELECT role\s+FROM project_memberships/.test(sql)) return { rows: [{ role: 'REQUESTER' }] };
     return { rows: [] };

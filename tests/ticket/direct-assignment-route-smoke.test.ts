@@ -90,6 +90,7 @@ test('direct-assignment tickets move through create, assign, start, and direct c
   const originalPatchTicket = TicketRepository.prototype.patchTicket;
   const originalFindPartyChiefForInstrumentMan = TicketRepository.prototype.findPartyChiefForInstrumentMan;
   const originalIsActiveProjectMemberWithRole = TicketRepository.prototype.isActiveProjectMemberWithRole;
+  const originalLockAuthority = TicketRepository.prototype.lockDirectAssignmentAuthority;
 
   pool.query = async (sql: string, params?: unknown[]) => {
     if (sql.includes('FROM revoked_auth_sessions')) return { rows: [{ revoked: false }] };
@@ -99,6 +100,7 @@ test('direct-assignment tickets move through create, assign, start, and direct c
     if (/SELECT project_id FROM tickets/.test(sql)) {
       return { rows: currentTicket ? [{ project_id: currentTicket.projectId }] : [] };
     }
+    if (/SELECT t.id FROM tickets t/.test(sql)) return { rows: currentTicket ? [{ id: currentTicket.id }] : [] };
     if (/SELECT role\s+FROM project_memberships/.test(sql)) {
       const userId = params?.[1] as string;
       const role = actorRoles.get(userId);
@@ -145,7 +147,7 @@ test('direct-assignment tickets move through create, assign, start, and direct c
         }
         return { rows: [] };
       }
-      return { rows: [] };
+      return pool.query(sql, params);
     },
     release: () => undefined,
   });
@@ -180,6 +182,7 @@ test('direct-assignment tickets move through create, assign, start, and direct c
   };
   TicketRepository.prototype.findPartyChiefForInstrumentMan = async () => secondPcId;
   TicketRepository.prototype.isActiveProjectMemberWithRole = async () => true;
+  TicketRepository.prototype.lockDirectAssignmentAuthority = async () => true;
 
   try {
     const managerToken = signToken(managerId, tenantId);
@@ -249,5 +252,6 @@ test('direct-assignment tickets move through create, assign, start, and direct c
     TicketRepository.prototype.patchTicket = originalPatchTicket;
     TicketRepository.prototype.findPartyChiefForInstrumentMan = originalFindPartyChiefForInstrumentMan;
     TicketRepository.prototype.isActiveProjectMemberWithRole = originalIsActiveProjectMemberWithRole;
+    TicketRepository.prototype.lockDirectAssignmentAuthority = originalLockAuthority;
   }
 });

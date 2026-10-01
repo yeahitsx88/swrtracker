@@ -101,7 +101,7 @@ function createTxQuery(rows: Map<string, IdempotencyRow>) {
 function makeDirectAssignmentTicket(overrides?: Partial<Ticket>): Ticket {
   const now = new Date('2026-03-05T17:00:00Z');
   return {
-    id: 'ticket-1' as UUID,
+    id: '88000000-0000-4000-8000-000000000002' as UUID,
     tenantId: 'tenant-1' as UUID,
     projectId: 'project-1' as UUID,
     aorNodeId: 'aor-node-1' as UUID,
@@ -315,6 +315,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
     if (/SELECT project_id FROM tickets/.test(sql)) {
       return { rows: [{ project_id: 'project-1' }] };
     }
+    if (/SELECT t.id FROM tickets t/.test(sql)) return { rows: [{ id: currentTicket.id }] };
     if (/SELECT role\s+FROM project_memberships/.test(sql)) {
       return { rows: [{ role: 'SURVEY_MANAGER' }] };
     }
@@ -338,7 +339,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
 
   try {
     const token = signToken('manager-1' as UUID, 'tenant-1' as UUID);
-    const url = 'http://localhost/api/tickets/ticket-1/assign';
+    const url = `http://localhost/api/tickets/${currentTicket.id}/assign`;
     const body = {
       assignedPartyChiefId: 'pc-2',
       assignedInstrumentManId: null,
@@ -346,11 +347,11 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
 
     const first = await assignTicketRoute(
       makeAssignRequest(url, token, body, 'assign-retry-1'),
-      { params: Promise.resolve({ ticketId: 'ticket-1' }) },
+      { params: Promise.resolve({ ticketId: currentTicket.id }) },
     );
     const second = await assignTicketRoute(
       makeAssignRequest(url, token, body, 'assign-retry-1'),
-      { params: Promise.resolve({ ticketId: 'ticket-1' }) },
+      { params: Promise.resolve({ ticketId: currentTicket.id }) },
     );
 
     assert.equal(first.status, 200);

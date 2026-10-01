@@ -10,7 +10,7 @@ import { appendAuditEvent } from '@/modules/audit/application/index';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket, TicketType } from '../domain/types';
-import type { ITicketRepository } from './ports';
+import type { DirectAssignmentAuthority, ITicketRepository } from './ports';
 import { assertActorHasRole } from './shared';
 
 export interface CreateDirectAssignmentTicketParams {
@@ -20,6 +20,7 @@ export interface CreateDirectAssignmentTicketParams {
   requesterId:             UUID;
   actorId:                 UUID;
   actorRole:               ProjectRole;
+  sessionVersion?:         number;
   assignedPartyChiefId:    UUID | null;
   assignedInstrumentManId: UUID;
   departmentId?:           UUID;
@@ -31,12 +32,20 @@ export interface CreateDirectAssignmentTicketParams {
   requestedDate:           Date;
 }
 
+/** Must also run before returning a cached creation response. No numbering/writes. */
+export async function authorizeDirectAssignment(repo: ITicketRepository, db: DbClient, scope: DirectAssignmentAuthority): Promise<void> {
+  assertActorHasRole(scope.actorRole, ['SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT']);
+  if (!repo.lockDirectAssignmentAuthority || !await repo.lockDirectAssignmentAuthority(db, scope)) {
+    throw new ForbiddenError('Current survey leadership and Area authority are required for direct assignment');
+  }
+}
+
 export async function createDirectAssignmentTicket(
   repo: ITicketRepository,
   db: DbClient,
   params: CreateDirectAssignmentTicketParams,
 ): Promise<Ticket> {
-  assertActorHasRole(params.actorRole, ['SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT']);
+  await authorizeDirectAssignment(repo, db, params);
 
   if (!params.assignedInstrumentManId) {
     throw new ValidationError('assignedInstrumentManId is required');

@@ -240,7 +240,7 @@ test('attachment download checks ticket visibility, streams bytes, and records t
   };
   const response = await handleDownloadTicketAttachment(
     makeRequest(),
-    { params: Promise.resolve({ ticketId, attachmentId: 'attachment-1' }) },
+    { params: Promise.resolve({ ticketId, attachmentId: '86000000-0000-4000-8000-000000000001' }) },
     deps,
   );
   assert.equal(response.status, 200);

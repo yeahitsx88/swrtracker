@@ -16,10 +16,11 @@ import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { resolveVisibility } from '@/lib/resolve-visibility';
 import { parseTicketListQuery } from '@/lib/ticket-list-query';
+import { requireResourceUuid } from '@/lib/resource-uuid';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { createTicket } from '@/modules/ticket/application/create-ticket';
-import { createDirectAssignmentTicket } from '@/modules/ticket/application/create-direct-assignment-ticket';
+import { authorizeDirectAssignment, createDirectAssignmentTicket } from '@/modules/ticket/application/create-direct-assignment-ticket';
 import type { WorkflowVariant } from '@/modules/workflow/domain/transitions';
 import type { TicketType } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';
@@ -135,8 +136,12 @@ export async function POST(req: NextRequest) {
         throw new ValidationError('assignedInstrumentManId is required for direct-assignment tickets');
       }
 
-      const result = await withTransaction((client) =>
-        executeIdempotentHttpMutation(
+      const result = await withTransaction(async client => {
+        const currentRole = await getProjectRole(client, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion);
+        await authorizeDirectAssignment(ticketRepo, client, { tenantId: auth.tenantId,
+          projectId: projectId as UUID, actorId: auth.userId, actorRole: currentRole,
+          aorNodeId: aorNodeId as UUID, sessionVersion: auth.sessionVersion });
+        return executeIdempotentHttpMutation(
           client,
           {
             tenantId: auth.tenantId,
@@ -152,7 +157,8 @@ export async function POST(req: NextRequest) {
               aorNodeId: aorNodeId as UUID,
               requesterId: requesterId as UUID,
               actorId: auth.userId,
-              actorRole,
+              actorRole: currentRole,
+              sessionVersion: auth.sessionVersion,
               assignedPartyChiefId: typeof assignedPartyChiefId === 'string'
                 ? assignedPartyChiefId as UUID
                 : null,
@@ -167,8 +173,8 @@ export async function POST(req: NextRequest) {
             });
             return { status: 201, body: { ticket: directTicket } };
           },
-        ),
-      );
+        );
+      });
 
       return NextResponse.json(result.body, { status: result.status });
     }
@@ -289,6 +295,7 @@ export async function GET(req: NextRequest) {
       if (!projectId) throw new ValidationError('projectId query parameter is required');
 
       const listQuery = parseTicketListQuery(searchParams);
+      requireResourceUuid(projectId, 'projectId');
 
       const actorRole = await getProjectRole(
         pool,

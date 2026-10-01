@@ -3,6 +3,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
+import { ForbiddenError } from '@/shared/errors';
 
 export async function requestFieldCancel(
   repo: ITicketRepository,
@@ -30,5 +31,10 @@ export async function requestFieldCancel(
     eventType:    'ticket.field_cancel_requested',
     eventPayload: { reason: params.reason ?? null },
     visibility:   params.visibility,
+    assertTicket: ticket => {
+      if (params.actorRole === 'INSTRUMENT_MAN' && ticket.assignedInstrumentManId !== params.actorId) {
+        throw new ForbiddenError('Only the assigned Instrument Man may request this field cancellation');
+      }
+    },
   });
 }
