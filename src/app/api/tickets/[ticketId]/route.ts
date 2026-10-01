@@ -15,8 +15,9 @@ import { UserRepository } from '@/modules/identity/infrastructure/user.repositor
 import { updateRequesterTicket } from '@/modules/ticket/application/update-requester-ticket';
 import { getTicketCapabilities } from '@/modules/ticket/application/get-ticket-capabilities';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
-import type { TicketType } from '@/modules/ticket/domain/types';
-import type { UUID } from '@/shared/types';
+import { parseRequesterIntake } from '@/lib/requester-intake-input';
+import { requireActiveAuth } from '@/lib/auth';
+import { lockDraftActor, lockRequesterTicket } from '@/modules/ticket/application/draft-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,25 +58,21 @@ export async function PATCH(
     const idempotencyKey = requireIdempotencyKey(req);
     const ctx = await getTicketRouteContext(req, ticketId);
     const body = await req.json() as Record<string, unknown>;
-    const changes = {
-      aorNodeId: typeof body.aorNodeId === 'string' ? body.aorNodeId as UUID : undefined,
-      ticketType: typeof body.ticketType === 'string' ? body.ticketType as TicketType : undefined,
-      craft: typeof body.craft === 'string' ? body.craft : undefined,
-      fieldContact: typeof body.fieldContact === 'string' ? body.fieldContact : undefined,
-      fieldChannel: typeof body.fieldChannel === 'string' ? body.fieldChannel : undefined,
-      description: typeof body.description === 'string' ? body.description : undefined,
-      requestedDate: typeof body.requestedDate === 'string' ? new Date(body.requestedDate) : undefined,
-    };
+    const { changes, expectedVersion } = parseRequesterIntake(body);
+    const auth = await requireActiveAuth(req);
     const repo = new TicketRepository();
-    const result = await withTransaction((db) => executeIdempotentHttpMutation(
+    const result = await withTransaction(async (db) => {
+      await lockDraftActor(db, { ...ctx, sessionVersion: auth.sessionVersion }, 'REQUESTER');
+      await lockRequesterTicket(db, ctx);
+      return executeIdempotentHttpMutation(
       db,
       { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `PATCH:/api/tickets/${ticketId}`, idempotencyKey },
       body,
       async () => ({
         status: 200,
-        body: { ticket: await updateRequesterTicket(repo, db, { ...ctx, changes }) },
+        body: { ticket: await updateRequesterTicket(repo, db, { ...ctx, changes, expectedVersion }) },
       }),
-    ));
+    ); });
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     return errorResponse(err);

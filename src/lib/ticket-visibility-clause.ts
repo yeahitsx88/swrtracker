@@ -14,9 +14,10 @@ export function assertVisibilityCohort(scope: VisibilityScope, cohort?: 'areaWor
 export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): { sql: string; params: unknown[] } {
   const { actorId, actorRole, projectId, departmentId, aorNodeIds, partyChiefId, companyId, companyType } = scope;
   const isolate = (clause: { sql: string; params: unknown[] }) => {
-    if (companyType !== 'SUBCONTRACTOR') return clause;
+    const current = { ...clause, sql: `AND t.draft_deleted_at IS NULL ${clause.sql}` };
+    if (companyType !== 'SUBCONTRACTOR') return current;
     const isolationSql = `AND t.company_id = $${baseIdx + clause.params.length}`;
-    return { sql: clause.sql ? `${clause.sql} ${isolationSql}` : isolationSql, params: [...clause.params, companyId] };
+    return { sql: `${current.sql} ${isolationSql}`, params: [...clause.params, companyId] };
   };
   switch (actorRole) {
     case 'SURVEY_MANAGER':
@@ -29,7 +30,8 @@ export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): 
     case 'REQUESTER':
       if (companyType === 'SUBCONTRACTOR' && projectId) {
         return {
-          sql: `AND (t.requester_id = $${baseIdx} OR (
+          sql: `AND t.draft_deleted_at IS NULL AND (t.requester_id = $${baseIdx} OR (
+            t.status <> 'DRAFT' AND
             t.company_id = $${baseIdx + 1} AND t.project_id = $${baseIdx + 2}
             AND EXISTS (
               SELECT 1 FROM company_authority_grants g

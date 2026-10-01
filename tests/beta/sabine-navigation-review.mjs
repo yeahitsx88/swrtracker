@@ -52,7 +52,13 @@ try {
     await page.mouse.click(10,180);await page.waitForFunction(()=>!document.querySelector('.account-drawer').open);
     assert.equal(await page.getByRole('button',{name:'Menu',exact:true}).evaluate(node=>node===document.activeElement),true);
     await page.getByRole('button',{name:'Menu',exact:true}).click();
-    await nav.getByRole('link',{name:'Home',exact:true}).click();await page.waitForURL(`**/projects/${manifest.liveProjectId}/survey/operations`);
+    // Home first visits project entry, then redirects back to operations. The
+    // final URL already matches before clicking; await entry so the next menu
+    // interaction cannot race the delayed route change and drawer cleanup.
+    await Promise.all([page.waitForURL(`${base}/projects/${manifest.liveProjectId}`),nav.getByRole('link',{name:'Home',exact:true}).click()]);
+    await page.waitForURL(`**/projects/${manifest.liveProjectId}/survey/operations`);
+    await page.getByRole('heading',{name:'Queue health',exact:true}).waitFor();
+    await page.waitForFunction(()=>!document.querySelector('.account-drawer').open&&document.querySelector('.account-drawer').getAnimations().length===0);
     assert.equal(await drawer.evaluate(node=>node.open),false,'Selecting Home dismisses the menu');
     await page.getByRole('button',{name:'Menu',exact:true}).click();
     const cookie=(await context.cookies()).find(item=>item.name==='swr_session');assert.ok(cookie);

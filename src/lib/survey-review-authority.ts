@@ -5,13 +5,14 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 /** Resolve and lock the explicit review grant inside the caller's mutation transaction. */
 export async function requireSurveyReviewAuthority(
   db: DbClient,
-  scope: { tenantId: UUID; projectId: UUID; aorNodeId: UUID },
+  scope: { tenantId: UUID; projectId: UUID; aorNodeId: UUID | null },
   actor: { actorId: UUID; actorRole: ProjectRole },
 ): Promise<Record<string, unknown>> {
   if (actor.actorRole === 'SURVEY_MANAGER') return { kind: 'PROJECT_ROLE', role: 'SURVEY_MANAGER' };
   if (actor.actorRole !== 'SURVEY_SUPERINTENDENT') {
     throw new ForbiddenError('Survey review requires the Survey Manager or an explicitly authorized Area Superintendent');
   }
+  if (!scope.aorNodeId) throw new ForbiddenError('An incomplete draft has no delegated Area review authority');
   const { rows } = await db.query<{
     id: UUID; aor_node_id: UUID; granted_by: UUID; granted_at: Date;
   }>(

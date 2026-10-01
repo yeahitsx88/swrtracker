@@ -23,11 +23,11 @@ export interface TicketRecord {
   id: string;
   tenantId: string;
   projectId: string;
-  aorNodeId: string;
+  aorNodeId: string | null;
   departmentId: string | null;
   companyId: string;
   ticketNumber: string | null;
-  ticketType: TicketType;
+  ticketType: TicketType | null;
   requesterId: string;
   requesterName?: string;
   isOwnRequest?: boolean;
@@ -40,7 +40,9 @@ export interface TicketRecord {
   fieldContact: string | null;
   fieldChannel: string | null;
   description: string;
-  requestedDate: string;
+  requestedDate: string | null;
+  rowVersion?: number;
+  draftLastSavedAt?: string | null;
   originalRequestedDate: string | null;
   firstSubmittedAt: string | null;
   returnCycle: number;
@@ -104,14 +106,21 @@ export interface CreateTicketRequest {
 }
 
 export interface UpdateRequesterTicketRequest {
-  aorNodeId?: string;
-  ticketType?: TicketType;
+  aorNodeId?: string | null;
+  ticketType?: TicketType | null;
   craft?: string;
   fieldContact?: string;
   fieldChannel?: string;
   description?: string;
-  requestedDate?: string;
+  requestedDate?: string | null;
+  expectedVersion?: number;
 }
+
+export interface DeletedDraftRecord {
+  id: string; description: string; requesterId: string; requesterName: string;
+  deletedAt: string; lastSavedAt: string | null; rowVersion: number; recoverable: boolean;
+}
+export interface DeletedDraftsResponse { data: DeletedDraftRecord[]; total: number; limit: number; offset: number }
 
 export interface AttachmentRecord {
   id: string;
@@ -139,6 +148,7 @@ export interface AttachmentsListResponse {
 export interface UploadAttachmentRequest {
   file: File;
   purpose: 'REQUEST_INSTRUCTION' | 'FIELD_SUPPORT';
+  retryKey?: string;
 }
 
 export type TicketHistorySource =

@@ -8,13 +8,13 @@ import type { ITicketRepository, VisibilityScope } from './ports';
 const TICKET_TYPES: readonly TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
 
 export interface RequesterTicketChanges {
-  aorNodeId?: UUID;
-  ticketType?: TicketType;
+  aorNodeId?: UUID | null;
+  ticketType?: TicketType | null;
   craft?: string;
   fieldContact?: string;
   fieldChannel?: string;
   description?: string;
-  requestedDate?: Date;
+  requestedDate?: Date | null;
 }
 
 export async function updateRequesterTicket(
@@ -26,10 +26,12 @@ export async function updateRequesterTicket(
     actorId: UUID;
     actorRole: ProjectRole;
     changes: RequesterTicketChanges;
+    expectedVersion?: number;
     visibility?: VisibilityScope;
   },
 ): Promise<Ticket> {
   if (params.actorRole !== 'REQUESTER') throw new ForbiddenError('Only the requester may edit an SWR');
+  await db.query('SELECT id FROM tickets WHERE tenant_id = $1 AND id = $2 FOR UPDATE', [params.tenantId, params.ticketId]);
   const ticket = params.visibility
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
@@ -37,6 +39,9 @@ export async function updateRequesterTicket(
   if (ticket.requesterId !== params.actorId) throw new ForbiddenError('You may only edit your own SWR');
   if (ticket.status !== 'DRAFT' && ticket.status !== 'RETURNED_FOR_CORRECTION') {
     throw new ConflictError('Requester edits are allowed only while draft or returned for correction');
+  }
+  if (params.expectedVersion !== undefined && params.expectedVersion !== (ticket.rowVersion ?? 0)) {
+    throw new ConflictError('SWR changed since it was loaded. Reload before saving.', 'WORKFLOW_STALE_STATE');
   }
 
   const entries = Object.entries(params.changes).filter(([, value]) => value !== undefined);
@@ -48,7 +53,10 @@ export async function updateRequesterTicket(
     ['fieldContact', params.changes.fieldContact],
     ['description', params.changes.description],
   ] as const) {
-    if (value !== undefined && !value.trim()) throw new ValidationError(`${name} cannot be blank`);
+    if (ticket.status !== 'DRAFT' && value !== undefined && !value.trim()) throw new ValidationError(`${name} cannot be blank`);
+  }
+  if (ticket.status !== 'DRAFT' && (params.changes.aorNodeId === null || params.changes.ticketType === null || params.changes.requestedDate === null)) {
+    throw new ValidationError('Submitted SWRs must retain Area, Request Type and Need-By');
   }
   if (params.changes.requestedDate && Number.isNaN(params.changes.requestedDate.getTime())) {
     throw new ValidationError('requestedDate is invalid');
@@ -75,14 +83,15 @@ export async function updateRequesterTicket(
   };
   const values: unknown[] = [params.ticketId, params.tenantId, params.actorId, ticket.status, ticket.rowVersion ?? 0];
   const sets = entries.map(([field, value], index) => {
-    values.push(typeof value === 'string' ? value.trim() : value);
+    values.push(field === 'requestedDate' && value instanceof Date ? value.toISOString().slice(0, 10) : typeof value === 'string' ? value.trim() : value);
     return `${columnByField[field as keyof RequesterTicketChanges]} = $${index + 6}`;
   });
   const { rows: updated } = await db.query<{ id: string }>(
     `UPDATE tickets
-     SET ${sets.join(', ')}, updated_at = NOW(), row_version = row_version + 1
+     SET ${sets.join(', ')}, updated_at = NOW(), row_version = row_version + 1,
+         draft_last_saved_at = CASE WHEN status = 'DRAFT' THEN NOW() ELSE draft_last_saved_at END
      WHERE id = $1 AND tenant_id = $2 AND requester_id = $3
-       AND status = $4 AND row_version = $5
+       AND status = $4 AND row_version = $5 AND draft_deleted_at IS NULL
      RETURNING id`,
     values,
   );
@@ -91,7 +100,7 @@ export async function updateRequesterTicket(
     tenantId: params.tenantId,
     ticketId: params.ticketId,
     actorId: params.actorId,
-    eventType: 'ticket.requester_fields_updated',
+    eventType: ticket.status === 'DRAFT' ? 'ticket.draft_saved' : 'ticket.requester_fields_updated',
     payload: { fields: entries.map(([field]) => field), returnCycle: ticket.returnCycle ?? 0 },
   });
 
@@ -103,6 +112,7 @@ export async function updateRequesterTicket(
     fieldChannel: params.changes.fieldChannel?.trim() ?? ticket.fieldChannel,
     description: params.changes.description?.trim() ?? ticket.description,
     rowVersion: (ticket.rowVersion ?? 0) + 1,
+    draftLastSavedAt: ticket.status === 'DRAFT' ? new Date() : ticket.draftLastSavedAt,
     updatedAt: new Date(),
   };
 }

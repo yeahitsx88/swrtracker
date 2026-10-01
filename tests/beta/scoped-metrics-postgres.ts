@@ -37,7 +37,8 @@ async function main() {
       tenant_id text, project_id text, aor_node_id text, department_id text, company_id text,
       requester_id text, assigned_party_chief_id text, assigned_instrument_man_id text,
       status text, requested_date date, completed_at timestamptz, first_submitted_at timestamptz,
-      ticket_type text DEFAULT 'LAYOUT', submitted_at timestamptz, id bigint GENERATED ALWAYS AS IDENTITY
+      ticket_type text DEFAULT 'LAYOUT', submitted_at timestamptz, draft_deleted_at timestamptz,
+      id bigint GENERATED ALWAYS AS IDENTITY
     ) ON COMMIT DROP;
     CREATE TEMP TABLE aor_nodes (id text, tenant_id text, project_id text, name text) ON COMMIT DROP;
     CREATE TEMP TABLE companies (id text, tenant_id text, type text) ON COMMIT DROP;

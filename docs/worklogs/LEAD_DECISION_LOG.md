@@ -144,3 +144,13 @@
 - Provenance: owner's direct structured answer on 2026-09-30: "Yes—IT-admin-only resolution" to the protected responsibility/acting/department-grant flow question.
 - Approved: a narrow IT-admin-only resolution flow for role-removal blockers involving existing protected responsibility, acting-authority and department grants. Survey Manager sees blockers and handoff guidance only, with no new grant-removal powers. Each individual resolution requires explicit confirmation and coverage checks; preserve historical records and current authority boundaries.
 - Boundary: no automatic bulk cleanup, Manager permission expansion, account/invitation changes, inferred replacement/coverage, real Sabine mapping, or ticket/history rewriting. Inspect existing project-versus-tenant IT authority and coverage invariants before specifying commands. Cross-Area staffing reassignment and display-title editing remain distinct, not inferred from this approval.
+
+### Decision 22 — true partial requester drafts
+- Provenance: owner answered “Go with both” to full partial-draft schema/API support and recoverable delete/restore approvals.
+- Approved: explicit Save Draft may persist incomplete Area, Type, contact, date and details on one durable ticket. Required intake is checked at Submit. Preserve submitted records, public numbering, first submission and ordered return/resubmission history. Failed uploads or submit attempts must retain the existing draft identity and editable progress rather than creating another ticket.
+- Boundary: supplied values still require safe types, valid project references and valid calendar dates. Missing draft fields are null/empty, not fabricated defaults. Existing direct-assignment entry remains complete. No autosave or new operational permissions.
+
+### Decision 23 — recoverable requester deletion, no expiry or purge
+- Provenance: the same owner answer approves recoverable requester soft-delete and project-scoped IT restore, while deferring automatic expiry and permanent draft/attachment purge until retention policy approval.
+- Approved: requester deletes only their own DRAFT. Normal request/history/file/list access hides it immediately. Existing PROJECT_ADMIN-only recovery rules remain: current project scope, 30-day recovery window and a written reason of at least 10 characters. Preserve draft ID, files and append-only audit history.
+- Boundary: TENANT_ADMIN alone gains no direct draft-recovery authority. No automatic expiry, permanent deletion, file purge or orphan sweep is implemented. Older §20 expiry/purge passages are deferred, not active requirements. Protected-grant cleanup contracts remain separate pending decisions.

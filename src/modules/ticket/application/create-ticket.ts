@@ -19,17 +19,18 @@ import type { ITicketRepository } from './ports';
 export interface CreateTicketParams {
   tenantId:        UUID;
   projectId:       UUID;
-  aorNodeId:       UUID;
+  aorNodeId:       UUID | null;
   departmentId?:   UUID | null;
   companyId:       UUID;
   requesterId:     UUID;
-  ticketType:      TicketType;
+  ticketType:      TicketType | null;
   workflowVariant: WorkflowVariant;
   craft:           string;
   fieldContact?:   string | null;
   fieldChannel?:   string | null;
   description:     string;
-  requestedDate:   Date;
+  requestedDate:   Date | null;
+  explicitDraftSave?: boolean;
   parentTicketId?: UUID;
 }
 
@@ -45,7 +46,7 @@ export async function createTicket(
   }
 
   // Requested date must be a valid date (checked here; 48h rule enforced at submit)
-  if (isNaN(params.requestedDate.getTime())) {
+  if (params.requestedDate && isNaN(params.requestedDate.getTime())) {
     throw new ValidationError('requestedDate is not a valid date');
   }
 
@@ -57,7 +58,7 @@ export async function createTicket(
     throw new ConflictError('Archived projects are read-only');
   }
 
-  if (!await repo.findAorNodeCode(db, params.tenantId, params.projectId, params.aorNodeId)) {
+  if (params.aorNodeId && !await repo.findAorNodeCode(db, params.tenantId, params.projectId, params.aorNodeId)) {
     throw new NotFoundError('AOR node not found in this project');
   }
 
@@ -100,6 +101,7 @@ export async function createTicket(
     priority:               'NORMAL',
     prioritySetBy:          null,
     prioritySetReason:      null,
+    rowVersion:             0,
     createdAt:              now,
     updatedAt:              now,
   };
@@ -118,5 +120,12 @@ export async function createTicket(
     },
   });
 
+  if (params.explicitDraftSave) {
+    await db.query('UPDATE tickets SET draft_last_saved_at = $3 WHERE id = $1 AND tenant_id = $2',
+      [ticket.id, ticket.tenantId, now]);
+    ticket.draftLastSavedAt = now;
+    await appendAuditEvent(db, { ticketId: ticket.id, tenantId: ticket.tenantId,
+      actorId: params.requesterId, eventType: 'ticket.draft_saved', payload: { initial: true } });
+  }
   return ticket;
 }

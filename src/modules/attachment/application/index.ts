@@ -22,7 +22,7 @@ const FIELD_SUPPORT_ACTIVE = new Set<TicketStatus>([
   'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'PENDING_FIELD_VALIDATION', 'DELAYED',
 ]);
 
-function assertUploadAuthority(params: {
+export function assertUploadAuthority(params: {
   ticketRequesterId: UUID;
   ticketStatus: TicketStatus;
   actorId: UUID;

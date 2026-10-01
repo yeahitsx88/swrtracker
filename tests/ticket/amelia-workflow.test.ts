@@ -78,6 +78,7 @@ function ticket(overrides: Partial<Ticket> = {}): Ticket {
     status: 'APPROVED',
     craft: 'Civil',
     description: 'Amelia beta workflow',
+    fieldContact: 'Field foreman',
     requestedDate: new Date('2026-10-01T00:00:00Z'),
     originalRequestedDate: new Date('2026-10-01T00:00:00Z'),
     firstSubmittedAt: now,
@@ -140,7 +141,7 @@ function harness(initial: Ticket) {
     findUserCompanyInfo: async () => ({ companyId: current.companyId, companyType: 'GC' }),
     findUserEmail: async () => 'requester@example.com',
     findPartyChiefForInstrumentMan: async () => current.assignedPartyChiefId,
-    findAorNodeIdsForUser: async () => [current.aorNodeId],
+    findAorNodeIdsForUser: async () => { assert.ok(current.aorNodeId); return [current.aorNodeId]; },
     findProjectStatus: async () => 'ACTIVE',
     findProjectLeadTimeConfig: async () => ({ enforcementEnabled: false, leadTimeDays: 2 }),
     isActiveProjectMemberWithRole: async (_db, _tenant, _project, userId, roles) =>

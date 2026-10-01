@@ -1162,6 +1162,8 @@ Railway is used only for staging/demo. Production deployment follows only when a
 
 ## 20. Draft Behavior (Requester UX)
 
+Decision 22 authorizes true partial-draft storage/API support; safe supplied-value types and project references remain validated. Decision 23 defers all automatic expiry, permanent draft deletion, attachment purge and orphan sweeps described below until retention approval. Explicit requester soft-delete and PROJECT_ADMIN recovery within the existing 30-day window remain approved. Submitted work must retain complete Area/Type/Need-By; required contact/details are checked at submission, without rewriting legacy records.
+
 Drafts allow a requester to begin a ticket submission, save their progress, and return later to complete and submit it. This section is the definitive specification for all draft-related behavior.
 
 ### Saving

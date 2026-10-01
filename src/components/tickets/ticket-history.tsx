@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { TicketHistoryItem } from '@/lib/contracts';
+import { formatCalendarDate } from '@/lib/calendar-date';
 
 interface TicketHistoryProps {
   ticketId: string;
@@ -47,6 +48,9 @@ function humanize(value: string): string {
 
 function summary(item: TicketHistoryItem): string | null {
   const details = item.details;
+  if (typeof details.oldDate === 'string' && typeof details.newDate === 'string') {
+    return `${formatCalendarDate(details.oldDate)} → ${formatCalendarDate(details.newDate)}${typeof details.reason === 'string' ? ` · ${details.reason}` : ''}`;
+  }
   if (typeof details.reason === 'string') return details.reason;
   if (typeof details.filename === 'string') return details.filename;
   if (item.source === 'ASSIGNMENT') {

@@ -287,6 +287,10 @@ function makeUploadHarness(options: {
     withTransaction: async (fn) => {
       try {
         const result = await fn({ query: async (sql, params) => {
+          if (/SELECT id FROM tickets.*FOR UPDATE/.test(sql)) {
+            assert.deepEqual(params, [tenantId, projectId, ticketId]);
+            return { rows: [] };
+          }
           assert.match(sql, /INSERT INTO ticket_events/);
           assert.deepEqual(params?.slice(1, 5), [ticketId, tenantId, actorId, 'attachment.uploaded']);
           const payload = JSON.parse(String(params?.[5])) as { attachmentId: string; returnCycle: number };

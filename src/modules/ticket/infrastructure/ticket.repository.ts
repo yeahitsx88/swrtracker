@@ -31,11 +31,11 @@ interface TicketRow {
   id: string;
   tenant_id: string;
   project_id: string;
-  aor_node_id: string;
+  aor_node_id: string | null;
   department_id: string | null;
   company_id: string;
   ticket_number: string | null;
-  ticket_type: string;
+  ticket_type: string | null;
   requester_id: string;
   assigned_party_chief_id: string | null;
   assigned_instrument_man_id: string | null;
@@ -46,8 +46,11 @@ interface TicketRow {
   field_contact: string | null;
   field_channel: string | null;
   description: string;
-  requested_date: Date;
-  original_requested_date: Date | null;
+  requested_date: Date | string | null;
+  draft_last_saved_at: Date | null;
+  draft_deleted_at: Date | null;
+  draft_deleted_reason: 'REQUESTER_DELETED' | null;
+  original_requested_date: Date | string | null;
   first_submitted_at: Date | null;
   return_cycle: number;
   field_validation_reviewer_id: string | null;
@@ -78,11 +81,11 @@ function rowToTicket(r: TicketRow): Ticket {
     id:                      r.id as UUID,
     tenantId:                r.tenant_id as UUID,
     projectId:               r.project_id as UUID,
-    aorNodeId:               r.aor_node_id as UUID,
+    aorNodeId:               r.aor_node_id as UUID | null,
     departmentId:            r.department_id as UUID | null,
     companyId:               r.company_id as UUID,
     ticketNumber:            r.ticket_number,
-    ticketType:              r.ticket_type as TicketType,
+    ticketType:              r.ticket_type as TicketType | null,
     requesterId:             r.requester_id as UUID,
     assignedPartyChiefId:    r.assigned_party_chief_id as UUID | null,
     assignedInstrumentManId: r.assigned_instrument_man_id as UUID | null,
@@ -93,8 +96,11 @@ function rowToTicket(r: TicketRow): Ticket {
     fieldContact:            r.field_contact,
     fieldChannel:            r.field_channel,
     description:             r.description,
-    requestedDate:           r.requested_date,
-    originalRequestedDate:   r.original_requested_date,
+    requestedDate:           calendarDate(r.requested_date),
+    draftLastSavedAt:        r.draft_last_saved_at,
+    draftDeletedAt:          r.draft_deleted_at,
+    draftDeletedReason:      r.draft_deleted_reason,
+    originalRequestedDate:   calendarDate(r.original_requested_date),
     firstSubmittedAt:        r.first_submitted_at,
     returnCycle:             r.return_cycle ?? 0,
     fieldValidationReviewerId: r.field_validation_reviewer_id as UUID | null,
@@ -121,6 +127,12 @@ function rowToTicket(r: TicketRow): Ticket {
   };
 }
 
+function calendarDate(value: Date | string | null): Date | null {
+  if (value === null) return null;
+  const day = typeof value === 'string' ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+  return new Date(`${day}T00:00:00.000Z`);
+}
+
 // Visibility is shared with reporting; no chart owns a separate access policy.
 
 // ---------------------------------------------------------------------------
@@ -144,7 +156,7 @@ export class TicketRepository implements ITicketRepository {
     const { sql: visSql, params: visParams } = buildVisibilityClause(visibility, 3);
 
     const { rows } = await db.query<TicketRow>(
-      `SELECT t.* FROM tickets t
+      `SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t
        WHERE t.id = $1 AND t.tenant_id = $2
        ${visSql}
        LIMIT 1`,
@@ -159,7 +171,8 @@ export class TicketRepository implements ITicketRepository {
     ticketId: UUID,
   ): Promise<Ticket | null> {
     const { rows } = await db.query<TicketRow>(
-      `SELECT t.* FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 LIMIT 1`,
+      `SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date
+       FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL LIMIT 1`,
       [ticketId, tenantId],
     );
     return rows[0] ? rowToTicket(rows[0]) : null;
@@ -189,7 +202,7 @@ export class TicketRepository implements ITicketRepository {
         ticket.requesterId, ticket.assignedPartyChiefId, ticket.assignedInstrumentManId,
         ticket.surveyLeadId,
         ticket.workflowVariant, ticket.status, ticket.craft, ticket.fieldContact, ticket.fieldChannel, ticket.description,
-        ticket.requestedDate,
+        ticket.requestedDate?.toISOString().slice(0, 10) ?? null,
         ticket.submittedAt, ticket.approvedAt, ticket.assignedAt,
         ticket.startedAt, ticket.pendingPcOutcome, ticket.pendingPcReason,
         ticket.surveyCancelRequestedBy, ticket.surveyCancelRequestedRole, ticket.surveyCancelReason, ticket.surveyCancelRequestedAt,
@@ -324,8 +337,8 @@ export class TicketRepository implements ITicketRepository {
     maybe('ticket_number',              patch.ticketNumber);
     maybe('submitted_at',               patch.submittedAt);
     maybe('first_submitted_at',         patch.firstSubmittedAt);
-    maybe('original_requested_date',    patch.originalRequestedDate);
-    maybe('requested_date',             patch.requestedDate);
+    maybe('original_requested_date',    patch.originalRequestedDate === undefined ? undefined : patch.originalRequestedDate?.toISOString().slice(0, 10) ?? null);
+    maybe('requested_date',             patch.requestedDate === undefined ? undefined : patch.requestedDate.toISOString().slice(0, 10));
     maybe('return_cycle',               patch.returnCycle);
     maybe('field_validation_reviewer_id', patch.fieldValidationReviewerId);
     maybe('approved_at',                patch.approvedAt);
@@ -400,7 +413,7 @@ export class TicketRepository implements ITicketRepository {
     const offsetIdx = baseVals.length + 2;
 
     const { rows } = await db.query<TicketRow>(
-      `SELECT t.* FROM tickets t
+      `SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t
        WHERE ${where}
        ORDER BY ${opts.sort === 'operations' ? "(t.priority = 'HIGH') DESC, t.requested_date ASC, t.id ASC" : 't.created_at DESC, t.id DESC'}
        LIMIT $${limitIdx} OFFSET $${offsetIdx}`,

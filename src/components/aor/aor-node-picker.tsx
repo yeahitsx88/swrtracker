@@ -6,6 +6,7 @@ interface AorNodePickerProps {
   nodes: AorNodeRecord[];
   value: string;
   onChange: (next: string) => void;
+  label?: string;
 }
 
 function flattenTree(levels: AorLevelRecord[], nodes: AorNodeRecord[]): Array<{ id: string; label: string }> {
@@ -44,12 +45,12 @@ function flattenTree(levels: AorLevelRecord[], nodes: AorNodeRecord[]): Array<{ 
   return rows;
 }
 
-export function AorNodePicker({ levels, nodes, value, onChange }: AorNodePickerProps) {
+export function AorNodePicker({ levels, nodes, value, onChange, label }: AorNodePickerProps) {
   const items = flattenTree(levels, nodes);
 
   return (
-    <Select value={value} onChange={(event) => onChange(event.target.value)}>
-      <option value="">Select an AOR node</option>
+    <Select aria-label={label} value={value} onChange={(event) => onChange(event.target.value)}>
+      <option value="">{label ? `Select an ${label}` : 'Select an AOR node'}</option>
       {items.map((item) => (
         <option key={item.id} value={item.id}>
           {item.label}

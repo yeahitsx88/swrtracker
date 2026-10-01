@@ -44,8 +44,8 @@ test('linked cohort predicate binds each chief to its linked Area and preserves 
   assert.deepEqual(clause.params,[area,JSON.stringify(pairs),company]);
 });
 test('empty links or missing Areas fail closed; Area-wide requests need no chief assignment',()=>{
-  for(const scope of [{...visibility,linkedCrewAssignments:[]},{...visibility,aorNodeIds:[],linkedCrewAssignments:pairs}])assert.equal(buildVisibilityClause(scope,3).sql,'AND 1 = 0');
-  const areaWide=buildVisibilityClause(visibility,3);assert.equal(areaWide.sql,'AND t.aor_node_id IN ($3)');assert.deepEqual(areaWide.params,[area]);
+  for(const scope of [{...visibility,linkedCrewAssignments:[]},{...visibility,aorNodeIds:[],linkedCrewAssignments:pairs}])assert.equal(buildVisibilityClause(scope,3).sql,'AND t.draft_deleted_at IS NULL AND 1 = 0');
+  const areaWide=buildVisibilityClause(visibility,3);assert.equal(areaWide.sql,'AND t.draft_deleted_at IS NULL AND t.aor_node_id IN ($3)');assert.deepEqual(areaWide.params,[area]);
 });
 test('cohort invariant rejects mismatched fences and other roles',()=>{
   assertVisibilityCohort(visibility,'areaWorkload');assertVisibilityCohort({...visibility,linkedCrewAssignments:[]},'linkedCrews');

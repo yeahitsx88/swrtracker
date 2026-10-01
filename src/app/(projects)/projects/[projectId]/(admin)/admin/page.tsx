@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
+import { DraftRecovery } from './draft-recovery';
 
 export default function AdminProjectPage() {
   const params = useParams<{ projectId: string }>();
@@ -115,6 +116,7 @@ export default function AdminProjectPage() {
         </div>
       </Card>
       <SubcontractorAccess projectId={projectId} />
+      <DraftRecovery projectId={projectId} />
     </div>
   );
 }

@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { NotFoundError, ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import { appendAuditEvent } from '@/modules/audit/application';
 import { errorResponse } from '@/lib/api-error';
 import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
 import { requireResourceUuid } from '@/lib/resource-uuid';
 import { pool } from '@/lib/db';
-import { uploadAttachment } from '@/modules/attachment/application';
+import { assertUploadAuthority, uploadAttachment } from '@/modules/attachment/application';
+import { requireActiveAuth } from '@/lib/auth';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import type { AttachmentMetadataValidator, IAttachmentRepository } from '@/modules/attachment/application';
 import { AttachmentRepository, LocalAttachmentStorage, MAX_ATTACHMENT_BYTES, validateAttachmentObjectMetadata, validateAttachmentUploadCandidate } from '@/modules/attachment/infrastructure';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
@@ -28,6 +30,24 @@ export interface TicketAttachmentsRouteDeps {
   createStorage: () => AttachmentStorage;
   validateAttachmentMetadata: AttachmentMetadataValidator;
   withTransaction: TransactionRunner;
+  revalidateUploadActor?: (req: NextRequest, db: DbClient, ctx: Awaited<ReturnType<typeof getTicketRouteContext>>) => Promise<void>;
+}
+
+async function revalidateUploadActor(req: NextRequest, db: DbClient, ctx: Awaited<ReturnType<typeof getTicketRouteContext>>) {
+  const auth = await requireActiveAuth(req, db);
+  const { rows } = await db.query(
+    `SELECT pm.role FROM project_memberships pm
+     JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
+     JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
+     JOIN companies c ON c.id = u.company_id AND c.tenant_id = u.tenant_id
+     WHERE pm.project_id = $2 AND pm.user_id = $3 AND pm.role = $4
+       AND u.deactivated_at IS NULL AND u.session_version = $5
+       AND (c.type <> 'SUBCONTRACTOR' OR pm.role = 'REQUESTER')
+     FOR SHARE OF pm, p, u, c`,
+    [ctx.tenantId, ctx.projectId, ctx.actorId, ctx.actorRole, auth.sessionVersion]);
+  if (auth.userId !== ctx.actorId || auth.tenantId !== ctx.tenantId || !rows[0]) {
+    throw new ForbiddenError('Current project authority is required');
+  }
 }
 
 const defaultDeps: TicketAttachmentsRouteDeps = {
@@ -111,6 +131,7 @@ export async function handlePostTicketAttachments(
   try {
     const { ticketId } = await params;
     const ctx = await deps.getTicketRouteContext(req, ticketId);
+    const retryKey = req.headers.has('idempotency-key') ? requireIdempotencyKey(req) : null;
     const form = await boundedMultipartForm(req);
     const file = form.get('file');
     if (!(file instanceof File) || file.size <= 0) throw new ValidationError('file is required');
@@ -123,12 +144,23 @@ export async function handlePostTicketAttachments(
 
     const ticketRepo = deps.createTicketRepo();
     const attachmentRepo = deps.createAttachmentRepo();
-    const attachment = await deps.withTransaction(async (db) => {
+    const result = await deps.withTransaction(async (db) => {
+      if (retryKey) {
+        await (deps.revalidateUploadActor ?? revalidateUploadActor)(req, db, ctx);
+      }
+      // Serialize upload, submit and delete, including attachment-limit checks.
+      await db.query(`SELECT id FROM tickets WHERE tenant_id = $1 AND project_id = $2 AND id = $3 FOR UPDATE`,
+        [ctx.tenantId, ctx.projectId, ctx.ticketId]);
       const ticket = await ticketRepo.findById(db, ctx.tenantId, ctx.ticketId, ctx.visibility);
       if (!ticket) throw new NotFoundError(`Ticket ${ctx.ticketId} not found`);
       const projectStatus = await ticketRepo.findProjectStatus(db, ctx.tenantId, ctx.projectId);
       if (!projectStatus) throw new NotFoundError('Project not found');
-      return uploadAttachment(attachmentRepo, db, {
+      if (projectStatus === 'ARCHIVED') throw new ConflictError('Archived projects are read-only');
+      assertUploadAuthority({ ticketRequesterId: ticket.requesterId, ticketStatus: ticket.status,
+        actorId: ctx.actorId, actorRole: ctx.actorRole, assignedPartyChiefId: ticket.assignedPartyChiefId,
+        assignedInstrumentManId: ticket.assignedInstrumentManId, purpose });
+      const mutate = async () => {
+        const attachment = await uploadAttachment(attachmentRepo, db, {
         tenantId: ctx.tenantId,
         projectId: ctx.projectId,
         ticketId: ctx.ticketId,
@@ -150,17 +182,21 @@ export async function handlePostTicketAttachments(
           contentSha256: stored.contentSha256,
         },
         validateMetadata: deps.validateAttachmentMetadata,
-      });
+        });
+        return { status: 201, body: { attachment: { ...attachment, storageKey: undefined,
+          createdAt: attachment.createdAt.toISOString(),
+          downloadUrl: `/api/tickets/${attachment.ticketId}/attachments/${attachment.id}` } } };
+      };
+      if (!retryKey) return { ...await mutate(), replayed: false };
+      return executeIdempotentHttpMutation(db, {
+        tenantId: ctx.tenantId, actorId: ctx.actorId,
+        endpoint: `POST /api/tickets/${ctx.ticketId}/attachments`, idempotencyKey: retryKey,
+      }, { filename: file.name, mimeType: file.type || 'application/octet-stream',
+        sizeBytes: file.size, purpose, contentSha256: stored.contentSha256 }, mutate);
     });
+    if (result.replayed) await storage.remove(stored.storageKey);
     storedKey = null;
-    return NextResponse.json({
-      attachment: {
-        ...attachment,
-        storageKey: undefined,
-        createdAt: attachment.createdAt.toISOString(),
-        downloadUrl: `/api/tickets/${attachment.ticketId}/attachments/${attachment.id}`,
-      },
-    }, { status: 201 });
+    return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     if (storedKey && storage) await storage.remove(storedKey);
     return errorResponse(err);

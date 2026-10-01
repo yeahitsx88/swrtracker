@@ -91,7 +91,7 @@ test('filtered list count and page share authorization and narrowing with stable
   });
   assert.equal(calls.length, 2);
   for (const call of calls) {
-    assert.match(call.sql, /t.tenant_id = \$1 AND t.project_id = \$2 AND t.requester_id = \$3 AND t.company_id = \$4/);
+    assert.match(call.sql, /t.tenant_id = \$1 AND t.project_id = \$2 AND t.draft_deleted_at IS NULL AND t.requester_id = \$3 AND t.company_id = \$4/);
     assert.match(call.sql, /AND t.aor_node_id = \$5/);
     assert.deepEqual(call.values.slice(0, 6), ['tenant', 'project', 'actor', 'company', 'outside-area', 'layout']);
   }
@@ -107,7 +107,7 @@ test('filtered list count and page share authorization and narrowing with stable
   });
   assert.equal(calls.length, 2);
   for (const call of calls) {
-    assert.match(call.sql, /t.tenant_id = \$1 AND t.project_id = \$2 AND t.requester_id = \$3 AND t.company_id = \$4/);
+    assert.match(call.sql, /t.tenant_id = \$1 AND t.project_id = \$2 AND t.draft_deleted_at IS NULL AND t.requester_id = \$3 AND t.company_id = \$4/);
     assert.match(call.sql, /t.status = ANY\(\$5::text\[\]\)/);
     assert.deepEqual(call.values[4], ['ASSIGNED', 'IN_PROGRESS', 'DELAYED']);
   }

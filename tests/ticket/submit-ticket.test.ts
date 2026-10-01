@@ -14,6 +14,42 @@ const requesterId = 'requester-1' as UUID;
 const departmentId = 'department-1' as UUID;
 const seventyTwoHoursFromNow = () => new Date(Date.now() + (72 * 60 * 60 * 1000));
 
+test('explicit partial draft stores missing intake without allocating a number', async () => {
+  const events: unknown[] = [];
+  let numbers = 0;
+  const db: DbClient = { query: async (_sql, values) => { if (_sql.includes('INSERT INTO ticket_events')) events.push(values?.[4]); return { rows: [] }; } };
+  const draft = await createTicket(makeRepo({ nextSequence: async () => { numbers++; return 1; } }), db, {
+    tenantId, projectId, requesterId, companyId: 'company-1' as UUID,
+    workflowVariant: 'STANDARD_APPROVAL', aorNodeId: null, ticketType: null,
+    requestedDate: null, description: '', craft: '', explicitDraftSave: true,
+  });
+  assert.equal(draft.status, 'DRAFT'); assert.equal(draft.ticketNumber, null);
+  assert.equal(draft.aorNodeId, null); assert.equal(draft.ticketType, null); assert.equal(draft.requestedDate, null);
+  assert.ok(draft.draftLastSavedAt); assert.equal(numbers, 0);
+  assert.deepEqual(events, ['ticket.created', 'ticket.draft_saved']);
+});
+
+test('Submit validates every required intake field before numbering or mutation', async () => {
+  for (const missing of [{ aorNodeId: null }, { ticketType: null }, { requestedDate: null }, { fieldContact: ' ' }, { description: ' ' }]) {
+    let writes = 0;
+    const repo = makeRepo({ findByIdInternal: async () => makeDraftTicket(missing),
+      nextSequence: async () => { writes++; return 1; }, patchTicket: async () => { writes++; } });
+    await assert.rejects(() => submitTicket(repo, { query: async () => ({ rows: [] }) },
+      { tenantId, ticketId, actorId: requesterId, actorRole: 'REQUESTER' }), ValidationError);
+    assert.equal(writes, 0);
+  }
+});
+
+test('a department is optional approved intake and stale client submissions cannot mutate', async () => {
+  const repo = makeRepo({ findByIdInternal: async () => makeDraftTicket({ departmentId: null, rowVersion: 4 }) });
+  const db: DbClient = { query: async () => ({ rows: [] }) };
+  await assert.rejects(() => submitTicket(repo, db, { tenantId, ticketId, actorId: requesterId,
+    actorRole: 'REQUESTER', expectedVersion: 3 }), ConflictError);
+  const submitted = await submitTicket(repo, db, { tenantId, ticketId, actorId: requesterId,
+    actorRole: 'REQUESTER', expectedVersion: 4 });
+  assert.equal(submitted.departmentId, null); assert.equal(submitted.status, 'SUBMITTED');
+});
+
 function makeDraftTicket(overrides?: Partial<Ticket>): Ticket {
   const now = new Date('2026-03-04T12:00:00Z');
 
@@ -204,9 +240,10 @@ test('submitTicket assigns ticketNumber when the draft is submitted', async () =
   assert.equal(patchCalls[0]?.ticketNumber, 'FSS-U1-00042');
   assert.equal(nextSequenceCalls, 1);
   assert.equal(findAorNodeCodeCalls, 1);
-  assert.equal(dbCalls.length, 2);
-  assert.match(dbCalls[0] ?? '', /INSERT INTO ticket_events/);
-  assert.match(dbCalls[1] ?? '', /notification_outbox/);
+  assert.equal(dbCalls.length, 3);
+  assert.match(dbCalls[0] ?? '', /FOR UPDATE/);
+  assert.match(dbCalls[1] ?? '', /INSERT INTO ticket_events/);
+  assert.match(dbCalls[2] ?? '', /notification_outbox/);
 });
 
 test('submitTicket enforces configured lead-time before allocating a number', async () => {

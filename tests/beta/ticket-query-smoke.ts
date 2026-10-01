@@ -30,12 +30,12 @@ async function main() {
       const base = await repo.list(db, tenant, { projectId: project, visibility, limit: 200, offset: 0, sort: 'operations' });
       assert.ok(base.total <= 200, 'Fixture must fit in one independently scoped baseline page');
       const filters: TicketQueryFilters[] = [{}, { queue: 'assignment' }, { queue: 'open' }, { queue: 'completed' }, { queue: 'overdue' }, { status: 'SUBMITTED', priority: 'HIGH' }, { ticketType: 'LAYOUT' }, { areaId: '00000000-0000-4000-8000-000000000000' }, { query: "%_' OR 1=1 --" }];
-      if (base.data[0]) filters.push({ areaId: base.data[0].aorNodeId, query: 'LIVE SIMULATION' });
+      if (base.data[0]?.aorNodeId) filters.push({ areaId: base.data[0].aorNodeId, query: 'LIVE SIMULATION' });
       for (const filter of filters) {
         const closed = ['COMPLETED','REJECTED','REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED'];
         const expected = base.data.filter(t =>
           (!filter.queue || (filter.queue === 'assignment' ? t.status === 'APPROVED' && !t.assignedInstrumentManId :
-            filter.queue === 'completed' ? t.status === 'COMPLETED' : !closed.includes(t.status) && (filter.queue !== 'overdue' || t.requestedDate.toISOString().slice(0,10) < new Date().toISOString().slice(0,10)))) &&
+            filter.queue === 'completed' ? t.status === 'COMPLETED' : !closed.includes(t.status) && (filter.queue !== 'overdue' || (t.requestedDate !== null && t.requestedDate.toISOString().slice(0,10) < new Date().toISOString().slice(0,10))))) &&
           (!filter.status || t.status === filter.status) && (!filter.priority || t.priority === filter.priority) &&
           (!filter.ticketType || t.ticketType === filter.ticketType) && (!filter.areaId || t.aorNodeId === filter.areaId) &&
           (!filter.query || [t.ticketNumber,t.description,t.fieldContact].some(v=>v?.toLowerCase().includes(filter.query!.toLowerCase()))));

@@ -30,6 +30,7 @@ export async function reviseNeedBy(
     throw new ValidationError('Need-By cannot change on a terminal SWR');
   }
   const oldDate = ticket.requestedDate;
+  if (ticket.status === 'DRAFT' || !oldDate) throw new ValidationError('Draft Need-By is edited by its requester');
   if (oldDate.toISOString().slice(0, 10) === params.requestedDate.toISOString().slice(0, 10)) {
     throw new ValidationError('New Need-By date must differ from the current date');
   }
@@ -42,7 +43,7 @@ export async function reviseNeedBy(
     `INSERT INTO ticket_need_by_revisions
        (tenant_id, ticket_id, old_date, new_date, reason, revised_by)
      VALUES ($1, $2, $3, $4, $5, $6)`,
-    [params.tenantId, params.ticketId, oldDate, params.requestedDate, params.reason.trim(), params.actorId],
+    [params.tenantId, params.ticketId, oldDate.toISOString().slice(0, 10), params.requestedDate.toISOString().slice(0, 10), params.reason.trim(), params.actorId],
   );
   await appendAuditEvent(db, {
     tenantId: params.tenantId,

@@ -140,6 +140,7 @@ test('requester creates an editable draft linked to their completed SWR', async 
   assert.equal(followUp.fieldContact, parent.fieldContact);
   assert.equal(followUp.fieldChannel, parent.fieldChannel);
   assert.equal(followUp.description, parent.description);
+  assert.ok(followUp.requestedDate);
   assert.equal(followUp.requestedDate.toISOString(), '2026-09-27T12:00:00.000Z');
   assert.equal(followUp.requesterId, requesterId);
   assert.equal(saved.length, 1);

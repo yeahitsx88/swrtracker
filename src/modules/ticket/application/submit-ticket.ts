@@ -27,6 +27,7 @@ export async function submitTicket(
     actorRole: ProjectRole;
     departmentId?: UUID;
     urgentReason?: string;
+    expectedVersion?: number;
     visibility?: VisibilityScope;
   },
 ): Promise<Ticket> {
@@ -34,6 +35,7 @@ export async function submitTicket(
     throw new ForbiddenError('Only REQUESTER may submit a ticket');
   }
 
+  await db.query('SELECT id FROM tickets WHERE tenant_id = $1 AND id = $2 FOR UPDATE', [params.tenantId, params.ticketId]);
   // Fetch ticket first to enforce submit-time lead-time policy
   const ticket = params.visibility
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
@@ -49,7 +51,14 @@ export async function submitTicket(
     throw new ForbiddenError('You can only submit your own tickets');
   }
 
+  if (params.expectedVersion !== undefined && params.expectedVersion !== (ticket.rowVersion ?? 0)) {
+    throw new ConflictError('SWR changed. Reload before submitting.', 'WORKFLOW_STALE_STATE');
+  }
   assertActorHasRole(params.actorRole, ['REQUESTER']);
+  if (!ticket.aorNodeId || !ticket.ticketType || !ticket.requestedDate ||
+      !ticket.fieldContact?.trim() || !ticket.description.trim()) {
+    throw new ValidationError('Complete Area, Request Type, Point of Contact, Need-By Date and Request Details before submitting', 'INTAKE_INCOMPLETE');
+  }
 
   const projectStatus = await repo.findProjectStatus(db, params.tenantId, ticket.projectId);
   if (!projectStatus) {
@@ -116,19 +125,16 @@ export async function submitTicket(
     }
   } else {
     const manualDepartmentId = params.departmentId ?? ticket.departmentId;
-    if (!manualDepartmentId) {
-      throw new ValidationError('departmentId is required when requester has no department membership');
-    }
-    const manualDepartment = await repo.findDepartmentById(
+    const manualDepartment = manualDepartmentId ? await repo.findDepartmentById(
       db,
       params.tenantId,
       ticket.projectId,
       manualDepartmentId,
-    );
-    if (!manualDepartment) {
+    ) : null;
+    if (manualDepartmentId && !manualDepartment) {
       throw new ValidationError('departmentId must reference a department in this project');
     }
-    resolvedDepartmentId = manualDepartment.id;
+    resolvedDepartmentId = manualDepartment?.id ?? null;
   }
 
   if (isWhitelisted) {

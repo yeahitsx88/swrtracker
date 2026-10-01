@@ -8,6 +8,9 @@ import type { UUID } from '@/shared/types';
 
 export type AuditEventType =
   | 'ticket.created'
+  | 'ticket.draft_saved'
+  | 'ticket.draft_deleted'
+  | 'ticket.draft_recovered'
   | 'ticket.requester_fields_updated'
   | 'ticket.submitted'
   | 'ticket.resubmitted'

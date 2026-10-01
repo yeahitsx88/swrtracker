@@ -16,6 +16,7 @@ import type {
   TicketResponse,
   UploadAttachmentRequest,
   UpdateRequesterTicketRequest,
+  DeletedDraftsResponse,
 } from '@/lib/contracts';
 import type {
   AmeliaMetricsResponse,
@@ -46,7 +47,7 @@ function withQuery(path: string, params: Record<string, string | number | undefi
   return queryString ? `${path}?${queryString}` : path;
 }
 
-function createIdempotencyKey(): string {
+export function createIdempotencyKey(): string {
   const cryptoApi = globalThis.crypto;
   if (cryptoApi?.randomUUID) {
     return cryptoApi.randomUUID();
@@ -205,11 +206,11 @@ export const apiClient = {
     return apiRequest<TicketHistoryResponse>(`/api/tickets/${ticketId}/history`);
   },
 
-  updateRequesterTicket(ticketId: string, input: UpdateRequesterTicketRequest): Promise<TicketResponse> {
+  updateRequesterTicket(ticketId: string, input: UpdateRequesterTicketRequest, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}`, {
       method: 'PATCH',
       body: input,
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
@@ -228,12 +229,30 @@ export const apiClient = {
     });
   },
 
-  submitTicket(ticketId: string, departmentId?: string, urgentReason?: string): Promise<TicketResponse> {
+  submitTicket(ticketId: string, departmentId?: string, urgentReason?: string, expectedVersion?: number, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/submit`, {
       method: 'POST',
-      body: { ...(departmentId ? { departmentId } : {}), ...(urgentReason ? { urgentReason } : {}) },
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      body: { ...(departmentId ? { departmentId } : {}), ...(urgentReason ? { urgentReason } : {}),
+        ...(expectedVersion !== undefined ? { expectedVersion } : {}) },
+      headers: { 'Idempotency-Key': retryKey },
     });
+  },
+
+  saveNewDraft(projectId: string, input: UpdateRequesterTicketRequest, retryKey: string): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/projects/${projectId}/drafts`, {
+      method: 'POST', body: input, headers: { 'Idempotency-Key': retryKey },
+    });
+  },
+  deleteDraft(ticketId: string, expectedVersion: number, retryKey: string): Promise<{ deleted: boolean }> {
+    return apiRequest(`/api/tickets/${ticketId}/draft`, { method: 'DELETE', body: { expectedVersion },
+      headers: { 'Idempotency-Key': retryKey } });
+  },
+  listDeletedDrafts(projectId: string, limit: number, offset: number): Promise<DeletedDraftsResponse> {
+    return apiRequest(withQuery(`/api/projects/${projectId}/deleted-drafts`, { limit, offset }));
+  },
+  restoreDraft(projectId: string, ticketId: string, expectedVersion: number, reason: string, retryKey: string): Promise<{ restored: boolean }> {
+    return apiRequest(`/api/projects/${projectId}/drafts/${ticketId}/restore`, { method:'POST',
+      body: { expectedVersion, reason }, headers: { 'Idempotency-Key': retryKey } });
   },
 
   approveTicket(ticketId: string): Promise<TicketResponse> {
@@ -400,6 +419,7 @@ export const apiClient = {
     return apiRequest<AttachmentResponse>(`/api/tickets/${ticketId}/attachments`, {
       method: 'POST',
       formData,
+      ...(input.retryKey ? { headers: { 'Idempotency-Key': input.retryKey } } : {}),
     });
   },
 };

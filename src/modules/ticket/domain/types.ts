@@ -16,12 +16,12 @@ export interface Ticket {
   id: UUID;
   tenantId: UUID;
   projectId: UUID;
-  aorNodeId: UUID;
+  aorNodeId: UUID | null;
   departmentId: UUID | null;
   companyId: UUID;
   /** Human-readable number, e.g. FSS-U1-00247. Assigned on DRAFT -> SUBMITTED and immutable after that. */
   ticketNumber: string | null;
-  ticketType: TicketType;
+  ticketType: TicketType | null;
   requesterId: UUID;
   /** Optional coordination assignment; an Instrument Man may be assigned directly. */
   assignedPartyChiefId: UUID | null;
@@ -34,7 +34,10 @@ export interface Ticket {
   fieldContact?: string | null;
   fieldChannel?: string | null;
   description: string;
-  requestedDate: Date;
+  requestedDate: Date | null;
+  draftLastSavedAt?: Date | null;
+  draftDeletedAt?: Date | null;
+  draftDeletedReason?: 'REQUESTER_DELETED' | null;
   originalRequestedDate?: Date | null;
   firstSubmittedAt?: Date | null;
   returnCycle?: number;

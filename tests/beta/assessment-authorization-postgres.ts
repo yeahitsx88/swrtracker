@@ -43,6 +43,7 @@ async function main(){
       'ticket_return_cycles','ticket_need_by_revisions','notification_outbox'];
     for(const table of tables)await db.query(`CREATE TEMP TABLE ${table} (LIKE public.${table} INCLUDING ALL) ON COMMIT DROP`);
     await db.query('SET LOCAL search_path=pg_temp');
+    await db.query(fs.readFileSync('db/migrations/029_partial_drafts_and_recovery.sql', 'utf8'));
     for(const table of tables){assert.equal((await db.query('SELECT to_regclass($1)::oid=to_regclass($2)::oid AS safe',[table,`pg_temp.${table}`])).rows[0].safe,true);}
     // Route transactions are SAVEPOINTs inside the rollback-only outer fixture.
     appPool.query=(async(sql:string,params?:unknown[])=>{

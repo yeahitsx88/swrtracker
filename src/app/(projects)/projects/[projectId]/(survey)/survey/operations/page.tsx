@@ -174,7 +174,7 @@ export default function SurveyOperationsPage() {
                   <StatusBadge status={ticket.status} />
                 </div>
                 <p>{ticket.description}</p>
-                <p className="muted">Need-By {new Date(ticket.requestedDate).toLocaleDateString()} · Priority {ticket.priority}</p>
+                <p className="muted">Need-By {ticket.requestedDate?.slice(0,10) ?? 'Not set'} · Priority {ticket.priority}</p>
                 {!superintendent ? <div className="row">
                   {ticket.status === 'SUBMITTED' ? <Button disabled={busy === ticket.id} onClick={() => void run(ticket.id, () => apiClient.approveTicket(ticket.id), 'SWR approved.')}>Approve</Button> : null}
                   {['SUBMITTED', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED'].includes(ticket.status) ? (
