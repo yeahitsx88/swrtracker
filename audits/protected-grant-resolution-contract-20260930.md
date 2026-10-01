@@ -55,3 +55,9 @@ Schema evidence: migration022 already supports RESPONSIBILITY_GRANTED/REVOKED an
 ## 2026-10-01 written-spec approval and implementation-plan handoff
 
 Decision27 records owner approval of the revised responsibility handover specification atb4548e5, including project Survey Manager authority, explicit missing additional-Area coverage and confirmed manual end of temporary cover. The previous written-spec gate is closed for that exact first slice; acting/FIELD_COORDINATOR/department and complete Superintendent departure cleanup remain gated. [Implementation plan](../docs/superpowers/plans/2026-10-01-survey-reviewer-handover.md) is prepared for owner review/execution selection, requiring two verified pushed implementation checkpoints (API/audit, then shared Manager/IT UI). No implementation, migration application or runtime/concurrency certification is claimed.
+
+
+## 2026-10-01 implemented first-slice follow-up - Decisions27/28
+API checkpoint42f84b5 and shared controls (CODEX Batch73) implement the approved exact top-levelArea SURVEY_REVIEWER creation/reuse handover. Current project Manager and existing IT authority, executable review+individual coverage, explicit TEMPORARY/PERMANENT intent/manual handover and nullable correlated access-event evidence are settled only for this slice. Actual negative/rollback/two-session/session/HTTP/browser evidence verifies the documented contract locally.
+
+Earlier unresolved items remain applicable to acting/FIELD_COORDINATOR/department resolution, broader lifecycle and complete Superintendent departure: this handover retains departing individual Area/reporting/crew/team/role/account/ticket state. Do not interpret this follow-up as approving their cleanup/transfer. No Sabine mappings or hosted acceptance inferred.

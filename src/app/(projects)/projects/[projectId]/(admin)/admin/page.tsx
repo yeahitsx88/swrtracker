@@ -8,6 +8,7 @@ import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui
 import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
+import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
 
 export default function AdminProjectPage() {
   const params = useParams<{ projectId: string }>();
@@ -115,6 +116,7 @@ export default function AdminProjectPage() {
           ) : null}
         </div>
       </Card>
+      <Card title="Survey Reviewer handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
       <SubcontractorAccess projectId={projectId} />
       <DraftRecovery projectId={projectId} />
     </div>

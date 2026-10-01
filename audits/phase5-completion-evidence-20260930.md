@@ -55,3 +55,9 @@ Decision19 resolves the chart question above: display-only titles for now; retai
 ### Query-cost follow-up
 
 Fresh27 read-only plan samples across nine current chart/activity/review cases are recorded in `dashboard-query-cost-20260930.md`. Narrow chart populations repeatedly scan tenant import-event rows; two query-only alternatives were investigated without source/data changes. The projected alternative preserved six sampled JSON results but had mixed timing and temporary-disk costs, so it was not shipped. This supersedes the no-fresh-plan limitation only for those cases, not the remaining concurrency/interaction/deployment boundaries. Final TypeScript and367 tests pass; preview and20,109-request fingerprint unchanged.
+
+
+## 2026-10-01 continuation evidence - protected reviewer first slice
+Decision28 native execution produced verified API42f84b5 and shared Manager/IT UI acceptance (CODEX Batch73).424tests/nonincremental TypeScript/Windows+Linux production builds and current disposable migration/SQL/HTTP/browser evidence advance this narrow capability. Tests prove explicit exact-Area coverage creation/reuse, retained atomic audit/retry, current authority and stale/frozen UI semantics, without assigning real personnel or altering Sabine.
+
+Whole Phase5 is not complete. Full Superintendent departure cleanup/other protected contracts, authoritative individual Sabine reporting mapping, lower-priority scoped exports and hosted recovery/ACL/proxy/soak/device/assistive-technology acceptance remain separate queue/gates. Historical checklists and earlier counts above are historical evidence, not fresh results for this checkpoint.

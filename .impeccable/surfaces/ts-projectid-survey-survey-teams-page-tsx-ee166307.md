@@ -2,7 +2,7 @@
 version: 1
 slug: "ts-projectid-survey-survey-teams-page-tsx-ee166307"
 primary_target: "src/app/(projects)/projects/[projectId]/(survey)/survey/teams/page.tsx"
-related_targets: ["src/components/ui/team-management.tsx","src/components/ui/team-management.css"]
+related_targets: ["src/components/ui/team-management.tsx","src/components/ui/team-management.css","src/components/ui/protected-survey-obligations.tsx","src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx"]
 ---
 
 # Team Management
@@ -30,3 +30,9 @@ The Personnel row exposes Staffing for current Party Chiefs in Full/Medium build
 ## Targeted unlink extension — Decision 18
 
 Current Area, reporting and bounded roster evidence offer separately named Unlink controls on exact eligible rows. Selecting one replaces proposed-addition controls with an inline confirmation naming that link and its effects. Back/Keep returns focus to the current-assignments heading; successful unlink reloads the same Chief's current evidence and announces retained roles/history. Never infer removal from an omitted row or selection. Busy, stale, failed reads and closed projects disable or hide mutation controls. Department scope and ambiguous duplicate Area assignments remain administration-managed; dependent reporting blocks Area unlink with explicit recovery. Multi-Area evidence may resolve displayed eligible links, never claim its truncated summary is complete. No new modal, raster, identity or system token. Survey assistants without email are not assumed app users, authorized viewers or generated accounts; crew headcount and app-user population remain distinct.
+
+
+## Protected Survey Reviewer handover - Decisions27/28
+Manager RoleEditor and project/central IT administration share an inline, searchable, paginated handover for one current SURVEY_REVIEWER grant on a live top-level Area. Confirmation names the departing reviewer, replacement and exact Area, previews reuse or addition of each review/individual assignment, and requires explicit TEMPORARY/PERMANENT intent plus separate confirmation for missing coverage. Complete coverage is reused without new intent labels. Temporary coverage ends only through confirmed manual handover. Role change and remaining Area/reporting/crew/team cleanup remain separate. Displayed evidence retains its original snapshot; candidate mismatch and every definitive409 remain blocked through cancellation until deliberate reload. Pending/uncertain commands freeze the editor and adjacent role form; uncertain retry keeps unchanged input/key. Closed projects expose read-only evidence. The new section remains usable despite unrelated IT-operation denial. Inherit existing Axiom tokens, native controls, square buttons and field/panel rounding; no new imagery/system tokens.
+
+Finish evidence: fresh independent visual review disposition ship, detector[] and read-only documenter comparison to PRODUCT/DESIGN/current components. Document-top desktop1440 Manager temporary and mobile390 central IT permanent captures are ignored QA artifacts, not shipping assets. Keyboard inline opening/return/success focus and72 actual production browser checks are executor-observed; this does not certify physical devices or assistive technology.

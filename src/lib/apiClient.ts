@@ -104,6 +104,12 @@ export const apiClient = {
  workforce(projectId:string,query:import('@/modules/tenancy/application/survey-teams').TeamPageQuery):Promise<import('@/modules/tenancy/application/survey-workforce').WorkforcePage>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{...query}));},
  moveWorkforceMember(projectId:string,input:import('@/modules/tenancy/application/survey-workforce').WorkforceMove,key:string):Promise<{changed:boolean}>{return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{method:'POST',body:input,headers:{'Idempotency-Key':key}});},
 
+  readProtectedObligations(projectId: string, input: import('@/modules/tenancy/application/protected-obligations.types').ProtectedReadQuery): Promise<import('@/modules/tenancy/application/protected-obligations.types').ProtectedReadResult> {
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/protected-obligations`, {mode:input.mode,...input.query,...('userId' in input?{userId:input.userId}:{}),...('grantId' in input?{grantId:input.grantId}:{})}));
+  },
+  resolveSurveyReviewer(projectId: string, input: import('@/modules/tenancy/application/protected-obligations.types').ResolveReviewerInput, idempotencyKey: string): Promise<import('@/modules/tenancy/application/protected-obligations.types').ResolveReviewerResult> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/protected-obligations`, {method:'POST',body:input,headers:{'Idempotency-Key':idempotencyKey}});
+  },
   getSurveyStaffing(projectId: string, partyChiefId: string, query: import('@/modules/tenancy/application/read-survey-staffing').StaffingReadQuery): Promise<{ staffing: import('@/modules/tenancy/application/read-survey-staffing').SurveyStaffingDetail }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { partyChiefId, ...query }));
   },
