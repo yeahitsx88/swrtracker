@@ -120,3 +120,17 @@ test('chart SQL is opt-in and personnel series are omitted server-side for reade
   assert.ok(superintendent.includes("'instrumentMen', '[]'::jsonb"));
   assert.ok(!superintendent.includes('LEFT JOIN users'));
 });
+
+test('provenance uses one scoped membership set rather than a per-ticket event join', () => {
+  for (const includeCharts of [false, true]) {
+    const { sql, params } = buildMetricsQuery({ ...base, includeCharts,
+      visibility: { ...base.visibility, actorRole: 'REQUESTER' },
+      filters: { population: 'completed', areaId: 'area' } });
+    assert.ok(sql.includes("WHERE e.tenant_id=$1 AND e.payload->>'importSnapshot'='true'"));
+    assert.ok(sql.includes('((e.tenant_id,e.ticket_id) IN (SELECT tenant_id,id FROM filtered)) IS TRUE'));
+    assert.ok(!sql.includes('FROM ticket_events e JOIN filtered'));
+    assert.ok(sql.includes("bool_or(e.payload->>'completionDateGenerated'='true')"));
+    assert.ok(sql.includes('FROM filtered t LEFT JOIN provenance p ON p.ticket_id=t.id'));
+    assert.deepEqual(params.slice(4), ['actor', 'area', 'area']);
+  }
+});

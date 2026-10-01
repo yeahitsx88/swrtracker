@@ -145,6 +145,31 @@ async function main() {
     assert.equal(provenance.coverage!.cycleSamples, 1);
     assert.equal(provenance.averageSubmissionToCompletionHours, 48);
     assert.equal(provenance.charts!.types[0]!.cycleSamples, 1); scenarios++;
+    await db.query('SAVEPOINT provenance_regression');
+    await db.query(`INSERT INTO pg_temp.ticket_events VALUES
+      (4,'t','{"importSnapshot":true,"completionDateGenerated":false}'),
+      (4,'t','{"importSnapshot":true,"completionDateGenerated":null}'),
+      (8,'t','{"importSnapshot":false,"completionDateGenerated":true}'),
+      (8,'other-tenant','{"importSnapshot":true,"completionDateGenerated":true}'),
+      (7,'t','{"importSnapshot":true,"completionDateGenerated":true}'),
+      (5,'t','{"importSnapshot":true,"completionDateGenerated":true}');`);
+    const duplicateProvenance = await chartsFor(base);
+    assert.equal(duplicateProvenance.total, 7);
+    assert.equal(duplicateProvenance.coverage!.imported, 2);
+    assert.equal(duplicateProvenance.coverage!.syntheticCompletions, 1);
+    assert.equal(duplicateProvenance.coverage!.cycleSamples, 1);
+    assert.equal(duplicateProvenance.averageSubmissionToCompletionHours, 48); scenarios++;
+    const ownProvenance = await chartsFor({ ...base, actorRole: 'REQUESTER' });
+    assert.equal(ownProvenance.total, 2);
+    assert.equal(ownProvenance.coverage!.imported, 1);
+    assert.equal(ownProvenance.coverage!.syntheticCompletions, 0);
+    assert.equal(ownProvenance.averageSubmissionToCompletionHours, 48); scenarios++;
+    const emptyProvenance = await chartsFor(base, { dateFrom: '2030-01-01' });
+    assert.equal(emptyProvenance.total, 0);
+    assert.equal(emptyProvenance.coverage!.imported, 0);
+    assert.equal(emptyProvenance.coverage!.syntheticCompletions, 0);
+    assert.equal(emptyProvenance.averageSubmissionToCompletionHours, null); scenarios++;
+    await db.query('ROLLBACK TO SAVEPOINT provenance_regression');
     await db.query(`UPDATE pg_temp.tickets SET first_submitted_at='2026-01-04' WHERE id=8`);
     const invalidCycle = await chartsFor(base);
     assert.equal(invalidCycle.coverage!.invalidCycleDates, 1);

@@ -67,8 +67,12 @@ export function buildMetricsQuery(scope: MetricsScope) {
       SELECT t.* FROM authorized t WHERE ${filters.sql}
     ), provenance AS (
       SELECT e.ticket_id, bool_or(e.payload->>'completionDateGenerated'='true') AS synthetic
-      FROM ticket_events e JOIN filtered t ON t.id=e.ticket_id AND t.tenant_id=e.tenant_id
-      WHERE e.tenant_id=$1 AND e.payload->>'importSnapshot'='true' GROUP BY e.ticket_id
+      FROM ticket_events e
+      WHERE e.tenant_id=$1 AND e.payload->>'importSnapshot'='true'
+        -- Keep membership as a BooleanTest so PostgreSQL can hash the scoped set
+        -- once, rather than nested-loop rescanning tenant events per filtered ticket.
+        AND ((e.tenant_id,e.ticket_id) IN (SELECT tenant_id,id FROM filtered)) IS TRUE
+      GROUP BY e.ticket_id
     ), measured AS MATERIALIZED (
       SELECT t.*, p.ticket_id IS NOT NULL AS imported, COALESCE(p.synthetic,false) AS synthetic,
         CASE WHEN t.status='COMPLETED' AND t.completed_at>=t.first_submitted_at AND NOT COALESCE(p.synthetic,false)
