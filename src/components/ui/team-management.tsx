@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { ApiClientError, getErrorMessage } from '@/lib/errors';
 import type { Page, UUID } from '@/shared/types';
@@ -14,6 +14,7 @@ import { PaginationControls } from '@/components/forms';
 import './team-management.css';
 import { MemberKpiEntry } from './member-kpi-entry';
 import { ProtectedSurveyObligations } from './protected-survey-obligations';
+import { SuperintendentAreaObligations } from './superintendent-area-obligations';
 
 type Mode = 'personnel' | 'teams' | 'areas';
 function useEditorHeadingFocus(transition = false) {
@@ -78,25 +79,36 @@ function useTeamCommand() {
 function RoleEditor({ projectId, person, project, cancel, saved }: { projectId: string; person: TeamPersonnel; project: TeamProjectContext; cancel: () => void; saved: () => void }) {
   const roles = [...supportedTeamRoles(project.crewBuild),'REQUESTER'] as ManagedSurveyRole[];
   const [role,setRole] = useState<ManagedSurveyRole>(roles.includes(person.role as ManagedSurveyRole) ? person.role as ManagedSurveyRole : roles[0]!);
-  const [confirmed,setConfirmed] = useState(false);
-  const command = useTeamCommand();
-  const [handoverLocked,setHandoverLocked]=useState(false);
-  const readOnly=project.status==='ARCHIVED';
+  const [confirmed,setConfirmed] = useState(false),command = useTeamCommand();
+  const [handoverLocked,setHandoverLocked]=useState(false),[areaLocked,setAreaLocked]=useState(false),[roleLocked,setRoleLocked]=useState(false),[roleUncertain,setRoleUncertain]=useState(false);
+  const [handoverRevision,setHandoverRevision]=useState(0),[areaRevision,setAreaRevision]=useState(0);
+  const roleLock=useRef(false),handoverLock=useRef(false),areaLock=useRef(false),roleRunning=useRef(false);
+  const frozenRole=useRef<Parameters<typeof apiClient.changeSurveyRole>[1]|null>(null);
+  const onHandoverLock=useCallback((locked:boolean)=>{handoverLock.current=locked;setHandoverLocked(locked);},[]);
+  const onAreaLock=useCallback((locked:boolean)=>{areaLock.current=locked;setAreaLocked(locked);},[]);
+  const readOnly=project.status==='ARCHIVED',frozen=roleLocked||handoverLocked||areaLocked;
   const editorHeading = useEditorHeadingFocus();
   function submit(event: FormEvent) {
     event.preventDefault();
-    const input = { userId: person.userId, expectedRole: person.role, expectedRoleVersion: person.roleVersion, role, confirmRoleChanges: confirmed };
-    void command.run('role',input,key => apiClient.changeSurveyRole(projectId,input,key),saved);
+    if(readOnly||roleRunning.current||handoverLock.current||areaLock.current||(roleLock.current&&!roleUncertain)||(!roleUncertain&&(!confirmed||role===person.role)))return;
+    const input=roleUncertain?frozenRole.current:{userId:person.userId,expectedRole:person.role,expectedRoleVersion:person.roleVersion,role,confirmRoleChanges:confirmed};
+    if(!input)return;frozenRole.current=input;roleRunning.current=true;roleLock.current=true;setRoleLocked(true);
+    void command.run('role',input,async key=>{
+      try{return await apiClient.changeSurveyRole(projectId,input,key);}
+      catch(error){const uncertain=!(error instanceof ApiClientError)||error.status>=500;setRoleUncertain(uncertain);roleLock.current=uncertain;setRoleLocked(uncertain);if(!uncertain)frozenRole.current=null;throw error;}
+      finally{roleRunning.current=false;}
+    },()=>{roleLock.current=false;setRoleLocked(false);setRoleUncertain(false);frozenRole.current=null;saved();});
   }
+  const childResolved=(sibling:'area'|'handover')=>{command.reset();setConfirmed(false);if(sibling==='area')setAreaRevision(n=>n+1);else setHandoverRevision(n=>n+1);};
   return <div className="stack"><form className="tm-editor stack" onSubmit={submit} aria-label={`Change role for ${person.name}`}>
     <div><h3 className="panel-title" tabIndex={-1} ref={editorHeading}>Change project role</h3><p className="muted">{person.name} · {person.email}</p></div>
     <p>Current role: <strong>{roleLabel(person.role)}</strong></p>
-    <label className="field"><span className="field-label">New role</span><select className="select" value={role} disabled={command.busy||handoverLocked||readOnly} onChange={event => { setRole(event.target.value as ManagedSurveyRole); setConfirmed(false); }}>{roles.map(value => <option key={value} value={value}>{roleLabel(value)}</option>)}</select></label>
+    <label className="field"><span className="field-label">New role</span><select className="select" value={role} disabled={frozen||readOnly} onChange={event=>{if(roleLock.current||handoverLock.current||areaLock.current)return;setRole(event.target.value as ManagedSurveyRole);setConfirmed(false);}}>{roles.map(value=><option key={value} value={value}>{roleLabel(value)}</option>)}</select></label>
     <p className="muted">Removing a survey role keeps this person as a Requester. Active team, crew, reporting and authority obligations must be resolved first. Request history is retained; active work may need separate reassignment.</p>
-    <label className="tm-check"><input type="checkbox" checked={confirmed} disabled={command.busy||handoverLocked||readOnly} onChange={event => setConfirmed(event.target.checked)} /><span>I confirm this role change and understand this person must sign in again.</span></label>
-    {command.error ? <ErrorBanner message={command.error} /> : null}
-    <div className="row"><Button type="submit" disabled={command.busy||handoverLocked||readOnly||!confirmed||role===person.role}>{command.busy ? 'Saving…' : 'Save role'}</Button><Button type="button" variant="secondary" disabled={command.busy||handoverLocked} onClick={cancel}>{command.error ? 'Reload personnel' : 'Cancel'}</Button></div>
-  </form><ProtectedSurveyObligations projectId={projectId} userId={person.userId} disabled={command.busy} onLockChange={setHandoverLocked} onResolved={()=>{command.reset();setConfirmed(false);}}/></div>;
+    <label className="tm-check"><input type="checkbox" checked={confirmed} disabled={frozen||readOnly} onChange={event=>{if(!roleLock.current&&!handoverLock.current&&!areaLock.current)setConfirmed(event.target.checked);}}/><span>I confirm this role change and understand this person must sign in again.</span></label>
+    {command.error?<ErrorBanner message={command.error}/>:null}{roleUncertain?<p role="status">The role-change response is uncertain. Retry this unchanged confirmation to recover its recorded result.</p>:null}
+    <div className="row"><Button type="submit" disabled={command.busy||handoverLocked||areaLocked||readOnly||(!roleUncertain&&(!confirmed||role===person.role))}>{command.busy?'Saving…':roleUncertain?'Retry unchanged role change':'Save role'}</Button><Button type="button" variant="secondary" disabled={frozen} onClick={()=>{if(!roleLock.current&&!handoverLock.current&&!areaLock.current)cancel();}}>{command.error?'Reload personnel':'Cancel'}</Button></div>
+  </form><ProtectedSurveyObligations projectId={projectId} userId={person.userId} disabled={roleLocked||areaLocked} isBlocked={()=>roleLock.current||areaLock.current} invalidateVersion={handoverRevision} onLockChange={onHandoverLock} onResolved={()=>childResolved('area')}/>{person.role==='SURVEY_SUPERINTENDENT'?<SuperintendentAreaObligations projectId={projectId} superintendentId={person.userId} disabled={roleLocked||handoverLocked} isBlocked={()=>roleLock.current||handoverLock.current} invalidateVersion={areaRevision} onLockChange={onAreaLock} onUnlinked={()=>childResolved('handover')}/>:null}</div>;
 }
 function TeamEditor({ projectId, project, initial, cancel, saved }: { projectId: string; project: TeamProjectContext; initial: SurveyTeamDetail | null; cancel: () => void; saved: () => void }) {
   const [name,setName] = useState(initial?.name ?? ''), [area,setArea] = useState<TeamArea | null>(initial ? { id: initial.areaId, name: initial.areaName } : null);

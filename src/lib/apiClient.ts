@@ -110,6 +110,12 @@ export const apiClient = {
   resolveSurveyReviewer(projectId: string, input: import('@/modules/tenancy/application/protected-obligations.types').ResolveReviewerInput, idempotencyKey: string): Promise<import('@/modules/tenancy/application/protected-obligations.types').ResolveReviewerResult> {
     return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/protected-obligations`, {method:'POST',body:input,headers:{'Idempotency-Key':idempotencyKey}});
   },
+  readSuperintendentAreas(projectId:string,input:import('@/modules/tenancy/application/superintendent-area.types').SuperintendentAreaReadQuery):Promise<import('@/modules/tenancy/application/superintendent-area.types').SuperintendentAreaReadResult>{
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`,{mode:input.mode,superintendentId:input.superintendentId,...input.query,...('linkId' in input?{linkId:input.linkId}:{})}));
+  },
+  unlinkSuperintendentArea(projectId:string,input:import('@/modules/tenancy/application/superintendent-area.types').UnlinkSuperintendentAreaInput,idempotencyKey:string):Promise<import('@/modules/tenancy/application/superintendent-area.types').UnlinkSuperintendentAreaResult>{
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`,{method:'PATCH',body:input,headers:{'Idempotency-Key':idempotencyKey}});
+  },
   getSurveyStaffing(projectId: string, partyChiefId: string, query: import('@/modules/tenancy/application/read-survey-staffing').StaffingReadQuery): Promise<{ staffing: import('@/modules/tenancy/application/read-survey-staffing').SurveyStaffingDetail }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { partyChiefId, ...query }));
   },

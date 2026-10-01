@@ -90,3 +90,6 @@ Written-spec approval permits writing-plans only. The subsequent plan must concr
 
 
 Execution status: Decision31 approves the deb74ef implementation plan and Native execution. Task1 API checkpoint evidence is CODEX Batch77; Task2 Manager UI remains outstanding at this checkpoint.
+
+
+Task2 status: Manager controls and synchronous three-way coordination implemented and freshly verified under Decision31. Code-review recovery findings fixed with observed RED/GREEN; visual finish ship. API push e03f9d2 is verified; UI push/final whole-range completion evidence follows CODEX Batch78 and the completion audit. No broadened owner authority.

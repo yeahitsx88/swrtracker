@@ -10,14 +10,14 @@ import {Button,ErrorBanner,SuccessBanner} from '@/components/ui';
 import {PaginationControls} from '@/components/forms';
 import './team-management.css';
 
-export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockChange,disabled=false}:{projectId:string;userId?:UUID;onResolved?:(result:ResolveReviewerResult)=>void;onLockChange?:(locked:boolean)=>void;disabled?:boolean}){
+export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockChange,disabled=false,isBlocked,invalidateVersion=0}:{projectId:string;userId?:UUID;onResolved?:(result:ResolveReviewerResult)=>void;onLockChange?:(locked:boolean)=>void;disabled?:boolean;isBlocked?:()=>boolean;invalidateVersion?:number}){
  const [state,dispatch]=useReducer(reduceProtectedEditor,undefined,initialProtectedEditor);
  const [open,setOpen]=useState(!!userId),[people,setPeople]=useState<Page<ProtectedPerson>|null>(null);
  const [draft,setDraft]=useState(''),[search,setSearch]=useState(''),[limit,setLimit]=useState<10|25|50|100>(10),[offset,setOffset]=useState(0),[revision,setRevision]=useState(0);
- const [success,setSuccess]=useState<string|null>(null),heading=useRef<HTMLHeadingElement>(null),running=useRef(false),generation=useRef(0);
+ const [success,setSuccess]=useState<string|null>(null),heading=useRef<HTMLHeadingElement>(null),running=useRef(false),generation=useRef(0),seenInvalidation=useRef(invalidateVersion);
  const frozen=state.pending||state.uncertain||disabled;
  useEffect(()=>{if(userId)dispatch({type:'person',userId});},[userId]);
- useEffect(()=>{onLockChange?.(state.pending||state.uncertain);},[state.pending,state.uncertain,onLockChange]);
+ useEffect(()=>{if(seenInvalidation.current!==invalidateVersion){seenInvalidation.current=invalidateVersion;dispatch({type:'stale',message:'Related staffing changed. Reload current obligations before confirming.'});setSuccess(null);}},[invalidateVersion]);
  useEffect(()=>{
   if(!open||frozen)return;
   let active=true;const current=Math.max(generation.current,state.generation)+1;generation.current=current;
@@ -35,12 +35,12 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[projectId,open,state.userId,state.grant?.grantId,search,limit,offset,revision,frozen]);
  const resetQuery=()=>{setDraft('');setSearch('');setOffset(0);};
- function reload(){if(frozen)return;dispatch({type:'reload'});resetQuery();setRevision(n=>n+1);setSuccess(null);heading.current?.focus();}
- function cancel(){if(frozen)return;dispatch({type:'cancel'});resetQuery();heading.current?.focus();}
+ function reload(){if(frozen||isBlocked?.())return;dispatch({type:'reload'});resetQuery();setRevision(n=>n+1);setSuccess(null);heading.current?.focus();}
+ function cancel(){if(frozen||isBlocked?.())return;dispatch({type:'cancel'});resetQuery();heading.current?.focus();}
  async function submit(event:FormEvent){
-  event.preventDefault();if(running.current||disabled)return;
+  event.preventDefault();if(running.current||disabled||isBlocked?.())return;
   const next=reduceProtectedEditor(state,state.uncertain?{type:'retry'}:{type:'begin',key:createIdempotencyKey()});
-  if(!next.pending||!next.attempt)return;running.current=true;
+  if(!next.pending||!next.attempt)return;running.current=true;onLockChange?.(true);let retainLock=false;
   dispatch(state.uncertain?{type:'retry'}:{type:'begin',key:next.attempt.key});
   try{
    const result=await apiClient.resolveSurveyReviewer(projectId,next.attempt.input,next.attempt.key);
@@ -48,8 +48,8 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
    setSuccess('One Survey Reviewer grant handed over. Remaining Area, reporting, crew and team obligations still need separate resolution before a role change.');
    onResolved?.(result);heading.current?.focus();
   }catch(error){
-   dispatch(protectedResolutionFailure(error));
-  }finally{running.current=false;}
+   const failure=protectedResolutionFailure(error);retainLock=failure.type==='uncertain';dispatch(failure);
+  }finally{running.current=false;onLockChange?.(retainLock);}
  }
  const page=state.userId?(state.grant?state.candidates?.candidates:state.detail?.obligations):people;
  const label=state.userId?(state.grant?'Search replacement Superintendents':'Search obligations by Area or responsibility'):'Search project personnel';
