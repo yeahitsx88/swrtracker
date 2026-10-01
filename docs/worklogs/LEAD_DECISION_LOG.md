@@ -182,3 +182,9 @@
 - Approved specification: docs/superpowers/specs/2026-10-01-survey-reviewer-resolution-design.md as atb4548e5. Current project Survey Manager and existing central/project IT may reuse complete coverage or explicitly create missing exact-Area review/individual assignment coverage for another eligible current Superintendent, preserving other Areas. Coverage creation, selected revocation, truthful TEMPORARY/PERMANENT provenance, audit and retry are atomic.
 - Boundary accepted: remaining departing individual Area/reporting/crew obligations and separate guarded role changes remain outside this first slice. No automatic expiry, acting/FIELD_COORDINATOR/department/general grant/account lifecycle expansion or Sabine mutation/cutover. Full Superintendent departure cleanup requires its own contract.
 - Next stage: writing-plans is authorized for the approved written spec. New implementation-plan review and execution method selection remain required; this approval is not treated as approval of an unseen plan or production implementation.
+
+
+### Decision 28 - approved plan, native execution
+- Provenance: on 2026-10-01 the owner said "Native execution approved" after the e1568f2 implementation-plan checkpoint.
+- Approval: execute docs/superpowers/plans/2026-10-01-survey-reviewer-handover.md against the Decision27 design, as one native implementer with independent read-only review at each verified API/UI checkpoint and ordinary pushes to origin/phase5.
+- Limits: approval does not cross full Superintendent departure cleanup, acting/FIELD_COORDINATOR/department, account lifecycle or retention-policy gates, and does not authorize Sabine mutation or deployment.

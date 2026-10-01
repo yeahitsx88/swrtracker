@@ -163,3 +163,11 @@ Proposed temporary meaning is until a confirmed manual handover to the permanent
 ### Written handover design approved - Decision27
 
 The owner approved the revised written responsibility handover design, including temporary additional-Area coverage ending through confirmed manual handover. The implementation plan at superpowers/plans/2026-10-01-survey-reviewer-handover.md now awaits plan review/execution selection. API/audit and shared Manager/IT controls are two proposed verified pushed checkpoints. No controls are shipped by this documentation change; full Superintendent departure cleanup and other protected contracts remain separate.
+
+
+### Protected Survey Reviewer handover API - Batch 72
+Decision28 approves native execution of the reviewed plan. GET/POST `/api/projects/[projectId]/survey/protected-obligations` supports current project Survey Manager and existing central/project IT, without broadening other administration. Bounded private reads share a current-state checksum; Manager personnel remains within the existing editable population. IT investigation may read inactive members but fresh handover still requires active eligible subjects.
+
+Reuse complete exact-Area review/individual coverage, or explicitly confirm TEMPORARY/PERMANENT creation of only missing coverage for another current Superintendent. The transaction verifies complete replacement coverage before soft-revoking only the selected grant. Other Areas, departing individual assignments/reporting/crews/roles, accounts and requests stay intact. Nullable migration030 evidence on existing access events retains actual authority, rows created/reused, confirmer/time and intent. Assignment-only additions are labeled separately from old grant provenance; no fabricated grant event. Temporary coverage ends through manual confirmed handover.
+
+Current authority/session/project gates precede exact historical retry. Actual two-session tests establish the tested row-lock protocol and uniqueness rollback; they do not establish global logout serialization or unique generic individual assignments. Shared UI is pending Task2. Remaining role blockers and complete Superintendent departure cleanup/other protected types remain gated. No Sabine change. Fresh evidence and reproduction limits: CODEX Batch72 and the approved plan.

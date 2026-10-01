@@ -12,7 +12,8 @@ const metrics=`/api/projects/${project}/metrics?view=charts`,tickets=`/api/ticke
 const wide=await read(metrics);assert.equal(wide.metrics.total,7);assert.equal(wide.analytics.scopeKind,'areaWorkload');assert.equal(wide.analytics.personnelFilters,false);
 const linked=await read(metrics+'&cohort=linkedCrews');assert.equal(linked.metrics.total,3);assert.equal(linked.analytics.scopeKind,'linkedCrews');assert.equal(linked.analytics.personnelFilters,true);assert.equal(linked.analytics.linkedCrewCount,1);
 assert.equal((await read(tickets)).total,7);assert.equal((await read(tickets+'&cohort=linkedCrews')).total,3);
-assert.equal((await read(metrics+`&cohort=linkedCrews&crewId=${id(16)}`)).metrics.total,0);
+// Batch66 assigned-workforce contract denies a Chief outside the current pool.
+await read(metrics+`&cohort=linkedCrews&crewId=${id(16)}`,404);
 assert.equal((await read(tickets+`&cohort=linkedCrews&crewId=${id(16)}`)).total,0);
 await read(metrics+`&crewId=${id(7)}`,403);await read(metrics+'&cohort=all',400);await read(tickets+'&cohort=linkedCrews&cohort=areaWorkload',400);
 await read(metrics+'&cohort=linkedCrews',403,token(id(7)));await read(tickets+'&cohort=linkedCrews',403,token(id(7)));
