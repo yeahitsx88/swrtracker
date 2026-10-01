@@ -1,10 +1,12 @@
 import type { NextRequest } from 'next/server';
-import { handleGetSurveyStaffing, handlePostSurveyStaffing, handlePatchSurveyStaffing } from './handler';
+import { handlePostSurveyStaffing } from './handler';
+
+import {dispatchGetSurveyStaffing,dispatchPatchSurveyStaffing} from './dispatch';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ projectId: string }> }) {
-  return handleGetSurveyStaffing(req, ctx);
+  return dispatchGetSurveyStaffing(req, ctx);
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ projectId: string }> }) {
@@ -12,5 +14,5 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ projectId:
 }
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ projectId: string }> }) {
-  return handlePatchSurveyStaffing(req, ctx);
+  return dispatchPatchSurveyStaffing(req, ctx);
 }

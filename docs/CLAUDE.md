@@ -997,6 +997,7 @@ Log at every meaningful state transition. Structured format only.
 
 *Owner-approved project Survey Team Management (project-level `survey_staffing_events`, not ticket transitions)*
 - `survey.staffing_saved` (existing fixed-role Chief/Area/reporting/IM transaction; Decision 18 also permits targeted soft unlink with `action: unlink`, link kind/ID, Chief and previous link values; role changes and ticket records are not part of unlink)
+  - Decision30/31 Superintendent cleanup retains version1 evidence with `action: unlink-superintendent-area`: exact previous individual assignment/subject, replacement identity plus reused exact review grant/individual assignment, Area/subtree, verified absent reporting/responsibility/acting obligations, displayed checksum/confirmation, current actual Manager authority and held membership IDs, time/correlation and preservation flags. Assignment soft deactivation, this event and retry result are atomic. No coverage creation, role change, ticket transition or IT-only cleanup.
 - `survey.team_created`, `survey.team_updated` (organizational team name, Area, lead and members; previous state and version on edit)
 - `survey.team_deactivated` (confirmed soft deletion retains personnel, historical membership and all ticket records)
 - `survey.role_changed` (reserved for the approved fixed Superintendent/Chief/IM assignment/change/removal flow; no tenant-level role changes)
