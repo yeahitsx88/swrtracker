@@ -27,3 +27,10 @@ Read-only source assessment following owner Decision20. The IT-only boundary is 
 ## Next gate
 
 Owner Decision20 remains accepted. The outstanding gate is the exact replacement coverage rule, department target semantics and the additive audit contract needed to preserve that proof. No production/API/schema/UI files were changed by this assessment. The verified `aaed8df` phase5 checkpoint remains the preview implementation.
+
+
+## 2026-10-01 responsibility-only scope follow-up
+
+The owner replied "Continue" to the proposed SURVEY_REVIEWER-only first slice with already-authorized same-Area replacement and retained atomic prior/replacement/coverage/confirmer/time evidence. Decision24 records this scope approval; it does not resolve acting or department semantics. The previous all-types contract gate is now narrowed: write and review the responsibility-only specification, keeping unsupported obligations protected.
+
+Proposed written design: [Survey Reviewer resolution](../docs/superpowers/specs/2026-10-01-survey-reviewer-resolution-design.md). It makes the conservative coverage witness, UI/API/replay/locking and additive audit choices concrete for owner review. Current source requires individual Area request visibility as well as SURVEY_REVIEWER authority for executable review; a stored responsibility grant alone is insufficient proof. Specification approval and the later implementation-plan gate remain outstanding. No resolution endpoint, schema or UI is implemented by this follow-up; fb45827 is the synchronized source checkpoint, not a new Sabine deployment.

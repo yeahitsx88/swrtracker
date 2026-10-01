@@ -1,0 +1,114 @@
+# Survey Reviewer obligation resolution: first slice
+
+Status: proposed written design for owner review; not implementation approval.
+
+Design basis: `phase5` at `fb45827f9571c5f91f029ffc12ae75e3e7877543`, synchronized with `origin/phase5` on 2026-10-01. Owner Decision20 approves IT-only protected-obligation resolution. The owner then answered "Continue" to the recommended responsibility-only first slice: an already-authorized same-Area replacement, atomic retained evidence, with acting and department resolution left gated. That answer approves this scope and preparation of this design; the specification and subsequent implementation plan still require their Superpowers reviews.
+
+## Intent and success
+
+IT can resolve one existing Area `SURVEY_REVIEWER` obligation without removing review coverage, issuing new authority, changing anyone's project role or rewriting a request. Survey Manager can identify that obligation and hand it to IT. Successful resolution soft-revokes only the selected grant and atomically records who replaced its coverage, the existing evidence used, the confirmer and time. A subsequent role change remains the existing separate Manager command and can still be blocked by other obligations.
+
+The operation never promises that an individual is now removable, that all active work has been reassigned, or that historical requests follow the replacement. Closed projects remain read-only. No Sabine mutation or local preview cutover is part of implementation acceptance.
+
+## Alternatives and selected structure
+
+1. **Extend the existing access audit narrowly (recommended).** Add one nullable structured evidence column to `access_grant_events`; use its existing `RESPONSIBILITY_REVOKED` action. Keep Tenancy use cases/repository separate from the HTTP handler, and extend the existing project administration page and Manager role editor with this one task. Existing company-authority events and handlers retain their current contracts.
+2. Create a separate resolution-history table and standalone administration area. This isolates the new history but adds another audit source and navigation surface before there is a second supported resolution type. Reject for this slice.
+
+No permission engine, new role, generalized grant editor, account/invitation subsystem, infrastructure or speculative index is needed. The current `assertAccessAdministrator` boundary is reused; it is supplemented by transaction-owned row locks and current-session checks, not weakened or globally refactored.
+
+## Exact supported scope and coverage
+
+A supported departing grant must be current, tenant/project/subject scoped, `SURVEY_REVIEWER`, and bound to one live top-level Area (`aor_levels.depth=0`, node parent null, not retired). Project-wide/null-scope and non-Area/retired-scope rows remain visible as unsupported obligations. They are not interpreted as project-wide executable coverage or silently deleted. `FIELD_COORDINATOR`, acting grants and all department membership/shared-grant mutation remain unsupported.
+
+For a new resolution, the departing subject must remain an active non-subcontractor project member. IT may inspect inactive subjects for investigation, but this slice refuses their resolution; it does not implement account lifecycle or orphan-account cleanup. Manager reads are limited to active non-subcontractor members already within Team Management's editable personnel population. The departing subject need not retain Superintendent role: the stored obligation itself is the blocker, even if an earlier change left it unusable.
+
+IT explicitly selects an existing replacement grant, never merely a person's name or display title. The server derives the replacement user from that grant and requires all of:
+
+- Different user from the departing subject; same tenant and project.
+- Active user in a non-subcontractor company, current `SURVEY_SUPERINTENDENT` project membership.
+- Unrevoked `SURVEY_REVIEWER` grant on **exactly the departing Area node**.
+- Existing active **individual** Area assignment on **exactly that same Area**, with department id null. This proves current request visibility as well as review permission; a responsibility row alone does not prove usable review authority.
+
+This deliberately conservative rule does not use ancestor grants, partial/descendant coverage, collections of several grants, department coverage, Manager role authority as replacement, or acting authority. Both the replacement grant and assignment already cover the same Area and its descendants under incumbent review/visibility semantics. No ticket enumeration or new Area inheritance rule is introduced. If several qualifying individual assignments exist, select the earliest created/id row deterministically and record that exact witness; hold all qualifying existing witnesses while validating. This does not remove or normalize duplicate assignments.
+
+This exact-Area eligibility is a proposed specification detail for owner review, stricter than the existing runtime's ancestor-grant lookup. It changes no existing ticket access. Unsupported coverage returns an explicit handoff explanation; it never creates or enlarges a grant as a fallback. A replacement may also be the confirming IT administrator if that user independently satisfies the existing Superintendent/grant/Area rules; IT authority alone never qualifies.
+
+## Read and command API
+
+Add `/api/projects/[projectId]/survey/protected-obligations` with a small injectable handler and a Tenancy application/repository contract. Responses are private/no-store. UUIDs are canonicalized; duplicate/unknown query fields, malformed JSON, arrays, unknown body keys and invalid bounded pagination are 400.
+
+GET modes:
+
+| Mode | Readers | Inputs and output |
+|---|---|---|
+| `personnel` | IT only | Name/email search, limit10/25/50/100 and nonnegative offset. Bounded existing non-subcontractor project members, identity/current role/active flag, and current protected counts. No account creation or generalized project-member directory. |
+| `obligations` | IT or current Survey Manager | Required `userId`, bounded responsibility rows plus full counts/total/pagination, existing acting count and separate department-membership diagnostic count. Return `canResolve` only for current IT and supported active-subject/Area grants in an editable project. Manager receives handoff guidance, no candidate enumeration or mutation control. Department count is explicitly informational; it does not become a new role-removal blocker. |
+| `candidates` | IT only | Required departing `userId` and `grantId`, bounded name/email search and pagination. Only existing grants/users satisfying the exact-Area rule, plus replacement grant id and individual coverage witness. No unbounded all-user or all-grant fetch. |
+
+Obligation and candidate pages return an opaque32-hex `snapshotToken` (personnel search is discovery, not mutation evidence) generated in the same PostgreSQL statement as its rows/counts. The checksum covers project status/build; scoped Area/node/level state; subject/member/user/company state; scoped responsibility rows including revocations; current eligible replacement users/companies/memberships, grants and individual Area assignments; and prior resolution evidence. It is independent of search/pagination and includes the full relevant population, not only the displayed page. Scope it to this tenant/project/departing subject, use deterministic ordering, and keep it separate from the incumbent staffing token. It is a checksum, not a permission credential. IT's current authority is checked independently.
+
+POST requires `userId`, `grantId`, `replacementGrantId`, `expectedSnapshot`, `confirmResolution: true`, and `Idempotency-Key`. Resolve exactly one row. The server owns tenant, project, actor, prior state, replacement user, coverage proof and time. No client-supplied audit or coverage evidence is accepted. There is no batch/demotion/grant-creation action and no unprotected legacy payload.
+
+Fresh success is200 `{resolved: true, grantId, resolutionEventId, resolvedAt}`. The timestamp/event identify a recorded historical resolution, not a claim that coverage remains valid forever. Errors preserve incumbent conventions:401 invalid/deactivated/stale/revoked session;403 no current role authority;404 wrong tenant/project/subject/grant resource;409 archived, unsupported or changed evidence/ineligible coverage, with `STALE_PROTECTED_OBLIGATIONS` for checksum mismatch. UI reloads after a definitive stale/eligibility conflict; no generic500 replaces an expected domain refusal.
+
+## Transaction, locks and safe retries
+
+Use `withTransaction` and the existing `executeIdempotentHttpMutation` ledger. No broad rewrite of company access, role changes, Area setup or ticket transitions.
+
+1. Authenticate with `requireActiveAuth`; validate paths/body. In the transaction lock the tenant-scoped project `FOR NO KEY UPDATE`. Perform an initial current IT check before any subject/grant lookup, so an unauthorized actor cannot distinguish guessed grants by eligibility errors. Then refuse archived mutation. This serializes with current role/staffing/project writers while allowing FK key-share checks, preserving the Batch67 deadlock repair.
+2. Load only scoped historical subject/replacement grant identities to determine the affected users. Pre-ledger reads and locks must not filter on active grant, live Area/assignment, current subject membership, replacement role or active replacement identity: those are new-operation eligibility, not permission to retrieve a recorded exact replay. Later Area retirement, assignment deactivation, subject membership removal or replacement role/account loss therefore does not by itself prevent an exact replay by still-authorized IT. Acquire actor/subject/replacement user rows in stable user-id order **FOR SHARE**, then relevant membership rows in stable scope/user order FOR SHARE. Hold and recheck current IT membership (`TENANT_ADMIN` or this project's `PROJECT_ADMIN`), actor active/session state and resource ownership before looking up a replay. Central IT does not need operational project membership and gains no request-reading authority. Use shared identity/member locks for validation; do not copy the exclusive actor-account pattern rejected in Batch56.
+3. Hold any existing scoped Area node and level FOR SHARE, existing individual Area assignment witnesses FOR SHARE in id order, then historical departing/replacement responsibility rows in stable grant-id order FOR NO KEY UPDATE; tolerate absent/inactive coverage rows until new-operation validation. Re-read after locking. These locks must remain compatible with existing ticket review's shared grant/user/member/company locks. Hold the existing replacement and departing company rows FOR SHARE too; defer non-subcontractor/live-type eligibility to the new-operation callback. Do not lock tickets. Generic Area writers do not take the staffing project lock, so their real row updates must contend on the witness/node locks.
+4. Authorize the current IT actor and verify historical resource ownership before the idempotency ledger. A successful exact replay may find the original grant already revoked; it returns only the prior recorded response, performs no write and never resurrects a grant. It does not rerun replacement eligibility as if this were a new operation. Newly archived projects or lost IT/session authority deny replay. No replay itself certifies current coverage: the client reloads current obligations after any successful result. Changed payload under the same key retains the incumbent mismatch409.
+5. Inside a **new** ledger operation, require a still-active departing grant, current supported subject/scope, fully valid locked replacement/witness, and displayed checksum match. Validate/recheck current evidence immediately before writes. A new key against a previously resolved grant is409, not an implicit success. Soft-revoke with a conditional tenant/project/subject/id/`revoked_at IS NULL` update; exactly one affected row is required.
+6. Insert the audit evidence and ledger response in that same transaction. Audit/ledger failure rolls back the revocation. All lock-dependent evidence is reconstructed from server reads, not cached UI state.
+
+Actor expiry/logout is rechecked at transaction authorization/replay entry: compare the verified auth.expiresAt with the current time and call requireActiveAuth against the transaction client again, as well as rechecking locked account/session-version and IT memberships. Like incumbent routes, an in-flight per-token logout insertion is not globally serialized with every command. Row locks protect account/session-version updates and actual authority memberships used here; no claim is made about all future global lifecycle writers. Validate this exact ordering against two-session tests before calling it race-safe. If a real existing writer forces an incompatible protocol, stop and revise this design rather than adding speculative retries or broad writer refactors.
+
+## Additive retained audit
+
+Proposed migration030 (reconfirm the next number immediately before implementation) adds nullable `resolution_evidence JSONB` to `access_grant_events`. Require object shape when non-null; only `RESPONSIBILITY_REVOKED` rows may have it. Existing rows remain null, old company-authority inserts need no new argument, and no historic evidence is fabricated/backfilled. No enum/action expansion or separate event table.
+
+A new resolution inserts one event with existing tenant/project/subject/actor/action/grant/time columns and version1 evidence containing:
+
+- `kind: SURVEY_REVIEWER_RESOLUTION`, explicit confirmation and `coverageRule: EXACT_AREA`.
+- Original grant snapshot: id/user/responsibility/Area/granted-by/granted-at, prior revocation null.
+- Selected replacement grant snapshot: id/user/responsibility/Area/granted-by/granted-at, active state.
+- Replacement current role, session version and company id/type; exact existing individual assignment id/Area/user/created-at; Area id/level/depth/parent/retired state.
+- Project status, verified checksum and checked-at/confirmed-at timestamp matching the server-owned operation time. Actor id in the event is the confirmer.
+
+The insert is append-only in application behavior; no update/delete route exists for audit rows. Evidence is not a foreign-key substitute for authorization: referenced current rows are checked and locked before revocation, while embedded snapshots preserve proof if they later change. No destructive retention or historic request/ticket-event changes. Add the event payload meaning to CLAUDE's access-administration audit guidance during implementation, preserving ticket-vs-project event boundaries.
+
+Apply the additive migration only to disposable acceptance databases first. No Sabine schema application/cutover is implicitly approved. The old runtime can tolerate the nullable column; a rollback never drops retained evidence or recreates a database. Hosted DB ACL/backup/restore certification remains separate.
+
+## User path and UI contract
+
+IT gets one `Protected Survey obligations` section on the existing `/projects/[projectId]/admin` page, independently authorized by the new API. Central IT reaching that page may still lack access to unrelated configuration/draft-recovery sections; do not broaden their endpoints to eliminate those incumbent denials. The new section must remain usable independently. Central IT enters through the existing `/projects` IT Administration Recent projects links or a direct admin URL. The membership-only ProjectShellHeader may provide no project navigation for central IT without membership; the new section must work in that state. Do not broaden listProjects/project-role/request access or change the header as a shortcut. No extra account menu, standalone admin system, redesigned page or generalized permission builder.
+
+Use existing Axiom Card/Button/field/pagination/error/success primitives. Bounded search finds an existing person; selecting a person replaces the section list with current obligations. Selecting one supported grant opens an inline confirmation naming the departing person, Area, replacement and retained role/history effects. Candidate choices are on demand and paginated. Show currently unsupported responsibility/acting counts and department diagnostics with specific handoff guidance, not guessed coverage or disabled controls without explanation. Archived projects expose evidence without resolution actions.
+
+In the existing Manager RoleEditor, load read-only current protected obligations on demand for the selected person. Display their exact responsibility rows and acting counts with IT handoff. Department membership is separately labeled as diagnostic information, never a newly asserted role blocker. Manager has no candidate picker, confirmation or mutation button; direct API requests independently enforce the same restriction. Existing crew/reporting/Area role blockers and separate targeted cleanup remain intact.
+
+Keep the original displayed obligation snapshot while fetching replacement choices. Candidate pages must carry the same token; any mismatch disables confirmation and asks for deliberate reload. Never fetch a fresh token over old displayed obligations, the defect fixed in Batch67. Pending/uncertain requests freeze the selected evidence/payload/key; same unchanged retry keeps the key. A definitive409 prevents another Save until reload. Reload clears draft selections/confirmation/key and shows fresh evidence. Success announces the single resolution and refreshes the current blockers; it never automatically demotes the person or selects the next grant.
+
+Use persistent labeled controls, visible keyboard focus, heading/trigger focus on inline transitions, keyboard checkbox/selection, announced loading/error/success, mobile stacking and existing overflow/frozen-close conventions. No new modal/raster/font/token or geometry/copy redesign outside this flow. Apply Impeccable at the actual UI implementation boundary and validate desktop/mobile keyboard and stale recovery.
+
+## Verification contract and acceptance boundary
+
+TDD for each behavior: observe an expected failing test before production implementation, then minimum change, focused GREEN and relevant regressions. Unit/handler tests must cover current IT vs Manager/field roles, central/project distinction, malformed/foreign input, exact scope/type/subject, selected replacement/witness eligibility, snapshot/replay behavior and conditional audit atomicity. Manager read-only and new project Admin section are not permission sources.
+
+Use fresh gated PostgreSQL15 at127.0.0.1:15489/swr_team_isolated and synthetic fixture IDs. Apply all existing migrations plus030. Actual routes/repositories must test wrong tenant/project/user/grant, active/deactivated/changed-role/subcontractor replacements, missing/wrong/retired Area and revoked grant/assignment, null/non-Area/FIELD_COORDINATOR/acting/department refusals, duplicate witness handling, archived/stale/expired/logged-out sessions, and both central IT and project IT without leaking requests. A real ticket visibility/review check for a synthetic request in the Area demonstrates that accepted replacement proof matches runtime semantics.
+
+Two-session cases must cover both winners for coverage revocation, replacement role/session/company changes, Area retirement/level changes and concurrent role removal; identical-key race yields one event, different-key race yields one resolution plus conflict, audit/ledger fault rolls back everything, and changed authority denies replay. Verify successful exact replay after later Area retirement, assignment/grant revocation, subject membership loss or replacement role/account loss, without new writes or a claim of current coverage. Include SETUP generic Area replacement FK contention, ticket review vs resolution, and two-project subject ordering: reject deadlock/timeouts rather than hiding them behind long waits or retry loops. No real staffing or retained dataset is a fixture.
+
+Authenticated production browser checks cover IT discovery/selection/confirmation, Manager handoff/read-only/direct-call403, field direct denial, archived read, unsupported/empty/loading/error paths, paginated choices, double-submit/uncertain unchanged-key retry, actual stale409/no write and deliberate reload, success with remaining blockers and unchanged role. Use final native or Docker production runtime explicitly identified in evidence, desktop1440/mobile390, keyboard and no overflow/page errors. Fault injection is labeled; real mutation/authorization/scope paths use disposable PostgreSQL.
+
+Before each meaningful implementation push run focused verification, required PostgreSQL/HTTP/browser checks and relevant staffing/workforce/review regressions, full `pnpm tsc --noEmit --incremental false`, `pnpm test` and Windows/Linux production builds. Review authorization/schema/concurrency work independently, reconcile findings against this contract, inspect source/staged diff, update CODEX and only changed authoritative behavior docs, commit/push without force and verify remote landing. Pause at the first unresolved authority conflict or blocking verification failure.
+
+## Sequencing and remaining gates
+
+After owner review of this written specification, use writing-plans to produce the reviewable TDD implementation plan. Owner then reviews that plan and selects its execution method. Keep implementation sequential with one design authority; any independent reviewers are read-only. A useful first code checkpoint is the verified API/audit/read contract; a second completes the IT/Manager UI and real browser path. Final plan determines coherent tasks and checks, not an implied requirement to create parallel writers.
+
+Still gated/deferred: all acting/FIELD_COORDINATOR/department resolution, any new department role blocker, broader replacement inheritance/combined coverage, inactive/orphan account cleanup, general account/company/invite lifecycle, real Sabine personnel mapping, title-derived authority/new tiers, bulk removal, new grants, request reassignment, automatic expiry/hard deletion/attachment purge, lower-priority exports and hosted recovery/ACL/proxy/soak/device/assistive-technology acceptance.
+
+This specification is not a whole-Phase5 completion or hosted readiness claim. Its conservative exact-Area and active-subject choices may leave legitimate obligations requiring a later separately approved contract; the UI must say so plainly.
