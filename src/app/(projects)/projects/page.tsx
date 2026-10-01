@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ProjectCreation } from '@/components/ui/project-creation';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button, Card, Input } from '@/components/ui';
@@ -45,6 +46,7 @@ export default function ProjectsLauncherPage() {
 
   return (
     <div className="stack">
+      <ProjectCreation />
       <Card
         title="Project Launcher"
         description="Choose a project to open its requests and work queues."

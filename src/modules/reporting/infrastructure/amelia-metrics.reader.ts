@@ -7,10 +7,11 @@ import { metricsFilterClause } from './metrics-filter-clause';
 /** Shared bounded aggregate result; charts never receive request detail rows. */
 export function buildMetricsQuery(scope: MetricsScope) {
   const visibility = buildVisibilityClause(scope.visibility, 5);
-  const filters = metricsFilterClause(scope.filters ?? {}, 5 + visibility.params.length);
-  const denominator = metricsFilterClause({ ...scope.filters, population: 'all' }, 5 + visibility.params.length + filters.params.length);
+  const focus = metricsFilterClause(scope.memberFocus ?? {}, 5 + visibility.params.length);
+  const filters = metricsFilterClause(scope.filters ?? {}, 5 + visibility.params.length + focus.params.length);
+  const denominator = metricsFilterClause({ ...scope.filters, population: 'all' }, 5 + visibility.params.length + focus.params.length + filters.params.length);
   const terminal = ['COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED', 'REJECTED'];
-  const personnel = canAnalyzeSurveyPersonnel(scope.visibility.actorRole, !!scope.visibility.linkedCrewAssignments?.length);
+  const personnel = scope.includePersonnelCharts !== false && canAnalyzeSurveyPersonnel(scope.visibility.actorRole, !!scope.visibility.linkedCrewAssignments?.length);
   const areaJoin = 'LEFT JOIN aor_nodes n ON n.id=t.aor_node_id AND n.tenant_id=$1 AND n.project_id=$2';
   const personJoin = (column: string) => `LEFT JOIN users u ON u.id=t.${column} AND u.tenant_id=$1`;
   const grouped = (column: string, label: string, join = '', cell = false) => `(
@@ -58,11 +59,11 @@ export function buildMetricsQuery(scope: MetricsScope) {
       OR (SELECT COUNT(DISTINCT (aor_node_id,status))>200 FROM measured)
       OR (SELECT MAX(month) - MIN(month) > INTERVAL '119 months' FROM month_counts) IS TRUE)
   )` : '';
-  return { params: [scope.tenantId, scope.projectId, terminal, scope.today ?? new Date().toISOString().slice(0,10), ...visibility.params, ...filters.params, ...denominator.params], sql: `
+  return { params: [scope.tenantId, scope.projectId, terminal, scope.today ?? new Date().toISOString().slice(0,10), ...visibility.params, ...focus.params, ...filters.params, ...denominator.params], sql: `
     WITH authorized AS NOT MATERIALIZED (
       SELECT t.id, t.tenant_id, t.aor_node_id, t.status, t.assigned_instrument_man_id,
         t.assigned_party_chief_id, t.ticket_type, t.requested_date, t.completed_at, t.first_submitted_at, t.submitted_at
-      FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.status <> 'DRAFT' ${visibility.sql}
+      FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.status <> 'DRAFT' ${visibility.sql} AND ${focus.sql}
     ), filtered AS MATERIALIZED (
       SELECT t.* FROM authorized t WHERE ${filters.sql}
     ), provenance AS (

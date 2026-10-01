@@ -25,3 +25,6 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Local acceptance logs and captures
+.local/

@@ -29,7 +29,8 @@ typography:
     fontSize: "16px"
     lineHeight: 1.35
 rounded:
-  navigation: "6px"
+  navigation: "0px"
+  button: "0px"
   control: "10px"
   ticket: "12px"
   panel: "14px"
@@ -43,17 +44,17 @@ components:
   button-primary:
     backgroundColor: "{colors.action}"
     textColor: "{colors.bg-elevated}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "0.55rem 0.8rem"
   button-secondary:
     backgroundColor: "{colors.bg-elevated}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "0.55rem 0.8rem"
   button-danger:
     backgroundColor: "{colors.danger}"
     textColor: "{colors.bg-elevated}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.button}"
     padding: "0.55rem 0.8rem"
   input:
     backgroundColor: "{colors.bg-elevated}"
@@ -135,13 +136,15 @@ Shared panels and cards use white fill and thin boundaries on the cool canvas. N
 
 ## Shapes
 
-Controls and banners use the control radius; navigation uses the smaller navigation radius. Ticket cards and panels have their own slightly larger corners. Status badges and steps are pills. Maintain these functional distinctions rather than assigning one radius everywhere.
+Buttons and visually button-like navigation use square corners. Inputs and banners retain the 10px control radius. Ticket cards and panels have their own slightly larger corners. Status badges and steps are pills. Maintain these functional distinctions rather than assigning one radius everywhere.
 
 ## Components
 
 ### Buttons
 
 Primary actions use Action Blue; secondary actions use white with a divider border and slate text; destructive actions use the danger fill. All have a minimum height of 44px, weight 700, and the documented control padding. Hover fills are `#264a68`, `#edf3f8`, and `#8f2b27` respectively. Disabled buttons have opacity 0.45 and a not-allowed cursor. Color transitions take 150ms with `ease`; reduced-motion preference removes the transition.
+
+The owner approved straight-edged buttons on 2026-10-01. The shared button-radius token is zero; general structural containers retain their existing rounding.
 
 ### Inputs / Fields
 
@@ -157,11 +160,15 @@ Status badges carry readable labels and semantic colors. Step chips use muted la
 
 ### Operations workspace
 
-Queue health uses five clickable measures and a native details dialog, with a blue count heat map carrying numeric labels. Work queues use keyboard-navigable tabs, labeled filters, selectable page sizes, and native disclosure rows. Collapsed descriptions are ellipsized; expanded rows retain full descriptions and workflow controls. Metric values use 1.8rem tabular numerals; section headings use 1.25rem, summary rows 0.9rem, metric labels 0.875rem, and detail links 0.75rem. These are compact data-display roles, not a replacement type system. Overdue measures reuse the existing warning badge colors. Controls retain the 10px radius; tabs use a square bottom selection rule.
+Queue health uses five clickable measures and a native details dialog, with a blue count heat map carrying numeric labels. Work queues use keyboard-navigable tabs, labeled filters, selectable page sizes, and native disclosure rows. Collapsed descriptions are ellipsized; expanded rows retain full descriptions and workflow controls. Metric values use 1.8rem tabular numerals; section headings use 1.25rem, summary rows 0.9rem, metric labels 0.875rem, and detail links 0.75rem. These are compact data-display roles, not a replacement type system. Overdue measures reuse the existing warning badge colors. Inputs retain the 10px radius; interactive buttons use square corners and tabs retain their square bottom selection rule.
 
 Requester My Requests and field Crew Work reuse the KPI explorer through a compact chart-entry row and labeled native dialog. Requester opens on an authorized request-status donut; field opens on an open-request Area heat map. The entry leaves the queue visible and fetches charts only when opened. On narrow screens the Requester KPI field spans the dialog while visualization and grouping share a row when both fit; the dialog scrolls internally without horizontal page overflow.
 
 The Survey Manager command overview is a compact, filter-first panel below queue health. It pairs an all-date status donut with a UTC daily demand/completion comparison, then switches the current-request distribution among Area, type, and Party Chief without changing the page layout. Keep exact daily values in a native disclosure table, readable counts on bars and legends, and scoped chart selections linked to the request review. At narrow widths, stack the filters and chart panels while retaining the Apply/Reset controls and visible scope text.
+
+### Scroll controls
+
+Back to top appears after meaningful page or contained scrolling. Its accessible 44px up-arrow targets the applicable scroll container, respects reduced motion and sits in the dialog native top layer. Dialogs reserve a footer while the arrow is shown; frozen Close controls stay in their header.
 
 ### Keyboard Focus
 

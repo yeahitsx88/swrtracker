@@ -22,35 +22,35 @@ const groupFilter:Record<Group,keyof MetricsFilters>={areas:'areaId',types:'tick
 type Result=Awaited<ReturnType<typeof apiClient.getKpiCharts>>;
 const defaults=(metric:KpiMeasure,cohort?:MetricsFilters['cohort']):MetricsFilters=>({population:metric==='cycle'?'completed':metric,dateBasis:metric==='cycle'?'completed':'needBy',...(cohort?{cohort}:{})});
 
-export function KpiExplorer({projectId,initialMeasure,audience='operations',initialData}:{projectId:string;initialMeasure:KpiMeasure;audience?:KpiAudience;initialData?:Result}) {
+export function KpiExplorer({projectId,initialMeasure,audience='operations',initialData,memberId,fixedFilters={}}:{projectId:string;initialMeasure:KpiMeasure;audience?:KpiAudience;initialData?:Result;memberId?:string;fixedFilters?:MetricsFilters}) {
   const [measure,setMeasure]=useState(initialMeasure);
   const [kind,setKind]=useState<ChartKind>(audience==='requester'?'donut':initialMeasure==='open'?'heat':'bar');
   const [group,setGroup]=useState<Group>(audience==='requester'?'statuses':'areas');
-  const [filters,setFilters]=useState<MetricsFilters>(defaults(initialMeasure));
+  const [filters,setFilters]=useState<MetricsFilters>({...defaults(initialMeasure),...fixedFilters});
   const [draft,setDraft]=useState(filters);
   const [revision,setRevision]=useState(0);
-  const key=JSON.stringify({projectId,filters,revision});
+  const key=JSON.stringify({projectId,filters,revision,memberId});
   const [snapshot,setSnapshot]=useState<{key:string;data?:Result;error?:string}|undefined>(()=>initialData?{key,data:initialData}:undefined);
   const seedKey=useRef(initialData?key:null);
   const authority=useRef({projectId,linked:initialData?.analytics.supportsLinkedCrewScope===true});
   const [details,setDetails]=useState(false);
   const [page,setPage]=useState(1); const [size,setSize]=useState(10);
-  useEffect(()=>{ let active=true; const input=JSON.parse(key) as {projectId:string;filters:MetricsFilters};
+  useEffect(()=>{ let active=true; const input=JSON.parse(key) as {projectId:string;filters:MetricsFilters;memberId?:string};
     if(seedKey.current===key){seedKey.current=null;return;}
     seedKey.current=null;
-    apiClient.getKpiCharts(input.projectId,input.filters).then(data=>{if(active){authority.current={projectId:input.projectId,linked:data.analytics.supportsLinkedCrewScope===true};setSnapshot({key,data});}})
+    apiClient.getKpiCharts(input.projectId,input.filters,input.memberId).then(data=>{if(active){authority.current={projectId:input.projectId,linked:data.analytics.supportsLinkedCrewScope===true};setSnapshot({key,data});}})
       .catch(error=>{if(active)setSnapshot({key,error:getErrorMessage(error,'Unable to load analytics. Retry the request.')});});
     return()=>{active=false;};
   },[key]);
   const current=snapshot?.key===key?snapshot:undefined;
   const result=current?.data; const metrics=result?.metrics; const charts=metrics?.charts;
-  const superintendent=authority.current.projectId===projectId&&authority.current.linked;
+  const superintendent=!memberId&&authority.current.projectId===projectId&&authority.current.linked;
   const linked=filters.cohort==='linkedCrews';
   const {population,...rest}=filters;
   const request=useTicketPage(projectId,page,size,{...rest,queue:population??'all'},details&&!!metrics,revision);
   const pages=Math.max(1,Math.ceil((request.data?.total??0)/size));
   useEffect(()=>{if(request.data&&page>pages)setPage(pages);},[request.data,page,pages]);
-  const apply=(next:MetricsFilters,showDetails=false)=>{setFilters(next);setDraft(next);setPage(1);setDetails(showDetails);};
+  const apply=(next:MetricsFilters,showDetails=false)=>{const scoped={...next,...fixedFilters};setFilters(scoped);setDraft(scoped);setPage(1);setDetails(showDetails && !memberId);};
   const change=(field:keyof MetricsFilters,value:string)=>setDraft(previous=>({...previous,[field]:value||undefined}));
   const cycle=measure==='cycle';
   const select=(value:string,status?:string)=>apply({...filters,[kind==='heat'?'areaId':groupFilter[group]]:value,...(status?{status:status as MetricsFilters['status']}:{})},true);
@@ -85,7 +85,7 @@ export function KpiExplorer({projectId,initialMeasure,audience='operations',init
       {metrics.total===0?<p>{linked&&result.analytics.linkedCrewCount===0?'No linked crews in your authorized Areas. Ask the Survey Manager to set explicit reporting links, or select Area-wide workload.':'No matching requests. Reset filters or widen the date range.'}</p>:<KpiChart kind={kind} rows={rows} months={charts.months} cells={charts.cells} cycle={cycle} total={metrics.total??0} denominator={metrics.populationTotal??0} title={titles[measure]} select={select} selectMonth={selectMonth}/>}
       {charts.limits.truncated?<p role="status">Partial chart: up to {charts.limits.groups} groups and the latest {charts.limits.months} months. Summary totals remain complete. Narrow the filters to inspect omitted groups.</p>:null}
       <details><summary>Data coverage and interpretation</summary><p>{metrics.coverage?.cycleSamples??0} valid turnaround samples; {metrics.coverage?.syntheticCompletions??0} generated completion dates, {metrics.coverage?.missingCycleDates??0} missing date pairs and {metrics.coverage?.invalidCycleDates??0} invalid date pairs excluded. Exclusion categories can overlap. {metrics.coverage?.undated??0} records lack the selected trend date.</p><p>{metrics.coverage?.imported??0} imported snapshots. Imports do not reconstruct audit transitions. Personnel groups show current request assignments, not who completed the work or employee productivity. Donut percentages describe displayed groups; the gauge uses the full population matching other filters.</p></details>
-      <Button variant="secondary" onClick={()=>{setDetails(!details);setPage(1);}}>{details?'Hide matching requests':'Show matching requests'}</Button>
+      {!memberId?<Button variant="secondary" onClick={()=>{setDetails(!details);setPage(1);}}>{details?'Hide matching requests':'Show matching requests'}</Button>:null}
       {details?<section aria-label="Matching KPI requests"><p className="kpi-scope">{cycle?'Completed population, including samples excluded from the average. ':''}Live records may change after this aggregate snapshot.</p>
         <div className="ops-pagination"><span>{request.data?.total??'…'} matching requests · page {page} of {pages}</span><label>Rows<select value={size} onChange={e=>{setSize(Number(e.target.value));setPage(1);}}>{[10,25,50,100].map(n=><option key={n}>{n}</option>)}</select></label><Button variant="secondary" disabled={page===1} onClick={()=>setPage(n=>n-1)}>Previous</Button><Button variant="secondary" disabled={page>=pages} onClick={()=>setPage(n=>n+1)}>Next</Button></div>
         {request.loading?<p role="status">Loading matching requests…</p>:request.error?<p role="alert">{request.error} <Button onClick={()=>setRevision(n=>n+1)}>Retry</Button></p>:<ul className="ops-detail-list">{request.data?.data.map(ticket=><li key={ticket.id}><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber}</Link><span>{ticket.description}</span><small>{operationsStatusLabel(ticket.status)} · Need-By {ticket.requestedDate?.slice(0,10) ?? 'Not set'}</small></li>)}</ul>}

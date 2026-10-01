@@ -8,6 +8,7 @@ import { accountNavigation } from './account-navigation';
 import { ProductBrand } from './product-brand';
 import './account-menu.css';
 import './popout.css';
+import { ScrollToTop } from './scroll-to-top';
 
 export function AccountShell({ children }: { children: ReactNode }) {
   const params = useParams<{ projectId?: string }>();
@@ -17,6 +18,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [name, setName] = useState<string>();
+  const [role,setRole]=useState<import('@/modules/identity/domain/types').ProjectRole>();
   const [accountError, setAccountError] = useState<string>();
   const [revision, setRevision] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -29,11 +31,11 @@ export function AccountShell({ children }: { children: ReactNode }) {
   }, [pathname, params.projectId]);
   useEffect(() => {
     let active = true;
-    setAccountError(undefined);
-    apiClient.getMyAccount().then(account => { if (active) setName(account.name); })
+    setAccountError(undefined); setRole(undefined);
+    apiClient.getMyAccount(context).then(account => { if (active) {setName(account.name);setRole(account.assignment?.role as import('@/modules/identity/domain/types').ProjectRole|undefined);} })
       .catch(cause => { if (active) setAccountError(getErrorMessage(cause, 'Unable to load your greeting. Retry your account details.')); });
     return () => { active = false; };
-  }, [revision]);
+  }, [revision,context]);
   useEffect(() => {
     if (!open) return;
     const drawer = dialog.current;
@@ -56,7 +58,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
       </button></div>
     <div className="popout-body"><nav id="account-navigation" aria-label="Account navigation">
-      {accountNavigation(context).map(item => <Link key={item.label} href={item.href}
+      {accountNavigation(context,role).map(item => <Link key={item.label} href={item.href}
         aria-current={pathname === item.href.split('?')[0] && (item.label !== 'Home' || !!context) ? 'page' : undefined}
         onClick={close}>{item.label}</Link>)}
       <button type="button" disabled={busy} onClick={() => void signOut()}>{busy ? 'Signing out…' : 'Sign out'}</button>
@@ -78,6 +80,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
       </button>
       </div>
     </header>
+    <ScrollToTop />
     <div className="application-workspace"><main id="main-content" tabIndex={-1}><div className="page-shell">{children}</div></main></div>
     <dialog ref={dialog} className="account-menu-panel account-drawer popout-dialog" aria-labelledby="account-navigation-title"
       onCancel={event => { event.preventDefault(); close(); }}

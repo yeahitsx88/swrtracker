@@ -98,6 +98,12 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
 }
 
 export const apiClient = {
+ projectAdministration():Promise<{canCreateProject:boolean;projects:Array<{id:string;name:string;status:'SETUP'|'ACTIVE'|'ARCHIVED';crewBuild:string}>;templates:Array<{id:string;name:string;crewBuild:string}>}>{return apiRequest('/api/projects/administration');},
+ createProject(input:{name:string;crewBuild?:import('@/modules/tenancy/domain/types').CrewBuild;templateId?:string}):Promise<{project:{id:string;name:string;status:'SETUP'}}> {return apiRequest('/api/projects',{method:'POST',body:input});},
+ workforceContext(projectId:string):Promise<{project:import('@/modules/tenancy/application/survey-teams').TeamProjectContext;role:import('@/modules/identity/domain/types').ProjectRole;snapshotToken:string}>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{mode:'context'}));},
+ workforce(projectId:string,query:import('@/modules/tenancy/application/survey-teams').TeamPageQuery):Promise<import('@/shared/types').Page<import('@/modules/tenancy/application/survey-workforce').WorkforcePerson>>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{...query}));},
+ moveWorkforceMember(projectId:string,input:import('@/modules/tenancy/application/survey-workforce').WorkforceMove,key:string):Promise<{changed:boolean}>{return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{method:'POST',body:input,headers:{'Idempotency-Key':key}});},
+
   getSurveyStaffing(projectId: string, partyChiefId: string, query: import('@/modules/tenancy/application/read-survey-staffing').StaffingReadQuery): Promise<{ staffing: import('@/modules/tenancy/application/read-survey-staffing').SurveyStaffingDetail }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { partyChiefId, ...query }));
   },
@@ -380,7 +386,7 @@ export const apiClient = {
   getProjectMetrics(projectId: string): Promise<AmeliaMetricsResponse> {
     return apiRequest<AmeliaMetricsResponse>(`/api/projects/${projectId}/metrics`);
   },
-  getKpiCharts(projectId: string, filters: import('@/modules/reporting/application/metrics-filters').MetricsFilters): Promise<{
+  getKpiCharts(projectId: string, filters: import('@/modules/reporting/application/metrics-filters').MetricsFilters, memberId?:string): Promise<{
     metrics: import('@/modules/reporting/application/amelia-metrics').AmeliaMetrics;
     analytics: {
       personnelFilters: boolean;
@@ -389,7 +395,7 @@ export const apiClient = {
       linkedCrewCount?: number;
     };
   }> {
-    return apiRequest(withQuery(`/api/projects/${projectId}/metrics`, { ...filters, view: 'charts' }));
+    return apiRequest(withQuery(`/api/projects/${projectId}/metrics`, { ...filters, view: 'charts', memberId }));
   },
   getCommandActivity(projectId: string, filters: Pick<import('@/modules/reporting/application/metrics-filters').MetricsFilters,
     'areaId' | 'ticketType' | 'status' | 'crewId' | 'instrumentManId' | 'dateFrom' | 'dateTo'> = {}): Promise<{

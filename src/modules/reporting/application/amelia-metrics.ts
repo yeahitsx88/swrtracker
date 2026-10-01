@@ -37,6 +37,8 @@ export interface MetricsScope {
   today?: string;
   filters?: MetricsFilters;
   includeCharts?: boolean;
+  memberFocus?: Pick<MetricsFilters, 'crewId' | 'instrumentManId'>;
+  includePersonnelCharts?: boolean;
 }
 
 export interface MetricsReader {

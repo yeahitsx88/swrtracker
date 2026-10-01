@@ -8,10 +8,10 @@ import type { UUID } from '@/shared/types';
 
 export type ProjectInsightRole = ProjectRole | TenantRole;
 
-export async function resolveProjectInsightRole(auth: AuthContext, projectId: UUID): Promise<ProjectInsightRole> {
-  const tenantRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
+export async function resolveProjectInsightRole(auth: AuthContext, projectId: UUID, db: import('@/shared/types').DbClient=pool): Promise<ProjectInsightRole> {
+  const tenantRole = await getTenantRole(db, auth.tenantId, auth.userId, auth.sessionVersion);
   if (tenantRole === 'TENANT_ADMIN') return tenantRole;
-  return getProjectRole(pool, auth.tenantId, projectId, auth.userId, auth.sessionVersion);
+  return getProjectRole(db, auth.tenantId, projectId, auth.userId, auth.sessionVersion);
 }
 
 export function assertOperationsViewer(role: ProjectInsightRole): void {
