@@ -1,8 +1,8 @@
 # Survey Reviewer obligation resolution: first slice
 
-Status: proposed written design for owner review; not implementation approval.
+Status: written design approved by the owner on 2026-10-01 after checkpoint b4548e50e902807283a895770a45f4c2410ae740 (Decision27). Implementation-plan review and execution selection remain pending; no implementation approval is inferred.
 
-Design basis: design checkpoint `51b32663f2393c5995353edf864d9407a0cc8cc1`, synchronized with `origin/phase5` on 2026-10-01; production source remains the verified fb45827 implementation. Decision24 approves the responsibility-only first slice: an already-authorized same-Area replacement, atomic retained evidence, with acting and department resolution left gated. The owner subsequently directed that Survey Manager also have this resolution authority because they manage Superintendent demotion/removal. Decision25 supersedes the earlier IT-only/Manager-read-only boundary for this first slice only. Decision26 subsequently approves temporary additional-Area coverage for another current Superintendent, who may not already have that Area. It supersedes the existing-coverage-only restriction for this handover. The atomic creation/reuse contract and manual-handover meaning of temporary below are proposed details for review. The written specification and subsequent implementation plan still require their Superpowers reviews.
+Design basis: design checkpoint `51b32663f2393c5995353edf864d9407a0cc8cc1`, synchronized with `origin/phase5` on 2026-10-01; production source remains the verified fb45827 implementation. Decision24 approves the responsibility-only first slice: an already-authorized same-Area replacement, atomic retained evidence, with acting and department resolution left gated. The owner subsequently directed that Survey Manager also have this resolution authority because they manage Superintendent demotion/removal. Decision25 supersedes the earlier IT-only/Manager-read-only boundary for this first slice only. Decision26 subsequently approves temporary additional-Area coverage for another current Superintendent, who may not already have that Area. It supersedes the existing-coverage-only restriction for this handover. Decision27 approves this written atomic creation/reuse contract and manual-handover meaning of temporary. Only the subsequent implementation-plan review and execution selection remain before implementation.
 
 ## Intent and success
 
@@ -36,7 +36,7 @@ The completed handover must have both exact-Area review authority and individual
 
 New rows use fresh server IDs and current server time, with the actor as grant giver. Revoked/deactivated historical rows are never revived. Existing qualifying coverage is retained with its original provenance; the audit distinguishes reused from newly created rows. An independently eligible IT confirmer may also be replacement; Manager/IT resolution authority alone does not qualify anyone as a replacement Superintendent.
 
-### Meaning and end of temporary coverage (proposed)
+### Meaning and end of temporary coverage
 
 John covers Area1; Jason already covers Area2. The Manager selects Jason with `assignAdditional`. On one successful commit Jason has the missing Area1 assignment/review grant as well as unchanged Area2 coverage, and John's selected Area1 review grant is revoked. If any validation, creation, revocation, audit or ledger step fails, none of that handover commits.
 
@@ -119,7 +119,7 @@ Before each meaningful implementation push run focused verification, required Po
 
 ## Sequencing and remaining gates
 
-After owner review of this written specification, use writing-plans to produce the reviewable TDD implementation plan. Owner then reviews that plan and selects its execution method. Keep implementation sequential with one design authority; any independent reviewers are read-only. A useful first code checkpoint is the verified API/audit/read contract; a second completes the IT/Manager UI and real browser path. Final plan determines coherent tasks and checks, not an implied requirement to create parallel writers.
+With this written specification approved, use writing-plans to produce the reviewable TDD implementation plan. Owner then reviews that plan and selects its execution method. Keep implementation sequential with one design authority; any independent reviewers are read-only. A useful first code checkpoint is the verified API/audit/read contract; a second completes the IT/Manager UI and real browser path. Final plan determines coherent tasks and checks, not an implied requirement to create parallel writers.
 
 Still gated/deferred: all acting/FIELD_COORDINATOR/department resolution, any new department role blocker, broader replacement inheritance/combined coverage, inactive/orphan account cleanup, general account/company/invite lifecycle, real Sabine personnel mapping, title-derived authority/new tiers, bulk removal, standalone/arbitrary new grants or Area editing, automatic temporary-coverage expiry, Superintendent individual Area cleanup and reporting/crew handover, request reassignment, automatic expiry/hard deletion/attachment purge, lower-priority exports and hosted recovery/ACL/proxy/soak/device/assistive-technology acceptance.
 

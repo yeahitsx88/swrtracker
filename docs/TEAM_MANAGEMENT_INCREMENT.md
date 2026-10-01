@@ -158,3 +158,8 @@ Resolution removes only the selected grant. Other staffing or protected obligati
 The owner requires the Manager to be able to temporarily give another current Superintendent the departing Superintendent's Area even without pre-existing coverage. The replacement keeps their original Areas. The [revised written design](superpowers/specs/2026-10-01-survey-reviewer-resolution-design.md) proposes one explicit handover that reuses or creates the missing exact-Area individual assignment/SURVEY_REVIEWER grant before soft-revoking the departing grant, with confirmation, displayed-state protection and atomic creation/resolution audit/retry.
 
 Proposed temporary meaning is until a confirmed manual handover to the permanent Superintendent, with no automatic expiry. This is pending written-design review. It changes no roles, departing individual assignments, Chief reporting links or crews automatically. A complete Superintendent role departure still needs specified cleanup for those obligations; existing Chief-only unlink is not expanded by inference. No standalone grant builder, broad Area editor, account creation, acting/department resolution or Sabine staffing changes.
+
+
+### Written handover design approved - Decision27
+
+The owner approved the revised written responsibility handover design, including temporary additional-Area coverage ending through confirmed manual handover. The implementation plan at superpowers/plans/2026-10-01-survey-reviewer-handover.md now awaits plan review/execution selection. API/audit and shared Manager/IT controls are two proposed verified pushed checkpoints. No controls are shipped by this documentation change; full Superintendent departure cleanup and other protected contracts remain separate.
