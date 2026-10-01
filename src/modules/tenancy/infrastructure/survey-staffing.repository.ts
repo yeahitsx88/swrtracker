@@ -8,7 +8,7 @@ import type { StaffingLink, StaffingLinkKind, SurveyStaffingUnlinkRepository } f
 // Opaque state checksum, not a credential. Project-wide by design: a form must
 // reload after another staffing/role/Area change. Pagination/search do not change it.
 // Each component is tenant/project scoped and ordered; no ticket or team inference.
-const snapshotCte = `snapshot AS (
+export const snapshotCte = `snapshot AS (
   SELECT md5(jsonb_build_object(
     'project',jsonb_build_array(p.id,p.status,p.crew_build),
     'members',COALESCE((SELECT jsonb_agg(jsonb_build_array(pm.user_id,pm.role,u.session_version,u.deactivated_at,u.company_id,c.type) ORDER BY pm.user_id)

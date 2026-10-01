@@ -5,12 +5,12 @@ import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {Button,ErrorBanner,SuccessBanner} from '@/components/ui';
 import {PaginationControls} from '@/components/forms';
 import {MemberKpiEntry} from './member-kpi-entry';
-import type {WorkforcePerson,WorkforceMove} from '@/modules/tenancy/application/survey-workforce';
-import type {Page,UUID} from '@/shared/types';
+import type {WorkforcePerson,WorkforceMove,WorkforcePage} from '@/modules/tenancy/application/survey-workforce';
+import type {UUID} from '@/shared/types';
 import type {ProjectRole} from '@/modules/identity/domain/types';
 import './team-management.css';
 function useWorkforcePage(projectId:string,search:string,offset:number,limit:number,revision:number){
- const [data,setData]=useState<Page<WorkforcePerson>>(),[error,setError]=useState<string>();
+ const [data,setData]=useState<WorkforcePage>(),[error,setError]=useState<string>();
  useEffect(()=>{let active=true;setData(undefined);setError(undefined);apiClient.workforce(projectId,{search,offset,limit}).then(value=>{if(active)setData(value);}).catch(cause=>{if(active)setError(getErrorMessage(cause,'Unable to load current assigned personnel.'));});return()=>{active=false;};},[projectId,search,offset,limit,revision]);
  return {data,error};
 }
@@ -22,10 +22,8 @@ export function AssignedWorkforce({projectId,role,archived}:{projectId:string;ro
  const page=useWorkforcePage(projectId,search,offset,limit,revision);
  const chiefs=useWorkforcePage(projectId,'PARTY CHIEF',chiefOffset,10,revision);
  const superintendent=role==='SURVEY_SUPERINTENDENT';
- async function openMove(person:WorkforcePerson){
- setMoving(person);setSnapshot(undefined);setTarget(undefined);setError(undefined);setSuccess(undefined);attempt.current=undefined;
- try{const value=await apiClient.workforceContext(projectId);setSnapshot(value.snapshotToken);}
- catch(cause){setError(getErrorMessage(cause,'Unable to check current staffing. Reload your workforce.'));}
+ function openMove(person:WorkforcePerson,expectedSnapshot:string){
+ setMoving(person);setSnapshot(expectedSnapshot);setTarget(undefined);setError(undefined);setSuccess(undefined);attempt.current=undefined;
  }
  function reload(){setMoving(undefined);setError(undefined);attempt.current=undefined;setRevision(n=>n+1);}
  async function save(){
@@ -48,7 +46,7 @@ export function AssignedWorkforce({projectId,role,archived}:{projectId:string;ro
  <label className="field"><span className="field-label">Items per page</span><select className="select" value={limit} onChange={e=>{setLimit(Number(e.target.value));setOffset(0);}}>{[10,25,50,100].map(n=><option key={n}>{n}</option>)}</select></label><Button type="submit" variant="secondary">Search</Button></form>
  {page.error?<><ErrorBanner message={page.error}/><Button variant="secondary" onClick={reload}>Retry workforce</Button></>:!page.data?<p role="status">Loading assigned personnel…</p>:<>
  {page.data.total===0?<p>No current assigned personnel match. Ask the Survey Manager to review your explicit staffing assignments.</p>:null}
- <ul className="tm-list">{page.data.data.map(person=><li className="tm-person" key={person.userId}><div><strong>{person.name}</strong><span className="tm-email muted">{person.email}</span></div><div>{person.role==='PARTY_CHIEF'?'Party Chief':'Instrument Man'}</div><div className="tm-person-actions"><MemberKpiEntry projectId={projectId} person={person} role={role}/>{superintendent&&!archived&&person.role==='INSTRUMENT_MAN'?<Button variant="secondary" aria-label={`Reassign ${person.name}`} onClick={()=>void openMove(person)}>Reassign crew</Button>:null}</div></li>)}</ul>
+ <ul className="tm-list">{page.data.data.map(person=><li className="tm-person" key={person.userId}><div><strong>{person.name}</strong><span className="tm-email muted">{person.email}</span></div><div>{person.role==='PARTY_CHIEF'?'Party Chief':'Instrument Man'}</div><div className="tm-person-actions"><MemberKpiEntry projectId={projectId} person={person} role={role}/>{superintendent&&!archived&&person.role==='INSTRUMENT_MAN'?<Button variant="secondary" aria-label={`Reassign ${person.name}`} onClick={()=>openMove(person,page.data!.snapshotToken)}>Reassign crew</Button>:null}</div></li>)}</ul>
  <PaginationControls total={page.data.total} offset={offset} limit={limit} onChange={setOffset}/></>}
  </>}
  </section>;

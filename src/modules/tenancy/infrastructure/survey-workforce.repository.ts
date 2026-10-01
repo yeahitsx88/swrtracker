@@ -1,9 +1,9 @@
 import type { DbClient, UUID } from '@/shared/types';
 import type { TeamActor, TeamPageQuery, TeamProjectContext } from '../application/survey-teams';
-import type { WorkforcePerson, WorkforceRepository } from '../application/survey-workforce';
-import { SurveyStaffingPgRepository } from './survey-staffing.repository';
+import type { WorkforcePerson, WorkforcePage, WorkforceRepository } from '../application/survey-workforce';
+import { SurveyStaffingPgRepository, snapshotCte } from './survey-staffing.repository';
 /** Current explicit reporting and roster links only. Organizational teams and ticket snapshots never enter this population. */
-const population=`WITH RECURSIVE covered AS (
+const population=`covered AS (
  SELECT n.id FROM aor_assignments aa JOIN aor_nodes n ON n.tenant_id=aa.tenant_id AND n.project_id=aa.project_id AND n.id=aa.aor_node_id
  WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL AND n.retired_at IS NULL
  UNION SELECT n.id FROM aor_nodes n JOIN covered parent ON n.parent_id=parent.id WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.retired_at IS NULL
@@ -35,6 +35,13 @@ const population=`WITH RECURSIVE covered AS (
 )`;
 const values=(actor:TeamActor)=>[actor.tenantId,actor.projectId,actor.actorId,actor.actorRole,actor.sessionVersion];
 export class SurveyWorkforcePgRepository extends SurveyStaffingPgRepository implements WorkforceRepository {
+ // Serialize project/staffing writes while allowing Area replacement inserts'
+ // project foreign-key checks. FOR UPDATE would invert project/grant lock order.
+ override async lockProject(db:DbClient,tenantId:UUID,projectId:UUID){
+ const {rows}=await db.query<NonNullable<Awaited<ReturnType<SurveyStaffingPgRepository['lockProject']>>>>(
+ `SELECT status,crew_build AS "crewBuild" FROM projects WHERE tenant_id=$1 AND id=$2 FOR NO KEY UPDATE`,[tenantId,projectId]);
+ return rows[0]??null;
+ }
  async context(db:DbClient,actor:TeamActor):Promise<TeamProjectContext|null>{
  const {rows}=await db.query<TeamProjectContext>(`SELECT p.status,p.crew_build AS "crewBuild" FROM projects p
  JOIN project_memberships pm ON pm.project_id=p.id AND pm.user_id=$3 AND pm.role=$4
@@ -48,15 +55,27 @@ export class SurveyWorkforcePgRepository extends SurveyStaffingPgRepository impl
  JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
  WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$4 FOR UPDATE OF pm`,values(actor));return rows.length===1;
  }
- async person(db:DbClient,actor:TeamActor,userId:UUID){
- const {rows}=await db.query<WorkforcePerson>(`${population} SELECT * FROM population WHERE "userId"=$6`,[...values(actor),userId]);return rows[0]??null;
+ // Generic Area writers do not take the staffing project lock. Hold the rows
+ // that establish this pool until the transfer, audit and retry ledger commit.
+ async lockTransferScope(db:DbClient,actor:TeamActor,instrumentManId:UUID){
+ await db.query(`SELECT id FROM aor_nodes WHERE tenant_id=$1 AND project_id=$2 ORDER BY id FOR SHARE`,[actor.tenantId,actor.projectId]);
+ await db.query(`SELECT id FROM aor_assignments WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL ORDER BY id FOR SHARE`,[actor.tenantId,actor.projectId,actor.actorId]);
+ await db.query(`SELECT id FROM survey_reporting_links WHERE tenant_id=$1 AND project_id=$2 AND superintendent_id=$3 AND deactivated_at IS NULL ORDER BY id FOR SHARE`,[actor.tenantId,actor.projectId,actor.actorId]);
+ await db.query(`SELECT id FROM crew_rosters WHERE tenant_id=$1 AND project_id=$2 AND instrument_man_id=$3 AND deactivated_at IS NULL FOR UPDATE`,[actor.tenantId,actor.projectId,instrumentManId]);
  }
- async personnel(db:DbClient,actor:TeamActor,q:TeamPageQuery){
- const filter=`FROM population WHERE name ILIKE $6 OR email ILIKE $6 OR replace(role,'_',' ') ILIKE $6`;
- const params=[...values(actor),`%${q.search}%`];
- const count=await db.query<{total:number}>(`${population} SELECT COUNT(*)::int AS total ${filter}`,params);
- const {rows}=await db.query<WorkforcePerson>(`${population} SELECT * ${filter} ORDER BY lower(name),"userId" LIMIT $7 OFFSET $8`,[...params,q.limit,q.offset]);
- return {data:rows,total:count.rows[0]!.total,limit:q.limit,offset:q.offset};
+ async person(db:DbClient,actor:TeamActor,userId:UUID){
+ const {rows}=await db.query<WorkforcePerson>(`WITH RECURSIVE ${population} SELECT * FROM population WHERE "userId"=$6`,[...values(actor),userId]);return rows[0]??null;
+ }
+ async personnel(db:DbClient,actor:TeamActor,q:TeamPageQuery):Promise<WorkforcePage>{
+ // The displayed rows, total and token come from one PostgreSQL statement snapshot.
+ const {rows}=await db.query<{page:WorkforcePage}>(`WITH RECURSIVE ${snapshotCte}, ${population}, matching AS (
+ SELECT * FROM population WHERE name ILIKE $6 OR email ILIKE $6 OR replace(role,'_',' ') ILIKE $6
+ ) SELECT jsonb_build_object(
+ 'data',COALESCE((SELECT jsonb_agg(m ORDER BY lower(m.name),m."userId") FROM
+ (SELECT * FROM matching ORDER BY lower(name),"userId" LIMIT $7 OFFSET $8) m),'[]'::jsonb),
+ 'total',(SELECT COUNT(*) FROM matching),'limit',$7::int,'offset',$8::int,
+ 'snapshotToken',snapshot.token) AS page FROM snapshot`,[...values(actor),`%${q.search}%`,q.limit,q.offset]);
+ return rows[0]!.page;
  }
  async move(db:DbClient,actor:TeamActor,instrumentManId:UUID,partyChiefId:UUID){await this.addInstrumentMan(db,actor.tenantId,actor.projectId,partyChiefId,instrumentManId);}
  override async record(db:DbClient,actor:TeamActor,payload:Record<string,unknown>):Promise<void>;

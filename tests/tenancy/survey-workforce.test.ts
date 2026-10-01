@@ -14,9 +14,9 @@ function fixture(){
  const writes:unknown[]=[];
  const repo:WorkforceRepository={
  context:async()=>({status:'ACTIVE',crewBuild:'FULL'}),lockProject:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
- lockActor:async()=>true,lockSubjects:async()=>{},snapshot:async()=>'a'.repeat(32),
+ lockActor:async()=>true,lockSubjects:async()=>{},lockTransferScope:async()=>{},snapshot:async()=>'a'.repeat(32),
  person:async(_db,_actor,userId)=>people.find(p=>p.userId===userId)??null,
- personnel:async(_db,_actor,q)=>({data:people,total:3,limit:q.limit,offset:q.offset}),
+ personnel:async(_db,_actor,q)=>({data:people,total:3,limit:q.limit,offset:q.offset,snapshotToken:'a'.repeat(32)}),
  move:async(_db,_actor,im,chief)=>{writes.push([im,chief]);},record:async(_db,_actor,payload)=>{writes.push(payload);}
  };
  return {repo,people,writes};
