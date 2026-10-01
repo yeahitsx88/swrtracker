@@ -188,3 +188,10 @@
 - Provenance: on 2026-10-01 the owner said "Native execution approved" after the e1568f2 implementation-plan checkpoint.
 - Approval: execute docs/superpowers/plans/2026-10-01-survey-reviewer-handover.md against the Decision27 design, as one native implementer with independent read-only review at each verified API/UI checkpoint and ordinary pushes to origin/phase5.
 - Limits: approval does not cross full Superintendent departure cleanup, acting/FIELD_COORDINATOR/department, account lifecycle or retention-policy gates, and does not authorize Sabine mutation or deployment.
+
+
+### Decision 29 - narrow Superintendent Area-unlink design direction
+- Provenance: on2026-10-01, after pushed final reviewer handover checkpoint0f3ab1e, the owner replied "Approve option 1" to the recommendation: explicit Manager Area unlink after replacement coverage is complete and dependent reporting links are deliberately resolved. Alternatives were combined Area/reporting handover or leaving departure gated for another separately scoped capability.
+- Approved direction: prepare the narrow written cleanup design. Retain separate reporting resolution through existing tools, other Areas, roles/accounts/crews/teams/history and the guarded separate role-change command. No automatic bulk cleanup, reporting transfer, account firing/deactivation or Sabine mutation is approved.
+- Proposed specification: docs/superpowers/specs/2026-10-01-superintendent-area-unlink-design.md makes exact-row eligibility, explicit current complete replacement coverage, Manager staffing authorization, protected dependency refusal, displayed state, atomic retained staffing audit/replay, locks and UI acceptance concrete. These proposed details are for written-spec review, not settled by inference from the option selection.
+- Gates: written-spec review/approval, then implementation-plan review and execution selection. Decision27's full-departure exclusion is narrowed only to the selected next-design scope; other protected/lifecycle/retention/deployment contracts remain unresolved. Production remains verified0f3ab1e until an independently verified approved implementation checkpoint.
