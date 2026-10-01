@@ -38,7 +38,7 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
  function reload(){if(frozen)return;dispatch({type:'reload'});resetQuery();setRevision(n=>n+1);setSuccess(null);heading.current?.focus();}
  function cancel(){if(frozen)return;dispatch({type:'cancel'});resetQuery();heading.current?.focus();}
  async function submit(event:FormEvent){
-  event.preventDefault();if(running.current)return;
+  event.preventDefault();if(running.current||disabled)return;
   const next=reduceProtectedEditor(state,state.uncertain?{type:'retry'}:{type:'begin',key:createIdempotencyKey()});
   if(!next.pending||!next.attempt)return;running.current=true;
   dispatch(state.uncertain?{type:'retry'}:{type:'begin',key:next.attempt.key});
@@ -85,7 +85,7 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
       <label className="tm-check"><input type="checkbox" checked={state.additionalConfirmed} disabled={frozen} onChange={e=>dispatch({type:'additional',confirmed:e.target.checked})}/><span>I confirm adding the missing {state.grant.areaName} coverage to {state.candidate.name} with the selected intent.</span></label>
      </>:<p className="muted">Reuse complete existing coverage. No coverage row or intent label will be added.</p>}
      <label className="tm-check"><input type="checkbox" checked={state.confirmed} disabled={frozen} onChange={e=>dispatch({type:'confirm',confirmed:e.target.checked})}/><span>I confirm handing over {state.detail?.person.name}'s {state.grant.areaName} review grant to {state.candidate.name}.</span></label>
-     <div className="row"><Button type="submit" disabled={state.pending||(!state.uncertain&&!canConfirmProtectedResolution(state))}>{state.pending?'Handing over...':state.uncertain?'Retry unchanged handover':'Confirm handover'}</Button><Button type="button" variant="secondary" disabled={frozen} onClick={cancel}>Keep current grant</Button></div>
+     <div className="row"><Button type="submit" disabled={disabled||state.pending||(!state.uncertain&&!canConfirmProtectedResolution(state))}>{state.pending?'Handing over...':state.uncertain?'Retry unchanged handover':'Confirm handover'}</Button><Button type="button" variant="secondary" disabled={frozen} onClick={cancel}>Keep current grant</Button></div>
     </form>:<Button type="button" variant="secondary" disabled={frozen} onClick={cancel}>Keep current grant</Button>}
    </>}
    {page&&page.total>0?<div className="tm-footer"><span className="muted" role="status">{page.total} results</span>{!frozen?<PaginationControls total={page.total} limit={limit} offset={offset} onChange={next=>{if(!frozen)setOffset(next);}}/>:null}</div>:null}

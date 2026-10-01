@@ -10,7 +10,7 @@
 
 **Spec:** [Approved design](../specs/2026-10-01-survey-reviewer-resolution-design.md) atb4548e50e902807283a895770a45f4c2410ae740, approved2026-10-01 (Decision27). Executors read the entire spec with this plan.
 
-**Execution:** Decision28 records owner approval of this plan/native execution. Task1 API acceptance is recorded in CODEX Batch72; Task2 shared controls and production browser verification are recorded in CODEX Batch73; durable UI push remains Step6.
+**Execution:** Decision28 records owner approval of this plan/native execution. Task1 API was pushed at42f84b5 (CODEX Batch72); Task2 shared controls were pushed at4cbf08e (Batch73). All task steps are complete. Final whole-range review and the verified parent-busy repair are recorded in Batch74; this is completion of the approved first slice, not Phase5 or Superintendent departure completion.
 
 ## Global Constraints
 
@@ -179,7 +179,7 @@ New production browser script expects Manager to select Jason without Area1 cove
 
 - [x] **Step 5: required regressions and independent review.** Fresh required unit/TypeScript/Windows/Linux builds, Task1 schema/SQL/race/HTTP and existing staffing/workforce/review/browser regressions. Recreate only owned disposable fixtures if preconditions need freshness. Independent read-only consequential review; reconcile findings, fix approved violations and rerun relevant/full verification after changes.
 
-- [ ] **Step 6: document/push UI checkpoint.** Mark narrow UI handover implemented, preserve complete Superintendent cleanup/other contract gates, append CODEX actual runtime/checks/limits. Review diff/staged explicit paths, commit feat: expose manager and IT survey reviewer handovers; push origin phase5:phase5; verify remote SHA/0:0/clean. No Sabine deployment. Reassess authoritative queue; complete Superintendent departure cleanup needs its own contract.
+- [x] **Step 6: document/push UI checkpoint.** Mark narrow UI handover implemented, preserve complete Superintendent cleanup/other contract gates, append CODEX actual runtime/checks/limits. Review diff/staged explicit paths, commit feat: expose manager and IT survey reviewer handovers; push origin phase5:phase5; verify remote SHA/0:0/clean. No Sabine deployment. Reassess authoritative queue; complete Superintendent departure cleanup needs its own contract.
 
 ## Disposable Verification Procedure
 

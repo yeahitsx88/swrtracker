@@ -61,3 +61,56 @@ Fresh27 read-only plan samples across nine current chart/activity/review cases a
 Decision28 native execution produced verified API42f84b5 and shared Manager/IT UI acceptance (CODEX Batch73).424tests/nonincremental TypeScript/Windows+Linux production builds and current disposable migration/SQL/HTTP/browser evidence advance this narrow capability. Tests prove explicit exact-Area coverage creation/reuse, retained atomic audit/retry, current authority and stale/frozen UI semantics, without assigning real personnel or altering Sabine.
 
 Whole Phase5 is not complete. Full Superintendent departure cleanup/other protected contracts, authoritative individual Sabine reporting mapping, lower-priority scoped exports and hosted recovery/ACL/proxy/soak/device/assistive-technology acceptance remain separate queue/gates. Historical checklists and earlier counts above are historical evidence, not fresh results for this checkpoint.
+
+
+## 2026-10-01 final approved handover review and current queue - Batch74
+
+CURRENT HEAD: assessment base4cbf08e44a28f51dff39cd4179ac215531e98862, following pushed API42f84b5 and UI4cbf08e; the verified parent-command repair and this record form the next ordinary phase5 checkpoint. No reset/merge/force push or original dirty checkout changes.
+
+KNOWN-GOOD BASELINE: after the two-line parent-busy repair,424 unit tests, nonincremental TypeScript, native Windows and Linux runtime production builds and75 real-session handover browser checks pass. Earlier fresh migration/SQL/two-session/session/HTTP/incumbent browser results are specifically Batch72/73 evidence, not claimed as rerun after this UI-only fix. Independent whole-range reviewer personally verified424/27focused/TypeScript/diff-check at4cbf08e; executor verified the repair via browser RED-to-GREEN and full suite/builds. No remaining final review findings; no Sabine cutover or deployment certification.
+
+COMPLETED / DO NOT REPEAT: current scoped KPI/reporting populations, Manager command views and Team Management, guarded fixed-role changes, protected additive staffing and Chief exact-link unlink, workforce/member KPIs, navigation, requester draft/correction/recovery/date and earlier isolation/attachment/redaction repairs. Decisions27/28 now add supported one-grant Survey Reviewer handover with Manager/IT authority, explicit missing additional-Area coverage, truthful temporary/permanent evidence, atomic audit/replay and shared controls. Whole Phase5 remains unfinished.
+
+APPROVED + UNBLOCKED: finish and push the verified parent-busy correction/final review record. No further implementation task remains in the approved handover plan. Candidate work in the original continuation instruction is not blanket approval of unspecified contracts.
+
+APPROVED BUT GATED: complete Superintendent departure still needs an explicit residual Area/reporting/crew cleanup contract (Decision27); acting/FIELD_COORDINATOR/department resolution still lacks executable replacement/department/audit rules. Broader central IT account/company/member/invitation lifecycle and consolidated permissions/investigation need a bounded approved design for the selected capability. Lower-priority report/print exports have approved direction (Decision15), but require an agreed whole-authorized-filtered-population output contract and design. Sabine reporting requires authoritative individual mappings. Hosted recovery/ACL/proxy/soak/device/assistive-technology acceptance requires owner-controlled environment/evidence, not local fixture inference.
+
+DEFERRED: automatic draft/temporary-coverage expiry, permanent draft deletion, attachment purge/orphan cleanup absent retention policy, fabricated reporting/staffing, display-title/team-derived permissions, broad Manager grant administration, generalized roles/RBAC, Manager account invitations, unapproved hierarchy/infrastructure/indexes/refactors.
+
+NEXT RECOMMENDED INCREMENT / WHY: select a design for exact departing Superintendent individual Area unlink, only after confirmed complete replacement coverage and explicitly resolved reporting dependencies. It finishes the operational departure path adjacent to the approved handover instead of opening another subsystem. Other Area/crew/team/role/account/request history remains separate. Owner authority is needed because this deliberately removes retained request visibility and Decision27 excludes that behavior.
+
+Viable scope choices: (1) narrow explicit Area unlink after existing reporting cleanup, recommended; downside is multiple deliberate steps and possible remaining role blockers; (2) design combined Area/reporting handover, with a larger atomic contract and risk surface; (3) leave departure gated and choose another separately scoped design such as export or central IT lifecycle. Exact next decision: whether to proceed with the narrow Superintendent Area-unlink design, not approval of unseen implementation. No further independent sufficiently specified implementation was found; read-only investigation remains possible without crossing this decision.
+
+### Execution rulings retained before ignored workspace cleanup
+
+The following are the complete ledger rulings in decision order. Existing tests/builds prove the selected implementation, not excluded contracts. Final whole-range declined-to-judge subjects are ruled explicitly below; none silently became work.
+
+- Ruling: User checkpoint review/push policy and approved plan override inline skill's end-only review/ask-before-security/push defaults — authorization is explicit; independent reviews at both consequential boundaries, no parallel writers. Cost if wrong: extra review overhead; no permission expansion.
+
+- Ruling: Normalize installed CRLF shell scripts only in ignored .local copy and run via Git Bash; never modify plugin files — Windows-compatible execution. Cost if wrong: ledger bookkeeping failure, no product behavior.
+
+- Ruling: incumbent SP KPI HTTP assertion (Batch52 expected200/zero for unassigned Chief) conflicts with later approved Batch66 assigned-person validation and accepted workforce route tests404. Reproduced actual404 at pre-existing metrics route; source untouched. Update only stale HTTP assertion to404, preserve request-list empty-population200 and broad scope. No visibility widening; needed to unblock required regression.
+
+- Ruling: inline focused fixtures avoid unnecessary helper; bounded separate race/session scripts preserve acceptance ownership. Old staffing-read requires independent fresh two-tenant/no-roster profile; preserved regression cluster, switched only identity-verified QA profiles then restored. No production scope change. Concurrency ledger assertion scoped to tested actor/endpoint after HTTP created unrelated synthetic history; no weakened authority or product fix.
+
+- Ruling: review replay acceptance gap is valid under Step8. Added existing-behavior evidence after independent replacement role/account/session/company and protected-subject changes; no new behavior so no artificial RED.191actualSQL total GREEN. Deferred-review rulings preserve all listed owner gates, pending UI, generic duplicate witness contract, no global logout serialization and hosted/device/soak limits; no item silently adopted.
+
+- Ruling: optional onLockChange/disabled props coordinate only adjacent existing role form so uncertain/pending handover cannot be dismissed or overlapped by role save; no authority change. Closed Manager role entry offers read-only role/obligation evidence, mutation fields disabled. Cost if wrong: unnecessary read UI, no backend visibility widening.
+
+- Final whole-range review e1568f2..4cbf08e: independent 424tests/27focused/tsc/diff-check GREEN; no Critical/Important persistence/security findings. Parent-busy omission classified Minor by reviewer. Ruling: regrade missing parent-command handover freeze Important for the approved interaction contract (already promised adjacent command coordination, not extra polish) — prepared handover can bypass existing disabled integration — cost if wrong: one bounded regression/build checkpoint rather than deferral. Actual browser RED: parent pending disables handover confirmation false != true while genuine role PATCH409 response held. Minimum fix honors disabled in final button and synchronous submit guard, preserves uncertain unchanged retry.
+
+- Final: Ruling: complete Superintendent departure, residual Area visibility, crew/reporting cleanup and request reassignment stay gated — Decision27 excludes them — cost if wrong: remaining role blockers require a new design instead of immediate removal.
+
+- Final: Ruling: acting/FIELD_COORDINATOR/department/generalized administration stay excluded — no executable coverage/department/audit contract — cost if wrong: those blockers remain unresolved.
+
+- Final: Ruling: account/orphan lifecycle, arbitrary grants, broader inheritance and automatic expiry stay outside scope — no approved contract/retention policy — cost if wrong: another separately scoped increment is needed.
+
+- Final: Ruling: no global in-flight logout serialization or generic assignment uniqueness claim — accepted incumbent concurrency model and migration011 allow that limitation — cost if wrong: future lifecycle writers require a new concurrency contract.
+
+- Final: Ruling: Sabine deployment/hosted recovery/ACL/proxy/soak/physical-device/assistive-technology acceptance remain unclaimed — only disposable local evidence exists — cost if wrong: rollout acceptance remains unfinished.
+
+- Final: Ruling: pending plan Step6 is bookkeeping, now mark complete — actual4cbf08e push was verified SHA/0:0/clean — cost if wrong: documentation would overstate landing, prevented by rechecking remote before final commit.
+
+- Final: Ruling: do not invoke branch integration menu or remove managed checkout — user requires continuous phase5 checkpoints and finishing skill only at actual integration decision — cost if wrong: branch integration remains pending, no history/data loss.
+
+For rulings whose original line omitted a cost: the KPI expectation choice risks overlooking an intended zero-result contract (later accepted tests/source establish404); fixture/assertion scoping risks reducing regression coverage (separate prerequisite profiles preserve it); replay acceptance without artificial RED risks an unproven regression test (existing behavior acceptance is unchanged, actualSQL191 exercised it). Deferred minors from final review: none. Unrelated pre-existing Impeccable sidecar radius drift remains deferred; no token redesign was authorized.

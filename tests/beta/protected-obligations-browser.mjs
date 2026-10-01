@@ -74,6 +74,19 @@ try{
  check(await flow.getByRole('button',{name:'Confirm handover',exact:true}).isDisabled(),true,'explicit consent required');
  await flow.getByRole('combobox',{name:/Additional coverage intent/}).selectOption('TEMPORARY');
  await flow.getByRole('checkbox',{name:/I confirm adding/}).check();await flow.getByRole('checkbox',{name:/I confirm handing over/}).check();
+ // A pending real parent role response must also freeze the prepared handover.
+ const roleApi=`${origin}/api/projects/${project}/survey/teams`;
+ let releaseRole,roleStarted,roleFinished;const roleReady=new Promise(resolve=>{roleStarted=resolve;});const roleGate=new Promise(resolve=>{releaseRole=resolve;});const roleDone=new Promise(resolve=>{roleFinished=resolve;});
+ let overlapPosts=0;const countOverlap=request=>{if(request.url()===origin+api&&request.method()==='POST')overlapPosts++;};page.on('request',countOverlap);
+ await page.route(roleApi,async route=>{if(route.request().method()!=='PATCH')return route.continue();const response=await route.fetch();check(response.status(),409,'actual role guard still blocks');roleStarted();await roleGate;await route.fulfill({response});roleFinished();});
+ await roleForm.getByRole('button',{name:'Save role',exact:true}).click();await roleReady;
+ try{
+  check(await flow.getByRole('button',{name:'Confirm handover',exact:true}).isDisabled(),true,'parent pending disables handover confirmation');
+  await flow.getByRole('form',{name:'Confirm Survey Reviewer handover'}).evaluate(form=>{form.requestSubmit();form.requestSubmit();});
+  // A same-origin round trip flushes any incorrectly started handover request.
+  await page.request.get(origin+api+'?mode=personnel');check(overlapPosts,0,'parent pending handler suppresses handover requests');
+ }finally{releaseRole();await roleDone;await page.unroute(roleApi);page.off('request',countOverlap);}
+ await roleForm.getByRole('alert').waitFor();await page.waitForFunction(()=>Array.from(document.querySelectorAll('button')).some(b=>b.textContent==='Confirm handover'&&!b.disabled));
  // Search/page response retains selected Jason and original displayed token.
  await flow.getByLabel('Search replacement Superintendents',{exact:true}).fill('Z Candidate');await flow.getByRole('button',{name:'Search',exact:true}).click();
  await flow.getByRole('button',{name:'Next',exact:true}).click();await flow.getByText('Page 2 of 2',{exact:true}).waitFor();
