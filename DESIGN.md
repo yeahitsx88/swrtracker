@@ -33,7 +33,7 @@ rounded:
   button: "0px"
   control: "10px"
   ticket: "12px"
-  panel: "14px"
+  panel: "12px"
   pill: "999px"
 spacing:
   stack: "0.75rem"
@@ -126,13 +126,17 @@ Titles use bold weight and tight tracking; their sizes remain appropriate to the
 
 ## Layout
 
-Main content and header share a centered container capped at 1120px. The base main padding is 1rem, increasing to 1.2rem at 760px. Page groups use the page-gap token; panels use the panel-gap token internally. Panels have 1.25rem padding by default, 1.5rem at 760px and above, and 1rem at 600px and below. Rows wrap; panels allow their contents to shrink with `min-width: 0`.
+The shell is a sticky white header (Axiom wordmark, greeting, account Menu) above a sticky white **project band**: project name, the viewer's project role, and the project section tabs. Content shares a centered container capped at 1280px (`--shell-max`) with a 1rem gutter, 1.25rem from 760px. Forms and long text use a 760px reading width (`.form-narrow`); text fields cap at 40rem and date/number fields at 18rem. Panels have 1.25rem padding, 1.5rem from 760px and 1rem at 600px and below. Rows wrap; panels allow their contents to shrink with `min-width: 0`.
 
-Authentication uses a centered shell capped at 520px with 2rem vertical padding and centered branding. The projects header stays at the top. At 600px and below its identity and actions wrap, and navigation links wrap; from 601px through 759px the link row can scroll horizontally, and from 760px it wraps. Preserve the existing route structure and role-specific navigation.
+Below 760px the section tabs become a fixed **bottom tab bar** (icon plus label, 60px targets, safe-area aware) and top-level panels run edge to edge. At 600px and below the header shows the supplied Axiom icon instead of the wordmark, and the greeting truncates on one line.
+
+Request lists render as cards on phones and as table rows (Number, Request, Type, Need-By, Status) from 900px, from the same markup. The request detail page uses a main column plus a sticky Actions panel from 1100px; below that, Actions follow the request details. Account navigation remains the approved right-side overlay (Decision 16).
+
+Authentication uses a centered shell capped at 460px with centered branding and a full-width primary action. Preserve the existing route structure and role-specific navigation.
 
 ## Elevation & Depth
 
-Shared panels and cards use white fill and thin boundaries on the cool canvas. No shared shadow vocabulary is defined; nested panels explicitly have no shadow. The header's sticky positioning and three-pixel steel blue top rule provide structure without ornamental depth.
+Panels are white with a thin divider border and one quiet shadow token (`--shadow-panel`). Interactive cards lift with `--shadow-raised` and a Steel Blue border on hover. Nested panels have no shadow. The header's sticky positioning and three-pixel Steel Blue top rule provide structure without ornamental depth.
 
 ## Shapes
 
@@ -152,11 +156,19 @@ Inputs, selects, and textareas are white with a one-pixel `#81909d` border and t
 
 ### Navigation
 
-Links have a minimum height of 44px. Active links use an Action Blue label, Steel Blue border, pale blue fill, and weight 700. Hover uses the same pale fill and steel border. Keep the projects skip link, which becomes visible on focus and targets the main content.
+Project sections are underline tabs with icons in the project band: muted at rest, Action Blue with a 3px underline when current, pale blue on hover, minimum 46px tall. On phones they become the bottom tab bar with a 3px top indicator. Role-to-section mapping and labels are unchanged; icons are presentation only. In-page view switches (Operations, Project Review, Team Management) use the same underline treatment. Keep the projects skip link, which becomes visible on focus and targets the main content.
 
 ### Chips / Cards
 
-Status badges carry readable labels and semantic colors. Step chips use muted labels at rest and the active navigation colors for the current step. Ticket cards use a thin divider border, white fill, compact padding, and a 0.45rem internal grid gap; linked cards highlight with the navigation hover colors.
+**Status tones.** Every status maps to one tone in `src/lib/display-labels.ts`, shared by badges, legends and charts: neutral (draft), review (pending review), attention (returned, field review, delayed), planned (approved, scheduled), active (in progress, solid Action Blue), success (completed), danger (rejected only) and closed (cancellations). Badges are pills with a leading dot and always carry a readable label. Red is reserved for genuine exceptions. Chart colors per status are fixed (`STATUS_CHART_COLORS`), so a status keeps its color on every chart.
+
+**Request cards.** Number and status on the first line, a two-line description, then Area path, type, Need-By and requester as icon-led metadata. An open request past its Need-By gets an amber left rule and an Overdue cue (icon plus text). Elevated priority shows a small amber flag chip. The whole card is the link (stretched link); workflow buttons sit in a card footer above it, with destructive buttons outlined rather than filled.
+
+**Display vocabulary.** Codes never reach the UI raw: request types, priorities, roles and statuses use the shared label maps. Survey-facing views name requester cancellations "Canceled by requester".
+
+**Detail page.** A header with the request number, status, Area path and type; return and rejection reasons as an amber callout; a bordered field grid; and a history timeline with a rail and tone-colored dots. Notifications recorded with an event fold into that event as a small "Requester notice" line.
+
+Empty lists use a dashed empty-state block with a short explanation. Step chips show a numbered circle; completed steps are tinted, the current step is filled Action Blue, and on phones only the current step shows its name.
 
 ### Operations workspace
 
@@ -178,7 +190,7 @@ Focusable elements use a three-pixel solid Action Blue outline offset by three p
 
 `ProductBrand` combines the supplied artwork with the SWRTracker name. `public/brand/axiom-wordmark.png` is the unchanged `2026 Typography.png` source; `axiom-icon.png` is the unchanged `2026 Icon.png`. Both source canvases are 1600 × 1280. Provenance is retained in `public/brand/README.md`.
 
-Do not redraw, recolor, stretch, or add effects. Preserve at least the A cap-height of clear space. The implementation trims only excess transparent canvas through its viewport: the desktop frame is 184 × 80px with the source image rendered 144px wide, and the small-screen frame is 152 × 72px with the image 112px wide. Keep image proportions and visible clear space when changing the layout; frame dimensions alone are not a substitute for checking the artwork.
+Do not redraw, recolor, stretch, or add effects. Preserve at least the A cap-height of clear space. The implementation trims only excess transparent canvas through its viewport: the application header frame is 168 × 56px with the source image rendered 132px wide, and the authentication frame is 200 × 80px with the image 160px wide. At 600px and below the application header shows the unchanged `axiom-icon.png` canvas at 52px wide in a 44px frame instead of the wordmark. Keep image proportions and visible clear space when changing the layout; frame dimensions alone are not a substitute for checking the artwork.
 
 ## Do's and Don'ts
 
