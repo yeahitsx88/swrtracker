@@ -4,6 +4,7 @@ import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
 import { pool } from '@/lib/db';
 import { resolveProjectInsightRole } from '@/lib/project-insight-auth';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { withTransaction } from '@/lib/with-transaction';
 import {
   captureQueuedNotifications,
@@ -38,10 +39,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     if (body.action !== 'capture' && body.action !== 'retry-failed') {
       throw new ValidationError('action must be capture or retry-failed');
     }
-    const actorRole = await resolveProjectInsightRole(auth, projectUuid);
-    const updatedCount = await withTransaction((db) => body.action === 'capture'
-      ? captureQueuedNotifications(db, { tenantId: auth.tenantId, projectId: projectUuid, actorRole })
-      : retryFailedNotifications(db, { tenantId: auth.tenantId, projectId: projectUuid, actorRole }));
+    const updatedCount = await withTransaction(async (db) => {
+      await coordinateAuthenticatedMutation(db, req, auth, 'SHARED');
+      const actorRole = await resolveProjectInsightRole(auth, projectUuid, db);
+      return body.action === 'capture'
+        ? captureQueuedNotifications(db, { tenantId: auth.tenantId, projectId: projectUuid, actorRole })
+        : retryFailedNotifications(db, { tenantId: auth.tenantId, projectId: projectUuid, actorRole });
+    });
     return NextResponse.json({ updatedCount });
   } catch (error) {
     return errorResponse(error);

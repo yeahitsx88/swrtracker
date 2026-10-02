@@ -103,3 +103,8 @@ Remaining writer families include ticket workflow/assignment/create/draft/attach
 - Inactive department membership rows remain historical: title/move refuse them; inactive actor department scope confers no title authority. Unlink-only resolution remains available under existing authorization.
 - active-duty-subject-postgres.ts:57 assertions, eight observed real wait-and-disable races plus current-subject, cross-tenant, subcontractor and inactive department checks.491 normal tests, strict types and build pass.
 - Task3 writer inventory and remaining family proofs are still open; this does not certify full enforcement or deployment.
+
+## Task3 notification operator continuation
+- Project notification POST capture/retry: SHARED tenant barrier, current session and current insight role reread on held client before delivery bookkeeping. Read-only GET remains current-auth/project bounded.
+- Actual SQL harness now277 assertions across36 entrypoints and46 revocation scenarios, plus4 permission-only local-disable/role-loss waits. Both positive actions work; missing project preserves state. Capture is local delivery bookkeeping, not proof of external email atomicity.
+- Owner requested checkpoint and stop. Task3 complete indirect inventory/remaining subject and family proofs, Tasks4-7 and final branch review remain pending.

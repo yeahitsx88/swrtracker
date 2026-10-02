@@ -10,6 +10,7 @@ import {handlePostSurveyStaffing,handlePatchSurveyStaffing} from '../../src/app/
 import {handlePostSurveyTeam,handlePatchSurveyRole,handleDeleteSurveyTeam} from '../../src/app/api/projects/[projectId]/survey/teams/handler';
 import {handlePostProtectedObligations} from '../../src/app/api/projects/[projectId]/survey/protected-obligations/handler';
 import {handlePatchSuperintendentArea} from '../../src/app/api/projects/[projectId]/survey/staffing/superintendent-area-handler';
+import {POST as operateNotifications} from '../../src/app/api/projects/[projectId]/notifications/route';
 import {POST as moveWorkforce} from '../../src/app/api/projects/[projectId]/survey/workforce/route';
 import {handlePostDepartments} from '../../src/app/api/projects/[projectId]/departments/handler';
 import {handlePostProjectActivation} from '../../src/app/api/projects/[projectId]/activate/handler';
@@ -64,6 +65,7 @@ async function main(){
   await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[tenant,actor]);
   const ticket=randomUUID();
   await pg.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','DRAFT','Survey','Writer race ticket')",[ticket,tenant,project,company,actor]);
+  for(const state of ['QUEUED','FAILED'])await pg.query("INSERT INTO notification_outbox(tenant_id,ticket_id,recipient_user_id,event_type,payload,idempotency_key,delivery_state) VALUES($1,$2,$3,'SUBMITTED','{}',$4,$5)",[tenant,ticket,actor,'synthetic-'+state,state]);
   a=await pg.connect();b=await pg.connect();
   const holder=a,waiter=b,holderPid=(await a.query('SELECT pg_backend_pid() AS pid')).rows[0].pid,waiterPid=(await b.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
   const queries:string[]=[];
@@ -81,6 +83,8 @@ async function main(){
    createStorage:()=>({write:async()=>{const storageKey=nextId();stagedObjects.add(storageKey);return{storageKey,contentSha256:'a'.repeat(64)};},
     read:async()=>{storageReads++;return Buffer.from('synthetic bytes');},remove:async(key:string)=>{stagedObjects.delete(key);}})};
   const cases=[
+   {name:'notification-capture',method:'POST',handler:operateNotifications,mode:'SHARED',body:{action:'capture'}},
+   {name:'notification-retry',method:'POST',handler:operateNotifications,mode:'SHARED',body:{action:'retry-failed'}},
    {name:'staffing-role-and-links',method:'POST',handler:handlePostSurveyStaffing,mode:'EXCLUSIVE',body:{expectedSnapshot:snapshot,partyChiefId:chief,areaId:area,superintendentId:superintendent,instrumentManIds:[im],confirmRoleChanges:true}},
    {name:'staffing-unlink',method:'PATCH',handler:handlePatchSurveyStaffing,mode:'EXCLUSIVE',body:{action:'unlink',kind:'roster',linkId:link,partyChiefId:chief,expectedSnapshot:snapshot,confirmUnlink:true}},
    {name:'team-save',method:'POST',handler:handlePostSurveyTeam,mode:'SHARED',body:{name:'Race team',areaId:area,leadUserId:chief,memberIds:[chief,im]}},
@@ -119,11 +123,11 @@ async function main(){
   const ctx={params:Promise.resolve({ticketId:ticket,projectId:project,departmentId:nextId(),grantId:nextId(),templateId:nextId()})};
   const rowsBefore=async()=>{
    const state:Record<string,unknown>={};
-   for(const table of ['api_idempotency','survey_staffing_events','access_grant_events','administrative_events','aor_assignments','crew_rosters','survey_teams','survey_team_members','project_memberships','projects','departments','aor_nodes','aor_levels','companies','project_templates','priority_whitelist','invites','company_authority_grants','tickets','ticket_events','attachments']){
+   for(const table of ['api_idempotency','survey_staffing_events','access_grant_events','administrative_events','aor_assignments','crew_rosters','survey_teams','survey_team_members','project_memberships','projects','departments','aor_nodes','aor_levels','companies','project_templates','priority_whitelist','invites','company_authority_grants','tickets','ticket_events','attachments','notification_outbox']){
     state[table]=(await pg!.query('SELECT to_jsonb(t) AS row FROM '+table+' t ORDER BY to_jsonb(t)::text')).rows;
    }return state;
   };
-  const attachmentRaces=cases.filter(item=>item.name.startsWith('attachment-')).flatMap(item=>
+  const attachmentRaces=cases.filter(item=>item.name.startsWith('attachment-')||item.name.startsWith('notification-')).flatMap(item=>
    (['VERSION','LOGOUT'] as const).map(revocation=>({...item,name:item.name+'-'+revocation.toLowerCase(),revocation})));
   for(const item of [...cases,...attachmentRaces]){
    // Reset only this owned synthetic actor between distinct race scenarios.
@@ -167,6 +171,38 @@ async function main(){
   const events=(await pg.query("SELECT * FROM administrative_events WHERE event_type='project.configuration_changed' AND project_id=$1",[project])).rows;
   assert.equal(events.length,1);checks++;
   assert.equal(events[0].actor_id,actor);checks++;
+  // Current operators retain both actions, with durable state scoped to this project.
+  const notificationRequest=(action:string)=>new NextRequest('http://localhost/api/projects/'+project+'/notifications',{method:'POST',headers:{cookie:'swr_session='+signToken(actor,tenant,1),'content-type':'application/json'},body:JSON.stringify({action})});
+  const captured=await operateNotifications(notificationRequest('capture'),ctx);
+  assert.equal(captured.status,200);checks++;
+  assert.equal((await captured.json()).updatedCount,1);checks++;
+  const retried=await operateNotifications(notificationRequest('retry-failed'),ctx);
+  assert.equal(retried.status,200);checks++;
+  assert.equal((await retried.json()).updatedCount,1);checks++;
+  const deliveryRows=(await pg.query('SELECT idempotency_key,delivery_state,attempt_count FROM notification_outbox ORDER BY idempotency_key')).rows;
+  assert.deepEqual(deliveryRows,[{idempotency_key:'synthetic-FAILED',delivery_state:'QUEUED',attempt_count:0},{idempotency_key:'synthetic-QUEUED',delivery_state:'CAPTURED',attempt_count:1}]);checks++;
+  const deliveryBefore=await rowsBefore();
+  const foreignCtx={params:Promise.resolve({projectId:nextId()})};
+  assert.equal((await operateNotifications(notificationRequest('capture'),foreignCtx)).status,404);checks++;
+  assert.deepEqual(await rowsBefore(),deliveryBefore);checks++;
+  // Permission-only changes must be reread even when the bearer version is unchanged.
+  await pg.query('DELETE FROM tenant_memberships WHERE user_id=$1',[actor]);
+  for(const action of ['capture','retry-failed'])for(const change of ['LOCAL_DISABLE','ROLE_LOSS']){
+   await pg.query("UPDATE project_memberships SET role='SURVEY_MANAGER',access_disabled_at=NULL,access_disabled_by=NULL WHERE user_id=$1 AND project_id=$2",[actor,project]);
+   const beforeDelivery:unknown[]=(await pg.query('SELECT to_jsonb(o) AS row FROM notification_outbox o ORDER BY id')).rows;
+   await holder.query('BEGIN');await acquireTenantLifecycleLock(holder,tenant,'EXCLUSIVE');
+   const pending=operateNotifications(notificationRequest(action),ctx);
+   let blocked=false;const deadline=Date.now()+3000;
+   while(Date.now()<deadline){if((await pg.query('SELECT $2::int=ANY(pg_blocking_pids($1::int)) AS blocked',[waiterPid,holderPid])).rows[0].blocked){blocked=true;break;}await new Promise(resolve=>setTimeout(resolve,10));}
+   if(!blocked){await holder.query('ROLLBACK');const response=await pending;throw Error(action+' authority race did not wait; response '+response.status);}checks++;
+   if(change==='LOCAL_DISABLE')await holder.query('UPDATE project_memberships SET access_disabled_at=now(),access_disabled_by=$3 WHERE user_id=$1 AND project_id=$2',[actor,project,admin]);
+   else await holder.query("UPDATE project_memberships SET role='REQUESTER' WHERE user_id=$1 AND project_id=$2",[actor,project]);
+   await holder.query('COMMIT');
+   assert.equal((await pending).status,403,action+' '+change+' denies before delivery-state mutation');checks++;
+   assert.deepEqual((await pg.query('SELECT to_jsonb(o) AS row FROM notification_outbox o ORDER BY id')).rows,beforeDelivery);checks++;
+  }
+  await pg.query("UPDATE project_memberships SET role='SURVEY_MANAGER',access_disabled_at=NULL,access_disabled_by=NULL WHERE user_id=$1 AND project_id=$2",[actor,project]);
+  await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[tenant,actor]);
   // Positive upload/replay and download share the real coordinated transaction.
   await pg.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[project]);
   const uploadArea=randomUUID(),uploadLevel=randomUUID();
