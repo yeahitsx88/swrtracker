@@ -1,12 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
+import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
 import { appendAuditEvent } from '@/modules/audit/application';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { requireResourceUuid } from '@/lib/resource-uuid';
 import { pool } from '@/lib/db';
 import { assertUploadAuthority, uploadAttachment } from '@/modules/attachment/application';
-import { requireActiveAuth } from '@/lib/auth';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import type { AttachmentMetadataValidator, IAttachmentRepository } from '@/modules/attachment/application';
 import { AttachmentRepository, LocalAttachmentStorage, MAX_ATTACHMENT_BYTES, validateAttachmentObjectMetadata, validateAttachmentUploadCandidate } from '@/modules/attachment/infrastructure';
@@ -14,8 +13,6 @@ import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.reposit
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
 import type { DbClient, UUID } from '@/shared/types';
 import type { AttachmentPurpose } from '@/modules/attachment/domain/types';
-
-type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
 interface AttachmentStorage {
   write(tenantId: UUID, ticketId: UUID, bytes: Uint8Array): Promise<{ storageKey: string; contentSha256: string }>;
@@ -29,25 +26,7 @@ export interface TicketAttachmentsRouteDeps {
   createAttachmentRepo: () => IAttachmentRepository;
   createStorage: () => AttachmentStorage;
   validateAttachmentMetadata: AttachmentMetadataValidator;
-  withTransaction: TransactionRunner;
-  revalidateUploadActor?: (req: NextRequest, db: DbClient, ctx: Awaited<ReturnType<typeof getTicketRouteContext>>) => Promise<void>;
-}
-
-async function revalidateUploadActor(req: NextRequest, db: DbClient, ctx: Awaited<ReturnType<typeof getTicketRouteContext>>) {
-  const auth = await requireActiveAuth(req, db);
-  const { rows } = await db.query(
-    `SELECT pm.role FROM project_memberships pm
-     JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
-     JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
-     JOIN companies c ON c.id = u.company_id AND c.tenant_id = u.tenant_id
-     WHERE pm.project_id = $2 AND pm.user_id = $3 AND pm.role = $4
-       AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL) AND u.session_version = $5
-       AND (c.type <> 'SUBCONTRACTOR' OR pm.role = 'REQUESTER')
-     FOR SHARE OF pm, p, u, c`,
-    [ctx.tenantId, ctx.projectId, ctx.actorId, ctx.actorRole, auth.sessionVersion]);
-  if (auth.userId !== ctx.actorId || auth.tenantId !== ctx.tenantId || !rows[0]) {
-    throw new ForbiddenError('Current project authority is required');
-  }
+  withTicketMutation: typeof withTicketMutation;
 }
 
 const defaultDeps: TicketAttachmentsRouteDeps = {
@@ -56,7 +35,7 @@ const defaultDeps: TicketAttachmentsRouteDeps = {
   createAttachmentRepo: () => new AttachmentRepository(),
   createStorage: () => new LocalAttachmentStorage(),
   validateAttachmentMetadata: validateAttachmentObjectMetadata,
-  withTransaction,
+  withTicketMutation,
 };
 
 function attachmentResponse(row: AttachmentRow) {
@@ -144,10 +123,7 @@ export async function handlePostTicketAttachments(
 
     const ticketRepo = deps.createTicketRepo();
     const attachmentRepo = deps.createAttachmentRepo();
-    const result = await deps.withTransaction(async (db) => {
-      if (retryKey) {
-        await (deps.revalidateUploadActor ?? revalidateUploadActor)(req, db, ctx);
-      }
+    const result = await deps.withTicketMutation(req, ctx, async (db, ctx) => {
       // Serialize upload, submit and delete, including attachment-limit checks.
       await db.query(`SELECT id FROM tickets WHERE tenant_id = $1 AND project_id = $2 AND id = $3 FOR UPDATE`,
         [ctx.tenantId, ctx.projectId, ctx.ticketId]);
@@ -268,33 +244,37 @@ export async function handleDownloadTicketAttachment(
 ) {
   try {
     const { ticketId, attachmentId } = await params;
-    const ctx = await findVisibleTicket(req, ticketId, deps);
+    const expected = await deps.getTicketRouteContext(req, ticketId);
     requireResourceUuid(attachmentId, 'attachmentId');
-    const attachment = await deps.findAttachment(ctx.tenantId, ctx.ticketId, attachmentId);
-    if (!attachment) throw new NotFoundError('Attachment not found');
-    const bytes = await deps.createStorage().read(attachment.storage_key);
-    // Build a valid response before persisting a successful download audit.
-    const normalizedFilename=Buffer.from(attachment.filename,'utf8').toString('utf8');
-    const fallback=normalizedFilename.replace(/[^\x20-\x7e]|["\\]/g,'_');
-    const encoded=encodeURIComponent(normalizedFilename).replace(/['()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase());
-    const response=new NextResponse(new Uint8Array(bytes), {
-      status: 200,
-      headers: {
-        'Content-Type': attachment.mime_type,
-        'Content-Length': String(bytes.byteLength),
-        'Content-Disposition': 'attachment; filename="'+fallback+'"; filename*=UTF-8\'\''+encoded,
-        'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': 'private, no-store',
-      },
+    return await deps.withTicketMutation(req, expected, async (db, ctx) => {
+      const ticket = await deps.createTicketRepo().findById(db, ctx.tenantId, ctx.ticketId, ctx.visibility);
+      if (!ticket) throw new NotFoundError('Ticket not found');
+      const attachment = await deps.findAttachment(ctx.tenantId, ctx.ticketId, attachmentId, db);
+      if (!attachment) throw new NotFoundError('Attachment not found');
+      const bytes = await deps.createStorage().read(attachment.storage_key);
+      // Build a valid response before persisting a successful download audit.
+      const normalizedFilename=Buffer.from(attachment.filename,'utf8').toString('utf8');
+      const fallback=normalizedFilename.replace(/[^\x20-\x7e]|["\\]/g,'_');
+      const encoded=encodeURIComponent(normalizedFilename).replace(/['()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase());
+      const response=new NextResponse(new Uint8Array(bytes), {
+        status: 200,
+        headers: {
+          'Content-Type': attachment.mime_type,
+          'Content-Length': String(bytes.byteLength),
+          'Content-Disposition': 'attachment; filename="'+fallback+'"; filename*=UTF-8\'\''+encoded,
+          'X-Content-Type-Options': 'nosniff',
+          'Cache-Control': 'private, no-store',
+        },
+      });
+      await appendAuditEvent(db, {
+        ticketId: ctx.ticketId,
+        tenantId: ctx.tenantId,
+        actorId: ctx.actorId,
+        eventType: 'attachment.downloaded',
+        payload: { attachmentId, filename: attachment.filename, contentSha256: attachment.content_sha256 },
+      });
+      return response;
     });
-    await deps.withTransaction((db) => appendAuditEvent(db, {
-      ticketId: ctx.ticketId,
-      tenantId: ctx.tenantId,
-      actorId: ctx.actorId,
-      eventType: 'attachment.downloaded',
-      payload: { attachmentId, filename: attachment.filename, contentSha256: attachment.content_sha256 },
-    }));
-    return response;
   } catch (err) {
     return errorResponse(err);
   }
@@ -303,16 +283,16 @@ export async function handleDownloadTicketAttachment(
 export interface TicketAttachmentDownloadDeps {
   getTicketRouteContext: typeof getTicketRouteContext;
   createTicketRepo: () => ITicketRepository;
-  findAttachment: (tenantId: string, ticketId: string, attachmentId: string) => Promise<AttachmentRow | null>;
+  findAttachment: (tenantId: string, ticketId: string, attachmentId: string, db: DbClient) => Promise<AttachmentRow | null>;
   createStorage: () => Pick<AttachmentStorage, 'read'>;
-  withTransaction: TransactionRunner;
+  withTicketMutation: typeof withTicketMutation;
 }
 
 const defaultDownloadDeps: TicketAttachmentDownloadDeps = {
   getTicketRouteContext,
   createTicketRepo: () => new TicketRepository(),
-  findAttachment: async (tenantId, ticketId, attachmentId) => {
-    const { rows } = await pool.query<AttachmentRow>(
+  findAttachment: async (tenantId, ticketId, attachmentId, db) => {
+    const { rows } = await db.query<AttachmentRow>(
       `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, storage_key, size_bytes,
               purpose, return_cycle, content_sha256, created_at
        FROM attachments WHERE tenant_id = $1 AND ticket_id = $2 AND id = $3 LIMIT 1`,
@@ -321,5 +301,5 @@ const defaultDownloadDeps: TicketAttachmentDownloadDeps = {
     return rows[0] ?? null;
   },
   createStorage: () => new LocalAttachmentStorage(),
-  withTransaction,
+  withTicketMutation,
 };

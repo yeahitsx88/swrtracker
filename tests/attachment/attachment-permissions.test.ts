@@ -148,7 +148,7 @@ test('multipart route stores actual bytes and never accepts a caller storage key
       read: async () => Buffer.alloc(0), remove: async () => undefined,
     }),
     validateAttachmentMetadata: () => undefined,
-    withTransaction: async (fn) => fn(db()),
+    withTicketMutation: async (_req,ctx,fn) => fn(db(),ctx),
   };
   const response = await handlePostTicketAttachments(request, { params: Promise.resolve({ ticketId }) }, deps);
   assert.equal(response.status, 201);

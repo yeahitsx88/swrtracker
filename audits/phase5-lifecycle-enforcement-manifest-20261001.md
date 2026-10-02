@@ -86,3 +86,8 @@ Remaining writer families include ticket workflow/assignment/create/draft/attach
 - Each mutation acquires the tenant barrier and rereads current bearer and action authority on the held client before domain effects. Existing operational roles are not replaced by administrative capabilities.
 - SHARED:24 ticket transition/update callbacks through withTicketMutation; creation and draft deletion/recovery use explicit coordination on the held client. Fresh operational role and visibility precede replay.
 - Actual default entrypoint concurrency acceptance:31 handlers /155 race assertions plus5 atomic department audit assertions (160 total). Subject departure, action-specific positive authorization, attachments/downloads, workers, complete indirect writer search and integrated offboarding races remain open; this is not a complete enforcement inventory.
+
+## Task3 attachment continuation
+- Uploads (keyed and unkeyed) and downloads: SHARED tenant barrier and fresh held-client role/visibility through withTicketMutation. Download attachment lookup and successful audit share that client; audit failure withholds buffered bytes.
+- lifecycle-writer-handlers-postgres.ts now verifies34 distinct handler entrypoints /40 wait-and-revoke scenarios, with attachment global-disable/version/logout races and positive upload/replay/download/audit rollback.228 total assertions, not a full release proof.
+- Remaining worker search confirms orphan recovery currently escalates only, following approved A3; no automatic reassignment is to be restored. Worker candidate freshness, recipient eligibility/audit ordering, other read-state mutations and complete indirect inventory still require classification and proof.

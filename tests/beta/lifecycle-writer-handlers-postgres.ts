@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {readdir,readFile} from 'node:fs/promises';
 import {NextRequest} from 'next/server';
 import {getPool} from '../../src/lib/db';
-import {signToken} from '../../src/lib/auth';
+import {signToken,sessionTokenHash} from '../../src/lib/auth';
 import {acquireTenantLifecycleLock} from '../../src/lib/tenant-lifecycle-lock';
 import {handlePostSurveyStaffing,handlePatchSurveyStaffing} from '../../src/app/api/projects/[projectId]/survey/staffing/handler';
 import {handlePostSurveyTeam,handlePatchSurveyRole,handleDeleteSurveyTeam} from '../../src/app/api/projects/[projectId]/survey/teams/handler';
@@ -30,6 +30,10 @@ import {PATCH as updateTemplate,DELETE as deleteTemplate} from '../../src/app/ap
 import {POST as startTicket} from '../../src/app/api/tickets/[ticketId]/start/route';
 import {POST as createTicket} from '../../src/app/api/tickets/route';
 import {DELETE as deleteDraft} from '../../src/app/api/tickets/[ticketId]/draft/route';
+import {handlePostTicketAttachments,handleDownloadTicketAttachment} from '../../src/app/api/tickets/[ticketId]/attachments/handler';
+import {getTicketRouteContext,withTicketMutation} from '../../src/lib/ticket-route-helpers';
+import {TicketRepository} from '../../src/modules/ticket/infrastructure/ticket.repository';
+import {AttachmentRepository,validateAttachmentObjectMetadata} from '../../src/modules/attachment/infrastructure';
 import type {UUID} from '../../src/shared/types';
 
 async function main(){
@@ -70,6 +74,12 @@ async function main(){
     return result;
   },release:()=>{}})) as typeof applicationPool.connect;
   const nextId=()=>randomUUID(),snapshot='a'.repeat(32),chief=nextId(),im=nextId(),area=nextId(),superintendent=nextId(),link=nextId();
+  let storageReads=0;
+  const stagedObjects=new Set<string>();
+  const uploadDeps={getTicketRouteContext,withTicketMutation,createTicketRepo:()=>new TicketRepository(),
+   createAttachmentRepo:()=>new AttachmentRepository(),validateAttachmentMetadata:validateAttachmentObjectMetadata,
+   createStorage:()=>({write:async()=>{const storageKey=nextId();stagedObjects.add(storageKey);return{storageKey,contentSha256:'a'.repeat(64)};},
+    read:async()=>{storageReads++;return Buffer.from('synthetic bytes');},remove:async(key:string)=>{stagedObjects.delete(key);}})};
   const cases=[
    {name:'staffing-role-and-links',method:'POST',handler:handlePostSurveyStaffing,mode:'EXCLUSIVE',body:{expectedSnapshot:snapshot,partyChiefId:chief,areaId:area,superintendentId:superintendent,instrumentManIds:[im],confirmRoleChanges:true}},
    {name:'staffing-unlink',method:'PATCH',handler:handlePatchSurveyStaffing,mode:'EXCLUSIVE',body:{action:'unlink',kind:'roster',linkId:link,partyChiefId:chief,expectedSnapshot:snapshot,confirmUnlink:true}},
@@ -101,33 +111,49 @@ async function main(){
    {name:'template-delete',method:'DELETE',handler:deleteTemplate,mode:'EXCLUSIVE',body:{}},
    {name:'ticket-start',method:'POST',handler:startTicket,mode:'SHARED',body:{}},
    {name:'ticket-create',method:'POST',handler:(req:NextRequest)=>createTicket(req),mode:'SHARED',body:{projectId:project,aorNodeId:area,ticketType:'LAYOUT',fieldContact:'Contact',description:'Race ticket',requestedDate:'2026-10-20',workflowVariant:'DIRECT_ASSIGNMENT',requesterId:chief,assignedInstrumentManId:im}},
+   {name:'attachment-upload-keyed',method:'POST',handler:(req:NextRequest)=>handlePostTicketAttachments(req,{params:Promise.resolve({ticketId:ticket})},uploadDeps),mode:'SHARED',multipart:true,keyed:true,body:{}},
+   {name:'attachment-upload-unkeyed',method:'POST',handler:(req:NextRequest)=>handlePostTicketAttachments(req,{params:Promise.resolve({ticketId:ticket})},uploadDeps),mode:'SHARED',multipart:true,keyed:false,body:{}},
+   {name:'attachment-download',method:'GET',handler:(req:NextRequest)=>handleDownloadTicketAttachment(req,{params:Promise.resolve({ticketId:ticket,attachmentId:link})}),mode:'SHARED',body:{}},
    {name:'draft-delete',method:'DELETE',handler:deleteDraft,mode:'SHARED',body:{expectedVersion:0}},
   ] as const;
   const ctx={params:Promise.resolve({ticketId:ticket,projectId:project,departmentId:nextId(),grantId:nextId(),templateId:nextId()})};
   const rowsBefore=async()=>{
    const state:Record<string,unknown>={};
-   for(const table of ['api_idempotency','survey_staffing_events','access_grant_events','administrative_events','aor_assignments','crew_rosters','survey_teams','survey_team_members','project_memberships','projects','departments','aor_nodes','aor_levels','companies','project_templates','priority_whitelist','invites','company_authority_grants','tickets','ticket_events']){
+   for(const table of ['api_idempotency','survey_staffing_events','access_grant_events','administrative_events','aor_assignments','crew_rosters','survey_teams','survey_team_members','project_memberships','projects','departments','aor_nodes','aor_levels','companies','project_templates','priority_whitelist','invites','company_authority_grants','tickets','ticket_events','attachments']){
     state[table]=(await pg!.query('SELECT to_jsonb(t) AS row FROM '+table+' t ORDER BY to_jsonb(t)::text')).rows;
    }return state;
   };
-  for(const item of cases){
+  const attachmentRaces=cases.filter(item=>item.name.startsWith('attachment-')).flatMap(item=>
+   (['VERSION','LOGOUT'] as const).map(revocation=>({...item,name:item.name+'-'+revocation.toLowerCase(),revocation})));
+  for(const item of [...cases,...attachmentRaces]){
    // Reset only this owned synthetic actor between distinct race scenarios.
    await pg.query('UPDATE users SET session_version=1,deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[actor]);
    const before=await rowsBefore();queries.length=0;
    await holder.query('BEGIN');await holder.query('SET LOCAL statement_timeout=6000');await acquireTenantLifecycleLock(holder,tenant,'EXCLUSIVE');
-   const request=new NextRequest('http://localhost/api/projects/'+project+'/'+item.name,{method:item.method,headers:{cookie:'swr_session='+signToken(actor,tenant,1),'content-type':'application/json','idempotency-key':nextId()},body:JSON.stringify(item.body)});
+   const token=signToken(actor,tenant,1);
+   const headers:Record<string,string>={cookie:'swr_session='+token};
+   let body:FormData|string|undefined;
+   if('multipart' in item){const form=new FormData();form.set('file',new File(['synthetic bytes'],'instructions.txt',{type:'text/plain'}));form.set('purpose','REQUEST_INSTRUCTION');body=form;if(item.keyed)headers['idempotency-key']=nextId();}
+   else if(item.method!=='GET'){headers['content-type']='application/json';headers['idempotency-key']=nextId();body=JSON.stringify(item.body);}
+   const request=new NextRequest('http://localhost/api/projects/'+project+'/'+item.name,{method:item.method,headers,body});
    const pending=item.handler(request,ctx);
    const deadline=Date.now()+3000;let waited=false;
    while(Date.now()<deadline){if((await pg.query('SELECT $2::int=ANY(pg_blocking_pids($1::int)) AS blocked',[waiterPid,holderPid])).rows[0].blocked){waited=true;break;}await new Promise(resolve=>setTimeout(resolve,10));}
    if(!waited){await holder.query('ROLLBACK');const response=await pending;throw Error(item.name+' did not wait for tenant; response '+response.status);}
    checks++;
-   await holder.query('UPDATE users SET session_version=session_version+1,deactivated_at=now(),deactivated_by=$2 WHERE id=$1',[actor,admin]);
+   if('revocation' in item&&item.revocation==='LOGOUT')await holder.query("INSERT INTO revoked_auth_sessions(token_hash,tenant_id,user_id,expires_at) VALUES($1,$2,$3,now()+interval '8 hours')",[sessionTokenHash(token),tenant,actor]);
+   else if('revocation' in item&&item.revocation==='VERSION')await holder.query('UPDATE users SET session_version=session_version+1 WHERE id=$1',[actor]);
+   else await holder.query('UPDATE users SET session_version=session_version+1,deactivated_at=now(),deactivated_by=$2 WHERE id=$1',[actor,admin]);
    await holder.query('COMMIT');
    const response=await pending;assert.equal(response.status,401,item.name);checks++;
    assert.deepEqual(await rowsBefore(),before,item.name+' must preserve domain/replay/audit state');checks++;
    assert.ok(queries.some(sql=>sql.includes('FROM tenants')&&sql.endsWith(item.mode==='EXCLUSIVE'?'FOR UPDATE':'FOR SHARE')),item.name+' lock mode');checks++;
    assert.equal(queries.some(sql=>sql.includes('api_idempotency')),false,item.name+' must reject before replay');checks++;
+   if(item.name.startsWith('attachment-')){assert.equal(queries.some(sql=>/FROM attachments|INSERT INTO attachments/.test(sql)),false,item.name+' rejects before attachment data');checks++;}
+   if('revocation' in item&&item.revocation==='LOGOUT')await pg.query('DELETE FROM revoked_auth_sessions WHERE token_hash=$1',[sessionTokenHash(token)]);
   }
+  assert.equal(stagedObjects.size,0,'revoked uploads clean staged objects');checks++;
+  assert.equal(storageReads,0,'revoked downloads never read bytes');checks++;
   await pg.query('UPDATE users SET session_version=1,deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[actor]);
   await pg.query("UPDATE projects SET status='SETUP' WHERE id=$1",[project]);
   await pg.query("CREATE FUNCTION reject_metadata_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic audit failure'; END $$");
@@ -141,6 +167,42 @@ async function main(){
   const events=(await pg.query("SELECT * FROM administrative_events WHERE event_type='project.configuration_changed' AND project_id=$1",[project])).rows;
   assert.equal(events.length,1);checks++;
   assert.equal(events[0].actor_id,actor);checks++;
+  // Positive upload/replay and download share the real coordinated transaction.
+  await pg.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[project]);
+  const uploadArea=randomUUID(),uploadLevel=randomUUID();
+  await pg.query("INSERT INTO aor_levels(id,tenant_id,project_id,depth,label) VALUES($1,$2,$3,0,'Area')",[uploadLevel,tenant,project]);
+  await pg.query("INSERT INTO aor_nodes(id,tenant_id,project_id,level_id,name,code) VALUES($1,$2,$3,$4,'Synthetic Area','SYN')",[uploadArea,tenant,project,uploadLevel]);
+  await pg.query("UPDATE tickets SET status='ASSIGNED',aor_node_id=$2,ticket_type='LAYOUT',requested_date='2026-10-20' WHERE id=$1",[ticket,uploadArea]);
+  const uploadRequest=()=>{
+   const form=new FormData();form.set('file',new File(['synthetic bytes'],'instructions.txt',{type:'text/plain'}));form.set('purpose','FIELD_SUPPORT');
+   return new NextRequest('http://localhost/api/tickets/'+ticket+'/attachments',{method:'POST',headers:{cookie:'swr_session='+signToken(actor,tenant,1),'idempotency-key':'positive-upload'},body:form});
+  };
+  const attachmentParams={params:Promise.resolve({ticketId:ticket})};
+  const uploaded=await handlePostTicketAttachments(uploadRequest(),attachmentParams,uploadDeps);
+  assert.equal(uploaded.status,201);checks++;
+  const saved=(await uploaded.json()).attachment;
+  assert.equal((await handlePostTicketAttachments(uploadRequest(),attachmentParams,uploadDeps)).status,201);checks++;
+  assert.equal(stagedObjects.size,1,'replay removes only duplicate staged bytes');checks++;
+  const attachmentRows=(await pg.query('SELECT * FROM attachments')).rows;
+  assert.equal(attachmentRows.length,1);checks++;assert.equal(attachmentRows[0].uploaded_by,actor);checks++;
+  const downloadDeps={getTicketRouteContext,withTicketMutation,createTicketRepo:()=>new TicketRepository(),
+   findAttachment:async(tid:string,ticketId:string,file:string,db:import('../../src/shared/types').DbClient)=>
+    (await db.query<NonNullable<Awaited<ReturnType<import('../../src/app/api/tickets/[ticketId]/attachments/handler').TicketAttachmentDownloadDeps['findAttachment']>>>>('SELECT * FROM attachments WHERE tenant_id=$1 AND ticket_id=$2 AND id=$3',[tid,ticketId,file])).rows[0]??null,
+   createStorage:uploadDeps.createStorage};
+  const downloadRequest=()=>new NextRequest('http://localhost/api/tickets/'+ticket+'/attachments/'+saved.id,{headers:{cookie:'swr_session='+signToken(actor,tenant,1)}});
+  const downloadParams={params:Promise.resolve({ticketId:ticket,attachmentId:saved.id})};
+  const downloaded=await handleDownloadTicketAttachment(downloadRequest(),downloadParams,downloadDeps);
+  assert.equal(downloaded.status,200);checks++;assert.equal(await downloaded.text(),'synthetic bytes');checks++;
+  const downloadEvents=(await pg.query("SELECT * FROM ticket_events WHERE event_type='attachment.downloaded'")).rows;
+  assert.equal(downloadEvents.length,1);checks++;assert.equal(downloadEvents[0].actor_id,actor);checks++;
+  // Audit failure rejects the download response, without returning buffered bytes.
+  await pg.query('CREATE TRIGGER reject_file_audit BEFORE INSERT ON ticket_events FOR EACH ROW EXECUTE FUNCTION reject_metadata_audit()');
+  const beforeDownloadFailure=await rowsBefore();
+  const failedDownload=await handleDownloadTicketAttachment(downloadRequest(),downloadParams,downloadDeps);
+  assert.equal(failedDownload.status,500);checks++;
+  assert.notEqual(await failedDownload.text(),'synthetic bytes');checks++;
+  assert.deepEqual(await rowsBefore(),beforeDownloadFailure);checks++;
+  await pg.query('DROP TRIGGER reject_file_audit ON ticket_events');
   console.log('Actual lifecycle writer handler PostgreSQL checks passed: '+checks);
  }finally{
   applicationPool.query=oldQuery;applicationPool.connect=oldConnect;

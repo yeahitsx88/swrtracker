@@ -7,14 +7,14 @@ import { NextRequest } from 'next/server';
 import { getPool } from '../../src/lib/db';
 import { signToken } from '../../src/lib/auth';
 import { resolveVisibility } from '../../src/lib/resolve-visibility';
-import { getTicketRouteContext } from '../../src/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '../../src/lib/ticket-route-helpers';
 import { TicketRepository } from '../../src/modules/ticket/infrastructure/ticket.repository';
 import { listLocalNotificationPreviews } from '../../src/modules/notification/application/local-preview';
 import { GET as detail, PATCH as edit } from '../../src/app/api/tickets/[ticketId]/route';
 import { POST as create } from '../../src/app/api/tickets/route';
 import { POST as cancel } from '../../src/app/api/tickets/[ticketId]/field-cancel/route';
 import { handleGetTicketHistory as history } from '../../src/app/api/tickets/[ticketId]/history/handler';
-import { handleGetTicketAttachments as metadata, handleDownloadTicketAttachment as download } from '../../src/app/api/tickets/[ticketId]/attachments/handler';
+import { handleGetTicketAttachments as metadata, handleDownloadTicketAttachment as download, type TicketAttachmentDownloadDeps } from '../../src/app/api/tickets/[ticketId]/attachments/handler';
 import type { DbClient, UUID } from '../../src/shared/types';
 
 const id=(n:number)=>`85000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
@@ -81,9 +81,9 @@ async function main(){
     await db.query(`INSERT INTO pg_temp.attachments(id,ticket_id,tenant_id,uploaded_by,filename,mime_type,storage_key,size_bytes,purpose,return_cycle,content_sha256)
       VALUES($1,$2,$3,$4,'synthetic.txt','text/plain','synthetic-only',20,'REQUEST_INSTRUCTION',0,$5)`,[attachmentId,sharedTicket,tenant,requester,'0'.repeat(64)]);
     const downloadDeps={getTicketRouteContext,createTicketRepo:()=>repo,
-      findAttachment:async(tid:string,ticket:string,file:string)=>(await db.query('SELECT * FROM pg_temp.attachments WHERE tenant_id=$1 AND ticket_id=$2 AND id=$3',[tid,ticket,file])).rows[0]??null,
+      findAttachment:async(tid:string,ticket:string,file:string,held:DbClient)=>(await held.query<NonNullable<Awaited<ReturnType<TicketAttachmentDownloadDeps['findAttachment']>>>>('SELECT * FROM pg_temp.attachments WHERE tenant_id=$1 AND ticket_id=$2 AND id=$3',[tid,ticket,file])).rows[0]??null,
       createStorage:()=>({read:async()=>{storageReads++;return Buffer.from('Synthetic file bytes');}}),
-      withTransaction:async<T>(fn:(db:DbClient)=>Promise<T>)=>fn(db)};
+      withTicketMutation};
     const file=(user:UUID,ticket=sharedTicket)=>download(request(user,ticket),{params:Promise.resolve({ticketId:ticket,attachmentId})},downloadDeps);
     const surfaces=async(user:UUID,ticket=sharedTicket)=>[
       await detail(request(user,ticket),context(ticket)),await history(request(user,ticket),context(ticket)),

@@ -14,7 +14,7 @@ import { POST as restore } from '../../src/app/api/projects/[projectId]/drafts/[
 import { GET as deleted } from '../../src/app/api/projects/[projectId]/deleted-drafts/route';
 import { GET as list } from '../../src/app/api/tickets/route';
 import { handlePostTicketAttachments } from '../../src/app/api/tickets/[ticketId]/attachments/handler';
-import { getTicketRouteContext, withTransaction } from '../../src/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTransaction, withTicketMutation } from '../../src/lib/ticket-route-helpers';
 import { TicketRepository } from '../../src/modules/ticket/infrastructure/ticket.repository';
 import { AttachmentRepository, validateAttachmentObjectMetadata } from '../../src/modules/attachment/infrastructure';
 import type { UUID } from '../../src/shared/types';
@@ -87,7 +87,7 @@ async function main() {
     check((await edit(request(owner,ticketPath,'PATCH',{ description:'Stale',expectedVersion:0 },'stale'),ticketCtx)).status, 409);
     check((await remove(request(owner,`${ticketPath}/draft`,'DELETE',{ expectedVersion:0 },'stale-delete'),ticketCtx)).status, 409);
     const objects = new Map<string,Buffer>();
-    const uploadDeps = { getTicketRouteContext, withTransaction,
+    const uploadDeps = { getTicketRouteContext, withTicketMutation,
       createTicketRepo: () => new TicketRepository(), createAttachmentRepo: () => new AttachmentRepository(),
       validateAttachmentMetadata: validateAttachmentObjectMetadata,
       createStorage: () => ({ write: async (_tenant:UUID,_ticket:UUID,bytes:Uint8Array) => {

@@ -13,6 +13,7 @@ import type { ITicketRepository, VisibilityScope } from '@/modules/ticket/applic
 import type { Ticket } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';
 import { validateAttachmentObjectMetadata } from '@/modules/attachment/infrastructure';
+import { UnauthorizedError } from '@/shared/errors';
 import type { Attachment } from '@/modules/attachment/domain/types';
 
 const tenantId = 'tenant-1' as UUID;
@@ -234,9 +235,9 @@ test('attachment download checks ticket visibility, streams bytes, and records t
       content_sha256: 'a'.repeat(64), created_at: new Date('2026-03-04T12:00:00Z'),
     }),
     createStorage: () => ({ read: async () => Buffer.from('pdf bytes') }),
-    withTransaction: async (fn) => fn({
+    withTicketMutation: async (_req, ctx, fn) => fn({
       query: async (sql: string) => { auditSql.push(sql); return { rows: [] }; },
-    }),
+    }, ctx),
   };
   const response = await handleDownloadTicketAttachment(
     makeRequest(),
@@ -284,7 +285,7 @@ function makeUploadHarness(options: {
       remove: async (storageKey) => { calls.removed.push(storageKey); },
     }),
     validateAttachmentMetadata: validateAttachmentObjectMetadata,
-    withTransaction: async (fn) => {
+    withTicketMutation: async (_req, ctx, fn) => {
       try {
         const result = await fn({ query: async (sql, params) => {
           if (/SELECT id FROM tickets.*FOR UPDATE/.test(sql)) {
@@ -299,7 +300,7 @@ function makeUploadHarness(options: {
           calls.audits++;
           if (options.auditFailure) throw new Error('Injected audit failure');
           return { rows: [] };
-        } });
+        } }, ctx);
         calls.committed = true;
         return result;
       } catch (error) {
@@ -398,7 +399,7 @@ test('Unicode filenames download with RFC8187 headers and invalid headers never 
    getTicketRouteContext:makeDeps().getTicketRouteContext,createTicketRepo:()=>makeTicketRepo(),
    findAttachment:async()=>({id:'86000000-0000-4000-8000-000000000001',ticket_id:ticketId,tenant_id:tenantId,uploaded_by:actorId,filename,mime_type:'application/pdf',storage_key:'synthetic-file',size_bytes:3,purpose:'REQUEST_INSTRUCTION',return_cycle:0,content_sha256:'a'.repeat(64),created_at:new Date()}),
    createStorage:()=>({read:async()=>Buffer.from('pdf')}),
-   withTransaction:async fn=>fn({query:async()=>{events++;return{rows:[]};}}),
+   withTicketMutation:async (_req,ctx,fn)=>fn({query:async()=>{events++;return{rows:[]};}},ctx),
   };
   const params={params:Promise.resolve({ticketId,attachmentId:'86000000-0000-4000-8000-000000000001'})};
   const response=await handleDownloadTicketAttachment(makeRequest(),params,deps);
@@ -410,4 +411,20 @@ test('Unicode filenames download with RFC8187 headers and invalid headers never 
   const invalid=await handleDownloadTicketAttachment(makeRequest(),params,deps);
   assert.equal(invalid.status,500);assert.equal(events,0);
  }
+});
+test('upload without retry key revalidates held lifecycle authority before saving', async () => {
+ const {deps,calls,key}=makeUploadHarness(); let coordinated=0;
+ const guarded={...deps,withTicketMutation:async()=>{coordinated++;throw new UnauthorizedError('Session revoked','AUTH_SESSION_REVOKED');}};
+ const response=await handlePostTicketAttachments(makeUploadRequest(),{params:Promise.resolve({ticketId})},guarded);
+ assert.equal(response.status,401);assert.equal(coordinated,1);assert.equal(calls.saved.length,0);assert.equal(calls.audits,0);assert.deepEqual(calls.removed,[key]);
+});
+test('download revalidates lifecycle authority before bytes or successful audit',async()=>{
+ let reads=0,audits=0,coordinated=0;
+ const deps={getTicketRouteContext:makeDeps().getTicketRouteContext,createTicketRepo:()=>makeTicketRepo(),
+ findAttachment:async()=>{reads++;throw new Error('Must not load attachment');},
+ createStorage:()=>({read:async()=>{reads++;return Buffer.from('private');}}),
+ withTransaction:async()=>{audits++;throw new Error('Must not append audit');},
+ withTicketMutation:async()=>{coordinated++;throw new UnauthorizedError('Session revoked','AUTH_SESSION_REVOKED');}};
+ const response=await handleDownloadTicketAttachment(makeRequest(),{params:Promise.resolve({ticketId,attachmentId:'86000000-0000-4000-8000-000000000001'})},deps);
+ assert.equal(response.status,401);assert.equal(coordinated,1);assert.equal(reads,0);assert.equal(audits,0);
 });
