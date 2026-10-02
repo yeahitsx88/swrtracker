@@ -1,0 +1,51 @@
+{
+  "baseline": "6becd3bd541f58271e70cafd6a5da82162b44051",
+  "runAt": "2026-10-02T15:55:27.087Z",
+  "scope": "Initial provisioning/authentication/invitation wave only; not full lifecycle acceptance",
+  "assisted": [
+    "Tenant and first admin SQL bootstrap",
+    "Expiry/cancellation/session-version fixture arrangement"
+  ],
+  "results": [
+    {
+      "id": "A01",
+      "actor": "Axiom operator",
+      "expected": "Provisioning is unavailable via public endpoint; acquisition handoff remains assisted",
+      "observed": 404,
+      "status": "PASS",
+      "at": "2026-10-02T15:55:26.665Z"
+    },
+    {
+      "id": "A02",
+      "actor": "Client admin",
+      "expected": "Observe missing Tenant ID rejection",
+      "observed": 400,
+      "status": "PASS",
+      "at": "2026-10-02T15:55:26.673Z"
+    },
+    {
+      "id": "A03",
+      "actor": "Client admin",
+      "expected": "Normal password authentication after assisted bootstrap",
+      "observed": "HTTP 200",
+      "status": "PASS",
+      "at": "2026-10-02T15:55:26.991Z"
+    },
+    {
+      "id": "A04",
+      "actor": "Client admin",
+      "expected": "Create project through application API",
+      "observed": 201,
+      "status": "PASS",
+      "at": "2026-10-02T15:55:27.017Z"
+    },
+    {
+      "id": "A05",
+      "actor": "Foreign admin",
+      "expected": "Other tenant cannot invite into client project",
+      "observed": 404,
+      "status": "PASS",
+      "at": "2026-10-02T15:55:27.070Z"
+    }
+  ]
+}

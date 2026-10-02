@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-02T15:57:23.202Z",
+  "baseline": "6becd3bd541f58271e70cafd6a5da82162b44051",
+  "actor": "Assisted client Tenant Admin",
+  "automationOnly": true,
+  "humanStatus": "HUMAN_PENDING",
+  "observed": {
+    "loginTenantIdRequired": true,
+    "normalPasswordLoginSucceeded": true,
+    "landing": "/projects",
+    "body": "Skip to content\nHello, Alex Morgan — client Tenant Admin!\nMenu\nProject administration\n\nOpen the projects you administer.\n\nCreate Project\nTenant accounts and Central IT reviews\nAdministered projects\n\nUp to 100 administered projects, newest first.\n\nSYNTHETIC Second Project · Setup\nSYNTHETIC Northbank Pump Station · Setup\nSYNTHETIC Second Project · Setup\nSYNTHETIC Northbank Pump Station · Setup\nProject Launcher\n\nChoose a project to open its requests and work queues.\n\nYou do not have an active project membership.\n\nOpen by project ID\n\nUse the ID of one of your active project memberships for troubleshooting.\n\nProject ID\nOpen Project"
+  },
+  "evidence": [
+    "login.png",
+    "first-admin-landing.png"
+  ]
+}

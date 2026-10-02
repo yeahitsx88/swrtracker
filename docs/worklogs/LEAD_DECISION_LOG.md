@@ -240,3 +240,11 @@
 - Authority: resumes Decision34's approved seven-task plan from d45ad0c, with Native execution and independent final review. The earlier owner pause is superseded; implementation uses an isolated worktree and preserves the original dirty Phase5-RedTeam checkout.
 - Outcome: Tasks3-7 now have current local implementation/acceptance evidence and a compatible release runbook. Whole-range review covers the approved92e5b45 baseline through d45ad0c and this increment, with material replay/eligibility/wait findings corrected. Exact evidence and limits are in audits/phase5-scoped-offboarding-completion-20261002.md.
 - Preserved boundaries: ordinary verified phase5 checkpoints remain authorized. No production/Sabine deployment, retained-data repair, automatic cleanup/reactivation, external service purchase, purge, SSO or new pilot-policy approval is inferred. Pilot/Owner/Rollout concerns remain separately classified by the reconciliation review.
+
+
+### Decision 37 - synthetic whole-customer lifecycle rehearsal (2026-10-02)
+- Provenance: owner selected synthetic rehearsal before hosting/outside testers, then supplied the complete customer-lifecycle rehearsal request.
+- Authorized: new branch from verified phase5, isolated synthetic fixtures/support tools, automated scenarios and personal guided role walkthroughs, durable evidence and classified findings.
+- Branch: codex/customer-lifecycle-rehearsal from 6becd3bd541f58271e70cafd6a5da82162b44051. Reuse clean isolated checkout; preserve original dirty review checkout.
+- Governing rule: Rehearse -> Observe -> Record -> Classify -> Review -> Authorize. Findings do not authorize product fixes, architecture changes, CRM, commercialization, hosting, or organizational tenant disablement. Proposed onboarding experience is assessed rather than adopted as architecture.
+- Record: audits/customer-lifecycle-rehearsal/README.md. Initial automated onboarding wave and browser login complete; all personal steps and later lifecycle stages remain pending. Assisted bootstrap is not successful application onboarding.
