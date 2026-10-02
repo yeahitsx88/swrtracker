@@ -1,4 +1,5 @@
 'use client';
+import { TICKET_TYPE_LABELS } from '@/lib/display-labels';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,9 +15,7 @@ import './kpi-explorer.css';
 import './survey-command-overview.css';
 
 type Distribution = 'areas' | 'types' | 'crews';
-const typeLabels: Record<string, string> = {
-  LAYOUT: 'Layout', CHECK_OUT: 'Check-out', AS_BUILT: 'As-built', TOPO: 'Topographic', PERMIT: 'Permit',
-};
+const typeLabels: Record<string, string> = TICKET_TYPE_LABELS;
 const dimensions = ['areaId', 'ticketType', 'status', 'crewId'] as const;
 
 export function SurveyCommandOverview({ projectId, initialMetrics, revision }: {

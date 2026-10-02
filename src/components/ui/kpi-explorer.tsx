@@ -1,4 +1,5 @@
 'use client';
+import { TICKET_TYPE_LABELS } from '@/lib/display-labels';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -15,7 +16,7 @@ export type KpiMeasure='all'|'open'|'assignment'|'overdue'|'completed'|'cycle';
 export type KpiAudience='operations'|'requester'|'field';
 const titles:Record<KpiMeasure,string>={all:'All requests',open:'Open requests',assignment:'Need assignment',overdue:'Overdue Need-By',completed:'Completed requests',cycle:'Average turnaround'};
 const measures:Record<KpiAudience,readonly KpiMeasure[]>={operations:['all','open','assignment','overdue','completed','cycle'],requester:['all','open','completed','cycle'],field:['all','open','overdue','completed','cycle']};
-const typeNames:Record<string,string>={LAYOUT:'Layout',CHECK_OUT:'Check Out',AS_BUILT:'As Built',TOPO:'Topo',PERMIT:'Permit'};
+const typeNames:Record<string,string>=TICKET_TYPE_LABELS;
 type Group='areas'|'types'|'statuses'|'crews'|'instrumentMen';
 const groups:Record<Group,string>={areas:'Area',types:'Request type',statuses:'Status',crews:'Party Chief / crew',instrumentMen:'Assigned Instrument Man'};
 const groupFilter:Record<Group,keyof MetricsFilters>={areas:'areaId',types:'ticketType',statuses:'status',crews:'crewId',instrumentMen:'instrumentManId'};

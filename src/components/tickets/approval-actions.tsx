@@ -22,7 +22,7 @@ export function ApprovalActions({ ticket, busy = false, onApprove, onReject }: A
   }
 
   return (
-    <div className="row">
+    <>
       <Button disabled={busy} onClick={() => void onApprove(ticket.id)}>
         {approveLabel(ticket)}
       </Button>
@@ -36,6 +36,6 @@ export function ApprovalActions({ ticket, busy = false, onApprove, onReject }: A
       >
         Reject to In Progress
       </Button>
-    </div>
+    </>
   );
 }

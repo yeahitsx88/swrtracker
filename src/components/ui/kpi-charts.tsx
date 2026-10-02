@@ -2,6 +2,7 @@
 
 import type { MetricBucket, MetricsCharts } from '@/modules/reporting/application/amelia-metrics';
 import { operationsStatusLabel } from '@/lib/operations-view';
+import { chartColor } from '@/lib/display-labels';
 
 export type ChartKind = 'heat' | 'bar' | 'trend' | 'donut' | 'gauge';
 export const chartNames: Record<ChartKind,string> = { heat:'Heat map', bar:'Bar chart', trend:'Monthly trend', donut:'Donut chart', gauge:'Population share gauge' };
@@ -12,7 +13,7 @@ export interface ChartProps {
 }
 const value = (row: MetricBucket, cycle: boolean) => cycle ? row.cycleHours : row.count;
 const formatted = (n: number | null, cycle: boolean) => n === null ? 'No valid dates' : `${n.toLocaleString(undefined,{maximumFractionDigits:cycle?1:0})}${cycle?' h':''}`;
-const colors = ['#315f85','#4682b4','#58636e','#2e2e2e','#b23833','#7f4e04'];
+const MAX_SLICES = 6;
 function Bars(p: ChartProps) {
   const max = Math.max(1,...p.rows.map(row=>value(row,p.cycle)??0));
   return <ul className="kpi-bars">{p.rows.map(row=><li key={row.key}><button type="button" disabled={row.key==='__unassigned__'} onClick={()=>p.select(row.key)}>
@@ -47,13 +48,13 @@ function Trend(p: ChartProps) {
 function Donut(p: ChartProps) {
   const sum=p.rows.reduce((n,row)=>n+row.count,0); let offset=0;
   const ordered=[...p.rows].sort((a,b)=>b.count-a.count);
-  const remainder=ordered.length>colors.length?ordered.slice(colors.length-1):[];
-  const slices=remainder.length?[...ordered.slice(0,colors.length-1),{key:'__other__',label:`Other (${remainder.length} categories)`,count:remainder.reduce((n,row)=>n+row.count,0)}]:ordered;
+  const remainder=ordered.length>MAX_SLICES?ordered.slice(MAX_SLICES-1):[];
+  const slices=remainder.length?[...ordered.slice(0,MAX_SLICES-1),{key:'__other__',label:`Other (${remainder.length} categories)`,count:remainder.reduce((n,row)=>n+row.count,0)}]:ordered;
   const label=(row:{label:string;count:number})=>`${row.label}: ${row.count.toLocaleString()} (${sum?(row.count/sum*100).toFixed(1):0}%)`;
   return <div className="kpi-donut"><svg viewBox="0 0 160 160" role="img" aria-label={`${sum.toLocaleString()} displayed requests; exact shares in legend`}>
-    {slices.map((row,i)=>{ const share=sum?row.count/sum*100:0; const start=offset; offset+=share; return <circle key={row.key} cx="80" cy="80" r="60" pathLength="100" fill="none" stroke={colors[i]} strokeWidth="24" strokeDasharray={`${share} ${100-share}`} strokeDashoffset={-start} transform="rotate(-90 80 80)"><title>{label(row)}</title></circle>; })}
+    {slices.map((row,i)=>{ const share=sum?row.count/sum*100:0; const start=offset; offset+=share; return <circle key={row.key} cx="80" cy="80" r="60" pathLength="100" fill="none" stroke={chartColor(row.key,i)} strokeWidth="24" strokeDasharray={`${share} ${100-share}`} strokeDashoffset={-start} transform="rotate(-90 80 80)"><title>{label(row)}</title></circle>; })}
     <text x="80" y="85" textAnchor="middle" fill="var(--ink)">{sum.toLocaleString()}</text>
-  </svg><ul className="kpi-values">{slices.map((row,i)=><li key={row.key}>{row.key==='__other__'?<details><summary><span className="kpi-swatch" style={{background:colors[i]}}/>{label(row)}</summary><ul>{remainder.map(item=><li key={item.key}><button type="button" disabled={item.key==='__unassigned__'} onClick={()=>p.select(item.key)}>{label(item)}</button></li>)}</ul></details>:<button type="button" disabled={row.key==='__unassigned__'} onClick={()=>p.select(row.key)}><span className="kpi-swatch" style={{background:colors[i]}}/>{label(row)}</button>}</li>)}</ul></div>;
+  </svg><ul className="kpi-values">{slices.map((row,i)=><li key={row.key}>{row.key==='__other__'?<details><summary><span className="kpi-swatch" style={{background:chartColor(row.key,i)}}/>{label(row)}</summary><ul>{remainder.map(item=><li key={item.key}><button type="button" disabled={item.key==='__unassigned__'} onClick={()=>p.select(item.key)}>{label(item)}</button></li>)}</ul></details>:<button type="button" disabled={row.key==='__unassigned__'} onClick={()=>p.select(row.key)}><span className="kpi-swatch" style={{background:chartColor(row.key,i)}}/>{label(row)}</button>}</li>)}</ul></div>;
 }
 function Gauge(p: ChartProps) {
   const percent=p.denominator?p.total/p.denominator*100:null;

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { TicketHistoryItem } from '@/lib/contracts';
 import { formatCalendarDate } from '@/lib/calendar-date';
+import { Icon } from '@/components/ui/icon';
 
 interface TicketHistoryProps {
   ticketId: string;
@@ -44,6 +45,21 @@ function lifecycleOrder(type: string): number {
 function humanize(value: string): string {
   return LABELS[value] ?? value.replace(/^(ticket|attachment)\./, '').toLowerCase().replaceAll('_', ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+/** Notification and event names for the same moment, e.g. ASSIGNED notice vs assignment row. */
+function foldKey(type: string): string {
+  const normalized = type.replace(/^(ticket|attachment)\./, '').toUpperCase();
+  return normalized === 'ASSIGNMENT_RECORDED' ? 'ASSIGNED' : normalized;
+}
+
+function historyTone(type: string): 'success' | 'attention' | 'active' | 'danger' | 'neutral' {
+  const normalized = type.replace(/^(ticket|attachment)\./, '').toUpperCase();
+  if (normalized === 'COMPLETED') return 'success';
+  if (/CANCEL|REJECT|STOP_WORK/.test(normalized)) return 'danger';
+  if (/RETURN|DELAY|INABILITY|NEED_BY|URGENT/.test(normalized)) return 'attention';
+  if (/ASSIGN|IN_PROGRESS|APPROVED|START/.test(normalized)) return 'active';
+  return 'neutral';
 }
 
 function summary(item: TicketHistoryItem): string | null {
@@ -91,27 +107,48 @@ export function TicketHistory({ ticketId, refreshRevision = 0 }: TicketHistoryPr
     return left.source.localeCompare(right.source);
   });
 
+  // Presentation only: a notification recorded with the same event is shown on that event's row.
+  const notices = new Map<TicketHistoryItem, TicketHistoryItem[]>();
+  const shown = orderedHistory.filter((item) => {
+    if (item.source !== 'NOTIFICATION') return true;
+    const owner = orderedHistory.find((candidate) => candidate.source !== 'NOTIFICATION' &&
+      foldKey(candidate.type) === foldKey(item.type) &&
+      Math.abs(new Date(candidate.occurredAt).getTime() - new Date(item.occurredAt).getTime()) < 10_000);
+    if (!owner) return true;
+    notices.set(owner, [...(notices.get(owner) ?? []), item]);
+    return false;
+  });
+
   return (
     <ol className="ticket-history" aria-label="SWR history">
-      {orderedHistory.map((item) => {
+      {shown.map((item) => {
         const detail = summary(item);
         const followUpTicketId = typeof item.details.followUpTicketId === 'string'
           ? item.details.followUpTicketId
           : null;
         const projectId = typeof item.details.projectId === 'string' ? item.details.projectId : null;
+        const attached = notices.get(item) ?? [];
         return (
-          <li key={`${item.source}:${item.id}`} className="ticket-card">
-            <p className="ticket-headline">{humanize(item.type)}</p>
-            <p className="muted">
-              {new Date(item.occurredAt).toLocaleString()}
-              {item.actor ? ` · ${item.actor.name}` : ''}
-            </p>
-            {detail ? <p>{detail}</p> : null}
-            {followUpTicketId && projectId ? (
-              <Link className="app-link" href={`/projects/${projectId}/tickets/${followUpTicketId}`}>
-                Open linked follow-up
-              </Link>
-            ) : null}
+          <li key={`${item.source}:${item.id}`} className={`timeline-item tone-dot-${historyTone(item.type)}`}>
+            <span className="timeline-dot" aria-hidden="true" />
+            <div className="timeline-body">
+              <p className="timeline-title">{item.source === 'NOTIFICATION' ? `Notice: ${humanize(item.type)}` : humanize(item.type)}</p>
+              <p className="timeline-meta">
+                {new Date(item.occurredAt).toLocaleString()}
+                {item.actor ? ` · ${item.actor.name}` : ''}
+              </p>
+              {detail ? <p className="timeline-detail">{detail}</p> : null}
+              {attached.map((notice) => (
+                <span key={notice.id} className="timeline-notice">
+                  <Icon name="file" size={13} />Requester notice{typeof notice.details.deliveryState === 'string' ? ` · ${humanize(notice.details.deliveryState)}` : ''}
+                </span>
+              ))}
+              {followUpTicketId && projectId ? (
+                <Link className="text-link" href={`/projects/${projectId}/tickets/${followUpTicketId}`}>
+                  Open linked follow-up
+                </Link>
+              ) : null}
+            </div>
           </li>
         );
       })}

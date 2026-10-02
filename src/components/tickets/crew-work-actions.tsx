@@ -30,7 +30,7 @@ export function CrewWorkActions({
 
   if (ticket.status === 'IN_PROGRESS') {
     return (
-      <div className="row">
+      <>
         <Button disabled={busy} onClick={() => void onSubmitComplete(ticket.id)}>
           Complete Work
         </Button>
@@ -47,7 +47,7 @@ export function CrewWorkActions({
           Mark Delayed
         </Button>
         <Button
-          variant="danger"
+          variant="secondary"
           disabled={busy}
           onClick={() => {
             const reason = window.prompt('Why is the work unable to be performed?');
@@ -66,13 +66,13 @@ export function CrewWorkActions({
         >
           Flag Stop Work
         </Button>
-      </div>
+      </>
     );
   }
 
   if (ticket.status === 'DELAYED') {
     return (
-      <div className="row">
+      <>
         <Button disabled={busy} onClick={() => void onRestartDelay(ticket.id)}>Restart Delay</Button>
         <Button
           variant="danger"
@@ -84,7 +84,7 @@ export function CrewWorkActions({
         >
           Flag Stop Work
         </Button>
-      </div>
+      </>
     );
   }
 

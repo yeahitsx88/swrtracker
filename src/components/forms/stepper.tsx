@@ -5,15 +5,20 @@ interface StepperProps {
 
 export function Stepper({ steps, activeStep }: StepperProps) {
   return (
-    <div className="stepper" aria-label="Submission steps">
-      {steps.map((step, index) => (
-        <span
-          key={step}
-          className={`step-chip ${index === activeStep ? 'step-chip-active' : ''}`.trim()}
-        >
-          {index + 1}. {step}
-        </span>
-      ))}
-    </div>
+    <ol className="stepper" aria-label="Submission steps">
+      {steps.map((step, index) => {
+        const state = index === activeStep ? 'step-chip-active' : index < activeStep ? 'step-chip-done' : '';
+        return (
+          <li
+            key={step}
+            className={`step-chip ${state}`.trim()}
+            aria-current={index === activeStep ? 'step' : undefined}
+          >
+            <span className="step-number" aria-hidden="true">{index + 1}</span>
+            <span>{step}</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

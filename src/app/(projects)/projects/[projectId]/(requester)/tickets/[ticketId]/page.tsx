@@ -13,6 +13,9 @@ import { Button, Card, ErrorBanner, Input, Select, SuccessBanner, Textarea } fro
 import { Field } from '@/components/forms';
 import { AorNodePicker } from '@/components/aor';
 import { TICKET_STATUS_LABELS } from '@/lib/contracts';
+import { Icon } from '@/components/ui/icon';
+import { ticketTypeLabel } from '@/lib/display-labels';
+import { buildAreaNames } from '@/lib/use-area-names';
 
 const NO_CAPABILITIES: TicketCapabilities = {
   canEditRequesterFields: false,
@@ -183,94 +186,111 @@ export default function TicketDetailPage() {
     } finally { busy.current = false; setDeleting(false); }
   }
 
+  const areaPath = ticket?.aorNodeId && areaTree ? buildAreaNames(areaTree.nodes).get(ticket.aorNodeId)?.path : undefined;
+  const fromDraft = ticket?.status === 'DRAFT';
+  const noActions = !capabilities.canSubmit && !capabilities.canCreateFollowUp && !capabilities.canRequesterCancel &&
+    !(ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields);
+
   return (
     <div className="stack">
-      <Card title="Request Details" description="Review the saved request, files and history.">
-        <div className="stack">
-          {error ? <ErrorBanner message={error} /> : null}
-          {success ? <SuccessBanner message={success} /> : null}
-          {loading ? <p className="muted">Loading ticket details...</p> : null}
-          {ticket ? <TicketDetails ticket={ticket} /> : null}
-          <div className="row">
-            <Link href={`/projects/${projectId}/my-requests`} className="app-link">Back to My Requests</Link>
-            <Link href={`/projects/${projectId}/drafts`} className="app-link">Back to Drafts</Link>
-            <Button variant="secondary" disabled={working || uncertain} onClick={() => { void loadAll(); void apiClient.listAorTree(projectId).then(setAreaTree).catch(err => setError(getErrorMessage(err,'Unable to reload Areas.'))); }}>
-              Refresh
-            </Button>
-          </div>
-          {capabilities.canSubmit ? (
-            <Button disabled={working || dirty || stale || Boolean(saveAttempt.current.pending || deleteAttempt.current.pending)} onClick={() => void submitDraft()}>
-              {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
-            </Button>
-          ) : null}
-          {dirty ? <p role="status" className="muted">Unsaved changes. Save them before submitting; submission uses the saved record.</p> : null}
-          {stale ? <ErrorBanner message="The saved request changed. Your entered fields are retained; use Refresh to deliberately reload before editing." /> : null}
-          {uncertain ? <p role="status" className="muted">The last action is unconfirmed. Retry that action before editing or refreshing.</p> : null}
-          {ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.pending || submitAttempt.current.pending)} onClick={() => void deleteCurrentDraft()}>{deleting ? 'Deleting…' : deleteAttempt.current.pending ? 'Retry Delete Draft' : 'Delete Draft'}</Button> : null}
-          {capabilities.canRequesterCancel ? (
-            <Button variant="secondary" disabled={working || uncertain || stale} onClick={() => void cancelRequest()}>
-              {canceling ? 'Canceling…' : 'Cancel SWR'}
-            </Button>
-          ) : null}
-          {capabilities.canCreateFollowUp ? (
-            <Button disabled={working || uncertain} onClick={() => void createFollowUp()}>
-              {creatingFollowUp ? 'Creating Follow-Up…' : 'Create Follow-Up SWR'}
-            </Button>
-          ) : null}
+      <div className="toolbar">
+        <Link href={`/projects/${projectId}/${fromDraft ? 'drafts' : 'my-requests'}`} className="back-link"><Icon name="back" />{fromDraft ? 'Back to Drafts' : 'Back to My Requests'}</Link>
+        <div className="toolbar-group">
+          <Link href={`/projects/${projectId}/${fromDraft ? 'my-requests' : 'drafts'}`} className="text-link">{fromDraft ? 'My Requests' : 'Drafts'}</Link>
+          <Button variant="secondary" disabled={working || uncertain} onClick={() => { void loadAll(); void apiClient.listAorTree(projectId).then(setAreaTree).catch(err => setError(getErrorMessage(err,'Unable to reload Areas.'))); }}>
+            <Icon name="refresh" />Refresh
+          </Button>
         </div>
-      </Card>
+      </div>
+      {error ? <ErrorBanner message={error} /> : null}
+      {success ? <SuccessBanner message={success} /> : null}
+      {stale ? <ErrorBanner message="The saved request changed. Your entered fields are retained; use Refresh to deliberately reload before editing." /> : null}
+      {uncertain ? <p role="status" className="notice">The last action is unconfirmed. Retry that action before editing or refreshing.</p> : null}
 
-      {capabilities.canEditRequesterFields ? (
-        <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
-          <fieldset className="stack" disabled={working || uncertain || stale} style={{ border:0, padding:0, margin:0, minWidth:0 }}>
-            <Field label="Area">{areaTree ? <AorNodePicker label="Area" {...areaTree} value={editArea} onChange={setEditArea} /> : <p className="muted">Areas are unavailable. Refresh to retry.</p>}</Field>
-            {areaTree && editArea && !areaTree.nodes.some(node => node.id === editArea) ? <p className="muted">The saved Area is no longer available. Choose a current Area before saving corrections.</p> : null}
-            <Field label="Request Type"><Select value={editType} onChange={event => setEditType(event.target.value as TicketType | '')}><option value="">Select a request type</option>{(['LAYOUT','CHECK_OUT','AS_BUILT','TOPO','PERMIT'] as const).map(type => <option key={type} value={type}>{type}</option>)}</Select></Field>
-            <Field label="Craft / Discipline (optional)"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
-            <Field label="Point of Contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
-            <Field label="Phone / Radio Channel (optional)"><Input value={editFieldChannel} onChange={(event) => setEditFieldChannel(event.target.value)} /></Field>
-            <Field label="Need-By Date"><Input type="date" value={editRequestedDate} onChange={(event) => setEditRequestedDate(event.target.value)} /></Field>
-            <Field label="Request Details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
-            <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
-          </fieldset>
-          <Button disabled={working || stale || Boolean(submitAttempt.current.pending || deleteAttempt.current.pending)} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.pending ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
-        </Card>
-      ) : null}
+      <div className="detail-layout">
+        <div className="stack detail-main">
+          <Card title="Request Details" description="Review the saved request, files and history.">
+            {loading ? <p className="muted" role="status">Loading ticket details…</p> : null}
+            {ticket ? <TicketDetails ticket={ticket} areaPath={areaPath} /> : null}
+          </Card>
 
-      <Card title="Attachments" description="Saved files stay with the request. Uploads are available only when your role and the request state permit them.">
-        <div className="stack">
+          {capabilities.canEditRequesterFields ? (
+            <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
+              <fieldset className="stack form-narrow" disabled={working || uncertain || stale} style={{ border:0, padding:0, margin:0, minWidth:0 }}>
+                <Field label="Area">{areaTree ? <AorNodePicker label="Area" {...areaTree} value={editArea} onChange={setEditArea} /> : <p className="muted">Areas are unavailable. Refresh to retry.</p>}</Field>
+                {areaTree && editArea && !areaTree.nodes.some(node => node.id === editArea) ? <p className="muted">The saved Area is no longer available. Choose a current Area before saving corrections.</p> : null}
+                <Field label="Request Type"><Select value={editType} onChange={event => setEditType(event.target.value as TicketType | '')}><option value="">Select a request type</option>{(['LAYOUT','CHECK_OUT','AS_BUILT','TOPO','PERMIT'] as const).map(type => <option key={type} value={type}>{ticketTypeLabel(type)}</option>)}</Select></Field>
+                <Field label="Craft / Discipline (optional)"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
+                <Field label="Point of Contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
+                <Field label="Phone / Radio Channel (optional)"><Input value={editFieldChannel} onChange={(event) => setEditFieldChannel(event.target.value)} /></Field>
+                <Field label="Need-By Date"><Input type="date" value={editRequestedDate} onChange={(event) => setEditRequestedDate(event.target.value)} /></Field>
+                <Field label="Request Details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
+                <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
+              </fieldset>
+              <Button disabled={working || stale || Boolean(submitAttempt.current.pending || deleteAttempt.current.pending)} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.pending ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
+            </Card>
+          ) : null}
+
+          <Card title="Attachments" description="Saved files stay with the request. Uploads are available only when your role and the request state permit them.">
+            <div className="stack">
+              {canUpload ? (
+                <AttachmentUploader
+                  disabled={working || uncertain || stale}
+                  instructionMode={capabilities.canUploadRequestInstruction}
+                  onUpload={async (payload) => {
+                    if (busy.current) throw new Error('Another action is in progress. Wait, then retry.');
+                    busy.current = true; setUploadingFile(true);
+                    setError(null);
+                    setSuccess(null);
+                    try {
+                      const uploaded = await apiClient.uploadAttachment(ticketId, payload);
+                      setAttachments(items => [...items.filter(item => item.id !== uploaded.attachment.id), uploaded.attachment]);
+                      setHistoryRevision((revision) => revision + 1);
+                      setSuccess('Attachment uploaded.');
+                    } finally { busy.current = false; setUploadingFile(false); }
+                  }}
+                />
+              ) : (
+                <p className="muted">
+                  {ticket ? `Current status: ${TICKET_STATUS_LABELS[ticket.status]}. ` : ''}You can view and download attachments on this SWR. No upload action is available in your current role or state.
+                </p>
+              )}
+              <AttachmentList attachments={attachments} />
+            </div>
+          </Card>
+
           {ticket ? (
-            <p className="muted">Current Status: {TICKET_STATUS_LABELS[ticket.status]}</p>
+            <Card title="SWR History" description="Chronological record of review, assignment, files, messages, and field progress.">
+              <TicketHistory ticketId={ticket.id} refreshRevision={historyRevision} />
+            </Card>
           ) : null}
-          {canUpload ? (
-            <AttachmentUploader
-              disabled={working || uncertain || stale}
-              instructionMode={capabilities.canUploadRequestInstruction}
-              onUpload={async (payload) => {
-                if (busy.current) throw new Error('Another action is in progress. Wait, then retry.');
-                busy.current = true; setUploadingFile(true);
-                setError(null);
-                setSuccess(null);
-                try {
-                  const uploaded = await apiClient.uploadAttachment(ticketId, payload);
-                  setAttachments(items => [...items.filter(item => item.id !== uploaded.attachment.id), uploaded.attachment]);
-                  setHistoryRevision((revision) => revision + 1);
-                  setSuccess('Attachment uploaded.');
-                } finally { busy.current = false; setUploadingFile(false); }
-              }}
-            />
-          ) : (
-            <p className="muted">You can view and download attachments on this SWR. No upload action is available in your current role or state.</p>
-          )}
-          <AttachmentList attachments={attachments} />
         </div>
-      </Card>
 
-      {ticket ? (
-        <Card title="SWR History" description="Chronological record of review, assignment, files, messages, and field progress.">
-          <TicketHistory ticketId={ticket.id} refreshRevision={historyRevision} />
-        </Card>
-      ) : null}
+        <aside className="detail-aside" aria-label="Request actions">
+          <Card title="Actions">
+            <div className="action-panel">
+              {capabilities.canSubmit ? (
+                <Button disabled={working || dirty || stale || Boolean(saveAttempt.current.pending || deleteAttempt.current.pending)} onClick={() => void submitDraft()}>
+                  {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
+                </Button>
+              ) : null}
+              {dirty ? <p role="status" className="muted">Unsaved changes. Save them before submitting; submission uses the saved record.</p> : null}
+              {capabilities.canCreateFollowUp ? (
+                <Button disabled={working || uncertain} onClick={() => void createFollowUp()}>
+                  {creatingFollowUp ? 'Creating Follow-Up…' : 'Create Follow-Up SWR'}
+                </Button>
+              ) : null}
+              {ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.pending || submitAttempt.current.pending)} onClick={() => void deleteCurrentDraft()}>{deleting ? 'Deleting…' : deleteAttempt.current.pending ? 'Retry Delete Draft' : 'Delete Draft'}</Button> : null}
+              {capabilities.canRequesterCancel ? (
+                <Button variant="secondary" disabled={working || uncertain || stale} onClick={() => void cancelRequest()}>
+                  {canceling ? 'Canceling…' : 'Cancel SWR'}
+                </Button>
+              ) : null}
+              {noActions ? <p className="muted">{loading ? 'Loading available actions…' : 'No actions are available to you for this request right now.'}</p> : null}
+            </div>
+          </Card>
+        </aside>
+      </div>
     </div>
   );
 }

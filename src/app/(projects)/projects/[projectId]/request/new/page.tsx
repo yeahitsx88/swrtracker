@@ -7,6 +7,8 @@ import { apiClient } from '@/lib/apiClient';
 import { ApiClientError, getErrorMessage } from '@/lib/errors';
 import { RetryableMutation } from '@/lib/retryable-mutation';
 import { formatCalendarDate } from '@/lib/calendar-date';
+import { ticketTypeLabel } from '@/lib/display-labels';
+import { buildAreaNames } from '@/lib/use-area-names';
 import { useUnsavedProgress } from '@/lib/use-unsaved-progress';
 import { doesRequestedDateMeetLeadTime } from '@/modules/ticket/domain/lead-time-policy';
 import type { AttachmentRecord, ProjectRequestConfig, TicketRecord, TicketType, UpdateRequesterTicketRequest, UploadAttachmentRequest } from '@/lib/contracts';
@@ -204,7 +206,7 @@ export default function NewRequestPage() {
             <Select value={ticketType} onChange={(event) => setTicketType(event.target.value as TicketType)}>
               <option value="">Select a request type</option>
               {TICKET_TYPES.map((value) => (
-                <option key={value} value={value}>{value}</option>
+                <option key={value} value={value}>{ticketTypeLabel(value)}</option>
               ))}
             </Select>
           </Field>
@@ -286,14 +288,17 @@ export default function NewRequestPage() {
       default:
         return (
           <div className="stack">
-            <p className="muted">Area: {aorNodes.find(node => node.id === aorNodeId)?.name ?? 'Not selected'}</p>
-            <p className="muted">Type: {ticketType || 'Not selected'}</p>
-            <p className="muted">Need-By: {formatCalendarDate(requestedDate)}</p>
-            <p className="muted">Craft / Discipline: {resolvedCraft || 'Not specified'}</p>
-            <p className="muted">Point of Contact: {fieldContact || '-'}</p>
-            <p className="muted">Phone / Radio Channel: {fieldChannel || '-'}</p>
-            <p className="muted">Description: {description || '-'}</p>
-            <p className="muted">Files: {savedAttachments.length} saved · {attachments.length} staged, not yet uploaded</p>
+            <p className="muted">Check the details below, then submit. You can go back to any step.</p>
+            <dl className="detail-grid">
+              <div><dt>Area</dt><dd>{buildAreaNames(aorNodes).get(aorNodeId)?.path ?? 'Not selected'}</dd></div>
+              <div><dt>Request type</dt><dd>{ticketType ? ticketTypeLabel(ticketType) : 'Not selected'}</dd></div>
+              <div><dt>Need-By</dt><dd>{formatCalendarDate(requestedDate)}</dd></div>
+              <div><dt>Craft / discipline</dt><dd>{resolvedCraft || 'Not specified'}</dd></div>
+              <div><dt>Point of contact</dt><dd>{fieldContact || 'Not provided'}</dd></div>
+              <div><dt>Phone / radio channel</dt><dd>{fieldChannel || 'Not provided'}</dd></div>
+              <div><dt>Files</dt><dd>{savedAttachments.length} saved · {attachments.length} staged, not yet uploaded</dd></div>
+            </dl>
+            <div className="field"><span className="field-label">Request details</span><p className="detail-description">{description || 'Not provided'}</p></div>
           </div>
         );
     }
@@ -310,7 +315,7 @@ export default function NewRequestPage() {
         {success ? <SuccessBanner message={success} /> : null}
         {draft ? <p className="muted">Saved draft · <Link className="app-link" href={`/projects/${projectId}/tickets/${draft.id}`}>Open saved details and files</Link></p> : null}
         {locked && !submitting ? <p role="status" className="muted">{stale ? 'Another change was saved. Open draft details and reload before editing.' : 'The last action is unconfirmed. Retry it before editing or leaving this page.'}</p> : null}
-        <fieldset disabled={locked} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>{renderStepBody()}</fieldset>
+        <fieldset className="form-narrow" disabled={locked} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>{renderStepBody()}</fieldset>
         {error && !draft && !saveAttempt.current.pending ? <Button variant="secondary" onClick={() => setSetupRevision(value => value+1)}>Retry setup</Button> : null}
         <div className="row">
           <Button

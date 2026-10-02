@@ -82,7 +82,7 @@ export default function AdminProjectPage() {
           {loading ? <p className="muted">Loading project configuration...</p> : null}
           {!loading ? (
             <>
-              <label className="row" style={{ alignItems: 'center', gap: '0.5rem' }}>
+              <label className="checkbox-row">
                 <input
                   type="checkbox"
                   checked={leadTimeEnforcementEnabled}
@@ -98,8 +98,8 @@ export default function AdminProjectPage() {
                   value={String(leadTimeDays)}
                   onChange={(event) => setLeadTimeDays(Number(event.target.value || 0))}
                 />
+                <span className="muted field-help">When enabled, requested date must be at least this many days from submit time.</span>
               </Field>
-              <p className="muted">When enabled, requested date must be at least this many days from submit time.</p>
               <Field label="Maximum Files per SWR (blank for no count cap)">
                 <Input
                   type="number"

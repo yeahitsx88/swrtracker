@@ -47,7 +47,7 @@ function LoginForm() {
   }
 
   return (
-    <Card title="SWRTracker Login" description="Sign in to access project request and crew surfaces.">
+    <Card title="Sign in" description="Submit and track survey work requests for your project.">
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
         <Field label="Tenant ID">
@@ -75,9 +75,9 @@ function LoginForm() {
           {loading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>
-      <div className="row" style={{ marginTop: '0.8rem' }}>
-        <Link href="/register" className="app-link">Create Account</Link>
-        <Link href="/forgot-password" className="app-link">Forgot Password</Link>
+      <div className="auth-links">
+        <Link href="/forgot-password" className="text-link">Forgot Password</Link>
+        <Link href="/register" className="text-link">Create Account</Link>
       </div>
     </Card>
   );
