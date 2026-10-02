@@ -13,6 +13,7 @@ colors:
   danger: "#b23833"
 typography:
   title:
+    fontSize: "1.25rem"
     fontFamily: "Roboto, sans-serif"
     fontWeight: 700
     lineHeight: 1.25
@@ -45,17 +46,17 @@ components:
     backgroundColor: "{colors.action}"
     textColor: "{colors.bg-elevated}"
     rounded: "{rounded.button}"
-    padding: "0.55rem 0.8rem"
+    padding: "0.55rem 0.95rem"
   button-secondary:
     backgroundColor: "{colors.bg-elevated}"
     textColor: "{colors.ink}"
     rounded: "{rounded.button}"
-    padding: "0.55rem 0.8rem"
+    padding: "0.55rem 0.95rem"
   button-danger:
     backgroundColor: "{colors.danger}"
     textColor: "{colors.bg-elevated}"
     rounded: "{rounded.button}"
-    padding: "0.55rem 0.8rem"
+    padding: "0.55rem 0.95rem"
   input:
     backgroundColor: "{colors.bg-elevated}"
     textColor: "{colors.ink}"
@@ -64,16 +65,24 @@ components:
     padding: "0.62rem 0.7rem"
   navigation-link:
     backgroundColor: "{colors.bg-elevated}"
-    textColor: "{colors.muted}"
+    textColor: "{colors.ink}"
     rounded: "{rounded.navigation}"
     padding: "0.45rem 0.75rem"
   status-badge:
     rounded: "{rounded.pill}"
-    padding: "0.2rem 0.55rem"
+    padding: "0.22rem 0.6rem"
   ticket-card:
     backgroundColor: "{colors.bg-elevated}"
     rounded: "{rounded.ticket}"
-    padding: "0.7rem"
+    padding: "0.85rem 0.95rem"
+  panel:
+    backgroundColor: "{colors.bg-elevated}"
+    rounded: "{rounded.panel}"
+    padding: "1.25rem"
+  project-tab:
+    textColor: "{colors.muted}"
+    rounded: "{rounded.navigation}"
+    padding: "0.5rem 0.9rem"
 ---
 
 # Design System: SWRTracker
@@ -122,7 +131,7 @@ Error, warning, success, and neutral badges retain their implemented foreground/
 
 Roboto is the display and body family with a generic sans-serif fallback. The normal variable face covers weights 100–900 and uses `font-display: swap`. It is served from `public/fonts/roboto-variable.ttf`, sourced from [Google Fonts Roboto](https://github.com/google/fonts/tree/main/ofl/roboto); retain `public/fonts/OFL.txt` with redistribution.
 
-Titles use bold weight and tight tracking; their sizes remain appropriate to the actual heading level rather than a newly invented display scale. Body copy uses the body role; labels use the label role, and inputs use the field role. Buttons use weight 700. Product identity uses a 1.125rem, weight-700 label. Badges and steps use 0.74rem text, while navigation uses 0.875rem.
+Titles use bold weight and tight tracking; their sizes remain appropriate to the actual heading level rather than a newly invented display scale. Body copy uses the body role; labels use the label role, and inputs use the field role. Buttons use weight 700. Product identity uses a 1rem, weight-700 label in the application shell and 1.125rem in authentication. Status badges use 0.76rem text, step labels 0.82rem, utility navigation 0.875rem, and desktop project tabs 0.925rem.
 
 ## Layout
 
@@ -140,7 +149,7 @@ Panels are white with a thin divider border and one quiet shadow token (`--shado
 
 ## Shapes
 
-Buttons and visually button-like navigation use square corners. Inputs and banners retain the 10px control radius. Ticket cards and panels have their own slightly larger corners. Status badges and steps are pills. Maintain these functional distinctions rather than assigning one radius everywhere.
+Buttons and visually button-like navigation use square corners. Inputs and banners retain the 10px control radius. Ticket cards and panels have their own slightly larger corners. Status badges are pills; numbered steps use circular markers and straight underline progress indicators. Maintain these functional distinctions rather than assigning one radius everywhere.
 
 ## Components
 
@@ -184,7 +193,7 @@ Back to top appears after meaningful page or contained scrolling. Its accessible
 
 ### Keyboard Focus
 
-Focusable elements use a three-pixel solid Action Blue outline offset by three pixels. Retain this indicator across buttons, links, fields, and navigation; never remove it without an equally visible replacement.
+Focusable elements use a three-pixel solid Action Blue outline offset by three pixels. Fields keep the same outline with a one-pixel offset and Action Blue border. Retain this indicator across buttons, links, fields, and navigation; never remove it without an equally visible replacement.
 
 ### Axiom Brand Lockup
 

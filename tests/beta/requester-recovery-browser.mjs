@@ -79,7 +79,7 @@ try {
     assert.equal(await page.getByRole('button',{name:'Remove instructions.txt'}).count(),1);
     await page.getByRole('button',{name:'Save Draft',exact:true}).click();await page.getByText('Draft and selected files saved. You can leave and resume from Drafts.').waitFor();
     assert.equal(uploads,1);assert.equal(uploadKeys[0],uploadKeys[1]);
-    await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByText('Need-By: Feb 29, 2028',{exact:true}).waitFor();
+    await page.getByRole('button',{name:'Next',exact:true}).click();await page.locator('.detail-grid > div').filter({has:page.getByText('Need-By',{exact:true})}).getByText('Feb 29, 2028',{exact:true}).waitFor();
     await snap('review');
     // Reload resumes the durable record, with no second creation.
     await page.reload({waitUntil:'networkidle'});await page.getByText('Saved draft loaded. Previously uploaded files are available in draft details.').waitFor();assert.equal(created,1);

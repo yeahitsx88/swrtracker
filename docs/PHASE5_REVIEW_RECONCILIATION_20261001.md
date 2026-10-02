@@ -142,3 +142,8 @@ Fresh verification:475 normal tests, nonincremental TypeScript, production build
 
 Task3 continuation additionally coordinates eight staffing/team/Area/workforce handler mutations, retaining actual operational gates and independent administrative authority. Actual default handlers waited behind a committed synthetic disablement and rejected401 before saved replay or any domain/audit change:40 checks on two real PostgreSQL clients in a uniquely owned fully migrated schema.478 normal tests, nonincremental types and build pass. This closes those entry-point ordering gaps, not the remaining writer inventory or new offboarding command/UI gates.
 Checkpoint continuation: tenant-first metadata/invitation/company/template and ticket mutations are integrated with fresh held-client authority. Non-ticket effects add atomic032 administrative records; an induced department audit failure rolls back its change. Actual default handler acceptance now covers31 entrypoints (155 race assertions plus5 audit assertions);478 normal tests/types/build pass. A0 final image revalidation and complete Task3/Tasks4–7 acceptance remain pending. Owner requested checkpoint push followed by UI commits f4aa6a1/8536655 inspection and integration; this does not close the offboarding release gate.
+
+
+## Owner-requested UI integration
+
+Checkpoint b7b79eb was pushed before exact review-branch UI commits f4aa6a1/8536655 were inspected and cherry-picked as ea8c272/a800cc6. Normal478/types/build and synthetic requester/queue browser acceptance pass. Fresh visual finish review returned ship for the captured UI integration. This presentation milestone does not close Task3 or the scoped offboarding release gates. See CODEX Batch91 for evidence and limits.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T00:09:50.251Z",
+  "generatedAt": "2026-10-02T03:44:26Z",
   "title": "Design System: SWRTracker",
   "extensions": {
     "colorMeta": {
@@ -149,12 +149,28 @@
         "purpose": "Inputs, selects, and textareas."
       }
     },
-    "shadows": [],
+    "shadows": [
+      {
+        "name": "panel",
+        "value": "0 1px 2px rgb(46 46 46 / 5%)",
+        "purpose": "Quiet outer-panel depth; nested panels and edge-to-edge phone panels have no shadow."
+      },
+      {
+        "name": "raised",
+        "value": "0 6px 18px rgb(24 38 50 / 10%)",
+        "purpose": "Interactive request-card hover depth; desktop request table rows remain flat."
+      }
+    ],
     "motion": [
       {
         "name": "control-color",
         "value": "150ms ease",
-        "purpose": "Button background and border transitions; disabled under prefers-reduced-motion: reduce."
+        "purpose": "Button background, border and text-color transitions; disabled under prefers-reduced-motion: reduce."
+      },
+      {
+        "name": "card-and-field",
+        "value": "150ms ease",
+        "purpose": "Request-card border/background/shadow and field border/shadow transitions; disabled under prefers-reduced-motion: reduce."
       }
     ],
     "breakpoints": [
@@ -165,6 +181,14 @@
       {
         "name": "wide-min",
         "value": "760px"
+      },
+      {
+        "name": "request-table-min",
+        "value": "900px"
+      },
+      {
+        "name": "detail-columns-min",
+        "value": "1100px"
       }
     ]
   },
@@ -175,7 +199,7 @@
       "refersTo": "button-primary",
       "description": "Existing shared button variant; preview labels are illustrative.",
       "html": "<button class=\"ds-control ds-button\" type=\"button\">Save Draft</button>",
-      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: 10px; font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .8rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; background: var(--action, #315f85); color: var(--brand-ink, #ffffff); border-color: transparent; } .ds-button:hover { background: #264a68; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: var(--action, #315f85); color: var(--brand-ink, #ffffff); border-color: transparent; } .ds-button:hover { background: var(--action-hover, #264a68); } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
     },
     {
       "name": "Secondary Button",
@@ -183,7 +207,7 @@
       "refersTo": "button-secondary",
       "description": "Existing shared button variant; preview labels are illustrative.",
       "html": "<button class=\"ds-control ds-button\" type=\"button\">Cancel</button>",
-      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: 10px; font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .8rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; background: #ffffff; color: var(--ink, #2e2e2e); border-color: var(--line, #d8dfe5); } .ds-button:hover { background: #edf3f8; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: #ffffff; color: var(--ink, #2e2e2e); border-color: var(--line, #d8dfe5); } .ds-button:hover { background: var(--surface-hover, #edf3f8); border-color: var(--brand, #4682b4); } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
     },
     {
       "name": "Danger Button",
@@ -191,7 +215,7 @@
       "refersTo": "button-danger",
       "description": "Existing shared button variant; preview labels are illustrative.",
       "html": "<button class=\"ds-control ds-button\" type=\"button\">Delete</button>",
-      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: 10px; font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .8rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; background: var(--danger, #b23833); color: #ffffff; border-color: transparent; } .ds-button:hover { background: #8f2b27; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: var(--danger, #b23833); color: #ffffff; border-color: transparent; } .ds-button:hover { background: #8f2b27; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
     },
     {
       "name": "Text Field",
@@ -199,15 +223,15 @@
       "refersTo": "input",
       "description": "Label above a full-width field with persistent keyboard focus.",
       "html": "<label class=\"ds-field\"><span class=\"ds-label\">Description</span><input class=\"ds-control ds-input\" placeholder=\"Description\"></label>",
-      "css": ".ds-field { display:grid; gap:.35rem; font-family: var(--font-body, Roboto, sans-serif); } .ds-label { font-size:.82rem; color:var(--muted, #58636e); font-weight:600; } .ds-input { width:100%; border:1px solid #81909d; border-radius:10px; font-family: var(--font-body, Roboto, sans-serif); font-size:16px; line-height:1.35; color:var(--ink, #2e2e2e); background:#fff; padding:.62rem .7rem; caret-color:var(--action, #315f85); } .ds-input::placeholder { color:var(--muted, #58636e); opacity:1; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+      "css": ".ds-field { display:grid; gap:.35rem; font-family: var(--font-body, Roboto, sans-serif); } .ds-label { font-size:.82rem; color:var(--muted, #58636e); font-weight:600; } .ds-input { width:100%; border:1px solid var(--line-strong, #81909d); border-radius:var(--radius-control, 10px); font-family: var(--font-body, Roboto, sans-serif); font-size:16px; min-height:44px; transition:border-color 150ms ease, box-shadow 150ms ease; line-height:1.35; color:var(--ink, #2e2e2e); background:#fff; padding:.62rem .7rem; caret-color:var(--action, #315f85); } .ds-input::placeholder { color:var(--muted, #58636e); opacity:1; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 1px; border-color:var(--action, #315f85); } .ds-input:hover { border-color:var(--action, #315f85); } @media (prefers-reduced-motion: reduce) { .ds-input { transition:none; } }"
     },
     {
       "name": "Navigation Link",
       "kind": "nav",
       "refersTo": "navigation-link",
-      "description": "Current route treatment using the existing active-link primitive.",
+      "description": "Square utility navigation link; the current route uses the shared active treatment.",
       "html": "<nav aria-label=\"Preview\"><a class=\"ds-control ds-link\" href=\"#preview\" aria-current=\"page\">Projects</a></nav>",
-      "css": ".ds-link { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--brand, #4682b4); border-radius:6px; display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.45rem .75rem; font-size:.875rem; font-weight:700; color:var(--action, #315f85); background:#edf3f8; white-space:nowrap; text-decoration:none; } .ds-link:hover { background:#edf3f8; border-color:var(--brand, #4682b4); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+      "css": ".ds-link { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--brand, #4682b4); border-radius:var(--button-radius, 0px); display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.45rem .75rem; font-size:.875rem; font-weight:700; color:var(--action, #315f85); background:var(--surface-hover, #edf3f8); white-space:nowrap; text-decoration:none; } .ds-link:hover { background:var(--surface-hover, #edf3f8); border-color:var(--brand, #4682b4); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
     },
     {
       "name": "Neutral Status Badge",
@@ -215,15 +239,31 @@
       "refersTo": "status-badge",
       "description": "Non-interactive neutral status badge; readable text carries the meaning.",
       "html": "<span class=\"ds-badge\">Draft</span>",
-      "css": ".ds-badge { font-family: var(--font-body, Roboto, sans-serif); display:inline-flex; border-radius:999px; padding:.2rem .55rem; font-size:.74rem; font-weight:700; line-height:1.5; border:1px solid #c8d2dc; background:#edf2f6; color:#334155; }"
+      "css": ".ds-badge { font-family:var(--font-body, Roboto, sans-serif); display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.22rem .6rem; font-size:.76rem; font-weight:700; line-height:1.3; white-space:nowrap; border:1px solid #c8d2dc; background:#edf2f6; color:#334155; } .ds-badge::before { content:\"\"; width:.5rem; height:.5rem; border-radius:50%; background:currentColor; flex-shrink:0; }"
     },
     {
       "name": "Ticket Card",
       "kind": "card",
       "refersTo": "ticket-card",
-      "description": "Existing linked ticket container, without invented ticket data.",
+      "description": "Shared linked ticket container; request-card structure and desktop table behavior are documented in DESIGN.md.",
       "html": "<a class=\"ds-control ds-card\" href=\"#preview\"><span class=\"ds-title\">Ticket</span><span class=\"ds-muted\">Description</span></a>",
-      "css": ".ds-card { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--line, #d8dfe5); border-radius:12px; background:#fff; padding:.7rem; display:grid; gap:.45rem; color:var(--ink, #2e2e2e); text-decoration:none; } .ds-card:hover { background:#edf3f8; border-color:var(--brand, #4682b4); } .ds-title { font-family:var(--font-display, Roboto, sans-serif); font-weight:700; } .ds-muted { color:var(--muted, #58636e); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+      "css": ".ds-card { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--line, #d8dfe5); border-radius:var(--radius-panel, 12px); background:#fff; padding:.85rem .95rem; display:grid; gap:.45rem; color:var(--ink, #2e2e2e); text-decoration:none; transition:border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease; } .ds-card:hover { background:var(--surface-hover, #edf3f8); border-color:var(--brand, #4682b4); } .ds-title { font-family:var(--font-display, Roboto, sans-serif); font-weight:700; } .ds-muted { color:var(--muted, #58636e); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-card { transition:none; } }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Shared white panel with quiet depth; responsive edge-to-edge exceptions are documented in DESIGN.md.",
+      "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Panel</h2><p class=\"ds-panel-muted\">Supporting context</p></section>",
+      "css": ".ds-panel { font-family:var(--font-body, Roboto, sans-serif); color:var(--ink, #2e2e2e); background:var(--bg-elevated, #ffffff); border:1px solid var(--line, #d8dfe5); border-radius:var(--radius-panel, 12px); box-shadow:var(--shadow-panel, 0 1px 2px rgb(46 46 46 / 5%)); padding:1.25rem; min-width:0; display:grid; gap:1rem; } .ds-panel-title { margin:0; font-family:var(--font-display, Roboto, sans-serif); font-size:1.25rem; font-weight:700; letter-spacing:-.015em; line-height:1.25; text-wrap:balance; } .ds-panel-muted { color:var(--muted, #58636e); margin:0; } @media (min-width:760px) { .ds-panel { padding:1.5rem; } } @media (max-width:600px) { .ds-panel { padding:1rem; } }"
+    },
+    {
+      "name": "Project Tab",
+      "kind": "nav",
+      "refersTo": "project-tab",
+      "description": "Icon-led project tab with a current-page underline; phone tab-bar composition is documented in DESIGN.md.",
+      "html": "<nav class=\"ds-project-tabs\" aria-label=\"Project sections\"><a class=\"ds-project-tab\" href=\"#preview\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg>Operations</a></nav>",
+      "css": ".ds-project-tabs { display:flex; gap:.25rem; overflow-x:auto; scrollbar-width:none; } .ds-project-tab { font-family:var(--font-body, Roboto, sans-serif); display:inline-flex; align-items:center; gap:.45rem; min-height:46px; padding:.5rem .9rem; border-bottom:3px solid transparent; border-radius:0; color:var(--muted, #58636e); font-size:.925rem; font-weight:600; white-space:nowrap; text-decoration:none; } .ds-project-tab:hover { color:var(--action, #315f85); background:var(--surface-hover, #edf3f8); } .ds-project-tab[aria-current=\"page\"] { color:var(--action, #315f85); border-bottom-color:var(--action, #315f85); font-weight:700; } .ds-project-tab:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; }"
     }
   ],
   "narrative": {
