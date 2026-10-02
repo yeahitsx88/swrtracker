@@ -248,3 +248,39 @@
 - Branch: codex/customer-lifecycle-rehearsal from 6becd3bd541f58271e70cafd6a5da82162b44051. Reuse clean isolated checkout; preserve original dirty review checkout.
 - Governing rule: Rehearse -> Observe -> Record -> Classify -> Review -> Authorize. Findings do not authorize product fixes, architecture changes, CRM, commercialization, hosting, or organizational tenant disablement. Proposed onboarding experience is assessed rather than adopted as architecture.
 - Record: audits/customer-lifecycle-rehearsal/README.md. Initial automated onboarding wave and browser login complete; all personal steps and later lifecycle stages remain pending. Assisted bootstrap is not successful application onboarding.
+
+
+### Decision 38 - project-specific enrollment access (2026-10-02)
+- Provenance: during the customer-lifecycle rehearsal, owner proposed bulk invitations or domain allowance, then selected "Project specific access" when asked whether verified employees should access all company projects or receive project-specific access.
+- Approved boundary: company/domain eligibility does not grant every project; project access requires an explicit scoped invitation or grant. Operational/administrative authority remains separately assigned.
+- Scope: policy decision only; choice and design of bulk/domain enrollment and implementation remain pending under Decision37. No product changes or live domain configuration authorized.
+
+
+### Decision 39 - employee project access requests require administrator approval (2026-10-02)
+- Provenance: owner answered "yes, request access to a project for admin approval" when offered administrator-approved employee requests versus invitation-only enrollment.
+- Approved direction: verified employees may request specific project access; pending requests grant no access; administrator approval precedes membership/access grant. Preserve Decision38 project scope.
+- Remaining design: project discovery, administrator authority/routing, approved role/company binding and request lifecycle. This policy decision does not authorize automatic implementation or broaden existing administrator authority.
+
+
+### Decision 40 - project link/code access-request entry point (2026-10-02)
+- Provenance: owner selected "Project link/code" over a browsable tenant project directory.
+- Approved direction: organization-shared project link/code identifies the specific project for a verified employee access request. Link/code possession grants no access; Decision39 administrator approval remains required. Avoid requiring ordinary users to supply internal Project UUIDs.
+- Design and implementation remain pending under Decision37; no product change or live domain/access configuration authorized by this selection.
+
+
+### Decision 41 - access-request approvers and Requester default (2026-10-02)
+- Provenance: owner replied "That fits the model" to approval by the project's Project Admin or tenant Central IT, granting Requester by default with Survey/administrative roles assigned separately.
+- Approved: either scoped Project Admin or tenant Central IT may approve the project access request; no dual approval requirement. Default approved access is REQUESTER. Other authority requires separate explicit assignment.
+- Completes the current policy chain with Decisions38-40; does not authorize implementation, restore disabled access, or broaden administrative scope. Concrete enrollment design remains pending under Decision37.
+
+
+### Decision 42 - clarified human Project Admin delegation (2026-10-02)
+- Owner clarifies Alex creates/opens Northbank, invites Jordan by name/company email as its Project Admin; Jordan opens assigned projects and cannot create projects. Desired project administration includes company-category enrollment lists, Survey Manager setup and project customization.
+- Correct rehearsal cast: human Jordan is local Project Admin; previously seeded same-name foreign tenant admin is only an isolation control, not the human persona. Existing fixtures remain unchanged pending deliberate setup.
+- Preserve project scope and independent capabilities; custom role/permission creation versus assigning fixed roles requires clarification. No tenant-wide enrollment authority, custom RBAC or implementation authorization inferred. Walkthrough paused for clarification.
+
+
+### Decision 43 - predefined roles; individual permission configuration deferred (2026-10-02)
+- Provenance: owner selected predefined roles and deferred individual permissions as more mature configuration.
+- Resolves Decision42: assign existing Project Admin capability and Survey Manager role to eligible people; do not create custom roles or per-person permission sets. Preserve independent administrative/operational authority and project scope.
+- Custom role definitions and individual permission configuration are deferred. Missing invitation/enrollment implementation remains subject to Decision37 review/authorization.

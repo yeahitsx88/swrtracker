@@ -1,0 +1,74 @@
+// Authorized assisted rehearsal. Does not implement privileged invitations or email transport.
+import fs from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
+import {randomUUID,randomBytes} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import {Pool} from 'pg';
+const local='.local-customer-rehearsal',out='audits/customer-lifecycle-rehearsal';
+const manifest=JSON.parse(await fs.readFile(local+'/manifest.json','utf8')),f=manifest.datasets.human;
+assert.match(f.schema,/^customer_rehearsal_[a-f0-9]{32}$/);assert.equal(f.port,3116);
+const cfg=JSON.parse(execFileSync('docker',['inspect','swr-area-unlink-ui-f590f61c'],{encoding:'utf8'}))[0];
+assert.equal(cfg.NetworkSettings.Ports['5432/tcp'][0].HostPort,'15489');
+const env=Object.fromEntries(cfg.Config.Env.map(s=>{const i=s.indexOf('=');return [s.slice(0,i),s.slice(i+1)];}));
+assert.equal(env.POSTGRES_DB,'swr_team_isolated');
+const url=new URL('postgresql://127.0.0.1:15489/swr_team_isolated');url.username=env.POSTGRES_USER||'postgres';url.password=env.POSTGRES_PASSWORD;
+const pool=new Pool({connectionString:url.href}),db=await pool.connect();
+const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const alex=await browser.newContext(),jordan=await browser.newContext({viewport:{width:1440,height:1000}});
+const a=await alex.newPage(),j=await jordan.newPage(),origin='http://localhost:3116';
+const report={baseline:manifest.baseline,startedAt:new Date().toISOString(),status:'IN_PROGRESS',assistance:[],checks:[]};
+function check(id,expected,observed,ok){report.checks.push({id,expected,observed,status:ok?'PASS':'FAIL'});assert.ok(ok,id);}
+async function login(page,email,password){await page.goto(origin+'/login');await page.getByLabel('Tenant ID',{exact:true}).fill(f.tenant);await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await page.waitForURL('**/projects');}
+async function post(context,path,data){const r=await context.request.post(origin+path,{data,headers:{'idempotency-key':randomUUID()}});return {status:r.status(),body:await r.json()};}
+try{
+ await db.query(`SET search_path TO "${f.schema}",public`);
+ const projects=(await db.query("SELECT id,name,status FROM projects WHERE tenant_id=$1 AND lower(name) LIKE '%northbank%pump%station%'",[f.tenant])).rows;
+ assert.equal(projects.length,1,'Exactly one user-created Northbank project required');const project=projects[0];report.project=project;
+ await login(a,f.actors.admin.email,f.password);
+ const email='jordan.lee@rehearsal.example.test';
+ assert.equal((await db.query('SELECT id FROM users WHERE tenant_id=$1 AND email=$2',[f.tenant,email])).rowCount,0,'Refuse duplicate rehearsal account');
+ const unsupported=await post(alex,`/api/projects/${project.id}/invites`,{email,companyId:f.company,role:'PROJECT_ADMIN'});
+ check('J01','Current invite API cannot provision GC Project Admin',unsupported,unsupported.status===400);
+ report.assistance.push('No supported privileged/GC invite issuance. Inserted a GC REQUESTER invitation in owned schema; Project Admin granted separately by Alex through existing application UI after registration. This is not atomic privileged invite acceptance.');
+ const token=randomUUID(),password=randomBytes(18).toString('base64url');
+ await db.query("INSERT INTO invites(tenant_id,project_id,company_id,email,role,invited_by,expires_at,token) VALUES($1,$2,$3,$4,'REQUESTER',$5,NOW()+INTERVAL '7 days',$6)",[f.tenant,project.id,f.company,email,f.actors.admin.id,token]);
+ const mailbox=local+'/jordan-mailbox.html';
+ await fs.writeFile(mailbox,`<!doctype html><meta charset="utf-8"><title>Simulated Jordan mailbox</title><h1>SIMULATED MAIL — no email sent</h1><p>To: ${email}</p><p>Alex intends to delegate Northbank administration. Assisted enrollment first creates a Requester; Alex must separately grant administration.</p><a href="${origin}/invite/${token}">Open Northbank enrollment invitation</a>`);
+ await fs.writeFile(local+'/jordan-access.json',JSON.stringify({email,password,projectId:project.id,tenantId:f.tenant,assisted:true},null,2));
+ report.assistance.push('Local HTML mailbox substitutes for external email delivery; synthetic reserved .test address. Does not verify delivery or real email ownership.');
+ await j.goto(pathToFileURL(process.cwd()+'/'+mailbox).href);await j.getByRole('link',{name:'Open Northbank enrollment invitation'}).click();
+ await j.getByRole('link',{name:'Continue to Registration'}).click();
+ await j.getByLabel('Full Name',{exact:true}).fill('Jordan Lee');await j.getByLabel('Password',{exact:true}).fill(password);
+ await j.getByRole('button',{name:'Create Account',exact:true}).click();await j.waitForURL('**/login?**');
+ check('J02','Invite registration prefills correct tenant/email',{tenant:await j.getByLabel('Tenant ID',{exact:true}).inputValue(),email:await j.getByLabel('Email',{exact:true}).inputValue()},await j.getByLabel('Email',{exact:true}).inputValue()===email&&await j.getByLabel('Tenant ID',{exact:true}).inputValue()===f.tenant);
+ const subject=(await db.query('SELECT id FROM users WHERE tenant_id=$1 AND email=$2',[f.tenant,email])).rows[0];assert.ok(subject);
+ await a.goto(`${origin}/projects/${project.id}/admin`);
+ const row=a.getByRole('listitem').filter({hasText:'Jordan Lee'}).filter({has:a.getByRole('button',{name:'Grant Admin',exact:true})});
+ await row.getByRole('button',{name:'Grant Admin',exact:true}).click();
+ const confirm=a.getByRole('region',{name:'Confirm project administration'});
+ await confirm.getByLabel('I confirm this action applies to this project.').check();await confirm.getByRole('button',{name:'Confirm action',exact:true}).click();
+ await a.getByText('Grant Project Admin for Jordan Lee completed. Affected authority changes require sign-in renewal.',{exact:true}).waitFor();
+ check('J03','Alex grants independent Northbank administration through UI','Confirmation succeeded',true);
+ await j.getByLabel('Password',{exact:true}).fill(password);await j.getByRole('button',{name:'Sign In',exact:true}).click();await j.waitForURL('**/projects');
+ await j.getByRole('link',{name:project.name,exact:true}).waitFor();
+ check('J04','Jordan sees Northbank in administered projects','Named Northbank link visible',true);
+ check('J05','Jordan has no Create Project control',await j.getByRole('button',{name:'Create Project',exact:true}).count(),await j.getByRole('button',{name:'Create Project',exact:true}).count()===0);
+ await j.screenshot({path:out+'/jordan-projects.png',fullPage:true});
+ await j.getByRole('link',{name:project.name,exact:true}).click();await j.getByRole('heading',{name:'Project members and access',exact:true}).waitFor();
+ await j.screenshot({path:out+'/jordan-project-admin.png',fullPage:true});
+ check('J06','Jordan opens Northbank administration',new URL(j.url()).pathname,new URL(j.url()).pathname===`/projects/${project.id}/admin`);
+ const denied=await post(jordan,'/api/projects',{name:'Unauthorized Jordan project',crewBuild:'FULL'});
+ check('J07','Server denies Jordan project creation',denied.status,denied.status===403);
+ const discovery=await jordan.request.get(origin+'/api/projects/administration'),data=await discovery.json();
+ check('J08','Only Northbank administration; no project creation capability',{canCreateProject:data.canCreateProject,projectIds:data.projects.map(p=>p.id)},data.canCreateProject===false&&data.projects.length===1&&data.projects[0].id===project.id);
+ const roles=(await db.query('SELECT role FROM tenant_memberships WHERE tenant_id=$1 AND user_id=$2',[f.tenant,subject.id])).rows;
+ check('J09','No tenant authority granted',roles,roles.length===0);
+ const memberships=(await db.query('SELECT project_id,role FROM project_memberships WHERE user_id=$1',[subject.id])).rows;
+ check('J10','Only Northbank membership; no Survey Manager authority',memberships,memberships.length===1&&memberships[0].project_id===project.id&&memberships[0].role==='REQUESTER');
+ report.status='ASSISTED_STEP_COMPLETE';report.userParticipation='None; two independent browser contexts, real registration/login';
+ report.remaining='Email transport, GC/admin invite issuance and atomic intended authority on acceptance are still unimplemented; project remains in SETUP and appears under administered projects, not active operational memberships.';
+ await fs.appendFile(local+'/HUMAN-ACCESS.md',`\n## Jordan Lee — assisted Northbank Project Admin\nEmail: ${email}\nPassword: ${password}\nTenant ID: ${f.tenant}\nProject: ${project.name}\nGrant was assigned by Alex via UI after assisted invitation registration.\n`);
+ console.log(JSON.stringify({status:report.status,checks:report.checks.length,projectStatus:project.status}));
+}finally{report.finishedAt=new Date().toISOString();await fs.writeFile(out+'/jordan-delegation.json',JSON.stringify(report,null,2));await browser.close();db.release();await pool.end();}

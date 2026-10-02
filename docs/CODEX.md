@@ -3254,3 +3254,45 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Evidence: 19 initial HTTP checks,18 expected outcomes,1 unexpected500 for malformed invitation token; real browser login/admin landing captured. Initial harness attempt omitted company association and stopped; corrected support script uses application API, evidence preserved.
 - Findings: controlled bootstrap/first-admin invitation absent, required Tenant ID and displayed identifiers, existing-account invitation registration409, malformed token500, wrong-account browser continuation still to assess, organizational closure distinct from person disable. Recommendations UNAPPROVED; no fixes performed.
 - Exact restart: owner human session1 login/project creation per rehearsal README; continue remaining R03-R14 automation and role walkthroughs, capture findings before proposing changes. Entire rehearsal is IN PROGRESS, not accepted or release-ready.
+
+
+### 2026-10-02 - Batch 102 - human rehearsal member onboarding observation
+- Owner confirms project creation/opening; member enrollment blocked at empty existing-account selector. Recorded screenshot and F08 in customer-lifecycle rehearsal record.
+- Inspected candidate query: existing active tenant accounts, associated project company, no existing membership. Form does not provision missing people. Existing company association also exposes Company ID.
+- Captured bulk invitation/domain enrollment suggestions as pending review; project scope and verified email ownership remain explicit design questions. No product changes, database changes, messages, or tests performed (documentation-only observation).
+
+
+### 2026-10-02 - Batch 103 - project-specific enrollment decision
+- Recorded owner selection of project-specific access in Decision38 and rehearsal record. Bulk/domain mechanism remains pending; no inferred implementation authorization.
+- Documentation only; no production/data changes or tests.
+
+
+### 2026-10-02 - Batch 104 - administrator-approved project access requests
+- Recorded owner selection in Decision39 and customer rehearsal record; invitation-only recommendation was not selected. Pending requests confer no project access.
+- Project discovery and approval routing remain pending. Documentation only; no product/data changes or tests.
+
+
+### 2026-10-02 - Batch 105 - project link/code enrollment entry
+- Recorded owner selection in Decision40 and rehearsal record. Project-specific access requests remain subject to administrator approval; tenant directory was not selected.
+- Documentation only; no product/data changes or tests.
+
+
+### 2026-10-02 - Batch 106 - access-request approval model accepted
+- Recorded Decision41 and consolidated project link/code, verified request, scoped admin approval and Requester-default policy in rehearsal record.
+- No product/data changes or tests; implementation remains unapproved. Current human onboarding blocker remains recorded.
+
+
+### 2026-10-02 - Batch 107 - clarify delegated Project Admin persona
+- Recorded owner correction to Alex/Jordan journey, fixed cast documentation and retained isolation fixture distinction. Desired privileged invitation and email journey remains a gap.
+- Custom role creation versus fixed capability assignment pending clarification; enrollment lists remain project-scoped under previous decisions. Documentation only; no product/data changes or tests.
+
+
+### 2026-10-02 - Batch 108 - predefined role decision
+- Recorded Decision43 and resolved custom-role ambiguity in rehearsal record. Existing Project Admin and Survey Manager assignments use predefined authority; individual permission configuration deferred.
+- Documentation only; no product/data changes or tests.
+
+
+### 2026-10-02 - Batch 109 - automated assisted Alex/Jordan delegation
+- Owner authorized simulation without personal participation. Two isolated browser contexts, real registration/login, local synthetic mailbox; no external email or virtual-machine requirement.
+- New scripts/rehearsal/jordan-delegation.mjs and sanitized evidence:10 passing expectations. Current GC/admin invitation rejected400; fixture GC Requester invite bridges gap; Alex grants independent administration through actual UI. Jordan opens Northbank, cannot create projects (UI/API403), has no tenant/Survey authority.
+- Human fixture now retains Jordan for Northbank SETUP; foreign isolation-control admin unchanged. Secrets/token/password stay ignored. No production changes; whole rehearsal still incomplete.

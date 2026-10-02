@@ -1,0 +1,103 @@
+{
+  "baseline": "6becd3bd541f58271e70cafd6a5da82162b44051",
+  "startedAt": "2026-10-02T18:37:04.430Z",
+  "status": "ASSISTED_STEP_COMPLETE",
+  "assistance": [
+    "No supported privileged/GC invite issuance. Inserted a GC REQUESTER invitation in owned schema; Project Admin granted separately by Alex through existing application UI after registration. This is not atomic privileged invite acceptance.",
+    "Local HTML mailbox substitutes for external email delivery; synthetic reserved .test address. Does not verify delivery or real email ownership."
+  ],
+  "checks": [
+    {
+      "id": "J01",
+      "expected": "Current invite API cannot provision GC Project Admin",
+      "observed": {
+        "status": 400,
+        "body": {
+          "error": {
+            "type": "ValidationError",
+            "code": "VALIDATION_ERROR",
+            "message": "Company must be a subcontractor in this project tenant",
+            "correlationId": "027276d2-d73b-4cbf-9fa8-2760422a2ba9",
+            "status": 400
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "J02",
+      "expected": "Invite registration prefills correct tenant/email",
+      "observed": {
+        "tenant": "da772b3e-fc32-4e10-a80d-3c563d9fc1d4",
+        "email": "jordan.lee@rehearsal.example.test"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "J03",
+      "expected": "Alex grants independent Northbank administration through UI",
+      "observed": "Confirmation succeeded",
+      "status": "PASS"
+    },
+    {
+      "id": "J04",
+      "expected": "Jordan sees Northbank in administered projects",
+      "observed": "Named Northbank link visible",
+      "status": "PASS"
+    },
+    {
+      "id": "J05",
+      "expected": "Jordan has no Create Project control",
+      "observed": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "J06",
+      "expected": "Jordan opens Northbank administration",
+      "observed": "/projects/7e2d1a43-e80a-4f69-9a54-7900bbeba06b/admin",
+      "status": "PASS"
+    },
+    {
+      "id": "J07",
+      "expected": "Server denies Jordan project creation",
+      "observed": 403,
+      "status": "PASS"
+    },
+    {
+      "id": "J08",
+      "expected": "Only Northbank administration; no project creation capability",
+      "observed": {
+        "canCreateProject": false,
+        "projectIds": [
+          "7e2d1a43-e80a-4f69-9a54-7900bbeba06b"
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "J09",
+      "expected": "No tenant authority granted",
+      "observed": [],
+      "status": "PASS"
+    },
+    {
+      "id": "J10",
+      "expected": "Only Northbank membership; no Survey Manager authority",
+      "observed": [
+        {
+          "project_id": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b",
+          "role": "REQUESTER"
+        }
+      ],
+      "status": "PASS"
+    }
+  ],
+  "project": {
+    "id": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b",
+    "name": "Northbank Pump Station",
+    "status": "SETUP"
+  },
+  "userParticipation": "None; two independent browser contexts, real registration/login",
+  "remaining": "Email transport, GC/admin invite issuance and atomic intended authority on acceptance are still unimplemented; project remains in SETUP and appears under administered projects, not active operational memberships.",
+  "finishedAt": "2026-10-02T18:37:06.209Z"
+}
