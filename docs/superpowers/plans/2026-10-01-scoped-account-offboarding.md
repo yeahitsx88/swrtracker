@@ -1,0 +1,161 @@
+# Scoped account offboarding and project administration implementation plan
+
+> **For agentic workers:** Use superpowers:executing-plans for the owner's preserved Native execution preference. Implement task by task after this plan is approved; checkbox steps track execution.
+
+**Goal:** Give Project Admin administrative powers within their own projects, including access disablement and a Central IT review flag, while allowing authorized Central IT to disable a tenant account and preserving historical work.
+
+**Architecture:** Store project administration independently of operational membership. Implement project access and tenant account disablement as distinct commands with shared lifecycle locking, current authority checks, durable retry results and atomic administrative audit. Project disablement renews sessions but leaves other projects available; tenant disablement rejects subsequent protected requests.
+
+**Tech Stack:** Existing Next.js 15, React 19, TypeScript, node:test/tsx, node-postgres and PostgreSQL. No new dependency.
+
+**Spec:** [Offboarding design](../../../audits/central-it-account-offboarding-design-20261001.md), [permission inventory](../../../audits/central-it-project-admin-permission-review-20261001.md), Decision32. This plan proposes implementation details for review; it is not evidence that these APIs or schema exist.
+
+**Pre-execution evidence:** [Direct lifecycle query inventory](../../../audits/phase5-lifecycle-query-inventory-20261001.md) lists all24 current direct consumers. It is read-only planning evidence; implementation must additionally trace indirect entry points and complete the enforcement manifest.
+
+**Starting point:** phase5 at 92e5b45894a949448aaf58200f8bddebec52c371, equal origin/phase5 after fetch. Existing assessment documentation is retained. The dirty D:/Programming/SWRTracker Phase5-RedTeam checkout is unrelated and must remain untouched.
+
+## Global constraints
+
+- Project Admin acts within “Own projects”; local disabling flags existing Central IT for review of any needed tenant-wide disabling.
+- TENANT_ACCOUNT and PROJECT_ACCESS are explicit, separate scopes. The same person may hold Central IT, Project Admin and Survey Manager; Survey Manager alone does not gain admin powers.
+- Preserve drafts, historical authorship, ticket events, attachments, company relationships and membership rows. Resolve live duties before disabling; no implicit reassignment or deletion.
+- No self-disable, loss of the last active eligible tenant administrator, or loss of the last distinct actual active Survey Manager on a nonarchived project.
+- No reactivation, urgent suspension bypass, SSO, purge, billing, general acting-role redesign or production/Sabine mutation.
+- Every disable is atomic with its event, retry result and any review/outbox records. Every participating duty/authority writer must coordinate before row locks.
+- Do not deploy partial access enforcement. Old binaries that ignore disabled project memberships are unsafe rollback targets.
+- Preserve existing design tokens, navigation conventions and Native execution. Commit only owned paths; ordinary pushes/checkpoints follow the repository's approved policy after verification. No reset or force-push.
+
+## Review focus
+
+1. An actor waits behind disablement while adding a new duty: postwait authentication and authority must fail, or the disable must see the committed duty. Task3 PostgreSQL race tests.
+2. One person holds all three roles: both admin and actual Manager surfaces remain available; scope selection never silently widens. Tasks2 and6 combined-role tests.
+3. Local disable occurs without Central IT, or delivery repeatedly fails: access still disables, the response tells the truth, durable delivery never duplicates the review. Task4 outbox tests.
+4. A subject is active elsewhere or on an archived project: only the selected project loses access; historical hashes and authorship stay identical. Tasks4 and7 preservation tests.
+5. The browser loses the first successful response, then authority changes: frozen retries do not duplicate work or expose stored results to a now-unauthorized actor. Tasks4 and6 recovery tests.
+
+## Shared contracts and coverage
+
+Create src/lib/contracts/account-offboarding.ts. Import UUID and AuthContext rather than defining incompatible copies.
+
+- OffboardingScope = { kind: 'TENANT_ACCOUNT' } | { kind: 'PROJECT_ACCESS'; projectId: UUID }.
+- ProjectCapabilities = { operationalRole: ProjectRole | null; canAdminister: boolean; centralIT: boolean; accessDisabled: boolean }.
+- OffboardingPreview = { scope: OffboardingScope; subjectUserId: UUID; snapshot: string; alreadyDisabled: boolean; blockers: OffboardingBlocker[]; centralITRecipientCount: number }.
+- OffboardingBlocker = { code: string; projectId: UUID; count: number; resolutionPath: string | null }. No individual names or other-project blockers in local responses.
+- OffboardingCommand = { subjectUserId: UUID; scope: OffboardingScope; reason: string; snapshot: string; confirmed: true; idempotencyKey: string }.
+- OffboardingResult = { scope: OffboardingScope; subjectUserId: UUID; changed: boolean; eventId: UUID | null; disabledAt: string; sessionVersion: number; centralReview: 'QUEUED' | 'NOT_QUEUED_NO_CENTRAL_IT' | 'NOT_APPLICABLE'; reviewId: UUID | null; outcome: 'DISABLED' | 'ALREADY_DISABLED' | 'ACCOUNT_ALREADY_DISABLED' }.
+- ReviewResolution = { reviewId: UUID; disposition: 'NO_FURTHER_ACTION' | 'TENANT_ACCOUNT_DISABLED'; reason: string; tenantEventId: UUID | null; snapshot: string; idempotencyKey: string }.
+
+Use existing error envelope/status conventions: unauthenticated or stale token 401, insufficient authority 403, wrong tenant or inaccessible project/subject 404 without identifiers, malformed body 400, stale preview/duty/continuity/key-body conflicts 409. Successful first and unchanged commands return 200. Reason trims to 10–1000 characters. Reject unknown body fields and URL/body scope mismatches. HTTP handlers require the existing Idempotency-Key header through requireIdempotencyKey: trim and accept 1–128 characters. idempotencyKey belongs to the internal command only; reject it as an extra JSON body field. Use executeIdempotentHttpMutation with tenantId, actorId and the exact scoped endpoint; api_idempotency is the existing table.
+
+Coverage gate: A01–A28 tenant/lifecycle cases → Tasks1,3,4,7; A29–A40 local/review/combined cases → Tasks2,4,6,7. P01–P15 permission cases → Tasks2,5,6,7. Copy each matrix row into a named executable assertion and report every row; a pure mock does not certify SQL locks or tenant constraints.
+
+### Task 1: Add retained access, independent admin and administrative audit storage
+
+**Files:** Create db/migrations/031_scoped_account_offboarding.sql; src/modules/identity/infrastructure/account-lifecycle.repository.ts; tests/migrations/scoped-account-offboarding.test.ts; tests/beta/account-offboarding-postgres.ts. Modify src/shared/types.ts only if required by established database typing; retain existing UUID/DbClient contracts.
+
+**Interfaces:** Consumes current users, tenants, companies, project_memberships, projects and api_idempotency. Produces migration031 and SQL constraints used by Tasks2–5. Repository exports appendLifecycleEvent(db: DbClient, event: LifecycleEventInput): Promise<UUID>; LifecycleEventInput is defined in that repository as { scope: OffboardingScope; tenantId: UUID; actorUserId: UUID; subjectUserId: UUID; projectId: UUID | null; reason: string; priorState: 'ACTIVE'; newState: 'DISABLED'; priorSessionVersion: number; newSessionVersion: number; authorityEvidence: Record<string, unknown>; snapshot: string; correlationKey: string }. The SQL project_id must agree with the discriminated scope.
+
+- [x] Write failing tests: membership_access_stamp_pairing rejects half stamps; lifecycle_scope_fk rejects foreign-tenant actors/subjects/projects; admin_grant_uniqueness rejects a second active grant; event_immutability rejects UPDATE/DELETE under the actual configured application role; existing_history_survives_migration compares existing ticket/draft/event/file identities and checksums before/after.
+- [x] Run pnpm exec tsx --test tests/migrations/scoped-account-offboarding.test.ts; expect failures against missing031 constraints. Run isolated PostgreSQL fixture tests using the acceptance harness described in Task7; absence of database is not PASS.
+- [x] Implement one additive migration: paired project_memberships access_disabled_at/access_disabled_by; composite tenant identity constraints; project_admin_grants with independent grant/revoke provenance and partial active uniqueness. Backfill active grants from existing PROJECT_ADMIN memberships only; leave their scalar role intact and never infer Manager authority.
+- [x] Add account_lifecycle_events with immutable payload, truthful scope and tenant/actor/subject/project FKs; account_offboarding_reviews with original local event, recipient evidence, pending/resolved provenance; administrative_notification_outbox tied to review/event and recipient, unique per review/recipient. Keep ticket notification schema unchanged.
+- [x] Add project_companies associations with tenant/project/company composite FKs for Task5's explicit local company-registration route. Preserve tenant-wide companies and existing relationships. Existing companies are associated only by explicit project action or verified existing project evidence, not assigned to every project.
+- [x] Enforce append-only events with a database trigger rejecting changes independently of application conventions, and test actual runtime privileges. Define review updates only through guarded resolution, never mutate event payloads. Avoid dropping or rewriting historical data; migration preflight refuses inconsistent tenant rows with actionable diagnostics.
+- [x] Run the tests GREEN, then pnpm tsc --noEmit --incremental false. Commit owned migration/repository/tests: feat: add scoped lifecycle storage. No live migration run.
+
+### Task 2: Resolve combined authority and disabled project access everywhere
+
+**Files:** Create src/lib/project-capabilities.ts; tests/identity/project-capabilities.test.ts. Modify src/lib/get-project-role.ts, src/lib/get-tenant-role.ts, src/lib/access-administrator.ts, src/lib/project-insight-auth.ts, src/lib/survey-review-authority.ts, src/lib/ticket-visibility-clause.ts, src/lib/resolve-visibility.ts, src/modules/identity/infrastructure/company-access.repository.ts, src/modules/tenancy/infrastructure/tenancy.repository.ts, src/modules/notification/infrastructure/index.ts, src/modules/notification/application/local-preview.ts, src/app/api/projects/get-handler.ts, src/app/api/projects/[projectId]/members/route.ts, src/app/api/tickets/[ticketId]/attachments/handler.ts, src/modules/tenancy/infrastructure/my-account.reader.ts, src/modules/tenancy/infrastructure/superintendent-crews.repository.ts, src/modules/tenancy/infrastructure/protected-obligations.repository.ts, src/modules/tenancy/infrastructure/superintendent-areas.repository.ts, src/modules/tenancy/infrastructure/survey-staffing.repository.ts, src/modules/tenancy/infrastructure/survey-teams.repository.ts, src/modules/tenancy/infrastructure/survey-workforce.repository.ts, src/modules/ticket/application/draft-access.ts, src/modules/ticket/application/recover-draft.ts, src/modules/ticket/infrastructure/ticket.repository.ts. Include every direct project_memberships consumer in the tracked enforcement manifest below; do not rely solely on getProjectRole.
+
+**Interfaces:** Consumes Task1 storage. Produces resolveProjectCapabilities(db: DbClient, auth: AuthContext, projectId: UUID): Promise<ProjectCapabilities> in project-capabilities.ts; assertProjectAdministrator(db: DbClient, auth: AuthContext, projectId: UUID): Promise<ProjectCapabilities>. Existing getProjectRole returns the actual operational role, preserving legacy PROJECT_ADMIN where no operational role exists. Admin grants never fabricate an operational role.
+
+- [ ] Write failing tests: manager_and_admin_are_independent asserts Manager operations plus admin control; manager_only_has_no_admin asserts false; legacy_admin_has_no_manager asserts false; disabled_grant_holder_loses_project_access denies local membership/grant authority; central_it_retains_explicit_tenant_support checks the separate central capability; foreign_project_not_disclosed checks404.
+- [ ] Run pnpm exec tsx --test tests/identity/project-capabilities.test.ts and corresponding SQL acceptance tests; expect failures for new grants and disabled membership.
+- [ ] Implement capabilities with current user/session/company eligibility and same-tenant joins. Include legacy admin membership and independent active admin grants, both conditioned on effective project access. Central eligibility follows the approved GC/OWNER_REP TENANT_ADMIN rule; never permit a subcontractor grant to evade eligibility.
+- [ ] Replace insight tenant-role precedence with actual operational semantics plus separately checked admin capabilities. Keep Manager mutation gates actual-role-based. Update ticket visibility, project discovery, selector populations, staffing witness queries and notification recipient selection; deduplicate users with multiple grants. Disabled local members are not new assignment/notification candidates.
+- [ ] Commit audits/phase5-lifecycle-enforcement-manifest-20261001.md listing every direct membership/user-active consumer found with rg, each file's read/write entry point, enforcement location and named test. Resolve every consumer, including archived visibility; central support exceptions must be explicit. Treat uncategorized consumers as a failed gate.
+- [ ] Run GREEN focused pure/SQL tests and full pnpm test. Commit: feat: support independent project administration and access gates.
+
+### Task 3: Coordinate existing writers and make session revocation immediate
+
+**Files:** Create src/lib/tenant-lifecycle-lock.ts; tests/identity/tenant-lifecycle-lock.test.ts; tests/beta/account-offboarding-concurrency-postgres.ts. Modify src/lib/auth.ts, src/lib/idempotency.ts only if the existing ordering contract needs explicit caller protection, src/lib/with-transaction.ts only where needed for explicit entry-point coordination, src/app/api/auth/register/handler.ts, src/app/api/auth/logout/handler.ts, src/app/api/auth/forgot-password/handler.ts, src/app/api/auth/reset-password/handler.ts, src/modules/identity/application/password-reset.ts, src/modules/identity/infrastructure/user.repository.ts, src/modules/tenancy/application/tenant-memberships.ts src/modules/notification/application/worker.ts, src/modules/notification/application/index.ts, src/workers/notification-worker.ts and all mutation entry points recorded in the enforcement manifest.
+
+**Interfaces:** Produces acquireTenantLifecycleLock(db: DbClient, tenantId: UUID, mode: 'SHARED' | 'EXCLUSIVE'): Promise<void>; revalidateMutationAuth(db: DbClient, req: NextRequest, expected: AuthContext): Promise<AuthContext>. Consumes existing sessionTokenHash and assertActiveSession; requires caller-owned transactions.
+
+- [ ] Write failing tests: protected_request_rejects_disabled_and_old_version checks all protected API entry points, including downloads; writer_waits_then_revalidates uses two actual PostgreSQL clients, barriers and a newly disabled actor; last_admin_demotion_and_disable_race asserts at least one eligible administrator remains; reset_token_cannot_reactivate asserts no password/session mutation.
+- [ ] Run focused tests plus isolated concurrency suite; assert the failure is missing account/version enforcement or writer coordination, not broken fixtures.
+- [ ] Make requireActiveAuth check logout token, current user deactivation and session_version on every protected request. Keep signature verification separate. Inside held lifecycle locks, revalidate token revocation, account/version and current action authority before replay or mutation.
+- [ ] Acquire tenant row FOR SHARE first for ordinary duty writers; FOR UPDATE first for offboarding and authority/session-revoking writers. Determine mode before acquiring; never upgrade shared to exclusive. Use existing subsequent project/user/ticket/ledger lock ordering consistently.
+- [ ] Integrate registration/invites, password reset, logout/session increments, company eligibility, tenant/project roles and grants, project activation, departments, staffing/teams/Area/reporting, ticket assignment/workflow and relevant worker duty changes. Wrap auto-commit paths in transactions; a pool query outside the held transaction cannot prove coordination. Background jobs have no JWT but still lock and recheck subject eligibility.
+- [ ] Generate the manifest's complete writer inventory with rg over src/modules, src/app/api and src/workers plus indirect repository calls; add one race assertion per writer family. Ensure last-admin protection applies to tenant removal/demotion/company eligibility as well as the new disable.
+- [ ] Run GREEN concurrency/session suites and pnpm test. Commit: fix: coordinate account lifecycle and session revocation.
+
+### Task 4: Deliver two offboarding commands and durable Central IT review
+
+**Files:** Create src/lib/contracts/account-offboarding.ts; src/modules/identity/application/account-offboarding.ts; src/modules/identity/application/account-offboarding-review.ts; src/modules/identity/infrastructure/account-offboarding.repository.ts; src/app/api/accounts/route.ts; src/app/api/accounts/[userId]/offboarding/route.ts and handler.ts; src/app/api/projects/[projectId]/members/[userId]/offboarding/route.ts and handler.ts; src/app/api/accounts/offboarding-reviews/route.ts; src/app/api/accounts/offboarding-reviews/[reviewId]/route.ts and handler.ts; src/workers/administrative-notification-worker.ts; tests/identity/account-offboarding.test.ts; tests/identity/account-offboarding-http.test.ts. Extend the Task1 PostgreSQL and Task3 race suites.
+
+**Interfaces:** Consumes Tasks1–3 and shared contracts. Produces previewOffboarding(db: DbClient, auth: AuthContext, scope: OffboardingScope, subjectUserId: UUID): Promise<OffboardingPreview>; disableAccountAccess(db: DbClient, auth: AuthContext, command: OffboardingCommand): Promise<OffboardingResult>; resolveOffboardingReview(db: DbClient, auth: AuthContext, command: ReviewResolution): Promise<void>. Route handlers inject existing transaction/auth dependencies, keeping application logic testable.
+
+- [ ] Write failing tests: project_only_disable_changes_one_membership checks retained row/role/company and unchanged other projects; tenant_disable_stamps_user checks one session bump; blockers_are_scoped checks local responses omit unrelated duties; last_actual_manager_refused checks distinct active replacement; same_key_replay_after_authority_loss denies before ledger read; concurrent_fresh_retries_one_transition checks one event/version; event_or_outbox_failure_rolls_back checks every table; no_central_it_succeeds_truthfully checks NOT_QUEUED_NO_CENTRAL_IT; same_person_review_recipient_once checks one review/recipient.
+- [ ] Run pnpm exec tsx --test tests/identity/account-offboarding.test.ts tests/identity/account-offboarding-http.test.ts; run SQL/race suites RED.
+- [ ] Implement bounded tenant account search for Central IT and local member lookup for Project Admin. All subjects derive from auth tenant and URL scope; no body tenant override. Previews include deterministic snapshots of relevant duties, witnesses and authority. Commands rederive under exclusive lifecycle barrier before trusting the preview.
+- [ ] Enumerate blockers from the design: active individual Area, roster, reporting, named teams/lead, responsibility/company/acting/designee grants, department/superintendent relationships and help flags, plus current assignee/Chief/IM/Survey Lead on nondraft nonterminal work. Preserve historical requesters/authors and drafts. Unsupported live duties return409 with a resolution path or explicit unsupported status.
+- [ ] For local command, stamp only selected membership access and bump users.session_version once. For tenant command, stamp users.deactivated_at/deactivated_by and bump once. Already-disabled fresh command preserves original stamps and version; fresh local request against globally disabled subject returns ACCOUNT_ALREADY_DISABLED. Replay authenticates and authorizes before returning the recorded original result.
+- [ ] Atomically append lifecycle event, ledger result and local review/outbox when eligible Central IT exists. Include the same actor if also Central IT; one human needs no second approval. Transport runs after commit with bounded retry/lease and unique recipient delivery identity; failed transport never reopens access. Queue remains actionable through authenticated review API, not email alone.
+- [ ] Review resolution requires Central IT and snapshot/retry protection. NO_FURTHER_ACTION closes with recorded reason. TENANT_ACCOUNT_DISABLED requires a separately confirmed tenant command event for the same subject; never invoke global disable as an implicit side effect. Failed global disable leaves review pending.
+- [ ] Confirm local/global ordering: tenant-first local no-op, project-first old Central IT token rejects until renewal; new request reloads preview. Archive exception touches access metadata only.
+- [ ] Run GREEN pure/HTTP/SQL/race tests, pnpm tsc --noEmit --incremental false and pnpm test. Commit: feat: add scoped offboarding and Central IT review.
+
+### Task 5: Expand project administration without tenant escalation
+
+**Files:** Modify src/modules/tenancy/application/add-project-member.ts, whitelist.ts, create-company.ts, project-templates.ts, list-project-templates.ts, tenant-memberships.ts; src/app/api/projects/[projectId]/members/route.ts; src/app/api/projects/[projectId]/whitelist/route.ts; src/app/api/projects/[projectId]/archive/handler.ts; src/app/api/projects/administration/route.ts; src/app/api/ops/diagnostics/handler.ts; src/lib/contracts/projects.ts. Create src/modules/tenancy/application/project-administration.ts; src/app/api/projects/[projectId]/administrators/route.ts and handler.ts; src/app/api/projects/[projectId]/companies/route.ts and handler.ts; tests/tenancy/project-administration-parity.test.ts; tests/beta/project-administration-parity-postgres.ts.
+
+**Interfaces:** Consumes assertProjectAdministrator and lifecycle barrier. Produces setProjectAdministrator(db: DbClient, auth: AuthContext, projectId: UUID, subjectUserId: UUID, enabled: boolean): Promise<void>; registerProjectCompany(db: DbClient, auth: AuthContext, projectId: UUID, input: { name: string; type: CompanyType } | { companyId: UUID }): Promise<Company>. Current shared tenant APIs retain their tenant contracts.
+
+- [ ] Write P01–P15 failing assertions: local member/whitelist/archive succeeds; foreign project denies; administrator_grant_preserves_manager_role; tenant_role_and_new_project_creation_denied_to_local_admin; shared_template_mutation_denied; diagnostics_query_is_project_partitioned; registered_company_never_grants_other_project_access.
+- [ ] Run pnpm exec tsx --test tests/tenancy/project-administration-parity.test.ts and parity PostgreSQL suite RED.
+- [ ] Replace exclusive Central IT guards for local member assignment, whitelist and archive with project capabilities inside coordinated transactions. Preserve staffing continuity and project lifecycle preconditions. Admin assignment/revocation changes independent grants, never operational role; only an eligible current project member receives a grant.
+- [ ] Add explicit project company registration/association, scoped to administered project with atomic association and audit. New company types use existing CompanyType validation; this route changes neither the actor's company nor tenant-admin eligibility. A company row may serve other projects, so association gives no edit/delete authority over shared company metadata. Existing companyId lookup is tenant-bounded; local administration only selects associated companies.
+- [ ] Keep tenant company endpoint, creating new projects, tenant membership grants/removal and shared template writes Central IT. Give local admins authorized template read/selection and project configuration through existing local contracts. Do not invent local template CRUD.
+- [ ] Administration discovery returns only administered projects for Project Admin and separate canCreateProject capability. Diagnostics requires explicit project context for local admins and partitions SQL before aggregation; omit unpartitionable tenant jobs/ledger/metrics rather than fetching then filtering. Existing full tenant diagnostic response remains Central IT.
+- [ ] Ensure already-shared invitation/configuration/insight routes use new capabilities; do not broaden actual Manager/Chief/Superintendent gates or existing ProjectAdmin-only draft-recovery behavior merely due to Central IT identity.
+- [ ] Run GREEN parity pure/SQL/HTTP tests plus pnpm test. Commit: feat: allow project-scoped administrative parity.
+
+### Task 6: Add scope-clear offboarding and combined-role UI
+
+**Files:** Create src/components/ui/account-offboarding.tsx; src/components/ui/account-offboarding-state.ts; src/components/ui/offboarding-review.tsx; tests/ui/account-offboarding-state.test.ts; tests/beta/account-offboarding-browser.ts. Modify src/components/ui/project-navigation.ts, account-navigation.ts, team-management-entry.tsx; src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx; src/app/(projects)/projects/[projectId]/layout.tsx; src/lib/apiClient.ts. Create src/app/(projects)/accounts/page.tsx and corresponding review page within the existing authenticated layout.
+
+**Interfaces:** Consumes shared preview/result/contracts and Task5 discovery capabilities. Produces explicit scope selection and stable pending command state using the existing apiClient error envelope.
+
+- [ ] Write failing state/browser tests: combined_roles_keep_survey_and_admin_navigation; project_scope_confirmation_never_sends_tenant_scope; lost_response_freezes_key_and_body; every_409_latches_until_reload; no_central_it_status_is_visible; central_review_needs_separate_global_confirmation.
+- [ ] Run pnpm exec tsx --test tests/ui/account-offboarding-state.test.ts RED; run browser script against isolated test app RED.
+- [ ] Render local access controls on administered project page; tenant account/review controls only for eligible Central IT. One person sees both, explicitly choosing scope. Show preserved history and sign-in renewal impact; warn when disabled subject retains independent Central IT support powers.
+- [ ] Require current preview, blocker resolution, trimmed reason and explicit confirmation. Freeze body/key while pending or uncertain; retain across retry and disable contradictory controls. Every409 requires reload, clears old confirmation and does not automatically submit changed intent.
+- [ ] Display changed:false as an unchanged outcome with original time, honest review queued/no-Central-IT status, and durable review navigation. Global review action loads its own current tenant preview and confirmation; no automatic escalation.
+- [ ] Integrate local members, administrator assignments, company associations and diagnostics into existing admin UI. Do not hide project controls behind canCreateProject=false. Keep operational Team Management based on actual roles alongside admin navigation.
+- [ ] Run GREEN state/browser acceptance, keyboard/recovery checks, pnpm tsc --noEmit --incremental false, pnpm test and pnpm build. Commit: feat: add scoped offboarding administration UI.
+
+### Task 7: Prove integrated acceptance and safe release boundaries
+
+**Files:** Create tests/beta/account-offboarding-preservation-postgres.ts; tests/beta/account-offboarding-session-http.ts; audits/phase5-scoped-offboarding-completion-20261001.md. Modify PRODUCT.md, docs/CODEX.md, docs/worklogs/LEAD_DECISION_LOG.md and this plan's completion checkboxes only with verified evidence.
+
+**Interfaces:** Consumes all previous contracts, enforcement manifest and A01–A40/P01–P15. Produces auditable case-to-test report, verified checkpoints and release instructions; no production rollout.
+
+- [ ] Seed synthetic isolated fixtures for two tenants, multiple projects, combined roles, archived work, drafts, attachments and every live-duty family. Extend existing tests/beta/survey-staffing-safety-postgres.ts harness conventions. Require SWR_TEAM_POSTGRES=1 and verify DATABASE_URL hostname127.0.0.1, port15489, database swr_team_isolated before any SQL; refuse other targets. Never use retained Sabine fixtures.
+- [ ] Run each new PostgreSQL script with pnpm exec tsx tests/beta/<exact-file>.ts: account-offboarding-postgres, account-offboarding-concurrency-postgres, project-administration-parity-postgres, account-offboarding-preservation-postgres. Assert rollback injection, conflicting versions and two-client races, not only serial happy paths.
+- [ ] Run pnpm exec tsx tests/beta/account-offboarding-session-http.ts and account-offboarding-browser.ts against the isolated application; prove old tokens fail all protected route families after commit, new local sign-in accesses other projects, failed reset/invite never restores access, and authorship/content/file hashes remain identical.
+- [ ] Run incumbent protected-obligation, staffing, reviewer, Area-unlink, workforce and draft-recovery SQL/HTTP/browser suites implicated by the manifest. Record exact commands/counts and do not report skipped database/browser checks as success. Audit newly created memberships/grants against all A/P matrix assertions.
+- [ ] Run pnpm test, pnpm tsc --noEmit --incremental false, pnpm build and git diff --check. Resolve all failures and every uncategorized enforcement path before claiming complete.
+- [ ] Obtain the preserved independent read-only review of the whole verified change; resolve material findings. Record scope, test evidence, remaining limitations and commit range before ordinary phase5 checkpoint push/fetch verification.
+- [ ] Document migration preflight/backup and compatible build deployment order, worker restart/queue recovery, postrelease disable/sign-in checks and monitoring. No down migration deleting events/reviews. Rollback must keep the access-aware build/schema; never restore old binaries that ignore project access stamps. Re-enable a user only through a future approved reactivation contract, never a rollback shortcut.
+- [ ] Update documentation from direction to actual shipped behavior only after all acceptance passes. No production/Sabine execution is authorized here. Commit: docs: record scoped offboarding acceptance and release boundary.
+
+## Planning self-review and execution gate
+
+All eight exclusive permission families plus discovery have a task: member/whitelist/archive, project company association, template selection, independent admin assignment, scoped diagnostics and discovery are Tasks2/5/6; new-project creation, tenant roles, shared company/template mutation remain explicitly tenant-scoped. Absent permission domains remain absent.
+
+All40 offboarding and15 parity/stacking cases are mapped above and must receive executable case identifiers in the acceptance report. Shared types have one owner. All five review-focus failures have named tests and PostgreSQL/browser proof where needed. The manifest is an implementation deliverable with a fail-closed completeness gate, not permission to omit indirect SQL consumers.
+
+Current checks certify only the unchanged baseline: 441 tests passed; nonincremental TypeScript passed. No new endpoint, migration, SQL race or browser acceptance has run. This plan and associated approval record are documentation only.
+
+The owner approved this implementation plan after remote review of its full seven-task scope (Decision34). Native execution is underway; Task1 storage has28 passing isolated PostgreSQL checks, full441 tests and nonincremental TypeScript. Tasks2–7 remain incomplete. No production rollout is authorized.
