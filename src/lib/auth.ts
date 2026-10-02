@@ -35,18 +35,23 @@ export interface AuthContext {
 function getSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is required');
+  if (process.env.NODE_ENV === 'production' &&
+      (Buffer.byteLength(secret, 'utf8') < 32 || /replace[-_ ]?with|change[-_ ]?me|placeholder|example|test[-_ ]?secret/i.test(secret))) {
+    throw new Error('JWT_SECRET must be a production secret of at least 32 bytes, not a placeholder');
+  }
   return secret;
 }
 
 export function signToken(userId: UUID, tenantId: UUID, sessionVersion = 1): string {
   return jwt.sign({ sub: userId, tenantId, sv: sessionVersion }, getSecret(), {
+    algorithm: 'HS256',
     expiresIn: TOKEN_TTL_SECONDS,
     jwtid: randomUUID(),
   });
 }
 
 function verifyToken(token: string): AuthContext {
-  const payload = jwt.verify(token, getSecret()) as RawJwtPayload;
+  const payload = jwt.verify(token, getSecret(), { algorithms: ['HS256'] }) as RawJwtPayload;
   if (typeof payload.sv !== 'number' || !Number.isFinite(payload.sv)) {
     throw new UnauthorizedError('Session is no longer valid', 'AUTH_SESSION_REVOKED');
   }
@@ -77,6 +82,7 @@ export async function requireActiveAuth(req: NextRequest, db: DbClient = pool): 
   if (!rows[0] || rows[0].revoked) {
     throw new UnauthorizedError('Session is no longer valid', 'AUTH_SESSION_REVOKED');
   }
+  await assertActiveSession(db, auth);
   return auth;
 }
 
@@ -104,6 +110,7 @@ export function requireAuth(req: NextRequest): AuthContext {
  * Routes should call this for any protected operation where immediate revocation matters.
  */
 export async function assertActiveSession(db: DbClient, auth: AuthContext): Promise<void> {
+  if(auth.expiresAt&&auth.expiresAt.getTime()<=Date.now())throw new UnauthorizedError('Session expired','AUTH_SESSION_REVOKED');
   const { rows } = await db.query<{
     session_version: number;
     deactivated_at: Date | null;

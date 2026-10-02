@@ -342,7 +342,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
     const url = `http://localhost/api/tickets/${currentTicket.id}/assign`;
     const body = {
       assignedPartyChiefId: 'pc-2',
-      assignedInstrumentManId: null,
+      assignedInstrumentManId: 'im-2',
     };
 
     const first = await assignTicketRoute(

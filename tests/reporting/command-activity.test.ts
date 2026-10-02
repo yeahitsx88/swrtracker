@@ -22,7 +22,7 @@ test('command activity defaults to 30 UTC days and queries aggregate rows only',
   let calls = 0;
   const result = await getCommandActivity(new PostgresCommandActivityReader(), db((sql, params) => {
     calls++;
-    assert.deepEqual(params, ['tenant', 'project', '2026-09-01', '2026-09-30']);
+    assert.deepEqual(params, ['tenant', 'project', '2026-09-01', '2026-09-30', 'manager']);
     assert.ok(sql.includes("t.tenant_id=$1 AND t.project_id=$2 AND t.status<>'DRAFT'"));
     assert.ok(sql.includes('FROM authorized t WHERE TRUE'));
     assert.ok(sql.includes("AT TIME ZONE 'UTC'"));
@@ -63,7 +63,7 @@ test('command filters narrow the authorized dataset with bound values', () => {
     areaId: 'area-unsafe-quote', ticketType: 'TOPO', crewId: 'chief-unsafe-quote', status: 'COMPLETED',
   } }, '2026-09-01', '2026-09-30');
   assert.ok(query.sql.indexOf('WITH authorized') < query.sql.indexOf('narrowed AS MATERIALIZED'));
-  assert.ok(query.sql.includes('FROM authorized t WHERE t.aor_node_id = $5 AND t.ticket_type = $6 AND t.status = $7 AND t.assigned_party_chief_id = $8'));
-  assert.deepEqual(query.params.slice(4), ['area-unsafe-quote', 'TOPO', 'COMPLETED', 'chief-unsafe-quote']);
+  assert.ok(query.sql.includes('FROM authorized t WHERE t.aor_node_id = $6 AND t.ticket_type = $7 AND t.status = $8 AND t.assigned_party_chief_id = $9'));
+  assert.deepEqual(query.params.slice(4), ['manager', 'area-unsafe-quote', 'TOPO', 'COMPLETED', 'chief-unsafe-quote']);
   assert.ok(!query.sql.includes('unsafe-quote'));
 });

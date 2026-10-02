@@ -38,6 +38,9 @@ export async function assignTicket(
     throw new ConflictError('Assignments may only change on approved or active work');
   }
 
+  if (ticket.status !== 'APPROVED' && !params.assignedInstrumentManId) {
+    throw new ConflictError('Active field work requires an Instrument Man; return or cancel through the workflow before clearing the crew');
+  }
   const surveyActor = params.actorRole === 'SURVEY_MANAGER' || params.actorRole === 'SURVEY_SUPERINTENDENT';
   const assignedPartyChiefActor = params.actorRole === 'PARTY_CHIEF' && ticket.assignedPartyChiefId === params.actorId;
   if (!surveyActor && !assignedPartyChiefActor) {

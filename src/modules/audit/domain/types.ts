@@ -28,6 +28,7 @@ export type AuditEventType =
   | 'ticket.assigned'
   | 'ticket.party_chief_assigned'
   | 'ticket.unassigned'
+  | 'workflow.orphan_escalation'
   | 'ticket.in_progress'
   | 'ticket.pending_pc_approval'
   | 'ticket.pc_approval_given'

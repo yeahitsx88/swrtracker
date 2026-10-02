@@ -5,3 +5,8 @@ allowBuilds:
   bcrypt: true
   esbuild: true
   sharp: true
+
+# Next15 pins an older PostCSS; keep its build dependency on the patched line.
+overrides:
+  next>postcss: 8.5.28
+  next>sharp: 0.35.5

@@ -193,9 +193,9 @@ test('TicketRepository.list scopes DEPARTMENT_MANAGER to its department only', a
   assert.equal(queries.length, 2);
   assert.match(queries[0]?.sql ?? '', /t\.department_id = \$3/);
   assert.doesNotMatch(queries[0]?.sql ?? '', /t\.aor_node_id IN/);
-  assert.deepEqual(queries[0]?.params, [tenantId, projectId, departmentId]);
+  assert.deepEqual(queries[0]?.params, [tenantId, projectId, departmentId, actorId]);
   assert.match(queries[1]?.sql ?? '', /t\.department_id = \$3/);
-  assert.deepEqual(queries[1]?.params, [tenantId, projectId, departmentId, 25, 0]);
+  assert.deepEqual(queries[1]?.params, [tenantId, projectId, departmentId, actorId, 25, 0]);
 });
 
 test('TicketRepository.list scopes DEPARTMENT_LEAD to its department and assigned AOR nodes', async () => {
@@ -231,10 +231,10 @@ test('TicketRepository.list scopes DEPARTMENT_LEAD to its department and assigne
   assert.equal(queries.length, 2);
   assert.match(queries[0]?.sql ?? '', /t\.department_id = \$3/);
   assert.match(queries[0]?.sql ?? '', /t\.aor_node_id IN \(\$4, \$5\)/);
-  assert.deepEqual(queries[0]?.params, [tenantId, projectId, departmentId, 'aor-node-1', 'aor-node-2']);
+  assert.deepEqual(queries[0]?.params, [tenantId, projectId, departmentId, 'aor-node-1', 'aor-node-2', actorId]);
   assert.match(queries[1]?.sql ?? '', /t\.department_id = \$3/);
   assert.match(queries[1]?.sql ?? '', /t\.aor_node_id IN \(\$4, \$5\)/);
-  assert.deepEqual(queries[1]?.params, [tenantId, projectId, departmentId, 'aor-node-1', 'aor-node-2', 25, 0]);
+  assert.deepEqual(queries[1]?.params, [tenantId, projectId, departmentId, 'aor-node-1', 'aor-node-2', actorId, 25, 0]);
 });
 
 test('TicketRepository.list returns no rows for DEPARTMENT_LEAD without AOR scope', async () => {

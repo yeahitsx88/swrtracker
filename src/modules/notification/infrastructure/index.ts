@@ -197,18 +197,18 @@ export class NotificationRepository implements INotificationRepository {
          COALESCE(t.row_version, 0) AS row_version,
          COALESCE(
            LEAST(
-             COALESCE(pc.deactivated_at, 'infinity'::timestamptz),
-             COALESCE(im.deactivated_at, 'infinity'::timestamptz),
-             COALESCE(sl.deactivated_at, 'infinity'::timestamptz)
+             COALESCE(pc.deactivated_at, pc_membership.access_disabled_at, t.updated_at),
+             COALESCE(im.deactivated_at, im_membership.access_disabled_at, t.updated_at),
+             COALESCE(sl.deactivated_at, sl_membership.access_disabled_at, t.updated_at)
            ),
            t.updated_at
          ) AS orphaned_at,
          t.assigned_party_chief_id,
          t.assigned_instrument_man_id,
          t.survey_lead_id,
-         (t.assigned_party_chief_id IS NOT NULL AND pc.deactivated_at IS NOT NULL) AS assigned_party_chief_orphaned,
-         (t.assigned_instrument_man_id IS NOT NULL AND im.deactivated_at IS NOT NULL) AS assigned_instrument_man_orphaned,
-         (t.survey_lead_id IS NOT NULL AND sl.deactivated_at IS NOT NULL) AS survey_lead_orphaned,
+         (t.assigned_party_chief_id IS NOT NULL AND (pc.id IS NULL OR pc.deactivated_at IS NOT NULL OR pc_membership.id IS NULL OR pc_membership.access_disabled_at IS NOT NULL)) AS assigned_party_chief_orphaned,
+         (t.assigned_instrument_man_id IS NOT NULL AND (im.id IS NULL OR im.deactivated_at IS NOT NULL OR im_membership.id IS NULL OR im_membership.access_disabled_at IS NOT NULL)) AS assigned_instrument_man_orphaned,
+         (t.survey_lead_id IS NOT NULL AND (sl.id IS NULL OR sl.deactivated_at IS NOT NULL OR sl_membership.id IS NULL OR sl_membership.access_disabled_at IS NOT NULL)) AS survey_lead_orphaned,
          fallback_admin.user_id AS fallback_project_admin_id,
          COALESCE(escalation_recipients.recipients, '[]'::jsonb) AS escalation_recipients,
          EXISTS (
@@ -216,7 +216,7 @@ export class NotificationRepository implements INotificationRepository {
            FROM ticket_events te
            WHERE te.ticket_id = t.id
              AND te.tenant_id = t.tenant_id
-             AND te.event_type = 'ticket.unassigned'
+             AND te.event_type = 'workflow.orphan_escalation'
          ) AS has_escalation_signal
        FROM tickets t
        JOIN projects p
@@ -231,6 +231,12 @@ export class NotificationRepository implements INotificationRepository {
        LEFT JOIN users sl
          ON sl.id = t.survey_lead_id
         AND sl.tenant_id = t.tenant_id
+       LEFT JOIN project_memberships pc_membership
+         ON pc_membership.project_id=t.project_id AND pc_membership.user_id=t.assigned_party_chief_id
+       LEFT JOIN project_memberships im_membership
+         ON im_membership.project_id=t.project_id AND im_membership.user_id=t.assigned_instrument_man_id
+       LEFT JOIN project_memberships sl_membership
+         ON sl_membership.project_id=t.project_id AND sl_membership.user_id=t.survey_lead_id
        LEFT JOIN LATERAL (
          SELECT pm.user_id
          FROM project_memberships pm
@@ -270,11 +276,11 @@ export class NotificationRepository implements INotificationRepository {
          ) AS recipients
        ) AS escalation_recipients ON TRUE
        WHERE p.status = 'ACTIVE'
-         AND t.status IN ('ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'DELAYED')
+         AND t.status IN ('ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'PENDING_FIELD_VALIDATION', 'DELAYED')
          AND (
-           (t.assigned_party_chief_id IS NOT NULL AND pc.deactivated_at IS NOT NULL) OR
-           (t.assigned_instrument_man_id IS NOT NULL AND im.deactivated_at IS NOT NULL) OR
-           (t.survey_lead_id IS NOT NULL AND sl.deactivated_at IS NOT NULL)
+           (t.assigned_party_chief_id IS NOT NULL AND (pc.id IS NULL OR pc.deactivated_at IS NOT NULL OR pc_membership.id IS NULL OR pc_membership.access_disabled_at IS NOT NULL)) OR
+           (t.assigned_instrument_man_id IS NOT NULL AND (im.id IS NULL OR im.deactivated_at IS NOT NULL OR im_membership.id IS NULL OR im_membership.access_disabled_at IS NOT NULL)) OR
+           (t.survey_lead_id IS NOT NULL AND (sl.id IS NULL OR sl.deactivated_at IS NOT NULL OR sl_membership.id IS NULL OR sl_membership.access_disabled_at IS NOT NULL))
          )`,
     );
 
@@ -309,38 +315,10 @@ export class NotificationRepository implements INotificationRepository {
       surveyLeadOrphaned: boolean;
     },
   ): Promise<boolean> {
-    const { rows } = await db.query<{ id: UUID }>(
-      `UPDATE tickets
-       SET assigned_party_chief_id = CASE
-             WHEN $4::boolean THEN $1
-             ELSE assigned_party_chief_id
-           END,
-           assigned_instrument_man_id = CASE
-             WHEN $5::boolean THEN NULL
-             ELSE assigned_instrument_man_id
-           END,
-           survey_lead_id = CASE
-             WHEN $4::boolean OR $6::boolean THEN $1
-             ELSE survey_lead_id
-           END,
-           row_version = COALESCE(row_version, 0) + 1,
-           updated_at = NOW()
-       WHERE tenant_id = $2
-         AND id = $3
-         AND COALESCE(row_version, 0) = $7
-       RETURNING id`,
-      [
-        params.fallbackProjectAdminId,
-        params.tenantId,
-        params.ticketId,
-        params.assignedPartyChiefOrphaned,
-        params.assignedInstrumentManOrphaned,
-        params.surveyLeadOrphaned,
-        params.expectedRowVersion,
-      ],
-    );
-
-    return !!rows[0];
+    // Retained internal signature for worker integrations; never changes duties.
+    void db;
+    void params;
+    throw new Error('Automatic orphan reassignment is retired; use authorized Survey reassignment');
   }
 }
 

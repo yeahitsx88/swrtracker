@@ -28,3 +28,6 @@ Thumbs.db
 
 # Local acceptance logs and captures
 .local/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo

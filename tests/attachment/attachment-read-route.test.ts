@@ -390,3 +390,24 @@ test('attachment upload handler refuses an over-limit request before multipart p
   assert.equal(calls.writes, 0);
   assert.deepEqual(calls.removed, []);
 });
+
+test('Unicode filenames download with RFC8187 headers and invalid headers never record success',async()=>{
+ for(const filename of ['Survey – Plan.pdf','café.pdf','測量図.pdf']){
+  let events=0;
+  const deps:TicketAttachmentDownloadDeps={
+   getTicketRouteContext:makeDeps().getTicketRouteContext,createTicketRepo:()=>makeTicketRepo(),
+   findAttachment:async()=>({id:'86000000-0000-4000-8000-000000000001',ticket_id:ticketId,tenant_id:tenantId,uploaded_by:actorId,filename,mime_type:'application/pdf',storage_key:'synthetic-file',size_bytes:3,purpose:'REQUEST_INSTRUCTION',return_cycle:0,content_sha256:'a'.repeat(64),created_at:new Date()}),
+   createStorage:()=>({read:async()=>Buffer.from('pdf')}),
+   withTransaction:async fn=>fn({query:async()=>{events++;return{rows:[]};}}),
+  };
+  const params={params:Promise.resolve({ticketId,attachmentId:'86000000-0000-4000-8000-000000000001'})};
+  const response=await handleDownloadTicketAttachment(makeRequest(),params,deps);
+  assert.equal(response.status,200);
+  assert.ok(response.headers.get('content-disposition')!.includes("filename*=UTF-8''"+encodeURIComponent(filename)));
+  assert.equal(await response.text(),'pdf');assert.equal(events,1);
+  events=0;const find=deps.findAttachment;
+  deps.findAttachment=async(...args)=>({...(await find(...args))!,mime_type:'invalid\nheader'});
+  const invalid=await handleDownloadTicketAttachment(makeRequest(),params,deps);
+  assert.equal(invalid.status,500);assert.equal(events,0);
+ }
+});

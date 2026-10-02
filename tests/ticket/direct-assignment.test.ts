@@ -83,7 +83,7 @@ test('createDirectAssignmentTicket creates a direct-assignment ticket in ASSIGNE
   assert.equal(ticket.status, 'ASSIGNED');
   assert.equal(ticket.ticketNumber, 'FSS-U1-00042');
   assert.equal(ticket.departmentId, departmentId);
-  assert.equal(ticket.priority, 'MED_HIGH');
+  assert.equal(ticket.priority, 'NORMAL');
   assert.equal(ticket.assignedPartyChiefId, 'pc-1');
   assert.equal(ticket.assignedInstrumentManId, 'im-1');
   assert.equal(ticket.surveyLeadId, actorId);
@@ -97,7 +97,7 @@ test('createDirectAssignmentTicket creates a direct-assignment ticket in ASSIGNE
   );
 });
 
-test('createDirectAssignmentTicket accepts manual department fallback and whitelist override', async () => {
+test('createDirectAssignmentTicket accepts manual department fallback without obsolete whitelist priority', async () => {
   const dbCalls: Array<{ sql: string; params?: unknown[] }> = [];
   const repo = makeRepo({
     isEmailWhitelisted: async () => true,
@@ -127,11 +127,11 @@ test('createDirectAssignmentTicket accepts manual department fallback and whitel
   });
 
   assert.equal(ticket.departmentId, departmentId);
-  assert.equal(ticket.priority, 'HIGH');
+  assert.equal(ticket.priority, 'NORMAL');
   assert.equal(ticket.ticketNumber, 'FSS-U1-00007');
   assert.deepEqual(
     dbCalls.slice(1).map((call) => call.params?.[4] as string),
-    ['ticket.created', 'ticket.assigned', 'ticket.priority_set_by_whitelist'],
+    ['ticket.created', 'ticket.assigned'],
   );
 });
 
@@ -184,4 +184,19 @@ test('createDirectAssignmentTicket allows direct IM assignment without a Party C
     });
   assert.equal(ticket.assignedPartyChiefId, null);
   assert.equal(ticket.assignedInstrumentManId, 'im-1');
+});
+
+test('direct assignment denies a requester without effective Requester membership before numbering or writes', async () => {
+  let writes=0;
+  const repo=makeRepo({
+    isActiveProjectMemberWithRole:async(_db,_tenant,_project,user,roles)=>user!==requesterId || !roles.includes('REQUESTER'),
+    nextSequence:async()=>{writes++;return 1;},
+    save:async()=>{writes++;},
+  });
+  await assert.rejects(()=>createDirectAssignmentTicket(repo,{query:async()=>({rows:[]})},{
+    tenantId,projectId,aorNodeId:'aor-node-1' as UUID,requesterId,actorId,
+    actorRole:'SURVEY_MANAGER',assignedPartyChiefId:null,assignedInstrumentManId:'im-1' as UUID,
+    departmentId,ticketType:'LAYOUT',craft:'Civil',description:'Work',requestedDate:new Date(),
+  }),ForbiddenError);
+  assert.equal(writes,0);
 });

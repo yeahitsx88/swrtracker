@@ -110,7 +110,7 @@ export interface ApproverTimeoutDispatchSummary {
 
 const APPROVER_TIMEOUT_WARNING_HOURS = 18;
 const APPROVER_TIMEOUT_UNLOCKED_HOURS = 24;
-const ORPHAN_REASSIGNMENT_SLA_HOURS = 4;
+const ORPHAN_ESCALATION_SLA_HOURS = 4;
 
 const VACANCY_ESCALATION_HOURS: Record<VacancyEscalationRole, number> = {
   SURVEY_MANAGER: 24,
@@ -286,45 +286,9 @@ export async function dispatchOrphanWorkflowRecovery(
   };
 
   for (const candidate of candidates) {
-    if (candidate.fallbackProjectAdminId) {
-      const reassigned = await repo.reassignOrphanWorkflowTicket(db, {
-        tenantId: candidate.tenantId,
-        ticketId: candidate.ticketId,
-        expectedRowVersion: candidate.rowVersion,
-        fallbackProjectAdminId: candidate.fallbackProjectAdminId,
-        assignedPartyChiefOrphaned: candidate.assignedPartyChiefOrphaned,
-        assignedInstrumentManOrphaned: candidate.assignedInstrumentManOrphaned,
-        surveyLeadOrphaned: candidate.surveyLeadOrphaned,
-      });
-
-      if (!reassigned) {
-        continue;
-      }
-
-      await appendAuditEvent(db, {
-        ticketId: candidate.ticketId,
-        tenantId: candidate.tenantId,
-        actorId: params.actorId,
-        eventType: 'ticket.assigned',
-        payload: {
-          reason: 'OFFBOARDING_ORPHAN_RECOVERY',
-          fallbackProjectAdminId: candidate.fallbackProjectAdminId,
-          previousAssignedPartyChiefId: candidate.assignedPartyChiefId,
-          previousAssignedInstrumentManId: candidate.assignedInstrumentManId,
-          previousSurveyLeadId: candidate.surveyLeadId,
-          assignedPartyChiefOrphaned: candidate.assignedPartyChiefOrphaned,
-          assignedInstrumentManOrphaned: candidate.assignedInstrumentManOrphaned,
-          surveyLeadOrphaned: candidate.surveyLeadOrphaned,
-        },
-      });
-
-      summary.reassignedCount += 1;
-      continue;
-    }
-
     summary.unresolvedCount += 1;
     const hoursElapsed = getElapsedHours(now, candidate.orphanedAt);
-    if (hoursElapsed < ORPHAN_REASSIGNMENT_SLA_HOURS || candidate.hasEscalationSignal) {
+    if (hoursElapsed < ORPHAN_ESCALATION_SLA_HOURS || candidate.hasEscalationSignal) {
       continue;
     }
 
@@ -340,12 +304,12 @@ export async function dispatchOrphanWorkflowRecovery(
       ticketId: candidate.ticketId,
       recipients,
       subject: `Orphaned workflow escalation for ${describeTicket(candidate)}`,
-      body: `${describeTicket(candidate)} remains orphaned for ${hoursElapsed} hours with no active project-admin fallback.`,
+      body: `${describeTicket(candidate)} remains orphaned for ${hoursElapsed} hours and requires an authorized Survey reassignment.`,
       metadata: {
         ticketId: candidate.ticketId,
         ticketNumber: candidate.ticketNumber,
         hoursElapsed,
-        slaHours: ORPHAN_REASSIGNMENT_SLA_HOURS,
+        slaHours: ORPHAN_ESCALATION_SLA_HOURS,
       },
     });
 
@@ -353,7 +317,7 @@ export async function dispatchOrphanWorkflowRecovery(
       ticketId: candidate.ticketId,
       tenantId: candidate.tenantId,
       actorId: params.actorId,
-      eventType: 'ticket.unassigned',
+      eventType: 'workflow.orphan_escalation',
       payload: {
         reason: 'OFFBOARDING_ORPHAN_ESCALATION',
         hoursElapsed,
@@ -375,7 +339,7 @@ function dedupeRecipients(recipients: NotificationRecipient[]): NotificationReci
   const deduped: NotificationRecipient[] = [];
 
   for (const recipient of recipients) {
-    const key = `${recipient.userId}:${recipient.email.toLowerCase()}`;
+    const key = recipient.userId;
     if (seen.has(key)) {
       continue;
     }

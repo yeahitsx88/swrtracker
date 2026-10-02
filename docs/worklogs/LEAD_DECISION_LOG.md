@@ -228,3 +228,9 @@
 - Approval: execute docs/superpowers/plans/2026-10-01-scoped-account-offboarding.md, retaining Native execution, independent final read-only review and ordinary verified phase5 checkpoints.
 - Scope: independent admin/access storage, combined authority and all access consumers, lifecycle writer/session integration, separate local/tenant offboarding, durable Central IT review, project administrative parity, UI and integrated acceptance.
 - Limits: no production deployment/Sabine mutation, reactivation, emergency bypass, SSO, purge or billing changes. No repeated approval requests between approved tasks.
+### Decision 35 - review reconciliation and direct correction fresh review
+- Provenance: owner requested reading docs/PHASE5_REVIEW_BRIEF_20261001.md from phase5-261001-review, assessing/reconciling each recommendation, then continuing Phase5 development.
+- Source: review commit1b9b61aabda4a20a85e01584446da1524016502e, baseline92e5b45; newer approved checkpoints030a654/917f2b7 and Decisions32–34 take precedence.
+- Owner explicitly selected “Fresh Survey review and approval” after direct-assignment return/resubmission. Preserve durable record/reference/history; no direct reassign bypass.
+- Reconciliation: docs/PHASE5_REVIEW_RECONCILIATION_20261001.md records every A–D finding and standard-practice recommendation, bounded corrections, existing lifecycle integrations, pilot gates and remaining owner decisions. Generic recommendations do not override stacked independent actors, no auto reassignment/expiry, retention deferral or reactivation exclusion.
+- Continue Native approved development after reconciling the review. No production/Sabine deployment, external services, purge or retained data repair inferred.

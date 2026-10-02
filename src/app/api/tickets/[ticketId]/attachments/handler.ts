@@ -273,6 +273,20 @@ export async function handleDownloadTicketAttachment(
     const attachment = await deps.findAttachment(ctx.tenantId, ctx.ticketId, attachmentId);
     if (!attachment) throw new NotFoundError('Attachment not found');
     const bytes = await deps.createStorage().read(attachment.storage_key);
+    // Build a valid response before persisting a successful download audit.
+    const normalizedFilename=Buffer.from(attachment.filename,'utf8').toString('utf8');
+    const fallback=normalizedFilename.replace(/[^\x20-\x7e]|["\\]/g,'_');
+    const encoded=encodeURIComponent(normalizedFilename).replace(/['()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase());
+    const response=new NextResponse(new Uint8Array(bytes), {
+      status: 200,
+      headers: {
+        'Content-Type': attachment.mime_type,
+        'Content-Length': String(bytes.byteLength),
+        'Content-Disposition': 'attachment; filename="'+fallback+'"; filename*=UTF-8\'\''+encoded,
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'private, no-store',
+      },
+    });
     await deps.withTransaction((db) => appendAuditEvent(db, {
       ticketId: ctx.ticketId,
       tenantId: ctx.tenantId,
@@ -280,17 +294,7 @@ export async function handleDownloadTicketAttachment(
       eventType: 'attachment.downloaded',
       payload: { attachmentId, filename: attachment.filename, contentSha256: attachment.content_sha256 },
     }));
-    const safeFilename = attachment.filename.replace(/[\r\n"\\]/g, '_');
-    return new NextResponse(new Uint8Array(bytes), {
-      status: 200,
-      headers: {
-        'Content-Type': attachment.mime_type,
-        'Content-Length': String(bytes.byteLength),
-        'Content-Disposition': `attachment; filename="${safeFilename}"`,
-        'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': 'private, no-store',
-      },
-    });
+    return response;
   } catch (err) {
     return errorResponse(err);
   }

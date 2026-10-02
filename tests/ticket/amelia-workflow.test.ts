@@ -316,3 +316,43 @@ test('Survey Lead can revise priority independently with an audit reason', async
     reason: 'Requester change',
   }), ForbiddenError);
 });
+
+test('active field work cannot be stranded by removing its Instrument Man', async () => {
+  for (const status of ['ASSIGNED','IN_PROGRESS','DELAYED'] as const) {
+    const h=harness(ticket({status,assignedPartyChiefId:pcId,assignedInstrumentManId:imId}));
+    await assert.rejects(()=>assignTicket(h.repo,h.db,{
+      tenantId,ticketId,actorId:managerId,actorRole:'SURVEY_MANAGER',
+      assignedPartyChiefId:pcId,assignedInstrumentManId:null,surveyLeadId:managerId,
+    }), {type:'ConflictError'});
+    assert.equal(h.current().assignedInstrumentManId,imId);
+    assert.equal(h.queries.length,0);
+  }
+});
+test('a returned direct SWR keeps its identity and history while passing fresh Survey review before reassignment',async()=>{
+  const h=harness(ticket({workflowVariant:'DIRECT_ASSIGNMENT',status:'RETURNED_FOR_CORRECTION',
+    ticketNumber:'FSS-A1-00001',returnCycle:1,priority:'MED_HIGH',prioritySetBy:managerId,
+    prioritySetReason:'Survey sequencing'}));
+  const before={id:h.current().id,number:h.current().ticketNumber,submitted:h.current().firstSubmittedAt};
+  const query=h.db.query;
+  h.db.query=async<T extends object>(sql:string,params?:unknown[])=>{
+    if(sql.includes('SELECT role')&&sql.includes('FROM project_memberships'))return {rows:[{role:'SURVEY_MANAGER'}] as T[]};
+    return query<T>(sql,params);
+  };
+  await submitTicket(h.repo,h.db,{tenantId,ticketId,actorId:requesterId,actorRole:'REQUESTER'});
+  assert.equal(h.current().status,'SUBMITTED');
+  await assert.rejects(()=>assignTicket(h.repo,h.db,{tenantId,ticketId,actorId:managerId,
+    actorRole:'SURVEY_MANAGER',assignedPartyChiefId:null,assignedInstrumentManId:imId,surveyLeadId:managerId}),{type:'ConflictError'});
+  await approveTicket(h.repo,h.db,{tenantId,ticketId,actorId:managerId,actorRole:'SURVEY_MANAGER'});
+  assert.equal(h.current().status,'APPROVED');
+  await assignTicket(h.repo,h.db,{tenantId,ticketId,actorId:managerId,
+    actorRole:'SURVEY_MANAGER',assignedPartyChiefId:null,assignedInstrumentManId:imId,surveyLeadId:managerId});
+  assert.equal(h.current().status,'ASSIGNED');
+  assert.equal(h.current().id,before.id);
+  assert.equal(h.current().ticketNumber,before.number);
+  assert.equal(h.current().firstSubmittedAt,before.submitted);
+  assert.equal(h.current().workflowVariant,'DIRECT_ASSIGNMENT');
+  assert.equal(h.current().priority,'MED_HIGH');
+  assert.equal(h.sequenceCalls(),0);
+  assert.deepEqual(h.queries.filter(q=>q.sql.includes('INSERT INTO ticket_events')).map(q=>q.params?.[4]),
+    ['ticket.resubmitted','ticket.approved','ticket.assigned']);
+});

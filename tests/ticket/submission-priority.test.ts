@@ -81,7 +81,7 @@ function makeRepo(overrides?: Partial<ITicketRepository>): ITicketRepository {
   };
 }
 
-test('submitTicket derives department and default priority from department membership and title', async () => {
+test('submitTicket derives department but leaves initial sequencing neutral regardless of title', async () => {
   const patchCalls: Array<Record<string, unknown>> = [];
   const dbCalls: Array<{ sql: string; params?: unknown[] }> = [];
   let departmentLookupCalls = 0;
@@ -116,9 +116,9 @@ test('submitTicket derives department and default priority from department membe
   });
 
   assert.equal(result.departmentId, memberDepartmentId);
-  assert.equal(result.priority, 'MED_HIGH');
+  assert.equal(result.priority, 'NORMAL');
   assert.equal(patchCalls[0]?.departmentId, memberDepartmentId);
-  assert.equal(patchCalls[0]?.priority, 'MED_HIGH');
+  assert.equal(patchCalls[0]?.priority, 'NORMAL');
   assert.equal(departmentLookupCalls, 0);
   assert.equal(dbCalls.length, 3);
   assert.match(dbCalls[0]?.sql ?? '', /FOR UPDATE/);
@@ -152,7 +152,7 @@ test('submitTicket accepts a manual department at submit time when the requester
   assert.equal(patchCalls[0]?.priority, 'NORMAL');
 });
 
-test('submitTicket overrides derived priority to HIGH when the requester email is whitelisted', async () => {
+test('submitTicket does not use an obsolete whitelist to set Survey sequencing', async () => {
   const patchCalls: Array<Record<string, unknown>> = [];
   const dbCalls: Array<{ sql: string; params?: unknown[] }> = [];
   const repo = makeRepo({
@@ -180,12 +180,29 @@ test('submitTicket overrides derived priority to HIGH when the requester email i
     actorRole: 'REQUESTER',
   });
 
-  assert.equal(result.priority, 'HIGH');
-  assert.equal(patchCalls[0]?.priority, 'HIGH');
-  assert.equal(dbCalls.length, 4);
+  assert.equal(result.priority, 'NORMAL');
+  assert.equal(patchCalls[0]?.priority, 'NORMAL');
+  assert.equal(dbCalls.length, 3);
   assert.deepEqual(
-    dbCalls.slice(1, 3).map((call) => call.params?.[4] as string),
-    ['ticket.submitted', 'ticket.priority_set_by_whitelist'],
+    dbCalls.slice(1, 2).map((call) => call.params?.[4] as string),
+    ['ticket.submitted'],
   );
-  assert.match(dbCalls[3]?.sql ?? '', /notification_outbox/);
+  assert.match(dbCalls[2]?.sql ?? '', /notification_outbox/);
+});
+
+test('resubmission preserves the recorded Survey priority and provenance despite title and whitelist',async()=>{
+  const original=makeDraftTicket({status:'RETURNED_FOR_CORRECTION',ticketNumber:'FSS-U1-00012',
+    priority:'MED_HIGH',prioritySetBy:'manager' as UUID,prioritySetReason:'Field sequencing'});
+  const repo=makeRepo({findByIdInternal:async()=>original,
+    isEmailWhitelisted:async()=>true,findRequesterDepartmentMembership:async()=>({
+      departmentId:memberDepartmentId,title:'Engineer'}),
+    findDepartmentTitlePriority:async()=> 'MEDIUM',
+    nextSequence:async()=>{throw new Error('Cannot renumber a correction');},
+  });
+  const result=await submitTicket(repo,{query:async()=>({rows:[]})},{
+    tenantId,ticketId,actorId:requesterId,actorRole:'REQUESTER'});
+  assert.equal(result.priority,'MED_HIGH');
+  assert.equal(result.prioritySetBy,'manager');
+  assert.equal(result.prioritySetReason,'Field sequencing');
+  assert.equal(result.ticketNumber,original.ticketNumber);
 });

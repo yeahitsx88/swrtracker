@@ -1,3 +1,4 @@
+import { parseNeedBy } from '@/lib/requester-intake-input';
 /**
  * POST /api/tickets -- create a ticket
  * GET  /api/tickets?projectId=...&limit=...&offset=... -- list tickets (paginated)
@@ -101,9 +102,9 @@ export async function POST(req: NextRequest) {
       throw new ValidationError('description is required');
     }
 
-    const parsedDate = new Date(requestedDate);
-    if (isNaN(parsedDate.getTime())) {
-      throw new ValidationError('requestedDate is not a valid ISO date');
+    const parsedDate = parseNeedBy(requestedDate);
+    if (!parsedDate) {
+      throw new ValidationError('requestedDate must be a valid calendar date');
     }
 
     const ticketRepo = new TicketRepository();

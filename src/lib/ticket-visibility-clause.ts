@@ -14,10 +14,16 @@ export function assertVisibilityCohort(scope: VisibilityScope, cohort?: 'areaWor
 export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): { sql: string; params: unknown[] } {
   const { actorId, actorRole, projectId, departmentId, aorNodeIds, partyChiefId, companyId, companyType } = scope;
   const isolate = (clause: { sql: string; params: unknown[] }) => {
-    const current = { ...clause, sql: `AND t.draft_deleted_at IS NULL ${clause.sql}` };
+    const hasDraftFence = actorRole === 'REQUESTER' || clause.sql === 'AND 1 = 0';
+    const existingActorIndex = clause.params.indexOf(actorId);
+    const draftActorIndex = baseIdx + (existingActorIndex >= 0 ? existingActorIndex : clause.params.length);
+    const current = {
+      sql: `AND t.draft_deleted_at IS NULL ${clause.sql}` + (hasDraftFence ? '' : ` AND (t.status <> 'DRAFT' OR t.requester_id = $${draftActorIndex})`),
+      params: hasDraftFence || existingActorIndex >= 0 ? clause.params : [...clause.params, actorId],
+    };
     if (companyType !== 'SUBCONTRACTOR') return current;
-    const isolationSql = `AND t.company_id = $${baseIdx + clause.params.length}`;
-    return { sql: `${current.sql} ${isolationSql}`, params: [...clause.params, companyId] };
+    const isolationSql = `AND t.company_id = $${baseIdx + current.params.length}`;
+    return { sql: `${current.sql} ${isolationSql}`, params: [...current.params, companyId] };
   };
   switch (actorRole) {
     case 'SURVEY_MANAGER':

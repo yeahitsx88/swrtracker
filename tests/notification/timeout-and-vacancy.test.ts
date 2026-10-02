@@ -273,7 +273,7 @@ test('dispatchDailyVacancyNotifications does not send before the role threshold 
   assert.equal(sent.length, 0);
 });
 
-test('dispatchOrphanWorkflowRecovery reassigns orphaned tickets to project-admin fallback and appends audit event', async () => {
+test('dispatchOrphanWorkflowRecovery preserves orphaned assignments even when a project admin is available and escalates', async () => {
   const sent: NotificationMessage[] = [];
   const auditEvents: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
   let reassignCalls = 0;
@@ -302,14 +302,14 @@ test('dispatchOrphanWorkflowRecovery reassigns orphaned tickets to project-admin
     },
   );
 
-  assert.equal(reassignCalls, 1);
-  assert.equal(summary.reassignedCount, 1);
-  assert.equal(summary.escalatedCount, 0);
-  assert.equal(summary.unresolvedCount, 0);
-  assert.equal(sent.length, 0);
+  assert.equal(reassignCalls, 0);
+  assert.equal(summary.reassignedCount, 0);
+  assert.equal(summary.escalatedCount, 1);
+  assert.equal(summary.unresolvedCount, 1);
+  assert.equal(sent.length, 1);
   assert.equal(auditEvents.length, 1);
-  assert.equal(auditEvents[0]?.eventType, 'ticket.assigned');
-  assert.equal(auditEvents[0]?.payload.reason, 'OFFBOARDING_ORPHAN_RECOVERY');
+  assert.equal(auditEvents[0]?.eventType, 'workflow.orphan_escalation');
+  assert.equal(auditEvents[0]?.payload.reason, 'OFFBOARDING_ORPHAN_ESCALATION');
 });
 
 test('dispatchOrphanWorkflowRecovery escalates unresolved orphaned tickets after SLA', async () => {
@@ -348,7 +348,7 @@ test('dispatchOrphanWorkflowRecovery escalates unresolved orphaned tickets after
   assert.equal(sent.length, 1);
   assert.equal(sent[0]?.kind, 'workflow.orphan_escalation');
   assert.equal(auditEvents.length, 1);
-  assert.equal(auditEvents[0]?.eventType, 'ticket.unassigned');
+  assert.equal(auditEvents[0]?.eventType, 'workflow.orphan_escalation');
 });
 
 test('dispatchOrphanWorkflowRecovery does not escalate unresolved orphaned tickets before SLA', async () => {

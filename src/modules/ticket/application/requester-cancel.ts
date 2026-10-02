@@ -4,7 +4,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
-import { enqueueRequesterNotification } from './amelia-notifications';
+import { enqueueAssignedFieldNotifications, enqueueRequesterNotification } from './amelia-notifications';
 
 export async function requesterCancel(
   repo: ITicketRepository,
@@ -53,6 +53,15 @@ export async function requesterCancel(
      WHERE tenant_id = $1 AND ticket_id = $2 AND ended_at IS NULL`,
     [params.tenantId, params.ticketId],
   );
+  await enqueueAssignedFieldNotifications(db, {
+    tenantId: params.tenantId,
+    ticketId: params.ticketId,
+    assignedPartyChiefId: ticket.assignedPartyChiefId,
+    assignedInstrumentManId: ticket.assignedInstrumentManId,
+    eventType: 'STOP_WORK_CANCELED',
+    payload: { reason: 'REQUESTER_CANCELED' },
+    idempotencyKey: params.ticketId + ':requester-canceled:stop-work',
+  });
   await enqueueRequesterNotification(db, {
     tenantId: params.tenantId,
     ticketId: params.ticketId,

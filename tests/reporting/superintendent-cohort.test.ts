@@ -40,12 +40,12 @@ test('linked cohort predicate binds each chief to its linked Area and preserves 
   const clause=buildVisibilityClause({...visibility,linkedCrewAssignments:pairs,companyType:'SUBCONTRACTOR'},5);
   assert.ok(clause.sql.includes('t.aor_node_id IN ($5)'));assert.ok(clause.sql.includes('jsonb_to_recordset($6::jsonb)'));
   assert.ok(clause.sql.includes('crew."partyChiefId"=t.assigned_party_chief_id AND crew."areaId"=t.aor_node_id'));
-  assert.ok(clause.sql.includes('AND t.company_id = $7'));
-  assert.deepEqual(clause.params,[area,JSON.stringify(pairs),company]);
+  assert.ok(clause.sql.includes('AND t.company_id = $8'));
+  assert.deepEqual(clause.params,[area,JSON.stringify(pairs),sup,company]);
 });
 test('empty links or missing Areas fail closed; Area-wide requests need no chief assignment',()=>{
   for(const scope of [{...visibility,linkedCrewAssignments:[]},{...visibility,aorNodeIds:[],linkedCrewAssignments:pairs}])assert.equal(buildVisibilityClause(scope,3).sql,'AND t.draft_deleted_at IS NULL AND 1 = 0');
-  const areaWide=buildVisibilityClause(visibility,3);assert.equal(areaWide.sql,'AND t.draft_deleted_at IS NULL AND t.aor_node_id IN ($3)');assert.deepEqual(areaWide.params,[area]);
+  const areaWide=buildVisibilityClause(visibility,3);assert.equal(areaWide.sql,"AND t.draft_deleted_at IS NULL AND t.aor_node_id IN ($3) AND (t.status <> 'DRAFT' OR t.requester_id = $4)");assert.deepEqual(areaWide.params,[area,sup]);
 });
 test('cohort invariant rejects mismatched fences and other roles',()=>{
   assertVisibilityCohort(visibility,'areaWorkload');assertVisibilityCohort({...visibility,linkedCrewAssignments:[]},'linkedCrews');

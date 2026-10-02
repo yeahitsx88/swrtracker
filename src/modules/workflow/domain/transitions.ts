@@ -78,6 +78,9 @@ const STANDARD_APPROVAL_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<Ticke
  */
 const DIRECT_ASSIGNMENT_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
+    // Corrected direct work returns to fresh Survey review without a new SWR.
+    ['SUBMITTED', new Set<TicketStatus>(['APPROVED','RETURNED_FOR_CORRECTION','REQUESTER_CANCELED','SURVEY_CANCELED'])],
+    ['APPROVED', new Set<TicketStatus>(['ASSIGNED','RETURNED_FOR_CORRECTION','REQUESTER_CANCELED','SURVEY_CANCELED'])],
     ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
     ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
     ['PENDING_FIELD_VALIDATION', new Set<TicketStatus>(['RETURNED_FOR_CORRECTION', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],

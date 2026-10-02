@@ -25,7 +25,7 @@ test('review aggregates and page use one scoped SQL statement with bound filters
   assert.equal(calls.length,1);
   const call=calls[0]!;
   assert.match(call.sql,/t.tenant_id=\$1 AND t.project_id=\$2/);
-  assert.match(call.sql,/t.assigned_party_chief_id = \$3 AND t.company_id = \$4/);
+  assert.match(call.sql,/t.assigned_party_chief_id = \$3 AND \(t.status <> 'DRAFT' OR t.requester_id = \$3\) AND t.company_id = \$4/);
   assert.match(call.sql,/FROM authorized t WHERE/);
   assert.match(call.sql,/authorized AS NOT MATERIALIZED/);
   assert.match(call.sql,/FROM filtered t/);

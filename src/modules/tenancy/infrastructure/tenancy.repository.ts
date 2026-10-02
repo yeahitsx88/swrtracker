@@ -1052,12 +1052,13 @@ export class TenancyRepository implements ITenancyRepository {
 
     await this.assertProjectNotArchived(db, membership.tenantId, membership.projectId);
 
-    await db.query(
+    const { rows } = await db.query<{ id: UUID }>(
       `INSERT INTO project_memberships (id, project_id, user_id, role, created_at)
        VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role`,
+       ON CONFLICT (project_id, user_id) DO NOTHING RETURNING id`,
       [membership.id, membership.projectId, membership.userId, membership.role, membership.createdAt],
     );
+    if (!rows[0]) throw new ConflictError('Membership already exists; use the guarded role-change flow');
   }
 
   async bumpUserSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void> {

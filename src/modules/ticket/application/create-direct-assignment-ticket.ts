@@ -63,6 +63,11 @@ export async function createDirectAssignmentTicket(
   if (!repo.isActiveProjectMemberWithRole) {
     throw new Error('Ticket repository does not support assignment eligibility checks');
   }
+  if (!await repo.isActiveProjectMemberWithRole(
+    db, params.tenantId, params.projectId, params.requesterId, ['REQUESTER'],
+  )) {
+    throw new ForbiddenError('Requester must have active Requester membership on this project');
+  }
   if (params.assignedPartyChiefId && !await repo.isActiveProjectMemberWithRole(
     db, params.tenantId, params.projectId, params.assignedPartyChiefId, ['PARTY_CHIEF'],
   )) {
@@ -79,10 +84,6 @@ export async function createDirectAssignmentTicket(
     throw new NotFoundError('AOR node not found');
   }
 
-  const requesterEmail = await repo.findUserEmail(db, params.tenantId, params.requesterId);
-  const isWhitelisted = requesterEmail
-    ? await repo.isEmailWhitelisted(db, params.tenantId, params.projectId, requesterEmail)
-    : false;
   const membership = await repo.findRequesterDepartmentMembership(
     db,
     params.tenantId,
@@ -91,22 +92,11 @@ export async function createDirectAssignmentTicket(
   );
 
   let resolvedDepartmentId: UUID | null = params.departmentId ?? null;
-  let resolvedPriority: Ticket['priority'] = 'NORMAL';
+  const resolvedPriority: Ticket['priority'] = 'NORMAL';
 
   if (membership) {
     resolvedDepartmentId = membership.departmentId;
-    if (membership.title) {
-      const membershipPriority = await repo.findDepartmentTitlePriority(
-        db,
-        params.tenantId,
-        membership.departmentId,
-        membership.title,
-      );
-      if (!membershipPriority) {
-        throw new ValidationError('Assigned department title is not configured for submission');
-      }
-      resolvedPriority = membershipPriority;
-    }
+
   } else {
     if (!resolvedDepartmentId) {
       throw new ValidationError('departmentId is required when requester has no department membership');
@@ -123,9 +113,7 @@ export async function createDirectAssignmentTicket(
     resolvedDepartmentId = department.id;
   }
 
-  if (isWhitelisted) {
-    resolvedPriority = 'HIGH';
-  }
+
 
   const now = new Date();
   const sequence = await repo.nextSequence(db, params.projectId);
@@ -199,16 +187,6 @@ export async function createDirectAssignmentTicket(
       assignedInstrumentManId: params.assignedInstrumentManId,
     },
   });
-
-  if (isWhitelisted && requesterEmail) {
-    await appendAuditEvent(db, {
-      ticketId:  ticket.id,
-      tenantId:  ticket.tenantId,
-      actorId:   params.actorId,
-      eventType: 'ticket.priority_set_by_whitelist',
-      payload:   { requesterEmail },
-    });
-  }
 
   return ticket;
 }

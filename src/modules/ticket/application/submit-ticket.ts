@@ -95,10 +95,6 @@ export async function submitTicket(
   }
   if (!ticketNumber) throw new ConflictError('Returned SWR is missing its durable ticket number');
 
-  const requesterEmail = await repo.findUserEmail(db, params.tenantId, ticket.requesterId);
-  const isWhitelisted = requesterEmail
-    ? await repo.isEmailWhitelisted(db, params.tenantId, ticket.projectId, requesterEmail)
-    : false;
   const membership = await repo.findRequesterDepartmentMembership(
     db,
     params.tenantId,
@@ -107,22 +103,11 @@ export async function submitTicket(
   );
 
   let resolvedDepartmentId: UUID | null = ticket.departmentId;
-  let resolvedPriority: Ticket['priority'] = 'NORMAL';
+  const resolvedPriority: Ticket['priority'] = isResubmission ? ticket.priority : 'NORMAL';
 
   if (membership) {
     resolvedDepartmentId = membership.departmentId;
-    if (membership.title) {
-      const membershipPriority = await repo.findDepartmentTitlePriority(
-        db,
-        params.tenantId,
-        membership.departmentId,
-        membership.title,
-      );
-      if (!membershipPriority) {
-        throw new ValidationError('Assigned department title is not configured for submission');
-      }
-      resolvedPriority = membershipPriority;
-    }
+
   } else {
     const manualDepartmentId = params.departmentId ?? ticket.departmentId;
     const manualDepartment = manualDepartmentId ? await repo.findDepartmentById(
@@ -137,9 +122,7 @@ export async function submitTicket(
     resolvedDepartmentId = manualDepartment?.id ?? null;
   }
 
-  if (isWhitelisted) {
-    resolvedPriority = 'HIGH';
-  }
+
 
   const submittedAt = new Date();
   const firstSubmittedAt = ticket.firstSubmittedAt ?? submittedAt;
@@ -184,15 +167,6 @@ export async function submitTicket(
        WHERE tenant_id = $1 AND ticket_id = $2 AND cycle_number = $4 AND resubmitted_at IS NULL`,
       [params.tenantId, params.ticketId, submittedAt, ticket.returnCycle ?? 0],
     );
-  }
-  if (isWhitelisted && requesterEmail) {
-    await appendAuditEvent(db, {
-      ticketId:  params.ticketId,
-      tenantId:  params.tenantId,
-      actorId:   params.actorId,
-      eventType: 'ticket.priority_set_by_whitelist',
-      payload:   { requesterEmail },
-    });
   }
   await enqueueRequesterNotification(db, {
     tenantId: params.tenantId,

@@ -40,10 +40,10 @@ test('metrics retain requester, crew, Area and department visibility', async () 
     ['REQUESTER', 't.requester_id = $5', ['actor']],
     ['PARTY_CHIEF', 't.assigned_party_chief_id = $5', ['actor']],
     ['INSTRUMENT_MAN', 't.assigned_instrument_man_id = $6 OR (', ['chief', 'actor']],
-    ['SURVEY_SUPERINTENDENT', 't.aor_node_id IN ($5, $6)', ['area', 'child']],
-    ['AREA_VIEWER', 't.aor_node_id IN ($5, $6)', ['area', 'child']],
-    ['DEPARTMENT_MANAGER', 't.department_id = $5', ['department']],
-    ['DEPARTMENT_LEAD', 't.department_id = $5 AND t.aor_node_id IN ($6, $7)', ['department', 'area', 'child']],
+    ['SURVEY_SUPERINTENDENT', 't.aor_node_id IN ($5, $6)', ['area', 'child', 'actor']],
+    ['AREA_VIEWER', 't.aor_node_id IN ($5, $6)', ['area', 'child', 'actor']],
+    ['DEPARTMENT_MANAGER', 't.department_id = $5', ['department', 'actor']],
+    ['DEPARTMENT_LEAD', 't.department_id = $5 AND t.aor_node_id IN ($6, $7)', ['department', 'area', 'child', 'actor']],
   ];
   for (const [actorRole, clause, values] of cases) {
     const db = database((sql, params) => {

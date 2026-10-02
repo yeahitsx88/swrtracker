@@ -1,3 +1,4 @@
+import { requesterCancel } from '@/modules/ticket/application/requester-cancel';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ForbiddenError } from '@/shared/errors';
@@ -168,4 +169,22 @@ test('approveSurveyCancel clears pending request metadata and cancels the ticket
   assert.equal(patchCalls[0]?.assignedInstrumentManId, null);
   assert.equal(dbCalls.length, 6);
   assert.equal(dbCalls.filter((sql) => /notification_outbox/.test(sql)).length, 3);
+});
+
+test('requester cancellation queues stop work for the captured crew before clearing assignments', async () => {
+  const patchCalls:Array<Record<string,unknown>>=[];
+  const original=makeTicket({status:'IN_PROGRESS'});
+  const outbox:unknown[][]=[];
+  const db:DbClient={query:async(sql,params)=>{
+    if(sql.includes('INSERT INTO notification_outbox')) outbox.push(params??[]);
+    return {rows:[]};
+  }};
+  const result=await requesterCancel(makeRepo(original,patchCalls),db,{
+    tenantId,ticketId,actorId:original.requesterId,actorRole:'REQUESTER',
+  });
+  assert.equal(result.assignedPartyChiefId,null);
+  assert.equal(result.assignedInstrumentManId,null);
+  assert.deepEqual(outbox.filter(p=>p[3]==='STOP_WORK_CANCELED').map(p=>p[2]),['pc-1','im-1']);
+  assert.equal(outbox.filter(p=>p[3]==='REQUESTER_CANCELED').length,1);
+  assert.equal(new Set(outbox.map(p=>p[5])).size,3);
 });
