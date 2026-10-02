@@ -20,6 +20,9 @@ import { operationsServerPage, operationsPage, operationsStatusLabel } from '@/l
 import { useTicketPage } from '@/lib/use-ticket-page';
 import type { TicketPriority, TicketStatus } from '@/lib/contracts';
 import './operations.css';
+import { Icon } from '@/components/ui/icon';
+import { formatCalendarDate } from '@/lib/calendar-date';
+import { humanizeCode, priorityLabel } from '@/lib/display-labels';
 
 export default function SurveyOperationsPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -116,7 +119,7 @@ export default function SurveyOperationsPage() {
       {error ? <ErrorBanner message={error} /> : null}
       {ticketQuery.error ? <ErrorBanner message={ticketQuery.error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
-      <div className="row"><Button variant="secondary" disabled={loading} onClick={() => void loadOperations()}>{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
+      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><Button variant="secondary" disabled={loading} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
 
       {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} areaWide={scopeSnapshot?.analytics.supportsLinkedCrewScope} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
       <div className="ops-tabs" role="tablist" aria-label="Operations views">
@@ -138,8 +141,8 @@ export default function SurveyOperationsPage() {
         {tab !== 'messages' ? <>
           <label>Area<select value={area} onChange={event => { setArea(event.target.value); setPage(1); }}><option value="">All Areas</option>{areas.map(([id,name]) => <option key={id} value={id}>{name}</option>)}</select></label>
           {tab === 'open' ? <label>Status<select value={status} onChange={event => { setStatus(event.target.value); setPage(1); }}><option value="">All open statuses</option>{[...new Set(metrics?.openByAreaStatus.map(row => row.status) ?? [])].map(value => <option key={value} value={value}>{operationsStatusLabel(value)}</option>)}</select></label> : null}
-          <label>Priority<select value={priority} onChange={event => { setPriority(event.target.value); setPage(1); }}><option value="">All priorities</option>{['NORMAL','MEDIUM','MED_HIGH','HIGH'].map(value => <option key={value}>{value}</option>)}</select></label>
-        </> : <label>Delivery<select value={delivery} onChange={event => { setDelivery(event.target.value); setPage(1); }}><option value="">All delivery states</option>{['QUEUED','CAPTURED','SENT','FAILED'].map(value => <option key={value}>{value}</option>)}</select></label>}
+          <label>Priority<select value={priority} onChange={event => { setPriority(event.target.value); setPage(1); }}><option value="">All priorities</option>{['NORMAL','MEDIUM','MED_HIGH','HIGH'].map(value => <option key={value} value={value}>{priorityLabel(value)}</option>)}</select></label>
+        </> : <label>Delivery<select value={delivery} onChange={event => { setDelivery(event.target.value); setPage(1); }}><option value="">All delivery states</option>{['QUEUED','CAPTURED','SENT','FAILED'].map(value => <option key={value} value={value}>{humanizeCode(value)}</option>)}</select></label>}
         <Button variant="secondary" onClick={() => { setQuery(''); setArea(''); setStatus(''); setPriority(''); setDelivery(''); setPage(1); }}>Clear filters</Button>
       </div>
       <div className="ops-pagination">
@@ -171,10 +174,10 @@ export default function SurveyOperationsPage() {
               <div className="stack ops-row-body">
                 <div className="row" style={{ justifyContent: 'space-between' }}>
                   <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber ?? ticket.id}</Link>
-                  <StatusBadge status={ticket.status} />
+                  <StatusBadge status={ticket.status} viewerIsRequester={false} />
                 </div>
                 <p>{ticket.description}</p>
-                <p className="muted">Need-By {ticket.requestedDate?.slice(0,10) ?? 'Not set'} · Priority {ticket.priority}</p>
+                <p className="muted">Need-By {ticket.requestedDate ? formatCalendarDate(ticket.requestedDate) : 'Not set'} · {priorityLabel(ticket.priority)} priority</p>
                 {!superintendent ? <div className="row">
                   {ticket.status === 'SUBMITTED' ? <Button disabled={busy === ticket.id} onClick={() => void run(ticket.id, () => apiClient.approveTicket(ticket.id), 'SWR approved.')}>Approve</Button> : null}
                   {['SUBMITTED', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED'].includes(ticket.status) ? (
@@ -216,7 +219,7 @@ export default function SurveyOperationsPage() {
               <summary>{message.subject}</summary><div className="stack ops-row-body">
               <p>{message.body}</p>
               <p className="muted">To: {message.recipientName ?? message.recipientEmail} &lt;{message.recipientEmail}&gt;</p>
-              <p className="muted">{message.deliveryState} · attempts {message.attemptCount} · {new Date(message.createdAt).toLocaleString()}</p>
+              <p className="muted">{humanizeCode(message.deliveryState)} · attempts {message.attemptCount} · {new Date(message.createdAt).toLocaleString()}</p>
               {message.lastError ? <p className="muted">Last error: {message.lastError}</p> : null}
             </div></details>
           ))}

@@ -10,6 +10,8 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 import { findProjectLandingHref, getProjectLandingHref } from '@/components/ui/project-navigation';
+import { Icon } from '@/components/ui/icon';
+import { PROJECT_STATUS_LABELS, roleLabel } from '@/lib/display-labels';
 
 export default function ProjectsLauncherPage() {
   const router = useRouter();
@@ -58,19 +60,19 @@ export default function ProjectsLauncherPage() {
             <p className="muted">You do not have an active project membership.</p>
           ) : null}
           {projects.length > 0 ? (
-            <div className="ticket-grid">
+            <div className="project-grid">
               {projects.map((project) => (
                 <Link
-                  className="ticket-card"
+                  className="ticket-card request-card project-card"
                   href={getProjectLandingHref(project.id, project.role)}
                   key={project.id}
                 >
-                  <div className="row" style={{ justifyContent: 'space-between' }}>
+                  <div className="request-card-top">
                     <h3 className="ticket-headline">{project.name}</h3>
-                    <span className="badge badge-success">{project.status}</span>
+                    <span className="badge status-badge tone-success">{PROJECT_STATUS_LABELS[project.status] ?? project.status}</span>
                   </div>
-                  <p className="muted">Role: {project.role.replaceAll('_', ' ')}</p>
-                  <span className="app-link">Open Project</span>
+                  <p className="meta-row"><span className="meta-item"><Icon name="user" size={15} />{roleLabel(project.role)}</span></p>
+                  <span className="project-card-open">Open project <Icon name="chevron" size={16} /></span>
                 </Link>
               ))}
             </div>

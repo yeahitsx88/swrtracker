@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 import { apiClient } from '@/lib/apiClient';
+import { roleLabel } from '@/lib/display-labels';
 import { ProjectNav } from './project-nav';
 
 export function ProjectShellHeader({ projectId }: { projectId: string }) {
@@ -22,9 +23,11 @@ export function ProjectShellHeader({ projectId }: { projectId: string }) {
   }, [projectId]);
 
   return (
-    <section className="project-header">
-      <h1 className="panel-title">{project?.name ?? 'Project'}</h1>
-      <p className="muted">Mobile-first field request and crew execution surfaces.</p>
+    <section className="project-header" aria-label="Project">
+      <div className="project-heading">
+        <h1 className="project-name">{project?.name ?? 'Project'}</h1>
+        {project ? <span className="project-role">{roleLabel(project.role)}</span> : null}
+      </div>
       {project ? <ProjectNav projectId={projectId} role={project.role} /> : null}
     </section>
   );

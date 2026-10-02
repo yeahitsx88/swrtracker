@@ -18,7 +18,7 @@ export function OperationsHealth({metrics,projectId,areaWide=false}:{metrics:Ame
   const values:Record<Metric,string>={
     open:metrics.openTotal.toLocaleString(),assignment:metrics.approvedWithoutInstrumentMan.toLocaleString(),
     overdue:metrics.overdueNeedBy.toLocaleString(),completed:metrics.completedTotal.toLocaleString(),
-    cycle:metrics.averageSubmissionToCompletionHours===null?'—':`${metrics.averageSubmissionToCompletionHours.toFixed(1)} h`,
+    cycle:metrics.averageSubmissionToCompletionHours===null?'—':metrics.averageSubmissionToCompletionHours<0.05?'< 0.1 h':`${metrics.averageSubmissionToCompletionHours.toFixed(1)} h`,
   };
   return <>
     <section className="ops-health" aria-labelledby="queue-health-heading">

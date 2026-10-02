@@ -7,6 +7,9 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { RetryableMutation } from '@/lib/retryable-mutation';
 import { formatCalendarDate } from '@/lib/calendar-date';
+import { ticketTypeLabel } from '@/lib/display-labels';
+import { useAreaNames } from '@/lib/use-area-names';
+import { Icon } from '@/components/ui/icon';
 import type { TicketRecord } from '@/lib/contracts';
 import { PaginationControls } from '@/components/forms';
 import { Button, Card, ErrorBanner, Select, SuccessBanner } from '@/components/ui';
@@ -14,6 +17,7 @@ import { Button, Card, ErrorBanner, Select, SuccessBanner } from '@/components/u
 export default function DraftsPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
+  const areaNames = useAreaNames(projectId);
   const [tickets, setTickets] = useState<TicketRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -57,19 +61,24 @@ export default function DraftsPage() {
   }
 
   return (
-    <Card title="Drafts" description="Saved progress, not submitted work. Resume a draft when you’re ready; deleted drafts can be recovered by Project IT within 30 days.">
+    <Card actions={<Link className="button" href={`/projects/${projectId}/request/new`}><Icon name="plus" />Start a new request</Link>} title="Drafts" description="Saved progress, not submitted work. Resume a draft when you’re ready; deleted drafts can be recovered by Project IT within 30 days.">
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
-        <Link className="app-link" href={`/projects/${projectId}/request/new`}>Start a new request</Link>
+        
         {loading ? <p className="muted">Loading drafts...</p> : null}
-        {!loading && tickets.length === 0 && !error ? <p className="muted">No saved drafts on this page. Start a request and use Save Draft at any step.</p> : null}
-        {!loading ? tickets.map(ticket => <article className="ticket-card" key={ticket.id}>
-          <p className="ticket-headline">{ticket.description ? ticket.description.length > 160 ? `${ticket.description.slice(0,160)}…` : ticket.description : 'Untitled draft'}</p>
-          <p className="muted">{ticket.ticketType ?? 'Type not selected'} · Need-By {formatCalendarDate(ticket.requestedDate)}</p>
-          {ticket.draftLastSavedAt ? <p className="muted">Last saved {new Date(ticket.draftLastSavedAt).toLocaleString()}</p> : null}
-          <div className="row"><Link className="app-link" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link>
-            <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Saved details and files</Link>
+        {!loading && tickets.length === 0 && !error ? <div className="empty-state"><strong>No saved drafts</strong><span>Start a request and use Save Draft at any step.</span></div> : null}
+        {!loading ? tickets.map(ticket => <article className="ticket-card request-card" key={ticket.id}>
+          <div className="request-card-top"><span className="badge status-badge tone-neutral">Draft</span>
+            {ticket.draftLastSavedAt ? <span className="meta-item muted"><Icon name="clock" size={15} />Saved {new Date(ticket.draftLastSavedAt).toLocaleString()}</span> : null}</div>
+          <p className={`request-title${ticket.description ? '' : ' request-title-empty'}`}>{ticket.description ? ticket.description.length > 160 ? `${ticket.description.slice(0,160)}…` : ticket.description : 'Untitled draft'}</p>
+          <div className="meta-row">
+            {ticket.aorNodeId && areaNames.get(ticket.aorNodeId) ? <span className="meta-item"><Icon name="pin" size={15} />{areaNames.get(ticket.aorNodeId)!.path}</span> : null}
+            <span className="meta-item">{ticketTypeLabel(ticket.ticketType)}</span>
+            <span className="meta-item"><Icon name="calendar" size={15} />{ticket.requestedDate ? `Need-By ${formatCalendarDate(ticket.requestedDate)}` : 'No Need-By yet'}</span>
+          </div>
+          <div className="card-actions"><Link className="button" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link>
+            <Link className="button button-secondary" href={`/projects/${projectId}/tickets/${ticket.id}`}>Saved details and files</Link>
             <Button variant="secondary" disabled={deleting || Boolean(attempt.current.pending && attempt.current.pending.input.ticketId !== ticket.id)} onClick={() => void remove(ticket)}>{attempt.current.pending?.input.ticketId === ticket.id ? 'Retry Delete Draft' : 'Delete Draft'}</Button></div>
         </article>) : null}
         {error ? (

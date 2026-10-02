@@ -32,10 +32,11 @@ function flattenTree(levels: AorLevelRecord[], nodes: AorNodeRecord[]): Array<{ 
 
     for (const node of children) {
       const level = levelById.get(node.levelId);
-      const prefix = depth > 0 ? `${'-- '.repeat(depth)}` : '';
+      // Indented tree for a native select; the level name follows so siblings stay scannable.
+      const prefix = depth > 0 ? `${' '.repeat(depth)}› ` : '';
       rows.push({
         id: node.id,
-        label: `${prefix}${level ? `${level.label}: ` : ''}${node.name} (${node.code})`,
+        label: `${prefix}${node.name}${level ? ` · ${level.label}` : ''}`,
       });
       walk(node.id, depth + 1);
     }

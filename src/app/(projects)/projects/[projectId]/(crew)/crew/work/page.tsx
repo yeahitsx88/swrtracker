@@ -6,13 +6,16 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { useTicketPage } from '@/lib/use-ticket-page';
 import { PaginationControls } from '@/components/forms';
-import { CrewWorkActions, TicketCard } from '@/components/tickets';
+import { CrewWorkActions, TicketList } from '@/components/tickets';
 import { Button, Card, ErrorBanner } from '@/components/ui';
+import { Icon } from '@/components/ui/icon';
 import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
+import { useAreaNames } from '@/lib/use-area-names';
 
 export default function CrewWorkPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
+  const areaNames = useAreaNames(projectId);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(25);
   const [revision, setRevision] = useState(0);
@@ -40,24 +43,27 @@ export default function CrewWorkPage() {
   return (
     <Card
       title="Crew Work"
-      description="Assigned Party Chief and Instrument Man actions. Backend validates transitions and permissions."
+      description="Requests assigned to your crew. Open a request for full details, files and history."
+      actions={<>
+        <label className="toolbar-select"><span>Rows</span><select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
+        <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={work.loading}>
+          <Icon name="refresh" />{work.loading ? 'Refreshing…' : 'Refresh'}
+        </Button>
+      </>}
     >
       <div className="stack">
         <ScopedKpiEntry projectId={projectId} audience="field" />
         {error ? <ErrorBanner message={error} /> : null}
         {work.error ? <ErrorBanner message={work.error} /> : null}
-        <div className="row">
-          <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={work.loading}>
-            {work.loading ? 'Refreshing...' : 'Refresh'}
-          </Button>
-          <label className="field">Rows<select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
-        </div>
-        {work.loading ? <p className="muted" role="status">Loading crew work queue...</p> : null}
-        {!work.loading && !work.error && total === 0 ? <p className="muted">No actionable crew tickets.</p> : null}
-        {work.data?.data.map((ticket) => (
-          <section key={ticket.id} className="panel">
-            <div className="stack">
-              <TicketCard ticket={ticket} detailHref={`/projects/${projectId}/tickets/${ticket.id}`} />
+        {work.loading ? <p className="muted" role="status">Loading crew work queue…</p> : null}
+        {!work.loading && !work.error ? (
+          <TicketList
+            projectId={projectId}
+            tickets={work.data?.data ?? []}
+            areaNames={areaNames}
+            emptyTitle="No actionable crew work"
+            emptyMessage="Assigned, in-progress and delayed requests for your crew will appear here."
+            renderActions={(ticket) => (
               <CrewWorkActions
                 ticket={ticket}
                 busy={busyTicketId === ticket.id}
@@ -68,10 +74,10 @@ export default function CrewWorkPage() {
                 onFlagStopWork={(id, reason) => runAction(id, () => apiClient.surveyCancel(id, reason).then(() => undefined))}
                 onRestartDelay={(id) => runAction(id, () => apiClient.restartDelayedTicket(id).then(() => undefined))}
               />
-            </div>
-          </section>
-        ))}
-        {!work.loading && total > 0 ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}
+            )}
+          />
+        ) : null}
+        {!work.loading && total > size ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}
       </div>
     </Card>
   );

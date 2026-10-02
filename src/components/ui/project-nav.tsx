@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ProjectRole } from '@/modules/identity/domain/types';
-import { cn } from './cn';
+import { Icon, type IconName } from './icon';
 import { getProjectNavigation } from './project-navigation';
 
 interface ProjectNavProps {
@@ -11,12 +11,25 @@ interface ProjectNavProps {
   role: ProjectRole;
 }
 
+/** Presentation only: icons for the existing role navigation labels. */
+const ICONS: Record<string, IconName> = {
+  'New Request': 'plus',
+  Requests: 'list',
+  Drafts: 'draft',
+  'All Requests': 'search',
+  'Crew Work': 'crew',
+  'Survey Operations': 'gauge',
+  'PC Approvals': 'check',
+  'Team Management': 'team',
+  Admin: 'settings',
+};
+
 export function ProjectNav({ projectId, role }: ProjectNavProps) {
   const pathname = usePathname();
   const tabs = getProjectNavigation(role);
 
   return (
-    <nav className="app-links" aria-label="Project" style={{ marginTop: '0.75rem' }}>
+    <nav className="project-tabs" aria-label="Project">
       {tabs.map((tab) => {
         const href = tab.href(projectId);
         const isActive = pathname === href;
@@ -24,11 +37,12 @@ export function ProjectNav({ projectId, role }: ProjectNavProps) {
         return (
           <Link
             key={tab.label}
-            className={cn('app-link', isActive && 'app-link-active')}
+            className="project-tab"
             href={href}
             aria-current={isActive ? 'page' : undefined}
           >
-            {tab.label}
+            <Icon name={ICONS[tab.label] ?? 'list'} />
+            <span>{tab.label}</span>
           </Link>
         );
       })}

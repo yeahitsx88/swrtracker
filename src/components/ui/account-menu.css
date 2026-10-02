@@ -25,9 +25,11 @@
 .account-facts { margin: 0; display: grid; gap: 1rem; }
 .account-facts dt { color: var(--muted); font-size: .875rem; }
 .account-facts dd { margin: .2rem 0 0; overflow-wrap: anywhere; }
+.account-identity .product-name { color: var(--ink); font-weight: 600; }
 @media (max-width: 600px) {
   .application-shell .app-nav-inner { flex-wrap: nowrap; }
-  .account-identity .product-brand { flex-wrap: wrap; gap: 0; }
-  .account-identity .product-name { padding-left: 20px; }
+  .account-identity .product-brand { flex-wrap: nowrap; }
+  .account-identity .product-name { font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .account-menu-trigger span { display: none; }
+  .account-menu-trigger { min-width: 44px; padding: .5rem; }
 }

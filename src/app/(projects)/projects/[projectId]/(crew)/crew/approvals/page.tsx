@@ -6,12 +6,15 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { useTicketPage } from '@/lib/use-ticket-page';
 import { PaginationControls } from '@/components/forms';
-import { ApprovalActions, TicketCard } from '@/components/tickets';
+import { ApprovalActions, TicketList } from '@/components/tickets';
 import { Button, Card, ErrorBanner } from '@/components/ui';
+import { Icon } from '@/components/ui/icon';
+import { useAreaNames } from '@/lib/use-area-names';
 
 export default function CrewApprovalsPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
+  const areaNames = useAreaNames(projectId);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(25);
   const [revision, setRevision] = useState(0);
@@ -39,46 +42,47 @@ export default function CrewApprovalsPage() {
   return (
     <Card
       title="Party Chief Approvals"
-      description="Queue of tickets in pending PC approval state. Conflict and RBAC errors are shown directly."
+      description="Field reports from your crew that need your decision before the request moves on."
+      actions={<>
+        <label className="toolbar-select"><span>Rows</span><select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
+        <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={approvals.loading}>
+          <Icon name="refresh" />{approvals.loading ? 'Refreshing…' : 'Refresh'}
+        </Button>
+      </>}
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
         {approvals.error ? <ErrorBanner message={approvals.error} /> : null}
-        <div className="row">
-          <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={approvals.loading}>
-            {approvals.loading ? 'Refreshing...' : 'Refresh'}
-          </Button>
-          <label className="field">Rows<select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
-        </div>
-        {approvals.loading ? <p className="muted" role="status">Loading approval queue...</p> : null}
-        {!approvals.loading && !approvals.error && total === 0 ? <p className="muted">No pending approvals.</p> : null}
-        {approvals.data?.data.map((ticket) => (
-          <section key={ticket.id} className="panel">
-            <div className="stack">
-              <TicketCard ticket={ticket} detailHref={`/projects/${projectId}/tickets/${ticket.id}`} />
-              {ticket.status === 'PENDING_FIELD_VALIDATION' ? (
-                <div className="row">
-                  <Button disabled={busyTicketId === ticket.id} onClick={() => {
-                    const reason = window.prompt('Validated return reason');
-                    if (reason?.trim()) void runAction(ticket.id, () => apiClient.validateFieldInability(ticket.id, reason).then(() => undefined));
-                  }}>Validate and Return</Button>
-                  <Button variant="secondary" disabled={busyTicketId === ticket.id} onClick={() => {
-                    const reason = window.prompt('Reason to reject the inability report');
-                    if (reason?.trim()) void runAction(ticket.id, () => apiClient.rejectFieldInability(ticket.id, reason).then(() => undefined));
-                  }}>Reject and Resume</Button>
-                </div>
-              ) : (
-                <ApprovalActions
-                  ticket={ticket}
-                  busy={busyTicketId === ticket.id}
-                  onApprove={(id) => runAction(id, () => apiClient.approvePcStatus(id).then(() => undefined))}
-                  onReject={(id, reason) => runAction(id, () => apiClient.rejectPcStatus(id, reason).then(() => undefined))}
-                />
-              )}
-            </div>
-          </section>
-        ))}
-        {!approvals.loading && total > 0 ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}
+        {approvals.loading ? <p className="muted" role="status">Loading approval queue…</p> : null}
+        {!approvals.loading && !approvals.error ? (
+          <TicketList
+            projectId={projectId}
+            tickets={approvals.data?.data ?? []}
+            areaNames={areaNames}
+            emptyTitle="Nothing waiting for you"
+            emptyMessage="Field reports that need your approval will appear here."
+            renderActions={(ticket) => ticket.status === 'PENDING_FIELD_VALIDATION' ? (
+              <>
+                <Button disabled={busyTicketId === ticket.id} onClick={() => {
+                  const reason = window.prompt('Validated return reason');
+                  if (reason?.trim()) void runAction(ticket.id, () => apiClient.validateFieldInability(ticket.id, reason).then(() => undefined));
+                }}>Validate and Return</Button>
+                <Button variant="secondary" disabled={busyTicketId === ticket.id} onClick={() => {
+                  const reason = window.prompt('Reason to reject the inability report');
+                  if (reason?.trim()) void runAction(ticket.id, () => apiClient.rejectFieldInability(ticket.id, reason).then(() => undefined));
+                }}>Reject and Resume</Button>
+              </>
+            ) : (
+              <ApprovalActions
+                ticket={ticket}
+                busy={busyTicketId === ticket.id}
+                onApprove={(id) => runAction(id, () => apiClient.approvePcStatus(id).then(() => undefined))}
+                onReject={(id, reason) => runAction(id, () => apiClient.rejectPcStatus(id, reason).then(() => undefined))}
+              />
+            )}
+          />
+        ) : null}
+        {!approvals.loading && total > size ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}
       </div>
     </Card>
   );
