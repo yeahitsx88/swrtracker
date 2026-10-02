@@ -102,7 +102,7 @@ export interface ITicketRepository {
   nextSequence(db: DbClient, projectId: UUID): Promise<number>;
 
   /** Fetch the AOR node code string for ticket number generation. */
-  findAorNodeCode(db: DbClient, tenantId: UUID, aorNodeId: UUID): Promise<string | null>;
+  findAorNodeCode(db: DbClient, tenantId: UUID, projectId: UUID, aorNodeId: UUID): Promise<string | null>;
   findDepartmentById(
     db: DbClient,
     tenantId: UUID,

@@ -57,6 +57,10 @@ export async function createTicket(
     throw new ConflictError('Archived projects are read-only');
   }
 
+  if (!await repo.findAorNodeCode(db, params.tenantId, params.projectId, params.aorNodeId)) {
+    throw new NotFoundError('AOR node not found in this project');
+  }
+
   const now = new Date();
 
   const ticket: Ticket = {

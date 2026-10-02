@@ -71,7 +71,6 @@ export async function sendPasswordResetEmail(
     text: `Use this link to reset your password: ${resetLink}`,
     metadata: {
       tenantId: params.tenantId,
-      resetLink,
     },
   });
 }

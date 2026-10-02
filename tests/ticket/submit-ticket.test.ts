@@ -92,7 +92,7 @@ function makeRepo(overrides?: Partial<ITicketRepository>): ITicketRepository {
 test('createTicket leaves ticketNumber null until submission', async () => {
   const savedTickets: Ticket[] = [];
   let nextSequenceCalls = 0;
-  let findAorNodeCodeCalls = 0;
+  let aorLookup: unknown[] = [];
   const dbCalls: string[] = [];
 
   const repo = makeRepo({
@@ -103,8 +103,8 @@ test('createTicket leaves ticketNumber null until submission', async () => {
       nextSequenceCalls += 1;
       return 1;
     },
-    findAorNodeCode: async () => {
-      findAorNodeCodeCalls += 1;
+    findAorNodeCode: async (...args) => {
+      aorLookup = args.slice(1);
       return 'U1';
     },
   });
@@ -132,7 +132,7 @@ test('createTicket leaves ticketNumber null until submission', async () => {
   assert.equal(ticket.ticketNumber, null);
   assert.equal(savedTickets[0]?.ticketNumber, null);
   assert.equal(nextSequenceCalls, 0);
-  assert.equal(findAorNodeCodeCalls, 0);
+  assert.deepEqual(aorLookup, [tenantId, projectId, 'aor-node-1']);
   assert.equal(dbCalls.length, 1);
   assert.match(dbCalls[0] ?? '', /INSERT INTO ticket_events/);
 });

@@ -38,6 +38,9 @@ export async function elevateToPrority(
     priority:          'HIGH',
     prioritySetBy:     params.actorId,
     prioritySetReason: params.reason,
+  }, {
+    expectedStatus: ticket.status,
+    expectedRowVersion: ticket.rowVersion,
   });
 
   await appendAuditEvent(db, {
@@ -53,6 +56,7 @@ export async function elevateToPrority(
     priority:          'HIGH',
     prioritySetBy:     params.actorId,
     prioritySetReason: params.reason,
+    rowVersion:        (ticket.rowVersion ?? 0) + 1,
     updatedAt:         new Date(),
   };
 }

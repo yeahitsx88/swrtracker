@@ -79,7 +79,7 @@ export async function submitTicket(
   const isResubmission = ticket.status === 'RETURNED_FOR_CORRECTION';
   let ticketNumber = ticket.ticketNumber;
   if (!isResubmission) {
-    const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, ticket.aorNodeId);
+    const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, ticket.projectId, ticket.aorNodeId);
     if (!aorNodeCode) throw new NotFoundError('AOR node not found');
     const sequence = await repo.nextSequence(db, ticket.projectId);
     ticketNumber = `FSS-${aorNodeCode}-${String(sequence).padStart(5, '0')}`;

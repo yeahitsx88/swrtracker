@@ -151,6 +151,7 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
   const originalQuery = pool.query;
   const originalConnect = pool.connect;
   const originalFindProjectStatus = TicketRepository.prototype.findProjectStatus;
+  const originalFindAorNodeCode = TicketRepository.prototype.findAorNodeCode;
   const originalFindUserCompanyInfo = TicketRepository.prototype.findUserCompanyInfo;
   const originalFindRequesterDepartmentMembership = TicketRepository.prototype.findRequesterDepartmentMembership;
   const originalSave = TicketRepository.prototype.save;
@@ -172,6 +173,7 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
     release: () => undefined,
   });
   TicketRepository.prototype.findProjectStatus = async () => 'ACTIVE';
+  TicketRepository.prototype.findAorNodeCode = async () => 'U1';
   TicketRepository.prototype.findUserCompanyInfo = async () => ({
     companyId: 'company-1' as UUID,
     companyType: 'GC',
@@ -210,6 +212,7 @@ test('POST /api/tickets replays duplicate create requests and suppresses second 
     pool.query = originalQuery;
     pool.connect = originalConnect;
     TicketRepository.prototype.findProjectStatus = originalFindProjectStatus;
+    TicketRepository.prototype.findAorNodeCode = originalFindAorNodeCode;
     TicketRepository.prototype.findUserCompanyInfo = originalFindUserCompanyInfo;
     TicketRepository.prototype.findRequesterDepartmentMembership = originalFindRequesterDepartmentMembership;
     TicketRepository.prototype.save = originalSave;
@@ -224,6 +227,7 @@ test('POST /api/tickets rejects same key with different payload', async () => {
   const originalQuery = pool.query;
   const originalConnect = pool.connect;
   const originalFindProjectStatus = TicketRepository.prototype.findProjectStatus;
+  const originalFindAorNodeCode = TicketRepository.prototype.findAorNodeCode;
   const originalFindUserCompanyInfo = TicketRepository.prototype.findUserCompanyInfo;
   const originalFindRequesterDepartmentMembership = TicketRepository.prototype.findRequesterDepartmentMembership;
   const originalSave = TicketRepository.prototype.save;
@@ -243,6 +247,7 @@ test('POST /api/tickets rejects same key with different payload', async () => {
     release: () => undefined,
   });
   TicketRepository.prototype.findProjectStatus = async () => 'ACTIVE';
+  TicketRepository.prototype.findAorNodeCode = async () => 'U1';
   TicketRepository.prototype.findUserCompanyInfo = async () => ({
     companyId: 'company-1' as UUID,
     companyType: 'GC',
@@ -280,6 +285,7 @@ test('POST /api/tickets rejects same key with different payload', async () => {
     pool.query = originalQuery;
     pool.connect = originalConnect;
     TicketRepository.prototype.findProjectStatus = originalFindProjectStatus;
+    TicketRepository.prototype.findAorNodeCode = originalFindAorNodeCode;
     TicketRepository.prototype.findUserCompanyInfo = originalFindUserCompanyInfo;
     TicketRepository.prototype.findRequesterDepartmentMembership = originalFindRequesterDepartmentMembership;
     TicketRepository.prototype.save = originalSave;

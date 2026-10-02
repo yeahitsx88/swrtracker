@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
+import { getSafeReturnPath } from '@/lib/safe-return-path';
 import { Button, Card, ErrorBanner, Input } from '@/components/ui';
 import { Field } from '@/components/forms';
 
@@ -35,7 +36,7 @@ function LoginForm() {
     setLoading(true);
     try {
       await apiClient.login({ tenantId: tenantId.trim(), email: email.trim(), password });
-      const returnTo = searchParams.get('returnTo') || '/projects';
+      const returnTo = getSafeReturnPath(searchParams.get('returnTo'));
       router.push(returnTo);
       router.refresh();
     } catch (err) {

@@ -6,8 +6,10 @@ services:
     command: pnpm start
     env_file:
       - .env
+    environment:
+      NODE_ENV: production
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     restart: unless-stopped
 
   notification-worker:

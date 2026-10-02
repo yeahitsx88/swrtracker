@@ -65,7 +65,7 @@ export async function createDirectAssignmentTicket(
     throw new ValidationError('assignedInstrumentManId must be an active Instrument Man on this project');
   }
 
-  const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, params.aorNodeId);
+  const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, params.projectId, params.aorNodeId);
   if (!aorNodeCode) {
     throw new NotFoundError('AOR node not found');
   }

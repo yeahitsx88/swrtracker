@@ -2671,3 +2671,20 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Scope deviation: Requester UI and its directly tied Ticket test changed; no production domain, API route, migration, state transition or audit event changed.
 - Known gaps: separate Survey Authority dashboard/staffing decisions and full-objective acceptance remain pending.
 - Production behavior changed: yes, Drafts count/page now match the server-filtered DRAFT population.
+
+### 2026-09-30 — Batch 41 (password-reset log redaction)
+- Intent: IMPLEMENTER in shared email transport; prevent password-reset bearer links from entering general console logs.
+- Files touched: src/lib/email.ts; tests/identity/email-transport.test.ts; docs/CODEX.md.
+- Behavior added/changed: reset links remain in the email body sent to the configured transport but are no longer copied into metadata logged by the console fallback.
+- Validation: focused regression test passed (1/1). The required pnpm baseline commands aborted while pnpm attempted to reconcile node_modules in a non-interactive shell. Direct TypeScript checking remains affected by stale .next generated types and the untracked nested swrtracker tree; direct full tests passed 288/289, with the existing Windows attachment mode assertion failing (438 vs 384).
+- Scope deviation: shared email transport and its identity regression test changed; no database, route, session, or workflow behavior changed.
+- Known gaps: full security assessment continues; reset endpoint throttling and logout revocation remain under review.
+- Production behavior changed: yes, console logs no longer contain reset-token URLs.
+
+### 2026-09-30 — Batch 42 (post-login redirect validation)
+- Intent: prevent crafted login URLs from sending authenticated users to an external destination.
+- Files touched: src/app/(auth)/login/page.tsx; src/lib/safe-return-path.ts; tests/lib/safe-return-path.test.ts; src/modules/ticket/application/elevate-priority.ts; tests/ticket/elevate-priority.test.ts; src/modules/ticket/application/ports.ts; src/modules/ticket/application/create-ticket.ts; src/modules/ticket/application/create-direct-assignment-ticket.ts; src/modules/ticket/application/submit-ticket.ts; src/modules/ticket/infrastructure/ticket.repository.ts; tests/ticket/submit-ticket.test.ts; tests/ticket/aor-project-scope.test.ts; tests/ticket/create-follow-up-ticket.test.ts; tests/ticket/idempotency-routes.test.ts; tests/identity/email-transport.test.ts; docker-compose.yml; docs/CODEX.md.
+- Behavior added/changed: post-login return paths are accepted only when they resolve to a same-origin absolute path; external, protocol-relative, backslash, and malformed inputs fall back to /projects. The Compose web service now explicitly runs with NODE_ENV=production and publishes port 3000 on loopback only. Priority elevation now rejects stale status/row-version writes and advances the in-memory row version. AOR lookup and creation now enforce that the node belongs to the selected project.
+- Validation: targeted redirect/workflow/AOR tests passed 15/15. Full suite passed 293/294; the sole failure remains the documented Windows attachment file-mode mismatch (438 vs 384). `pnpm tsc --noEmit` aborted while pnpm attempted to reconcile `node_modules`; direct TypeScript checking reports existing stale `.next` and nested `swrtracker/` errors, with no diagnostics in the changed source/test files.
+- Known gaps: security assessment continues; remaining candidates are being validated and prioritized.
+- Production behavior changed: yes, crafted external returnTo URLs no longer cause post-login navigation away from SWRTracker.

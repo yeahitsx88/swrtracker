@@ -199,6 +199,7 @@ test('follow-up route replays an idempotency key without creating a second draft
   const originalFindById = TicketRepository.prototype.findById;
   const originalFindByIdInternal = TicketRepository.prototype.findByIdInternal;
   const originalFindProjectStatus = TicketRepository.prototype.findProjectStatus;
+  const originalFindAorNodeCode = TicketRepository.prototype.findAorNodeCode;
   const originalFindProjectLeadTimeConfig = TicketRepository.prototype.findProjectLeadTimeConfig;
   const originalSave = TicketRepository.prototype.save;
   const originalSaveCadWork = TicketRepository.prototype.saveCadWork;
@@ -253,6 +254,7 @@ test('follow-up route replays an idempotency key without creating a second draft
   TicketRepository.prototype.findById = async () => completedTicket();
   TicketRepository.prototype.findByIdInternal = async () => completedTicket();
   TicketRepository.prototype.findProjectStatus = async () => 'ACTIVE';
+  TicketRepository.prototype.findAorNodeCode = async () => 'U1';
   TicketRepository.prototype.findProjectLeadTimeConfig = async () => ({
     enforcementEnabled: true,
     leadTimeDays: 2,
@@ -290,6 +292,7 @@ test('follow-up route replays an idempotency key without creating a second draft
     TicketRepository.prototype.findById = originalFindById;
     TicketRepository.prototype.findByIdInternal = originalFindByIdInternal;
     TicketRepository.prototype.findProjectStatus = originalFindProjectStatus;
+    TicketRepository.prototype.findAorNodeCode = originalFindAorNodeCode;
     TicketRepository.prototype.findProjectLeadTimeConfig = originalFindProjectLeadTimeConfig;
     TicketRepository.prototype.save = originalSave;
     TicketRepository.prototype.saveCadWork = originalSaveCadWork;
