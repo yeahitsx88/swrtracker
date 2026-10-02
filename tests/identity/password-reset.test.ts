@@ -16,7 +16,9 @@ import type { DbClient, UUID } from '@/shared/types';
 const tenantId = 'tenant-1' as UUID;
 const companyId = 'company-1' as UUID;
 const userId = 'user-1' as UUID;
-const db: DbClient = { query: async () => ({ rows: [] }) };
+const db: DbClient = { query: async <T extends object>(sql: string) => ({
+  rows: [sql.includes('pg_current_xact_id') ? {transaction_id: 'reset-tests'} : {id: tenantId}] as T[],
+}) };
 
 function makeUser(overrides?: Partial<UserWithCredentials>): UserWithCredentials {
   return {
@@ -48,7 +50,7 @@ function makeResetToken(overrides?: Partial<PasswordResetToken>): PasswordResetT
 function makeRepo(overrides?: Partial<IPasswordResetRepository>): IPasswordResetRepository {
   return {
     findByEmail: async () => null,
-    lockPasswordResetUser: async () => undefined,
+    lockPasswordResetUser: async () => makeUser(),
     findRecentActivePasswordResetToken: async () => null,
     savePasswordResetToken: async () => undefined,
     findActivePasswordResetTokenByHash: async () => null,
@@ -189,4 +191,49 @@ test('resetPassword rejects passwords shorter than 8 chars', async () => {
     }),
     ValidationError,
   );
+});
+
+test('reset_token_cannot_reactivate or mutate a globally disabled account', async () => {
+  let effects = 0;
+  const repo = makeRepo({
+    findActivePasswordResetTokenByHash: async () => makeResetToken(),
+    lockPasswordResetUser: async () => makeUser({deactivatedAt: new Date()}),
+    markPasswordResetTokenUsed: async () => {effects += 1;},
+    updatePasswordHash: async () => {effects += 1;},
+    bumpSessionVersion: async () => {effects += 1;},
+  });
+  await assert.rejects(resetPassword(repo, db, {token:'raw-token',newPassword:'new-strong-password'}),
+    ValidationError);
+  assert.equal(effects, 0);
+});
+
+test('password reset obtains tenant barrier before user and token row locks', async () => {
+  const operations: string[] = [];
+  const client: DbClient = {query: async <T extends object>(sql: string) => {
+    operations.push(sql.includes('FOR UPDATE') ? 'tenant-lock' : 'transaction');
+    return {rows: [sql.includes('pg_current_xact_id') ? {transaction_id:'reset-order'} : {id:tenantId}] as T[]};
+  }};
+  const repo = makeRepo({
+    findActivePasswordResetTokenByHash: async (_db,_hash,_now,lock = true) => {
+      operations.push(lock ? 'token-lock' : 'token-peek'); return makeResetToken();
+    },
+    lockPasswordResetUser: async () => {operations.push('user-lock');return makeUser();},
+    updatePasswordHash: async () => {operations.push('password-write');},
+  });
+  await resetPassword(repo,client,{token:'raw-token',newPassword:'new-strong-password'});
+  assert.ok(operations.indexOf('token-peek') < operations.indexOf('tenant-lock'));
+  assert.ok(operations.indexOf('tenant-lock') < operations.indexOf('user-lock'));
+  assert.ok(operations.indexOf('tenant-lock') < operations.indexOf('token-lock'));
+  assert.ok(operations.indexOf('user-lock') < operations.indexOf('password-write'));
+});
+
+test('disabled users receive no new password reset link', async () => {
+  let issued = 0;
+  const repo=makeRepo({
+    findByEmail:async()=>makeUser({deactivatedAt:new Date()}),
+    savePasswordResetToken:async()=>{issued += 1;},
+  });
+  assert.deepEqual(await requestPasswordReset(repo,db,{tenantId,email:'field.user@example.com'}),
+    {resetToken:null});
+  assert.equal(issued,0);
 });

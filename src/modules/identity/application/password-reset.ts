@@ -8,9 +8,12 @@
 import bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
 import { randomUUID } from 'crypto';
-import { ValidationError } from '@/shared/errors';
+import { NotFoundError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { UserWithCredentials } from '../domain/types';
+
+import { acquireTenantLifecycleLock } from '@/lib/tenant-lifecycle-lock';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 
 const RESET_TOKEN_BYTES = 32;
 const RESET_TOKEN_TTL_MINUTES = 60;
@@ -29,7 +32,7 @@ export interface PasswordResetToken {
 
 export interface IPasswordResetRepository {
   findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null>;
-  lockPasswordResetUser(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
+  lockPasswordResetUser(db: DbClient, tenantId: UUID, userId: UUID): Promise<UserWithCredentials | null>;
   findRecentActivePasswordResetToken(
     db: DbClient, tenantId: UUID, userId: UUID, issuedAfter: Date, now: Date,
   ): Promise<PasswordResetToken | null>;
@@ -38,6 +41,7 @@ export interface IPasswordResetRepository {
     db: DbClient,
     tokenHash: string,
     now: Date,
+    lock?: boolean,
   ): Promise<PasswordResetToken | null>;
   markPasswordResetTokenUsed(db: DbClient, tokenId: UUID, usedAt: Date): Promise<void>;
   markActivePasswordResetTokensUsedForUser(
@@ -72,15 +76,24 @@ export async function requestPasswordReset(
   params: RequestPasswordResetParams,
 ): Promise<RequestPasswordResetResult> {
   const now = params.now ?? new Date();
+  try {
+    await acquireTenantLifecycleLock(db, params.tenantId, 'EXCLUSIVE');
+  } catch (err) {
+    if (err instanceof NotFoundError) return {resetToken: null};
+    throw err;
+  }
   const user = await repo.findByEmail(db, params.tenantId, params.email.trim());
 
-  if (!user || user.authMethod !== 'LOCAL' || !user.passwordHash) {
+  if (!user || user.authMethod !== 'LOCAL' || !user.passwordHash || user.deactivatedAt) {
     return { resetToken: null };
   }
 
   // Serialize competing requests before checking the cooldown. A repeat request
   // must not invalidate a link that was already delivered to the user.
-  await repo.lockPasswordResetUser(db, user.tenantId, user.id);
+  const current = await repo.lockPasswordResetUser(db, user.tenantId, user.id);
+  if (!current || current.deactivatedAt || current.authMethod !== 'LOCAL' || !current.passwordHash) {
+    return {resetToken: null};
+  }
   const recent = await repo.findRecentActivePasswordResetToken(
     db, user.tenantId, user.id,
     new Date(now.getTime() - RESET_RESEND_COOLDOWN_MINUTES * 60_000), now,
@@ -101,6 +114,11 @@ export async function requestPasswordReset(
     createdAt: now,
   });
 
+  await appendAdministrativeEvent(db, {
+    auth:{tenantId:user.tenantId,userId:null},projectId:null,subjectUserId:user.id,
+    eventType:'password.reset_requested',authorityEvidence:{kind:'ANONYMOUS_LOCAL_ACCOUNT_RESET_REQUEST'},
+    changes:{expiresAt:expiresAt.toISOString()},
+  });
   return { resetToken };
 }
 
@@ -121,8 +139,20 @@ export async function resetPassword(
 
   const now = params.now ?? new Date();
   const tokenHash = hashPasswordResetToken(params.token.trim());
-  const resetToken = await repo.findActivePasswordResetTokenByHash(db, tokenHash, now);
-  if (!resetToken) {
+  // Discover only the scope before the barrier; never lock a token ahead of its tenant.
+  const peek = await repo.findActivePasswordResetTokenByHash(db, tokenHash, now, false);
+  if (!peek) throw new ValidationError('Reset token is invalid or expired');
+  try {
+    await acquireTenantLifecycleLock(db, peek.tenantId, 'EXCLUSIVE');
+  } catch (err) {
+    if (err instanceof NotFoundError) throw new ValidationError('Reset token is invalid or expired');
+    throw err;
+  }
+  const user = await repo.lockPasswordResetUser(db, peek.tenantId, peek.userId);
+  const resetToken = await repo.findActivePasswordResetTokenByHash(
+    db, tokenHash, params.now ?? new Date(), true);
+  if (!resetToken || resetToken.tenantId !== peek.tenantId || resetToken.userId !== peek.userId ||
+      !user || user.deactivatedAt || user.authMethod !== 'LOCAL' || !user.passwordHash) {
     throw new ValidationError('Reset token is invalid or expired');
   }
 
@@ -142,6 +172,11 @@ export async function resetPassword(
     passwordHash,
   );
   await repo.bumpSessionVersion(db, resetToken.tenantId, resetToken.userId);
+  await appendAdministrativeEvent(db, {
+    auth:{tenantId:user.tenantId,userId:user.id},projectId:null,subjectUserId:user.id,
+    eventType:'password.reset_completed',authorityEvidence:{kind:'VALID_PASSWORD_RESET_TOKEN'},
+    changes:{sessionsRevoked:true},
+  });
 }
 
 export function hashPasswordResetToken(token: string): string {

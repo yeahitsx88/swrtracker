@@ -1,3 +1,4 @@
+import { assertCentralITRemovalSafe } from './tenant-continuity';
 import { randomUUID } from 'crypto';
 import { ForbiddenError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
@@ -24,6 +25,7 @@ export async function upsertTenantMembership(
 ): Promise<TenantMembership> {
   assertTenantAdmin(params.actorRole);
 
+  if(params.role!=='TENANT_ADMIN') await assertCentralITRemovalSafe(db,params.tenantId,params.userId);
   const membership: TenantMembership = {
     id: randomUUID() as UUID,
     tenantId: params.tenantId,
@@ -46,6 +48,7 @@ export async function removeTenantMembership(
   },
 ): Promise<void> {
   assertTenantAdmin(params.actorRole);
+  await assertCentralITRemovalSafe(db,params.tenantId,params.userId);
   await repo.deleteTenantMembership(db, params.tenantId, params.userId);
   await repo.bumpUserSessionVersion?.(db, params.tenantId, params.userId);
 }

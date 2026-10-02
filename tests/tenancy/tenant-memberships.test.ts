@@ -67,7 +67,9 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
 }
 
 const db: DbClient = {
-  query: async () => ({ rows: [] }),
+  query: async<T extends object>(sql:string) => ({ rows:
+    sql.includes('transaction_id')?[{transaction_id:'ordinary-membership-test'}] as T[]:
+    sql.includes('FROM tenants')?[{id:tenantId}] as T[]:[] }),
 };
 
 test('upsertTenantMembership stores a tenant role for TENANT_ADMIN', async () => {
@@ -118,4 +120,17 @@ test('upsertTenantMembership rejects non-tenant-admin actors', async () => {
     }),
     ForbiddenError,
   );
+});
+
+test('last eligible Central IT role cannot be removed or demoted',async()=>{
+ let writes=0;
+ const repo=makeRepo({saveTenantMembership:async()=>{writes++;},deleteTenantMembership:async()=>{writes++;}});
+ const held:DbClient={query:async<T extends object>(sql:string)=>{
+  if(sql.includes('transaction_id'))return{rows:[{transaction_id:'continuity-test'}] as T[]};
+  if(sql.includes('FROM tenants'))return{rows:[{id:tenantId}] as T[]};
+  return{rows:[{user_id:userId}] as T[]};
+ }};
+ await assert.rejects(upsertTenantMembership(repo,held,{tenantId,userId,role:'BILLING_VIEWER',actorRole:'TENANT_ADMIN'}),{type:'ConflictError'});
+ await assert.rejects(removeTenantMembership(repo,held,{tenantId,userId,actorRole:'TENANT_ADMIN'}),{type:'ConflictError'});
+ assert.equal(writes,0);
 });

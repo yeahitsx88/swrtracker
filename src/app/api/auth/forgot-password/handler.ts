@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { NotFoundError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { withTransaction } from '@/lib/with-transaction';
 import { requestPasswordReset } from '@/modules/identity/application/password-reset';
@@ -7,6 +7,8 @@ import type { IPasswordResetRepository } from '@/modules/identity/application/pa
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { PasswordResetRateLimitRepository } from '@/modules/identity/infrastructure/password-reset-rate-limit.repository';
 import { enqueuePasswordResetEmail } from '@/modules/identity/infrastructure/password-reset-email-outbox';
+import { requireResourceUuid } from '@/lib/resource-uuid';
+import { acquireTenantLifecycleLock } from '@/lib/tenant-lifecycle-lock';
 import type { UUID } from '@/shared/types';
 import type { DbClient } from '@/shared/types';
 
@@ -49,9 +51,16 @@ export async function handlePostForgotPassword(
 
     const { tenantId, email } = body as { tenantId: string; email: string };
     const normalizedTenantId = tenantId.trim() as UUID;
+    requireResourceUuid(normalizedTenantId,'tenantId');
     const normalizedEmail = email.trim().toLowerCase();
     const repo = deps.createRepo();
     await deps.withTransaction(async (client) => {
+      try {
+        await acquireTenantLifecycleLock(client, normalizedTenantId, 'EXCLUSIVE');
+      } catch (err) {
+        if (err instanceof NotFoundError) return;
+        throw err;
+      }
       const allowed = await deps.allowAttempt(client, normalizedTenantId, normalizedEmail, req);
       if (!allowed) return;
       const result = await deps.requestPasswordReset(repo, client, {

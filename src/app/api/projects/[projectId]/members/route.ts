@@ -1,3 +1,6 @@
+import { withTransaction } from '@/lib/with-transaction';
+import { requireResourceUuid } from '@/lib/resource-uuid';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 /**
  * POST /api/projects/[projectId]/members
  * Adds a user to a project. Requires TENANT_ADMIN.
@@ -70,16 +73,23 @@ export async function POST(
     }
 
     const { userId, role } = body as { userId: string; role: ProjectRole };
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
-    const resolvedActorRole = actorRole === 'TENANT_ADMIN' ? 'TENANT_ADMIN' : 'REQUESTER';
+    requireResourceUuid(projectId,'projectId');
+    requireResourceUuid(userId,'userId');
     const repo = new TenancyRepository();
-    await addProjectMember(repo, pool, {
-      tenantId:  auth.tenantId,
-      projectId: projectId as UUID,
-      userId:    userId    as UUID,
-      role,
-      actorRole: resolvedActorRole,
-    });
+    await withTransaction(async db => {
+      await addProjectMember(repo, db, {
+        tenantId: auth.tenantId, projectId: projectId as UUID, userId: userId as UUID,
+        role, actorRole: 'TENANT_ADMIN',
+      });
+      await appendAdministrativeEvent(db,{
+        auth,projectId:projectId as UUID,subjectUserId:userId as UUID,eventType:'project.member_added',
+        authorityEvidence:{branch:'CENTRAL_IT'},changes:{role},
+      });
+    }, {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
+      if(await getTenantRole(db,current.tenantId,current.userId,current.sessionVersion)!=='TENANT_ADMIN'){
+        throw new ForbiddenError('Current Central IT authority is required to add members');
+      }
+    }});
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     return errorResponse(err);

@@ -13,7 +13,9 @@ import {
 import type { IPasswordResetRepository } from '@/modules/identity/application/password-reset';
 import type { DbClient } from '@/shared/types';
 
-const db: DbClient = { query: async () => ({ rows: [] }) };
+const db: DbClient = {query:async <T extends object>(sql:string)=>({
+  rows:[sql.includes('pg_current_xact_id')?{transaction_id:'reset-route-tests'}:{id:'tenant-1'}] as T[],
+})};
 
 function makeRequest(url: string, body: Record<string, unknown>): NextRequest {
   return new NextRequest(url, {
@@ -26,7 +28,7 @@ function makeRequest(url: string, body: Record<string, unknown>): NextRequest {
 function makeRepo(): IPasswordResetRepository {
   return {
     findByEmail: async () => null,
-    lockPasswordResetUser: async () => undefined,
+    lockPasswordResetUser: async () => null,
     findRecentActivePasswordResetToken: async () => null,
     savePasswordResetToken: async () => undefined,
     findActivePasswordResetTokenByHash: async () => null,
@@ -61,7 +63,7 @@ function makeResetDeps(overrides?: Partial<ResetPasswordRouteDeps>): ResetPasswo
 test('handlePostForgotPassword never returns a reset bearer token', async () => {
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
-      tenantId: 'tenant-1',
+      tenantId: '10000000-0000-4000-8000-000000000001',
       email: 'field.user@example.com',
     }),
     makeForgotDeps(),
@@ -74,7 +76,7 @@ test('handlePostForgotPassword never returns a reset bearer token', async () => 
 test('handlePostForgotPassword returns the same response without a generated token', async () => {
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
-      tenantId: 'tenant-1',
+      tenantId: '10000000-0000-4000-8000-000000000001',
       email: 'field.user@example.com',
     }),
     makeForgotDeps({
@@ -101,7 +103,7 @@ test('handlePostForgotPassword enqueues reset email only when token is generated
   let queuedCount = 0;
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
-      tenantId: 'tenant-1',
+      tenantId: '10000000-0000-4000-8000-000000000001',
       email: 'field.user@example.com',
     }),
     makeForgotDeps({
@@ -120,7 +122,7 @@ test('handlePostForgotPassword silently throttles attempts before account lookup
   let queuedCount = 0;
   const response = await handlePostForgotPassword(
     makeRequest('http://localhost/api/auth/forgot-password', {
-      tenantId: 'tenant-1', email: 'field.user@example.com',
+      tenantId: '10000000-0000-4000-8000-000000000001', email: 'field.user@example.com',
     }),
     makeForgotDeps({
       allowAttempt: async () => false,
@@ -172,4 +174,13 @@ test('handlePostResetPassword returns 400 for invalid payload', async () => {
   );
 
   assert.equal(response.status, 400);
+});
+
+test('forgot password rejects malformed tenant IDs before any SQL or rate-limit write',async()=>{
+ let queries=0;
+ const deps=makeForgotDeps({withTransaction:async fn=>fn({query:async()=>{queries++;return {rows:[]};}})});
+ const res=await handlePostForgotPassword(makeRequest('http://localhost/api/auth/forgot-password',{
+   tenantId:'not-a-uuid',email:'field.user@example.com',
+ }),deps);
+ assert.equal(res.status,400);assert.equal(queries,0);
 });

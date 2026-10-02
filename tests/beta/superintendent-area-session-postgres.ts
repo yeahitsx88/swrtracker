@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {NextRequest} from 'next/server';
 import type {DbClient,UUID} from '../../src/shared/types';
 import {requireActiveAuth,signToken} from '../../src/lib/auth';
+import {beginAuthenticatedMutation} from '../../src/lib/with-transaction';
 import {handlePostLogout} from '../../src/app/api/auth/logout/handler';
 import {executeIdempotentHttpMutation} from '../../src/lib/idempotency';
 import {SuperintendentAreasPgRepository} from '../../src/modules/tenancy/infrastructure/superintendent-areas.repository';
@@ -45,7 +46,7 @@ async function main(){
     if(kind==='expiry'){
      const expiry=(jwt.decode(pendingCookie) as {exp:number}).exp*1000;
      while(Date.now()<=expiry)await new Promise(r=>setTimeout(r,20));
-    }else if(kind==='logout')eq((await handlePostLogout(new NextRequest('http://localhost/api/auth/logout',{method:'POST',headers:{cookie:`swr_session=${pendingCookie}`}}),pg)).status,200);
+    }else if(kind==='logout')eq((await handlePostLogout(new NextRequest('http://localhost/api/auth/logout',{method:'POST',headers:{cookie:`swr_session=${pendingCookie}`}}), (fn,mutation)=>tx(async db=>{if(mutation)await beginAuthenticatedMutation(db,mutation);return fn(db);}))).status,200);
     else if(kind==='session-version')await pg.query('UPDATE users SET session_version=session_version+1 WHERE id=$1',[manager]);
     else if(kind==='deactivated-account')await pg.query('UPDATE users SET deactivated_at=now() WHERE id=$1',[manager]);
     else if(kind==='lost-manager')await pg.query("UPDATE project_memberships SET role='REQUESTER' WHERE project_id=$1 AND user_id=$2",[project,manager]);

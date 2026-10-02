@@ -15,10 +15,12 @@ import type { LoginRateLimiter } from '@/modules/identity/application/login-rate
 import type { User, UserWithCredentials } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
 
-const tenantId = 'tenant-1' as UUID;
+const tenantId = '10000000-0000-4000-8000-000000000001' as UUID;
 const companyId = 'company-1' as UUID;
 const userId = 'user-1' as UUID;
-const db: DbClient = { query: async () => ({ rows: [] }) };
+const db: DbClient = {query:async<T extends object>(sql:string)=>({
+ rows:[sql.includes('pg_current_xact_id')?{transaction_id:'register-test'}:{id:tenantId}] as T[],
+})};
 
 function makeRequest(url: string, body: Record<string, unknown>): NextRequest {
   return new NextRequest(url, {
@@ -331,4 +333,29 @@ test('handlePostLogin returns 429 when login attempts are rate limited', async (
   assert.equal(response.status, 429);
   const json = await response.json() as { error: { code: string } };
   assert.equal(json.error.code, 'AUTH_RATE_LIMITED');
+});
+
+test('registration locks tenant before consuming an invite and audits the same transaction',async()=>{
+ const operations:string[]=[];
+ const client:DbClient={query:async<T extends object>(sql:string)=>{
+   operations.push(sql.includes('FROM tenants')?'tenant-lock':sql.includes('administrative_events')?'audit':'transaction');
+   return {rows:[sql.includes('pg_current_xact_id')?{transaction_id:'register-order'}:{id:tenantId}] as T[]};
+ }};
+ const deps=makeRegisterDeps({
+   withTransaction:async fn=>fn(client),
+   createRepo:()=>makeRepo({
+     findActiveInviteByToken:async()=>{operations.push('invite-lock');return {
+       tenantId,projectId:'project-1' as UUID,companyId,companyType:'GC',
+       email:'field.user@example.com',role:'REQUESTER',
+     };},
+     markInviteAccepted:async()=>{operations.push('accept');},
+   }),
+ });
+ const response=await handlePostRegister(makeRequest('http://localhost/api/auth/register',{
+   tenantId,email:'field.user@example.com',password:'strong-password',name:'Field User',inviteToken:'bound-invite',
+ }),deps);
+ assert.equal(response.status,201);
+ assert.ok(operations.includes('tenant-lock'));
+ assert.ok(operations.indexOf('tenant-lock')<operations.indexOf('invite-lock'));
+ assert.ok(operations.indexOf('accept')<operations.indexOf('audit'));
 });

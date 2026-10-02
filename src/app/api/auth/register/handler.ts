@@ -1,7 +1,10 @@
 import { randomUUID } from 'crypto';
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { NotFoundError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
+import { acquireTenantLifecycleLock } from '@/lib/tenant-lifecycle-lock';
+import { requireResourceUuid } from '@/lib/resource-uuid';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import { createUser } from '@/modules/identity/application/create-user';
@@ -53,6 +56,7 @@ export async function handlePostRegister(
       inviteToken: string;
     };
     const normalizedTenantId = tenantId.trim() as UUID;
+    requireResourceUuid(normalizedTenantId,'tenantId');
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
     const normalizedInviteToken = inviteToken.trim();
@@ -72,7 +76,13 @@ export async function handlePostRegister(
 
     const repo = deps.createRepo();
     const user = await deps.withTransaction(async (client) => {
-      const invite = await repo.findActiveInviteByToken(client, normalizedInviteToken);
+      try {
+        await acquireTenantLifecycleLock(client, normalizedTenantId, 'EXCLUSIVE');
+      } catch(err) {
+        if(err instanceof NotFoundError) throw new ValidationError('inviteToken is invalid or expired');
+        throw err;
+      }
+      const invite = await repo.findActiveInviteByToken(client, normalizedInviteToken, normalizedTenantId);
       if (!invite) {
         throw new ValidationError('inviteToken is invalid or expired');
       }
@@ -114,6 +124,12 @@ export async function handlePostRegister(
       });
       await repo.markInviteAccepted(client, normalizedInviteToken, createdAt);
 
+      await appendAdministrativeEvent(client,{
+        auth:{tenantId:createdUser.tenantId,userId:createdUser.id},projectId:invite.projectId,
+        subjectUserId:createdUser.id,eventType:'user.registered',
+        authorityEvidence:{kind:'BOUND_INITIAL_INVITE',companyId:invite.companyId,role:invite.role},
+        changes:{accountCreated:true,membershipCreated:true,inviteAccepted:true},
+      });
       return createdUser;
     });
 

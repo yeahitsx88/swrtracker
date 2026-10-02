@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import { assertActiveSession, requireAuth, requireActiveAuth, sessionTokenHash, signToken } from '@/lib/auth';
+import {beginAuthenticatedMutation} from '@/lib/with-transaction';
 import { handlePostLogout } from '@/app/api/auth/logout/handler';
 import { UnauthorizedError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
@@ -37,8 +38,10 @@ test('logout revokes the presented token without revoking another login', async 
       query: async <T extends object>(sql: string, params?: unknown[]) => {
         if (sql.includes('INSERT INTO revoked_auth_sessions')) {
           revoked.add(String(params?.[0]));
-          return { rows: [] as T[] };
+          return { rows: [{token_hash:params?.[0]}] as T[] };
         }
+        if(sql.includes('pg_current_xact_id'))return {rows:[{transaction_id:'logout-test'}] as T[]};
+        if(sql.includes('FROM tenants'))return {rows:[{id:tenantId}] as T[]};
         if(sql.includes('FROM users'))return {rows:[{session_version:1,deactivated_at:null}] as T[]};
         return { rows: [{ revoked: revoked.has(String(params?.[0])) }] as T[] };
       },
@@ -46,7 +49,10 @@ test('logout revokes the presented token without revoking another login', async 
     const request = (token: string) => new NextRequest('http://localhost/api/companies', {
       method: 'POST', headers: { cookie: `swr_session=${token}` },
     });
-    const response = await handlePostLogout(request(first), db);
+    const response = await handlePostLogout(request(first), async (fn,mutation) => {
+      if(mutation) await beginAuthenticatedMutation(db,mutation);
+      return fn(db);
+    });
     assert.equal(response.status, 200);
     assert.ok(revoked.has(sessionTokenHash(first)));
     await assert.rejects(() => requireActiveAuth(request(first), db),
@@ -68,7 +74,7 @@ test('logout clears an invalid stale cookie without a database write', async () 
     const req = new NextRequest('http://localhost/api/auth/logout', {
       method: 'POST', headers: { cookie: 'swr_session=invalid-token' },
     });
-    const response = await handlePostLogout(req, db);
+    const response = await handlePostLogout(req, async fn=>fn(db));
     assert.equal(response.status, 200);
     assert.match(response.headers.get('set-cookie') ?? '', /swr_session=/);
     assert.equal(writes, 0);
@@ -156,4 +162,23 @@ test('production token signing refuses short and known placeholder secrets',()=>
     if(previousSecret===undefined)delete process.env.JWT_SECRET;else process.env.JWT_SECRET=previousSecret;
     if(previousMode===undefined)Reflect.deleteProperty(process.env,'NODE_ENV');else Object.assign(process.env,{NODE_ENV:previousMode});
   }
+});
+test('logout waiting behind disablement clears cookie without a revocation or audit write',async()=>{
+ const prior=process.env.JWT_SECRET;process.env.JWT_SECRET='logout-wait-synthetic-secret';
+ let writes=0;
+ const db:DbClient={query:async<T extends object>(sql:string)=>{
+   if(sql.startsWith('INSERT'))writes++;
+   const row=sql.includes('pg_current_xact_id')?{transaction_id:'disabled-logout'}:
+     sql.includes('FROM tenants')?{id:tenantId}:sql.includes('FROM users')?
+     {session_version:2,deactivated_at:new Date()}:{revoked:false};
+   return {rows:[row] as T[]};
+ }};
+ try{
+  const req=new NextRequest('http://localhost/api/auth/logout',{method:'POST',headers:{cookie:'swr_session='+signToken(userId,tenantId)}});
+  const res=await handlePostLogout(req,async(fn,mutation)=>{
+    if(mutation)await beginAuthenticatedMutation(db,mutation);return fn(db);
+  });
+  assert.equal(res.status,200);assert.match(res.headers.get('set-cookie')??'',/Max-Age=0/i);
+  assert.equal(writes,0);
+ }finally{if(prior===undefined)delete process.env.JWT_SECRET;else process.env.JWT_SECRET=prior;}
 });

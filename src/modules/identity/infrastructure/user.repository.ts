@@ -148,11 +148,10 @@ export class UserRepository implements IUserRepository {
     db: DbClient,
     membership: { id: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
   ): Promise<void> {
-    await db.query(
+    const {rows} = await db.query(
       `INSERT INTO project_memberships (id, project_id, user_id, role, created_at)
        VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (project_id, user_id) DO UPDATE
-       SET role = EXCLUDED.role`,
+       ON CONFLICT (project_id, user_id) DO NOTHING RETURNING id`,
       [
         membership.id,
         membership.projectId,
@@ -161,11 +160,13 @@ export class UserRepository implements IUserRepository {
         membership.createdAt,
       ],
     );
+    if(!rows.length) throw new ConflictError('Project membership already exists; use an explicit role change');
   }
 
   async findActiveInviteByToken(
     db: DbClient,
     token: string,
+    tenantId?: UUID,
   ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string } | null> {
     const { rows } = await db.query<{
       tenant_id: string;
@@ -180,12 +181,13 @@ export class UserRepository implements IUserRepository {
        JOIN projects p ON p.id = i.project_id AND p.tenant_id = i.tenant_id AND p.status <> 'ARCHIVED'
        LEFT JOIN companies c ON c.id = i.company_id AND c.tenant_id = i.tenant_id
        WHERE i.token = $1
+         AND ($2::uuid IS NULL OR i.tenant_id = $2)
          AND i.accepted_at IS NULL
          AND i.canceled_at IS NULL
          AND i.expires_at > NOW()
        LIMIT 1
        FOR UPDATE OF i`,
-      [token],
+      [token, tenantId ?? null],
     );
 
     if (!rows[0]) return null;
@@ -249,11 +251,13 @@ export class UserRepository implements IUserRepository {
     );
   }
 
-  async lockPasswordResetUser(db: DbClient, tenantId: UUID, userId: UUID): Promise<void> {
-    await db.query(
-      `SELECT id FROM users WHERE tenant_id = $1 AND id = $2 FOR UPDATE`,
+  async lockPasswordResetUser(db: DbClient, tenantId: UUID, userId: UUID): Promise<UserWithCredentials | null> {
+    const {rows} = await db.query<DbRow>(
+      `SELECT id,tenant_id,company_id,email,password_hash,auth_method,name,session_version,deactivated_at,created_at
+       FROM users WHERE tenant_id = $1 AND id = $2 FOR UPDATE`,
       [tenantId, userId],
     );
+    return rows[0] ? rowToUserWithCreds(rows[0]) : null;
   }
 
   async findRecentActivePasswordResetToken(
@@ -279,6 +283,7 @@ export class UserRepository implements IUserRepository {
     db: DbClient,
     tokenHash: string,
     now: Date,
+    lock = true,
   ): Promise<PasswordResetToken | null> {
     const { rows } = await db.query<PasswordResetTokenRow>(
       `SELECT id, tenant_id, user_id, token_hash, expires_at, used_at, created_at
@@ -286,7 +291,7 @@ export class UserRepository implements IUserRepository {
        WHERE token_hash = $1
          AND used_at IS NULL
          AND expires_at > $2
-       LIMIT 1 FOR UPDATE`,
+       LIMIT 1 ${lock ? 'FOR UPDATE' : ''}`,
       [tokenHash, now],
     );
 
