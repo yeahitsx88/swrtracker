@@ -29,7 +29,7 @@ async function main(){
     await db.query("INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,'Area unlink GC','GC'),($3,$2,'Area unlink Sub','SUBCONTRACTOR'),($4,$5,'Foreign GC','GC')",[id(2),id(1),id(5),id(91),id(90)]);
     await db.query("INSERT INTO projects(id,tenant_id,name,status,crew_build) VALUES($1,$2,'Area unlink disposable','ACTIVE','FULL'),($3,$2,'Other owned project','ACTIVE','FULL'),($4,$5,'Foreign owned project','ACTIVE','FULL')",[id(3),id(1),id(4),id(93),id(90)]);
     for(const [n,name,role] of [[10,'Manager','SURVEY_MANAGER'],[11,'John','SURVEY_SUPERINTENDENT'],[12,'Jason','SURVEY_SUPERINTENDENT'],[13,'Former Chief','VIEWER'],[14,'Incomplete','SURVEY_SUPERINTENDENT'],[15,'Sub Superintendent','SURVEY_SUPERINTENDENT'],[16,'IT protected','PROJECT_ADMIN'],[17,'Central IT only','REQUESTER']] as const){
-     await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash,deactivated_at) VALUES($1,$2,$3,$4,$5,'not-a-login-hash',$6)",[id(n),id(1),id(n===15?5:2),`area-unlink-${n}@example.test`,name,n===13?new Date():null]);
+     await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash,deactivated_at,deactivated_by) VALUES($1,$2,$3,$4,$5,'not-a-login-hash',$6,CASE WHEN $6::timestamptz IS NULL THEN NULL ELSE $1::uuid END)",[id(n),id(1),id(n===15?5:2),`area-unlink-${n}@example.test`,name,n===13?new Date():null]);
      await db.query('INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,$3)',[id(3),id(n),role]);
     }
     await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,'area-unlink-foreign@example.test','Foreign Manager','not-a-login-hash')",[id(92),id(90),id(91)]);

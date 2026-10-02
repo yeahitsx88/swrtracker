@@ -82,7 +82,7 @@ async function main(){
   const changes:Array<{name:string;write:(db:PoolClient,f:Fixture)=>Promise<unknown>;schemaOnly?:boolean}>=[
    {name:'selected assignment deactivation',write:(db,f)=>deactivateAorUserAssignment(tenancy,db,{tenantId:id(1),projectId:f.project,assignmentId:f.assignment,actorRole:'TENANT_ADMIN'})},
    {name:'witness assignment deactivation',write:(db,f)=>deactivateAorUserAssignment(tenancy,db,{tenantId:id(1),projectId:f.project,assignmentId:f.witness,actorRole:'TENANT_ADMIN'})},
-   {name:'replacement account deactivation',schemaOnly:true,write:(db,f)=>db.query('UPDATE users SET deactivated_at=now() WHERE id=$1',[f.replacement])},
+   {name:'replacement account deactivation',schemaOnly:true,write:(db,f)=>db.query('UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[f.replacement])},
    {name:'replacement session version',schemaOnly:true,write:(db,f)=>db.query('UPDATE users SET session_version=session_version+1 WHERE id=$1',[f.replacement])},
    {name:'replacement company',schemaOnly:true,write:(db,f)=>db.query("UPDATE companies SET type='SUBCONTRACTOR' WHERE id=$1",[f.company])},
    {name:'replacement role',schemaOnly:true,write:(db,f)=>db.query("UPDATE project_memberships SET role='REQUESTER' WHERE project_id=$1 AND user_id=$2",[f.project,f.replacement])},

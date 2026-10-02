@@ -28,7 +28,7 @@ async function main(){
   await pg.query('UPDATE aor_assignments SET deactivated_at=NULL WHERE id=ANY($1::uuid[])',[[id(51),id(52)]]);
   await pg.query('UPDATE aor_nodes SET retired_at=NULL WHERE id=$1',[id(21)]);
   await pg.query('UPDATE aor_levels SET depth=0 WHERE id=$1',[id(20)]);
-  await pg.query("UPDATE users SET session_version=1,deactivated_at=NULL,company_id=$2 WHERE id=ANY($1::uuid[])",[[id(10),id(12)],id(2)]);
+  await pg.query("UPDATE users SET session_version=1,deactivated_at=NULL,deactivated_by=NULL,company_id=$2 WHERE id=ANY($1::uuid[])",[[id(10),id(12)],id(2)]);
   await pg.query("UPDATE project_memberships SET role=CASE WHEN user_id=$2 THEN 'SURVEY_MANAGER' ELSE 'SURVEY_SUPERINTENDENT' END WHERE project_id=$1 AND user_id=ANY($3::uuid[])",[id(3),id(10),[id(10),id(12)]]);
   await pg.query("UPDATE companies SET type='GC' WHERE id=$1",[id(2)]);
   await pg.query("DELETE FROM access_grant_events WHERE project_id=$1 AND resolution_evidence->>'kind' IN ('SURVEY_REVIEWER_RESOLUTION','SURVEY_REVIEWER_HANDOVER_GRANT')",[id(3)]);
@@ -49,7 +49,7 @@ async function main(){
    ['duplicate-witness','UPDATE aor_assignments SET deactivated_at=now() WHERE id=$1',[id(52)]],
    ['review-grant','UPDATE project_responsibility_grants SET revoked_at=now(),revoked_by=$2 WHERE id=$1',[id(50),id(14)]],
    ['replacement-role',"UPDATE project_memberships SET role='PARTY_CHIEF' WHERE project_id=$1 AND user_id=$2",[id(3),id(12)]],
-   ['replacement-account','UPDATE users SET deactivated_at=now() WHERE id=$1',[id(12)]],
+   ['replacement-account','UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[id(12)]],
    ['replacement-session','UPDATE users SET session_version=2 WHERE id=$1',[id(12)]],
    ['replacement-company','UPDATE users SET company_id=$2 WHERE id=$1',[id(12),id(8)]],
    ['actor-role',"UPDATE project_memberships SET role='VIEWER' WHERE project_id=$1 AND user_id=$2",[id(3),id(10)]],

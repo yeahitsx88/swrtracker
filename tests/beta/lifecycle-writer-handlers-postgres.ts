@@ -1,3 +1,8 @@
+import {handleOffboarding} from '../../src/app/api/accounts/[userId]/offboarding/handler';
+import {POST as resolveReview} from '../../src/app/api/accounts/offboarding-reviews/[reviewId]/route';
+import {POST as setAdmin} from '../../src/app/api/projects/[projectId]/administrators/route';
+import {POST as registerCompany} from '../../src/app/api/projects/[projectId]/companies/route';
+import {PATCH as selectTemplate} from '../../src/app/api/projects/[projectId]/template/route';
 import assert from 'node:assert/strict';
 import {Pool,type PoolClient} from 'pg';
 import {randomUUID} from 'node:crypto';
@@ -11,6 +16,8 @@ import {handlePostSurveyTeam,handlePatchSurveyRole,handleDeleteSurveyTeam} from 
 import {handlePostProtectedObligations} from '../../src/app/api/projects/[projectId]/survey/protected-obligations/handler';
 import {handlePatchSuperintendentArea} from '../../src/app/api/projects/[projectId]/survey/staffing/superintendent-area-handler';
 import {POST as operateNotifications} from '../../src/app/api/projects/[projectId]/notifications/route';
+import {POST as addProjectMember} from '../../src/app/api/projects/[projectId]/members/route';
+import {POST as grantTenantRole,DELETE as removeTenantRole} from '../../src/app/api/tenant-memberships/route';
 import {POST as moveWorkforce} from '../../src/app/api/projects/[projectId]/survey/workforce/route';
 import {handlePostDepartments} from '../../src/app/api/projects/[projectId]/departments/handler';
 import {handlePostProjectActivation} from '../../src/app/api/projects/[projectId]/activate/handler';
@@ -83,6 +90,15 @@ async function main(){
    createStorage:()=>({write:async()=>{const storageKey=nextId();stagedObjects.add(storageKey);return{storageKey,contentSha256:'a'.repeat(64)};},
     read:async()=>{storageReads++;return Buffer.from('synthetic bytes');},remove:async(key:string)=>{stagedObjects.delete(key);}})};
   const cases=[
+   {name:'project-access-disable',method:'POST',handler:(req:NextRequest)=>handleOffboarding(req,{kind:'PROJECT_ACCESS',projectId:project},chief),mode:'EXCLUSIVE',body:{scope:{kind:'PROJECT_ACCESS',projectId:project},subjectUserId:chief,reason:'Confirmed synthetic disable',snapshot:'a'.repeat(64),confirmed:true}},
+   {name:'tenant-account-disable',method:'POST',handler:(req:NextRequest)=>handleOffboarding(req,{kind:'TENANT_ACCOUNT'},chief),mode:'EXCLUSIVE',body:{scope:{kind:'TENANT_ACCOUNT'},subjectUserId:chief,reason:'Confirmed synthetic disable',snapshot:'a'.repeat(64),confirmed:true}},
+   {name:'central-review-resolution',method:'POST',handler:resolveReview,mode:'EXCLUSIVE',body:{reviewId:link,disposition:'NO_FURTHER_ACTION',reason:'Synthetic review decision',tenantEventId:null,snapshot:'a'.repeat(64),confirmed:true}},
+   {name:'project-admin-grant',method:'POST',handler:setAdmin,mode:'EXCLUSIVE',body:{userId:chief,enabled:true,confirmed:true}},
+   {name:'project-company-register',method:'POST',handler:registerCompany,mode:'EXCLUSIVE',body:{name:'Scoped company',type:'GC',confirmed:true}},
+   {name:'project-template-select',method:'PATCH',handler:selectTemplate,mode:'EXCLUSIVE',body:{templateId:chief,confirmed:true}},
+   {name:'project-member-add',method:'POST',handler:addProjectMember,mode:'EXCLUSIVE',body:{userId:chief,role:'REQUESTER'}},
+   {name:'tenant-role-grant',method:'POST',handler:(req:NextRequest)=>grantTenantRole(req),mode:'EXCLUSIVE',body:{userId:chief,role:'BILLING_VIEWER'}},
+   {name:'tenant-role-remove',method:'DELETE',handler:(req:NextRequest)=>removeTenantRole(req),mode:'EXCLUSIVE',body:{userId:chief}},
    {name:'notification-capture',method:'POST',handler:operateNotifications,mode:'SHARED',body:{action:'capture'}},
    {name:'notification-retry',method:'POST',handler:operateNotifications,mode:'SHARED',body:{action:'retry-failed'}},
    {name:'staffing-role-and-links',method:'POST',handler:handlePostSurveyStaffing,mode:'EXCLUSIVE',body:{expectedSnapshot:snapshot,partyChiefId:chief,areaId:area,superintendentId:superintendent,instrumentManIds:[im],confirmRoleChanges:true}},
@@ -120,10 +136,10 @@ async function main(){
    {name:'attachment-download',method:'GET',handler:(req:NextRequest)=>handleDownloadTicketAttachment(req,{params:Promise.resolve({ticketId:ticket,attachmentId:link})}),mode:'SHARED',body:{}},
    {name:'draft-delete',method:'DELETE',handler:deleteDraft,mode:'SHARED',body:{expectedVersion:0}},
   ] as const;
-  const ctx={params:Promise.resolve({ticketId:ticket,projectId:project,departmentId:nextId(),grantId:nextId(),templateId:nextId()})};
+  const ctx={params:Promise.resolve({ticketId:ticket,projectId:project,departmentId:nextId(),grantId:nextId(),templateId:nextId(),reviewId:link})};
   const rowsBefore=async()=>{
    const state:Record<string,unknown>={};
-   for(const table of ['api_idempotency','survey_staffing_events','access_grant_events','administrative_events','aor_assignments','crew_rosters','survey_teams','survey_team_members','project_memberships','projects','departments','aor_nodes','aor_levels','companies','project_templates','priority_whitelist','invites','company_authority_grants','tickets','ticket_events','attachments','notification_outbox']){
+   for(const table of ['api_idempotency','account_lifecycle_events','account_offboarding_reviews','administrative_notification_outbox','project_admin_grants','project_companies','survey_staffing_events','access_grant_events','administrative_events','aor_assignments','crew_rosters','survey_teams','survey_team_members','project_memberships','projects','departments','aor_nodes','aor_levels','companies','project_templates','priority_whitelist','invites','company_authority_grants','tickets','ticket_events','attachments','notification_outbox']){
     state[table]=(await pg!.query('SELECT to_jsonb(t) AS row FROM '+table+' t ORDER BY to_jsonb(t)::text')).rows;
    }return state;
   };

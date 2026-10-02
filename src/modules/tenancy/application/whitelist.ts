@@ -14,8 +14,8 @@ import type { ITenancyRepository } from './ports';
 type ActorRole = ProjectRole | 'TENANT_ADMIN';
 
 function assertTenantAdmin(actorRole: ActorRole): void {
-  if (actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can manage the priority whitelist');
+  if (actorRole !== 'TENANT_ADMIN' && actorRole !== 'PROJECT_ADMIN') {
+    throw new ForbiddenError('Project administration is required to manage the priority whitelist');
   }
 }
 

@@ -88,7 +88,7 @@ async function main(){
     assert.equal(await repo.snapshot(pool,id(11),project),null);checks++;
     await pool.query(`UPDATE project_memberships SET role='VIEWER' WHERE project_id=$1 AND user_id=$2`,[project,manager]);await checked(post(valid,key),403);
     await pool.query(`UPDATE project_memberships SET role='SURVEY_MANAGER' WHERE project_id=$1 AND user_id=$2`,[project,manager]);
-    await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[manager]);await checked(post(valid,key),401);await pool.query('UPDATE users SET deactivated_at=NULL WHERE id=$1',[manager]);
+    await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[manager]);await checked(post(valid,key),401);await pool.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[manager]);
     await pool.query('INSERT INTO revoked_auth_sessions(tenant_id,user_id,token_hash,expires_at) VALUES($1,$2,$3,NOW()+interval \'1 hour\')',[tenant,manager,sessionTokenHash(bearer)]);await checked(post(valid,key),401);bearer=signToken(manager,tenant);
     await pool.query('UPDATE users SET session_version=2 WHERE id=$1',[manager]);await checked(post(valid,key),401);bearer=signToken(manager,tenant,2);
     await pool.query(`UPDATE projects SET status='ARCHIVED' WHERE id=$1`,[project]);await checked(post(valid,key),409);

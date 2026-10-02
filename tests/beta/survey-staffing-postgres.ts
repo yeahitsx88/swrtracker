@@ -43,8 +43,8 @@ async function main(){
     assert.equal(await repo.readStaffing(pool,otherTenant,project,chief,pageQuery),null);scenarios++;
     assert.equal(await repo.readStaffing(pool,tenant,sameTenantProject,chief,pageQuery),null);scenarios++;
     assert.equal(await repo.readStaffing(pool,tenant,project,id(20),pageQuery),null);scenarios++;
-    await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[chief]);await call('',404);
-    await pool.query('UPDATE users SET deactivated_at=NULL WHERE id=$1',[chief]);
+    await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[chief]);await call('',404);
+    await pool.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[chief]);
     await pool.query('INSERT INTO aor_assignments (tenant_id,project_id,user_id,aor_node_id) VALUES ($1,$2,$3,$4)',[tenant,project,chief,area]);
     await pool.query(`INSERT INTO survey_reporting_links (tenant_id,project_id,superintendent_id,party_chief_id,aor_node_id,assigned_by)
       VALUES ($1,$2,$3,$4,$5,$6)`,[tenant,project,superintendent,chief,area,manager]);
@@ -58,7 +58,7 @@ async function main(){
       await pool.query(`INSERT INTO project_memberships (project_id,user_id,role) VALUES ($1,$2,'INSTRUMENT_MAN')`,[project,user]);
       await pool.query('INSERT INTO crew_rosters (tenant_id,project_id,party_chief_id,instrument_man_id) VALUES ($1,$2,$3,$4)',[tenant,project,chief,user]);
     }
-    await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[id(1000)]);
+    await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[id(1000)]);
     await pool.query('UPDATE crew_rosters SET deactivated_at=NOW() WHERE instrument_man_id=$1',[id(1024)]);
     const first=await call('&limit=10'),second=await call('&limit=10&offset=10');
     assert.equal(first.instrumentMen.total,25);assert.equal(first.instrumentMen.data.length,10);assert.equal(first.instrumentManTotal,25);
@@ -68,7 +68,7 @@ async function main(){
     assert.equal((await call('&search='+encodeURIComponent("' OR TRUE --"))).instrumentMen.total,0,'Search must be bound, not executable SQL');
     assert.equal((await call('&limit=10&offset=100')).instrumentMen.data.length,0);
     await pool.query('UPDATE aor_nodes SET retired_at=NOW() WHERE id=$1',[area]);
-    await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[superintendent]);
+    await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[superintendent]);
     const retired=await call();assert.equal(retired.areas.data[0].retired,true);assert.equal(retired.reporting.area.retired,true);assert.equal(retired.reporting.superintendent.active,false);
     // A linked current member with a changed role is shown as such, not relabeled.
     await pool.query(`UPDATE project_memberships SET role='REQUESTER' WHERE project_id=$1 AND user_id=$2`,[project,superintendent]);

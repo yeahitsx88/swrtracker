@@ -40,6 +40,11 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   assert.equal((await POST(request(first,'VIEWER'),{params:Promise.resolve({projectId:f.project})})).status,409);checks++;
   assert.equal((await db.query('SELECT role FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,first])).rows[0].role,'REQUESTER');checks++;
   assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[first])).rows[0].session_version,2);checks++;
+  await db.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=$2 WHERE id=$1',[second,f.actor]);
+  assert.equal((await POST(request(second),{params:Promise.resolve({projectId:f.project})})).status,409,'disabled subjects cannot gain new project membership');checks++;
+  assert.equal((await db.query('SELECT count(*)::int AS n FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,second])).rows[0].n,0);checks++;
+  assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[second])).rows[0].session_version,1);checks++;
+  await db.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[second]);
   auditFailure=true;
   assert.equal((await POST(request(second),{params:Promise.resolve({projectId:f.project})})).status,500);checks++;
   assert.equal((await db.query('SELECT count(*)::int AS n FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,second])).rows[0].n,0);checks++;

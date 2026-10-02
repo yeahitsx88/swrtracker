@@ -37,6 +37,9 @@ export class CompanyAccessRepository {
       `SELECT c.id, c.name
          FROM companies c
          WHERE c.tenant_id = $1 AND c.type = 'SUBCONTRACTOR'
+           AND (EXISTS(SELECT 1 FROM project_companies pc WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id)
+             OR EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id
+               WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id))
            AND EXISTS (
              SELECT 1 FROM projects p
              WHERE p.id = $2 AND p.tenant_id = c.tenant_id AND p.status <> 'ARCHIVED'
@@ -107,6 +110,9 @@ export class CompanyAccessRepository {
        FROM projects p JOIN companies c ON c.tenant_id = p.tenant_id
        WHERE p.id = $2 AND p.tenant_id = $1 AND p.status <> 'ARCHIVED'
          AND c.id = $3 AND c.type = 'SUBCONTRACTOR'
+         AND (EXISTS(SELECT 1 FROM project_companies pc WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id)
+           OR EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id
+             WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id))
        RETURNING token`,
       [params.tenantId, params.projectId, params.companyId, params.email, params.invitedBy, params.expiresAt],
     );

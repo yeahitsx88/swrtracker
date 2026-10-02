@@ -28,7 +28,7 @@ async function main(){
     await pg.query("INSERT INTO users(id,tenant_id,company_id,name,email,password_hash) VALUES($1,$2,$3,$4,$5,'not-a-password')",[id(n),id(1),id(n===18?8:2),name,`${n}@reviewer.example.invalid`]);
     await pg.query('INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,$3)',[id(3),id(n),role]);
    }
-   await pg.query('UPDATE users SET deactivated_at=now() WHERE id=$1',[id(15)]);
+   await pg.query('UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[id(15)]);
    await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[id(1),id(17)]);
    await pg.query("INSERT INTO aor_levels(id,tenant_id,project_id,depth,label) VALUES($1,$2,$3,0,'Area')",[id(20),id(1),id(3)]);
    for(const n of [21,22])await pg.query('INSERT INTO aor_nodes(id,tenant_id,project_id,level_id,name,code) VALUES($1,$2,$3,$4,$5,$5)',[id(n),id(1),id(3),id(20),`Area${n-20}`]);
@@ -37,6 +37,7 @@ async function main(){
     await pg.query('INSERT INTO aor_assignments(id,tenant_id,project_id,user_id,aor_node_id) VALUES($1,$2,$3,$4,$5)',[id(n+10),id(1),id(3),id(user),id(area)]);
    }
   }
+  await pg.query("INSERT INTO project_admin_grants(tenant_id,project_id,user_id,origin,granted_by) SELECT $1,$2,$3,'EXPLICIT',$3 WHERE NOT EXISTS(SELECT 1 FROM project_admin_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND revoked_at IS NULL)",[id(1),id(3),id(14)]);
   const repo=new ProtectedObligationsPgRepository(),query={search:'',limit:10 as const,offset:0};
   const read=(actor:number,input:any,project=id(3))=>readProtectedObligations(repo,pg,{userId:id(actor),tenantId:id(1),sessionVersion:1},project,input);
   const personnel=await read(10,{mode:'personnel',query});assert.equal(personnel.mode,'personnel');if(personnel.mode!=='personnel')throw Error();
@@ -61,10 +62,10 @@ async function main(){
   }
   try{await assert.rejects(readProtectedObligations(new AuthorityChangedRead(),pg,{userId:id(10),tenantId:id(1),sessionVersion:1},id(3),{mode:'personnel',query}),ForbiddenError);checks++;}
   finally{await pg.query("UPDATE project_memberships SET role='SURVEY_MANAGER' WHERE project_id=$1 AND user_id=$2",[id(3),id(10)]);}
-  for(const change of ["UPDATE users SET session_version=2 WHERE id=$1","UPDATE users SET deactivated_at=now() WHERE id=$1"]){
+  for(const change of ["UPDATE users SET session_version=2 WHERE id=$1","UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1"]){
    class AccountChangedRead extends ProtectedObligationsPgRepository{override async readPage(...args:Parameters<ProtectedObligationsPgRepository['readPage']>){await pg.query(change,[id(10)]);return super.readPage(...args);}}
    try{await assert.rejects(readProtectedObligations(new AccountChangedRead(),pg,{userId:id(10),tenantId:id(1),sessionVersion:1},id(3),{mode:'personnel',query}),UnauthorizedError);checks++;}
-   finally{await pg.query('UPDATE users SET session_version=1,deactivated_at=NULL WHERE id=$1',[id(10)]);}
+   finally{await pg.query('UPDATE users SET session_version=1,deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[id(10)]);}
   }
   await assert.rejects(read(10,{mode:'candidates',userId:id(11),grantId:id(31),query}),NotFoundError);checks++;
   checks+=await lateMembershipChecks(pg);
@@ -123,7 +124,7 @@ async function commandChecks(pg:Pool){
   await db.query('SAVEPOINT replay_eligibility');
   for(const [sql,args] of [
    ["UPDATE project_memberships SET role='PARTY_CHIEF' WHERE project_id=$1 AND user_id=$2",[id(3),id(12)]],
-   ['UPDATE users SET deactivated_at=now(),session_version=session_version+1 WHERE id=$1',[id(12)]],
+   ['UPDATE users SET deactivated_at=now(),deactivated_by=id,session_version=session_version+1 WHERE id=$1',[id(12)]],
    ['UPDATE users SET company_id=$2 WHERE id=$1',[id(12),id(8)]],
    ["UPDATE project_memberships SET role='SURVEY_MANAGER' WHERE project_id=$1 AND user_id=$2",[id(3),id(11)]]
   ] as const){
@@ -181,9 +182,9 @@ async function commandChecks(pg:Pool){
   // Every refusal uses the actual handler/repository with no UI authority.
   const negatives=[
    ["UPDATE project_memberships SET role='SURVEY_MANAGER' WHERE project_id=$1 AND user_id=$2",[id(3),id(11)],409],
-   ['UPDATE users SET deactivated_at=now() WHERE id=$1',[id(11)],409],
+   ['UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[id(11)],409],
    ["UPDATE project_memberships SET role='PARTY_CHIEF' WHERE project_id=$1 AND user_id=$2",[id(3),id(12)],409],
-   ['UPDATE users SET deactivated_at=now() WHERE id=$1',[id(12)],409],
+   ['UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[id(12)],409],
    ['UPDATE users SET company_id=$2 WHERE id=$1',[id(12),id(8)],409],
    ["UPDATE project_responsibility_grants SET responsibility='FIELD_COORDINATOR' WHERE id=$1",[id(30)],409],
    ['UPDATE project_responsibility_grants SET aor_node_id=NULL WHERE id=$1',[id(30)],409],

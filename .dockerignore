@@ -20,3 +20,8 @@ audits
 
 # Local Superpowers execution ledger and verification logs
 .superpowers
+
+.local-*
+!audits/
+audits/*
+!audits/phase5-lifecycle-writers.json

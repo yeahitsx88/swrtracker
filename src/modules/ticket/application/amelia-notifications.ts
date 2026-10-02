@@ -14,7 +14,14 @@ export async function enqueueNotification(
   await db.query(
     `INSERT INTO notification_outbox
        (tenant_id, ticket_id, recipient_user_id, event_type, payload, idempotency_key)
-     VALUES ($1, $2, $3, $4, $5, $6)
+     SELECT $1, t.id, u.id, $4, $5, $6
+     FROM tickets t
+     JOIN users u ON u.id=$3 AND u.tenant_id=t.tenant_id
+     JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+     JOIN project_memberships pm ON pm.project_id=t.project_id AND pm.user_id=u.id
+     WHERE t.tenant_id=$1 AND t.id=$2
+       AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
+       AND (c.type<>'SUBCONTRACTOR' OR pm.role='REQUESTER')
      ON CONFLICT (tenant_id, idempotency_key) DO NOTHING`,
     [
       params.tenantId,

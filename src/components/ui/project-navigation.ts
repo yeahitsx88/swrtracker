@@ -59,8 +59,9 @@ const navigationByRole: Record<ProjectRole, readonly ProjectNavigationItem[]> = 
   SUBCONTRACTS_COORDINATOR: [allRequests],
 };
 
-export function getProjectNavigation(role: ProjectRole): readonly ProjectNavigationItem[] {
-  return navigationByRole[role];
+export function getProjectNavigation(role: ProjectRole,canAdminister=false): readonly ProjectNavigationItem[] {
+  const operational=navigationByRole[role];
+  return canAdminister&&!operational.includes(admin)?[...operational,admin]:operational;
 }
 
 export function getProjectLandingHref(projectId: string, role: ProjectRole): string {

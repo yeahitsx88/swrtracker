@@ -15,6 +15,7 @@ import {
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
+import {resolveProjectCapabilities} from '@/lib/project-capabilities';
 
 export interface ProjectRequestConfigRouteDeps {
   requireAuth: typeof requireAuth | typeof requireActiveAuth;
@@ -22,6 +23,7 @@ export interface ProjectRequestConfigRouteDeps {
   getTenantRole: typeof getTenantRole;
   createRepo: () => TenancyRepository;
   withTransaction: typeof withTransaction;
+  resolveProjectCapabilities?:typeof resolveProjectCapabilities;
 }
 
 const defaultDeps: ProjectRequestConfigRouteDeps = {
@@ -30,6 +32,7 @@ const defaultDeps: ProjectRequestConfigRouteDeps = {
   getTenantRole,
   createRepo: () => new TenancyRepository(),
   withTransaction,
+  resolveProjectCapabilities,
 };
 
 async function resolveActorRoles(
@@ -45,7 +48,8 @@ async function resolveActorRoles(
     return { tenantRole, projectRole: null };
   }
 
-  const projectRole = await deps.getProjectRole(db, tenantId, projectId, userId, sessionVersion);
+  const capabilities=deps.resolveProjectCapabilities?await deps.resolveProjectCapabilities(db,{tenantId,userId,sessionVersion:sessionVersion??1},projectId):null;
+  const projectRole = capabilities?.canAdminister?'PROJECT_ADMIN':await deps.getProjectRole(db, tenantId, projectId, userId, sessionVersion);
   return { tenantRole, projectRole };
 }
 

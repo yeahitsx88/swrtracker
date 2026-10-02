@@ -13,7 +13,8 @@ export interface ProjectCapabilities {
 }
 export interface OffboardingBlocker {
   code: string;
-  projectId: UUID;
+  /** Tenant continuity has no invented project identity. */
+  projectId: UUID | null;
   count: number;
   resolutionPath: string | null;
 }
@@ -23,7 +24,11 @@ export interface OffboardingPreview {
   snapshot: string;
   alreadyDisabled: boolean;
   blockers: OffboardingBlocker[];
+  blockerTotal: number;
+  blockerOffset: number;
+  blockerLimit: number;
   centralITRecipientCount: number;
+  retainsCentralIT: boolean;
 }
 export interface OffboardingCommand {
   subjectUserId: UUID;

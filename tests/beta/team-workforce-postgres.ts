@@ -41,7 +41,7 @@ async function main(){
  for(const user of [f.superA,f.superB])await pg.query('INSERT INTO aor_assignments(tenant_id,project_id,user_id,aor_node_id) VALUES($1,$2,$3,$4)',[f.tenant,f.project,user,f.area]);
  for(const [chief,superintendent] of [[f.chiefA,f.superA],[f.chiefA2,f.superA],[f.chiefB,f.superB]])await pg.query('INSERT INTO survey_reporting_links(tenant_id,project_id,superintendent_id,party_chief_id,aor_node_id,assigned_by) VALUES($1,$2,$3,$4,$5,$6)',[f.tenant,f.project,superintendent,chief,f.area,f.manager]);
  for(const [im,chief] of [[f.imA,f.chiefA],[f.imB,f.chiefB],[f.inactiveIM,f.chiefA]])await pg.query('INSERT INTO crew_rosters(tenant_id,project_id,party_chief_id,instrument_man_id) VALUES($1,$2,$3,$4)',[f.tenant,f.project,chief,im]);
- await pg.query('UPDATE users SET deactivated_at=now() WHERE id=$1',[f.inactiveIM]);
+ await pg.query('UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[f.inactiveIM]);
  for(const [n,chief,im] of [[40,f.chiefA,f.imA],[41,f.chiefB,f.imB],[42,f.chiefA,f.imB],[43,null,f.imA]] as const)await pg.query(`INSERT INTO tickets(id,tenant_id,project_id,aor_node_id,company_id,ticket_number,requester_id,assigned_party_chief_id,assigned_instrument_man_id,workflow_variant,status,craft,description,requested_date,ticket_type)
  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'STANDARD_APPROVAL','ASSIGNED','Survey','Synthetic increment only','2026-10-01','LAYOUT')`,[id(n),f.tenant,f.project,f.area,f.company,`INC-${n}`,f.requester,chief,im]);
  const ids=(data:{data:Array<{userId:string}>})=>data.data.map(p=>p.userId).sort();
@@ -76,8 +76,8 @@ async function main(){
  await pg.query('UPDATE survey_reporting_links SET deactivated_at=now() WHERE project_id=$1 AND superintendent_id=$2',[f.project,f.superA]);
  assert.deepEqual(ids(await checked(read(f.superA),200)),[]);checks++;await checked(kpi(f.superA,f.imA),404);await checked(move(f.superA,base,key),404);
  await pg.query('UPDATE survey_reporting_links SET deactivated_at=NULL WHERE project_id=$1 AND superintendent_id=$2',[f.project,f.superA]);
- await pg.query('UPDATE users SET deactivated_at=now() WHERE id=$1',[f.imA]);await checked(kpi(f.superA,f.imA),404);await checked(kpi(f.manager,f.imA),404);
- await pg.query('UPDATE users SET deactivated_at=NULL WHERE id=$1',[f.imA]);
+ await pg.query('UPDATE users SET deactivated_at=now(),deactivated_by=id WHERE id=$1',[f.imA]);await checked(kpi(f.superA,f.imA),404);await checked(kpi(f.manager,f.imA),404);
+ await pg.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[f.imA]);
  await pg.query('UPDATE aor_assignments SET deactivated_at=now() WHERE project_id=$1 AND user_id=$2',[f.project,f.superA]);await checked(kpi(f.superA,f.imA),404);
  await pg.query('UPDATE aor_assignments SET deactivated_at=NULL WHERE project_id=$1 AND user_id=$2',[f.project,f.superA]);
  await pg.query('UPDATE users SET session_version=session_version+1 WHERE id=$1',[f.superA]);await checked(read(f.superA),401);await checked(move(f.superA,base),401);

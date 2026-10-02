@@ -160,7 +160,7 @@ async function main() {
     await call(handlePatchSurveyRole(request('PATCH',protectedRole(manager)),ctx,deps),409);
     await call(handlePatchSurveyRole(request('PATCH',protectedRole(outsider)),ctx,deps),404);
     await call(handlePatchSurveyRole(request('PATCH',protectedRole(outsideProject)),ctx,deps),404);
-    await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[inactive]);
+    await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[inactive]);
     await call(handlePatchSurveyRole(request('PATCH',protectedRole(inactive)),ctx,deps),404);
     await call(handlePatchSurveyRole(request('PATCH',{...roleBody,userId:im,expectedRole:'INSTRUMENT_MAN',role:'REQUESTER'}),ctx,deps),409);
     const brokenRole=new SurveyTeamsPgRepository();brokenRole.recordTeamEvent=async()=>{throw new Error('role audit rejected');};
@@ -202,16 +202,16 @@ async function main() {
     // Two Managers are valid Requesters in each other's project. Synchronize
     // their subject lookup to expose actor-user/subject-user lock inversion.
     const crossRepo=new SurveyTeamsPgRepository();const actualMembers=crossRepo.members.bind(crossRepo);
-    let arrived=0;let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
-    crossRepo.members=async(...args)=>{arrived++;if(arrived===2)release();await gate;return actualMembers(...args);};
+    // The tenant EXCLUSIVE barrier serializes these commands before subject lookup.
+    crossRepo.members=actualMembers;
     const crossDeps={...deps,repo:crossRepo};
     const crossToken=signToken(crossManager,tenant);
     const crossResults=await Promise.all([
       handlePatchSurveyRole(request('PATCH',{...roleBody,userId:crossManager}),ctx,crossDeps),
       handlePatchSurveyRole(request('PATCH',{...roleBody,userId:manager},'',crossToken),{params:Promise.resolve({projectId:sameTenantProject})},crossDeps),
     ]);
-    assert.deepEqual(crossResults.map(r=>r.status),[200,200],'Cross-project Manager role edits must not deadlock');scenarios++;
-    const latestManagerToken=signToken(manager,tenant,2);
+    assert.deepEqual(crossResults.map(r=>r.status).sort(),[200,401],'The second actor renews its session after the winning role change');scenarios++;
+    const latestManagerToken=signToken(manager,tenant,(await pool.query('SELECT session_version FROM users WHERE id=$1',[manager])).rows[0].session_version);
     await pool.query('INSERT INTO revoked_auth_sessions (token_hash,tenant_id,user_id,expires_at) VALUES ($1,$2,$3,NOW()+interval \'8 hours\')',[sessionTokenHash(token),tenant,manager]);
     await call(handleGetSurveyTeams(request('GET',undefined),ctx,deps),401);
     await call(handleGetSurveyTeams(request('GET',undefined,'',latestManagerToken),ctx,deps),200);

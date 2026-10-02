@@ -8,7 +8,7 @@ test('existing membership is a conflict rather than a role or access update', as
   const queries: string[] = [];
   const db: DbClient = { query: async <T extends object>(sql: string) => {
     queries.push(sql);
-    if (sql.includes('SELECT tenant_id')) return { rows: [{tenant_id:'tenant'}] as T[] };
+    if (sql.includes('SELECT tenant_id') || sql.includes('SELECT u.tenant_id')) return { rows: [{tenant_id:'tenant',deactivated_at:null,company_type:'GC'}] as T[] };
     if (sql.includes('SELECT status')) return { rows: [{status:'ACTIVE'}] as T[] };
     if (sql.includes('INSERT INTO project_memberships')) {
       assert.doesNotMatch(sql, /DO UPDATE/);

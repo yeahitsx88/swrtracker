@@ -55,7 +55,7 @@ export function createIdempotencyKey(): string {
   return `idemp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = {
     ...(options.body && !options.formData ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers ?? {}),

@@ -17,8 +17,8 @@ export async function addProjectMember(
   db: DbClient,
   params: AddProjectMemberParams,
 ): Promise<void> {
-  if (params.actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can add project members');
+  if (params.actorRole !== 'TENANT_ADMIN' && params.actorRole !== 'PROJECT_ADMIN') {
+    throw new ForbiddenError('Project administration is required to add members');
   }
 
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);

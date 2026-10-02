@@ -6,6 +6,8 @@ import { runNotificationWorkerCycle } from '@/modules/notification/application/w
 import { NotificationRepository, EmailNotificationTransport } from '@/modules/notification/infrastructure';
 import { PgBackgroundJobRunRepository } from '@/modules/notification/infrastructure/job-run.repository';
 import { dispatchPasswordResetEmails, pruneExpiredAuthSecurityRecords } from '@/modules/identity/infrastructure/password-reset-email-outbox';
+import { dispatchAdministrativeNotifications } from '@/modules/identity/infrastructure/administrative-notification-outbox';
+import { withTransaction } from '@/lib/with-transaction';
 import type { UUID } from '@/shared/types';
 
 const SYSTEM_ACTOR_ID = (process.env.SYSTEM_ACTOR_ID || '00000000-0000-0000-0000-000000000001') as UUID;
@@ -22,6 +24,7 @@ async function runResetEmailCycle(): Promise<void> {
   resetEmailRunning = true;
   try {
     await dispatchPasswordResetEmails(pool);
+    await dispatchAdministrativeNotifications(pool, withTransaction, createEmailTransportFromEnv());
   } catch (err) {
     logError('Password reset email worker cycle failed', {
       eventType: 'auth.password_reset.worker.failed', tenantId: null,

@@ -8,7 +8,7 @@ export interface ArchiveProjectParams {
   tenantId: UUID;
   projectId: UUID;
   actorId: UUID;
-  actorRole: TenantRole | null;
+  actorRole: TenantRole | 'PROJECT_ADMIN' | null;
 }
 
 export async function archiveProject(
@@ -16,8 +16,8 @@ export async function archiveProject(
   db: DbClient,
   params: ArchiveProjectParams,
 ): Promise<Project> {
-  if (params.actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can archive projects');
+  if (params.actorRole !== 'TENANT_ADMIN' && params.actorRole !== 'PROJECT_ADMIN') {
+    throw new ForbiddenError('Project administration is required to archive projects');
   }
 
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);

@@ -3,6 +3,7 @@ import { getProjectRole } from '@/lib/get-project-role';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { DbClient, UUID } from '@/shared/types';
+import { assertProjectAdministrator } from '@/lib/project-capabilities';
 
 export type ProjectSetupActorRole = 'PROJECT_ADMIN' | 'TENANT_ADMIN';
 
@@ -13,15 +14,8 @@ export async function resolveProjectSetupActorRole(
   userId: UUID,
   sessionVersion?: number,
 ): Promise<ProjectSetupActorRole> {
-  const tenantRole = await getTenantRole(db, tenantId, userId, sessionVersion);
-  const actorRole =
-    tenantRole === 'TENANT_ADMIN'
-      ? 'TENANT_ADMIN'
-      : await getProjectRole(db, tenantId, projectId, userId, sessionVersion);
-  if (actorRole !== 'PROJECT_ADMIN' && actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only PROJECT_ADMIN or TENANT_ADMIN may manage the AOR setup surface');
-  }
-  return actorRole;
+  const capabilities = await assertProjectAdministrator(db,{tenantId,userId,sessionVersion:sessionVersion??1},projectId);
+  return capabilities.centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';
 }
 
 export async function assertProjectSetupMutable(

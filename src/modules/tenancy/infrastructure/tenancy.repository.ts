@@ -483,10 +483,10 @@ export class TenancyRepository implements ITenancyRepository {
   }
 
   async saveTenantMembership(db: DbClient, membership: TenantMembership): Promise<void> {
-    const { rows: userRows } = await db.query<{ tenant_id: string }>(
-      `SELECT tenant_id
-       FROM users
-       WHERE id = $1
+    const { rows: userRows } = await db.query<{ tenant_id: string; deactivated_at: Date | null; company_type: string }>(
+      `SELECT u.tenant_id, u.deactivated_at, c.type AS company_type
+       FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+       WHERE u.id = $1
        LIMIT 1`,
       [membership.userId],
     );
@@ -497,6 +497,10 @@ export class TenancyRepository implements ITenancyRepository {
       );
     }
 
+    if (userRows[0]?.deactivated_at) throw new ConflictError('Disabled accounts cannot receive tenant authority', 'SUBJECT_ACCOUNT_DISABLED');
+    if (membership.role === 'TENANT_ADMIN' && userRows[0]?.company_type === 'SUBCONTRACTOR') {
+      throw new ForbiddenError('Central IT authority requires an eligible company');
+    }
     await db.query(
       `INSERT INTO tenant_memberships (id, tenant_id, user_id, role, created_at)
        VALUES ($1, $2, $3, $4, $5)
@@ -1041,10 +1045,10 @@ export class TenancyRepository implements ITenancyRepository {
        LIMIT 1`,
       [membership.projectId],
     );
-    const { rows: userRows } = await db.query<{ tenant_id: string }>(
-      `SELECT tenant_id
-       FROM users
-       WHERE id = $1
+    const { rows: userRows } = await db.query<{ tenant_id: string; deactivated_at: Date | null; company_type: string }>(
+      `SELECT u.tenant_id, u.deactivated_at, c.type AS company_type
+       FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+       WHERE u.id = $1
        LIMIT 1`,
       [membership.userId],
     );
@@ -1064,6 +1068,10 @@ export class TenancyRepository implements ITenancyRepository {
       );
     }
 
+    if (userRows[0]?.deactivated_at) throw new ConflictError('Disabled accounts cannot receive project access', 'SUBJECT_ACCOUNT_DISABLED');
+    if (userRows[0]?.company_type === 'SUBCONTRACTOR' && membership.role !== 'REQUESTER') {
+      throw new ForbiddenError('Subcontractor project access is limited to Requester');
+    }
     await this.assertProjectNotArchived(db, membership.tenantId, membership.projectId);
 
     const { rows } = await db.query<{ id: UUID }>(

@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
+import { resolveProjectCapabilities } from '@/lib/project-capabilities';
 import { getProjectRole } from '@/lib/get-project-role';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { withTransaction } from '@/lib/with-transaction';
@@ -41,10 +42,23 @@ export async function resolveDepartmentMembershipActorRole(
   projectId: UUID,
   userId: UUID,
   sessionVersion?: number,
+  titleContext?: {departmentId: UUID; title: string},
 ): Promise<DepartmentMembershipActorRole> {
   const tenantRole = await getTenantRole(db, tenantId, userId, sessionVersion);
-  if (tenantRole === 'TENANT_ADMIN') {
-    return 'TENANT_ADMIN';
+  // Stacked operational roles retain their delegated superintendent-layer powers.
+  if (titleContext) {
+    const operational = sessionVersion !== undefined
+      ? (await resolveProjectCapabilities(db,{tenantId,userId,sessionVersion},projectId)).operationalRole
+      : tenantRole === 'TENANT_ADMIN' ? null : await getProjectRole(db,tenantId,projectId,userId,sessionVersion);
+    if (operational === 'DEPARTMENT_MANAGER' || operational === 'DEPARTMENT_LEAD') {
+      const title = await new TenancyRepository().findDepartmentTitleByName(db,tenantId,titleContext.departmentId,titleContext.title.trim());
+      if (title?.assignmentLayer === 'SUPERINTENDENT') return operational;
+    }
+  }
+  if (tenantRole === 'TENANT_ADMIN') return 'TENANT_ADMIN';
+  if (sessionVersion !== undefined) {
+    const capabilities = await resolveProjectCapabilities(db, {tenantId, userId, sessionVersion}, projectId);
+    if (capabilities.canAdminister) return 'PROJECT_ADMIN';
   }
   return getProjectRole(db, tenantId, projectId, userId, sessionVersion);
 }
@@ -124,6 +138,7 @@ export async function handlePatchDepartmentMembers(
         projectId as UUID,
         auth.userId,
         auth.sessionVersion,
+        {departmentId: departmentId as UUID, title},
 
       );
         await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);

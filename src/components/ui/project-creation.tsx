@@ -17,18 +17,19 @@ export function ProjectCreation(){
  catch(cause){setError(getErrorMessage(cause,'Unable to create the project. Check your entries and try again.'));}
  finally{setBusy(false);}
  }
- if(!data?.canCreateProject)return error?<div role="alert">{error}<Button variant="secondary" onClick={()=>{setError(undefined);setRevision(n=>n+1);}}>Retry administration</Button></div>:null;
- return <Card title="IT Administration" description="Create projects and open their existing configuration.">
+ if(!data||!data.canCreateProject&&!data.projects.length)return error?<div role="alert">{error}<Button variant="secondary" onClick={()=>{setError(undefined);setRevision(n=>n+1);}}>Retry administration</Button></div>:null;
+ return <Card title="Project administration" description="Open the projects you administer.">
  <div className="stack">
  {created?<><SuccessBanner message={`${created.name} was created in Setup.`}/><Link className="button button-secondary" href={`/projects/${created.id}/admin`}>Configure {created.name}</Link></>:null}
  {error?<ErrorBanner message={error}/>:null}
- {!open?<Button onClick={()=>{setOpen(true);setCreated(undefined);}}>Create Project</Button>:<form className="stack" onSubmit={submit}>
+ {data.canCreateProject&&(!open?<Button onClick={()=>{setOpen(true);setCreated(undefined);}}>Create Project</Button>:<form className="stack" onSubmit={submit}>
  <label className="field"><span className="field-label">Project name</span><Input value={name} required maxLength={160} disabled={busy} onChange={e=>setName(e.target.value)}/></label>
  <label className="field"><span className="field-label">Existing project template</span><select className="select" value={templateId} disabled={busy} onChange={e=>setTemplateId(e.target.value)}><option value="">No template</option>{data.templates.map(t=><option key={t.id} value={t.id}>{t.name} · {t.crewBuild}</option>)}</select></label>
  {!templateId?<label className="field"><span className="field-label">Crew build</span><select className="select" value={crewBuild} disabled={busy} onChange={e=>setCrewBuild(e.target.value as CrewBuild)}><option value="FULL">Full · Superintendent, Party Chief, Instrument Man</option><option value="MEDIUM">Medium · Party Chief, Instrument Man</option><option value="SLIM">Slim · Instrument Man</option></select></label>:null}
  <p className="muted">The project stays in Setup until its configuration is ready and an administrator activates it.</p>
  <div className="row"><Button type="submit" disabled={busy||!name.trim()}>{busy?'Creating…':'Create Project'}</Button><Button type="button" variant="secondary" disabled={busy} onClick={()=>setOpen(false)}>Cancel</Button></div>
- </form>}
- <h3 className="panel-title">Recent projects</h3><p className="muted">Up to 100 tenant projects, newest first.</p><ul className="tm-list">{data.projects.map(p=><li key={p.id}><Link className="app-link" href={`/projects/${p.id}/admin`}>{p.name}</Link> · {p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}</li>)}</ul>
+ </form>)}
+ {data.canCreateProject&&<Link className="app-link" href="/accounts">Tenant accounts and Central IT reviews</Link>}
+ <h3 className="panel-title">Administered projects</h3><p className="muted">Up to 100 administered projects, newest first.</p><ul className="tm-list">{data.projects.map(p=><li key={p.id}><Link className="app-link" href={`/projects/${p.id}/admin`}>{p.name}</Link> · {p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}</li>)}</ul>
  </div></Card>;
 }

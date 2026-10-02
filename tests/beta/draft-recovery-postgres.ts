@@ -1,4 +1,4 @@
-// Actual routes over session-local schema clones. Never mutates public Sabine data.
+// Actual routes over session-local schema clones. Uses the isolated 15489 database; never mutates retained public fixtures.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
@@ -22,11 +22,10 @@ import type { UUID } from '../../src/shared/types';
 const id = (n: number) => `86000000-0000-4000-8000-${String(n).padStart(12, '0')}` as UUID;
 const tenant = id(1), project = id(2), company = id(3), owner = id(4), admin = id(5), other = id(6), area = id(7);
 async function main() {
-  assert.equal(process.env.SWR_DRAFT_POSTGRES, '1');
-  const config = JSON.parse(fs.readFileSync('.data/sabine/runtime.json', 'utf8'));
-  const url = new URL(config.DATABASE_URL);
-  assert.equal(url.hostname, '127.0.0.1'); assert.equal(url.port, '15488'); assert.equal(url.pathname, '/swr_sabine_simulation');
-  process.env.DATABASE_URL = url.href; process.env.JWT_SECRET = 'synthetic-draft-regression-only';
+  assert.equal(process.env.SWR_TEAM_POSTGRES, '1');
+  const url = new URL(process.env.DATABASE_URL ?? '');
+  assert.equal(url.hostname, '127.0.0.1'); assert.equal(url.port, '15489'); assert.equal(url.pathname, '/swr_team_isolated');
+  process.env.JWT_SECRET ??= 'synthetic-draft-regression-only';
   const pg = new Pool({ connectionString: url.href, max: 1 }), db = await pg.connect();
   const app = getPool(), oldQuery = app.query, oldConnect = app.connect;
   const fingerprint = async () => (await db.query("SELECT count(*)::text AS n,md5(string_agg(id::text||':'||status::text||':'||row_version::text,',' ORDER BY id)) AS hash FROM public.tickets")).rows[0];
@@ -38,7 +37,10 @@ async function main() {
       'tickets','ticket_events','ticket_sequences','cad_work','ticket_assignment_history','departments','department_memberships',
       'department_titles','priority_whitelist','api_idempotency','attachments','revoked_auth_sessions',
       'ticket_return_cycles','ticket_need_by_revisions','notification_outbox'];
-    for (const table of tables) await db.query(`CREATE TEMP TABLE ${table} (LIKE public.${table} INCLUDING ALL) ON COMMIT DROP`);
+    tables.push('tenants','tenant_memberships','project_admin_grants','project_companies','project_responsibility_grants','company_authority_grants','acting_grants');
+    const source=(await db.query('SELECT current_schema() AS name')).rows[0].name;
+    assert.match(source,/^phase5_regression_[a-f0-9]{32}$/);
+    for (const table of tables) await db.query(`CREATE TEMP TABLE ${table} (LIKE "${source}".${table} INCLUDING ALL) ON COMMIT DROP`);
     await db.query('SET LOCAL search_path=pg_temp');
     for (const table of tables) check((await db.query('SELECT to_regclass($1)::oid=to_regclass($2)::oid AS safe', [table, `pg_temp.${table}`])).rows[0].safe, true);
     // Validate the migration against a temporary copy of every incumbent request.
@@ -60,12 +62,14 @@ async function main() {
       if (sql === 'ROLLBACK') { await db.query('ROLLBACK TO SAVEPOINT route_command'); return db.query('RELEASE SAVEPOINT route_command'); }
       return db.query(sql, values);
     }, release: () => {} })) as unknown as typeof app.connect;
+    await db.query("INSERT INTO tenants(id,name) VALUES($1,'Synthetic draft tenant')",[tenant]);
     await db.query("INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,'Synthetic company','GC')", [company, tenant]);
     await db.query("INSERT INTO projects(id,tenant_id,name,status,crew_build) VALUES($1,$2,'Synthetic draft project','ACTIVE','FULL')", [project, tenant]);
     for (const [user, role] of [[owner,'REQUESTER'],[admin,'PROJECT_ADMIN'],[other,'REQUESTER']] as const) {
       await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Synthetic person','not-a-login-hash')", [user, tenant, company, `${user}@example.invalid`]);
       await db.query('INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,$3)', [project,user,role]);
     }
+    await db.query("INSERT INTO project_admin_grants(tenant_id,project_id,user_id,origin,granted_by) VALUES($1,$2,$3,'EXPLICIT',$3)",[tenant,project,admin]);
     await db.query("INSERT INTO aor_nodes(id,tenant_id,project_id,level_id,name,code) VALUES($1,$2,$3,$4,'Synthetic Area','SYN')", [area,tenant,project,id(8)]);
     const projectCtx = { params: Promise.resolve({ projectId: project }) };
     const request = (user: UUID, path: string, method = 'GET', body?: unknown, key = 'one') => new NextRequest(`http://localhost${path}`, {
@@ -122,9 +126,9 @@ async function main() {
     await db.query("UPDATE tickets SET draft_deleted_at=NOW()-INTERVAL '31 days' WHERE id=$1",[draft.id]);
     check((await restore(request(admin,restorePath,'POST',{ expectedVersion:2,reason:'Synthetic recovery' },'expired'),restoreCtx)).status,409);
     await db.query('UPDATE tickets SET draft_deleted_at=NOW() WHERE id=$1',[draft.id]);
-    await db.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[owner]);
+    await db.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[owner]);
     check((await restore(request(admin,restorePath,'POST',{ expectedVersion:2,reason:'Synthetic recovery' },'inactive-owner'),restoreCtx)).status,409);
-    await db.query('UPDATE users SET deactivated_at=NULL WHERE id=$1',[owner]);
+    await db.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[owner]);
     check((await restore(request(other,restorePath,'POST',{ expectedVersion:2,reason:'Synthetic recovery' },'recover-denied'),restoreCtx)).status,403);
     check((await restore(request(admin,restorePath,'POST',{ expectedVersion:2,reason:'short' },'short'),restoreCtx)).status,400);
     check((await restore(request(admin,restorePath,'POST',{ expectedVersion:2,reason:'Synthetic recovery' },'recover'),restoreCtx)).status,200);

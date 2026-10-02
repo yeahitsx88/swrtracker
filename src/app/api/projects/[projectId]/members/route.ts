@@ -1,3 +1,4 @@
+import {administrationRetry} from '@/lib/administration-retry';
 import { withTransaction } from '@/lib/with-transaction';
 import { requireResourceUuid } from '@/lib/resource-uuid';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
@@ -16,6 +17,7 @@ import { addProjectMember } from '@/modules/tenancy/application/add-project-memb
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { UUID } from '@/shared/types';
+import { assertProjectAdministrator,resolveProjectCapabilities } from '@/lib/project-capabilities';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,25 +33,31 @@ export async function GET(
   try {
     const auth = await requireAuth(req);
     const { projectId } = await params;
+    requireResourceUuid(projectId,'projectId');
     const projectUuid = projectId as UUID;
     const tenantRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
+    const capabilities=await resolveProjectCapabilities(pool,auth,projectUuid);
     if (tenantRole !== 'TENANT_ADMIN') {
-      const projectRole = await getProjectRole(pool, auth.tenantId, projectUuid, auth.userId, auth.sessionVersion);
-      if (projectRole !== 'PROJECT_ADMIN' && projectRole !== 'SURVEY_MANAGER') {
+      if (!capabilities.canAdminister && capabilities.operationalRole !== 'SURVEY_MANAGER') {
         throw new ForbiddenError('Only IT administrators or the Survey Lead may list project members');
       }
     }
+    const includeDisabled=req.nextUrl.searchParams.get('includeDisabled')==='true';
+    if(includeDisabled && !capabilities.canAdminister)throw new ForbiddenError('Historical access administration requires project authority');
+    const query=req.nextUrl.searchParams,limit=Number(query.get('limit')??100),offset=Number(query.get('offset')??0),search=query.get('search')??'';
+    if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||search.length>100)throw new ValidationError('Invalid member page');
     const { rows } = await pool.query<{
-      user_id: string; name: string; email: string; role: ProjectRole;
+      user_id: string; name: string; email: string; role: ProjectRole; access_disabled_at: string|null; account_disabled_at:string|null; total:string;
     }>(
-      `SELECT pm.user_id, u.name, u.email, pm.role
+      `SELECT pm.user_id, u.name, u.email, pm.role,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total
        FROM project_memberships pm JOIN users u ON u.id = pm.user_id
-       WHERE pm.project_id = $1 AND u.tenant_id = $2 AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
-       ORDER BY pm.role, u.name, u.email`,
-      [projectUuid, auth.tenantId],
+       WHERE pm.project_id = $1 AND u.tenant_id = $2 AND ($3::boolean OR (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL))
+       AND (u.name ILIKE $4 OR u.email ILIKE $4) ORDER BY pm.role, u.name, u.email LIMIT $5 OFFSET $6`,
+      [projectUuid, auth.tenantId,includeDisabled,'%'+search+'%',limit,offset],
     );
     return NextResponse.json({
-      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role })),
+      total:Number(rows[0]?.total??0),limit,offset,
+      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
     });
   } catch (err) {
     return errorResponse(err);
@@ -76,19 +84,20 @@ export async function POST(
     requireResourceUuid(projectId,'projectId');
     requireResourceUuid(userId,'userId');
     const repo = new TenancyRepository();
-    await withTransaction(async db => {
+    let branch:'TENANT_ADMIN'|'PROJECT_ADMIN'='PROJECT_ADMIN';
+    await withTransaction(async db => administrationRetry(db,req,auth,`POST /api/projects/${projectId}/members`,{userId,role},201,async()=>{
+      if(branch==='PROJECT_ADMIN' && !(await db.query(`SELECT 1 FROM project_companies pc JOIN users u ON u.company_id=pc.company_id AND u.tenant_id=pc.tenant_id
+        WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND u.id=$3`,[auth.tenantId,projectId,userId])).rows[0])throw new ForbiddenError('Associate the member company with this project first');
       await addProjectMember(repo, db, {
         tenantId: auth.tenantId, projectId: projectId as UUID, userId: userId as UUID,
-        role, actorRole: 'TENANT_ADMIN',
+        role, actorRole: branch,
       });
       await appendAdministrativeEvent(db,{
         auth,projectId:projectId as UUID,subjectUserId:userId as UUID,eventType:'project.member_added',
-        authorityEvidence:{branch:'CENTRAL_IT'},changes:{role},
+        authorityEvidence:{branch},changes:{role},
       });
-    }, {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
-      if(await getTenantRole(db,current.tenantId,current.userId,current.sessionVersion)!=='TENANT_ADMIN'){
-        throw new ForbiddenError('Current Central IT authority is required to add members');
-      }
+    }), {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
+      branch=(await assertProjectAdministrator(db,current,projectId as UUID)).centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';
     }});
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {

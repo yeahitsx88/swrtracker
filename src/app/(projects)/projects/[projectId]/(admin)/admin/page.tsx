@@ -9,6 +9,7 @@ import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
 import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
+import {ProjectAdministration} from '@/components/ui/project-administration';
 
 export default function AdminProjectPage() {
   const params = useParams<{ projectId: string }>();
@@ -72,6 +73,7 @@ export default function AdminProjectPage() {
 
   return (
     <div className="stack">
+      <ProjectAdministration key={projectId} projectId={projectId}/>
       <Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."

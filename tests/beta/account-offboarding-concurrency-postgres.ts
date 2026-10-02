@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {NextRequest} from 'next/server';
 import {acquireTenantLifecycleLock} from '../../src/lib/tenant-lifecycle-lock';
 import {beginAuthenticatedMutation} from '../../src/lib/with-transaction';
+import {assertSurveyManagerRemovalSafe} from '../../src/modules/tenancy/application/survey-manager-continuity';
 import {signToken,sessionTokenHash} from '../../src/lib/auth';
 import type {UUID} from '../../src/shared/types';
 
@@ -96,6 +97,33 @@ async function main(){
    const eligible=(await pg.query('SELECT count(*)::int AS n FROM "'+schema+'".tenant_memberships tm JOIN "'+schema+'".users u ON u.id=tm.user_id WHERE tm.role=$1 AND u.deactivated_at IS NULL',['TENANT_ADMIN'])).rows[0].n;
    assert.equal(eligible,1);checks++;
   }
+  const project=randomUUID() as UUID;
+  await pg.query('CREATE TABLE "'+schema+'".projects(id uuid PRIMARY KEY,tenant_id uuid,status text)');
+  await pg.query('CREATE TABLE "'+schema+'".project_memberships(project_id uuid,user_id uuid,role text,access_disabled_at timestamptz)');
+  await pg.query('INSERT INTO "'+schema+'".projects VALUES($1,$2,$3)',[project,tenant,'ACTIVE']);
+  await pg.query('INSERT INTO "'+schema+'".project_memberships VALUES($1,$2,$4,NULL),($1,$3,$4,NULL)',[project,user,otherAdmin,'SURVEY_MANAGER']);
+  for(const winner of ['LOCAL','GLOBAL'] as const){
+   await pg.query('UPDATE "'+schema+'".users SET deactivated_at=NULL');
+   await pg.query('UPDATE "'+schema+'".project_memberships SET access_disabled_at=NULL');
+   await begin(a);await assertSurveyManagerRemovalSafe(a,tenant,user,project);
+   await begin(b);
+   const losing=assertSurveyManagerRemovalSafe(b,tenant,otherAdmin,project).then(()=>null,error=>error);
+   await observeWait(bPid,aPid);
+   if(winner==='LOCAL')await a.query('UPDATE project_memberships SET access_disabled_at=NOW() WHERE user_id=$1',[user]);
+   else await a.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[user]);
+   await a.query('COMMIT');
+   assert.equal((await losing)?.code,'LAST_SURVEY_MANAGER');checks++;
+   await b.query('ROLLBACK');
+  }
+  // Ineligible company witnesses do not count; archived projects require no replacement.
+  await pg.query('UPDATE "'+schema+'".users SET deactivated_at=NULL');
+  const ineligible=randomUUID();await pg.query('INSERT INTO "'+schema+'".companies VALUES($1,$2,$3)',[ineligible,tenant,'SUBCONTRACTOR']);
+  await pg.query('UPDATE "'+schema+'".users SET company_id=$2 WHERE id=$1',[otherAdmin,ineligible]);
+  await begin(a);await assert.rejects(assertSurveyManagerRemovalSafe(a,tenant,user,project),{code:'LAST_SURVEY_MANAGER'});await a.query('ROLLBACK');checks++;
+  await pg.query('UPDATE "'+schema+'".users SET company_id=$2 WHERE id=$1',[otherAdmin,company]);
+  await pg.query('UPDATE "'+schema+'".companies SET type=$1',['GC']);
+  await pg.query('UPDATE "'+schema+'".projects SET status=$1',['ARCHIVED']);
+  await begin(a);await assertSurveyManagerRemovalSafe(a,tenant,user,project);await a.query('ROLLBACK');checks++;
   console.log('Tenant lifecycle PostgreSQL coordination checks passed: '+checks);
  }finally{
   await a.query('ROLLBACK');await b.query('ROLLBACK');a.release();b.release();

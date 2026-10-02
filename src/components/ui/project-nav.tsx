@@ -9,6 +9,7 @@ import { getProjectNavigation } from './project-navigation';
 interface ProjectNavProps {
   projectId: string;
   role: ProjectRole;
+  canAdminister?:boolean;
 }
 
 /** Presentation only: icons for the existing role navigation labels. */
@@ -24,9 +25,9 @@ const ICONS: Record<string, IconName> = {
   Admin: 'settings',
 };
 
-export function ProjectNav({ projectId, role }: ProjectNavProps) {
+export function ProjectNav({ projectId, role,canAdminister }: ProjectNavProps) {
   const pathname = usePathname();
-  const tabs = getProjectNavigation(role);
+  const tabs = getProjectNavigation(role,canAdminister);
 
   return (
     <nav className="project-tabs" aria-label="Project">
