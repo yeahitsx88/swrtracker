@@ -97,6 +97,7 @@ test('direct-assignment tickets move through create, assign, start, and direct c
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };
     }
+    if (sql.includes('SELECT project_id,aor_node_id,requester_id')) return {rows:currentTicket?[{project_id:currentTicket.projectId,requester_id:currentTicket.requesterId,assigned_party_chief_id:currentTicket.assignedPartyChiefId,assigned_instrument_man_id:currentTicket.assignedInstrumentManId}]:[]};
     if (/SELECT project_id FROM tickets/.test(sql)) {
       return { rows: currentTicket ? [{ project_id: currentTicket.projectId }] : [] };
     }

@@ -61,7 +61,7 @@ function createTxQuery(rows: Map<string, IdempotencyRow>) {
   return async (sql: string, params?: unknown[]) => {
     if (/pg_current_xact_id/.test(sql)) return { rows: [{transaction_id: 'fixture-transaction'}] };
     if (/SELECT id FROM tenants/.test(sql)) return { rows: [{id: params?.[0]}] };
-    if (/FROM revoked_auth_sessions|FROM users|FROM project_memberships|SELECT project_id FROM tickets|SELECT t.id FROM tickets/.test(sql)) return (getPool() as unknown as PoolLike).query(sql, params);
+    if (/FROM revoked_auth_sessions|FROM users|FROM project_memberships|SELECT project_id FROM tickets|SELECT project_id,aor_node_id,requester_id|SELECT t.id FROM tickets/.test(sql)) return (getPool() as unknown as PoolLike).query(sql, params);
     if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql.trim())) {
       return { rows: [] };
     }
@@ -315,6 +315,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };
     }
+    if (sql.includes('SELECT project_id,aor_node_id,requester_id')) return {rows:[{project_id:currentTicket.projectId,requester_id:currentTicket.requesterId,assigned_party_chief_id:currentTicket.assignedPartyChiefId,assigned_instrument_man_id:currentTicket.assignedInstrumentManId}]};
     if (/SELECT project_id FROM tickets/.test(sql)) {
       return { rows: [{ project_id: 'project-1' }] };
     }

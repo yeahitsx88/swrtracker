@@ -147,3 +147,10 @@ Checkpoint continuation: tenant-first metadata/invitation/company/template and t
 ## Owner-requested UI integration
 
 Checkpoint b7b79eb was pushed before exact review-branch UI commits f4aa6a1/8536655 were inspected and cherry-picked as ea8c272/a800cc6. Normal478/types/build and synthetic requester/queue browser acceptance pass. Fresh visual finish review returned ship for the captured UI integration. This presentation milestone does not close Task3 or the scoped offboarding release gates. See CODEX Batch91 for evidence and limits.
+
+
+## Final scoped-offboarding reconciliation (2026-10-02)
+
+The owner resumed the approved plan. Tasks3-7 are complete at the bounded local implementation/acceptance boundary in audits/phase5-scoped-offboarding-completion-20261002.md. Earlier open-state notes above remain historical checkpoints. The lifecycle inventory has zero uncategorized application SQL writer paths. Independent whole-range review closed ticket action replay authority, effective subcontractor assignee eligibility and post-ticket-wait visibility. Existing fresh-review, membership-role preservation, escalation-only workers, stop-work capture, draft isolation, session enforcement and dependency/configuration corrections remain covered by integrated regressions.
+
+Current evidence:544 normal tests, nonincremental TypeScript, Linux production build,55 suite-backed acceptance groups,52 production HTTP checks including actual file bytes across disablement,24 browser checks and fresh desktop/mobile administration captures. docs/PHASE5_OFFBOARDING_RELEASE.md records additive migration/backup, all-process rollout, worker recovery and access-aware rollback. The Pilot/Owner/Rollout classifications above remain unchanged. No live migration, production deployment or remote full-regression CI green is inferred.

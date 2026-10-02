@@ -1,14 +1,15 @@
 /**
  * POST /api/tickets/[ticketId]/assign
  *
- * APPROVED → ASSIGNED for the standard-approval workflow.
+ * APPROVED â†’ ASSIGNED for the standard-approval workflow.
  * Permitted actors: SURVEY_MANAGER, SURVEY_SUPERINTENDENT.
  * Party Chief is optional. An Instrument Man assignment moves APPROVED to ASSIGNED.
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
+import { requireIdempotencyKey } from '@/lib/idempotency';
+import { executeAuthorizedTicketMutation } from '@/lib/ticket-mutation-idempotency';
 import { withRequestCorrelation } from '@/lib/correlation';
 import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
@@ -45,7 +46,7 @@ export async function POST(
 
     const repo = new TicketRepository();
     const result = await withTicketMutation(req, ctx, (client, ctx) =>
-      executeIdempotentHttpMutation(
+      executeAuthorizedTicketMutation(
         client,
         {
           tenantId: ctx.tenantId,

@@ -217,6 +217,7 @@ test('follow-up route replays an idempotency key without creating a second draft
   };
   pool.connect = async () => ({
     query: async (sql: string, params?: unknown[]) => {
+      if (sql.includes('SELECT project_id,aor_node_id,requester_id')) return {rows:[{project_id:projectId,requester_id:requesterId}]};
       if (/pg_current_xact_id/.test(sql)) return { rows: [{transaction_id: 'fixture-transaction'}] };
       if (/SELECT id FROM tenants/.test(sql)) return { rows: [{id: tenantId}] };
       if (/FROM revoked_auth_sessions|FROM users|FROM project_memberships|SELECT project_id FROM tickets|SELECT t.id FROM tickets/.test(sql)) return pool.query(sql, params);

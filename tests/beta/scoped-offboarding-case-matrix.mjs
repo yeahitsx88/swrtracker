@@ -11,7 +11,7 @@ const C='account-offboarding-commands-postgres.ts',O='offboarding-policy-postgre
   W='lifecycle-writer-handlers-postgres.ts',S='active-duty-subject-postgres.ts',
   I='identity-lifecycle-atomic-postgres.ts',P='project-administration-postgres.ts',
   K='project-capabilities-postgres.ts',N='notification-worker-lifecycle-postgres.ts',
-  M='project-member-atomic-postgres.ts',H='http',U='browser';
+  M='project-member-atomic-postgres.ts',T='ticket-replay-authority-postgres.ts',E='ticket-assignee-eligibility-postgres.ts',V='ticket-replay-visibility-postgres.ts',H='http',U='browser';
 export const cases=[
  ['A01','tenant_disable_atomic',C,H],['A02','central_without_project',O,P],
  ['A03','local_cannot_disable_tenant',O,H],['A04','subcontractor_cannot_be_central',O,K],
@@ -21,9 +21,9 @@ export const cases=[
  ['A11','all_live_blocker_families',B,H,O],['A12','history_and_drafts_are_retained',C,H,B],
  ['A13','already_disabled_fresh_noop',C,O],['A14','same_key_race_and_lost_response',C,H,U],
  ['A15','changed_intent_key_mismatch',C,O],['A16','different_key_one_transition',H],
- ['A17','snapshot_changes_require_reload',O,U],['A18','subject_writer_waits_and_revalidates',S,M,W],
- ['A19','protected_writer_barrier_both_orders',R,W],['A20','copied_old_sessions_rejected',R,W,H],
- ['A21','authority_loss_before_replay',C,P,R,W,H],['A22','reset_and_invite_cannot_restore',I,H],
+ ['A17','snapshot_changes_require_reload',O,U],['A18','subject_writer_waits_and_revalidates',S,M,W,E],
+ ['A19','protected_writer_barrier_both_orders',R,W,V],['A20','copied_old_sessions_rejected',R,W,H],
+ ['A21','authority_loss_before_replay',C,P,R,W,T,V,H],['A22','reset_and_invite_cannot_restore',I,H],
  ['A23','conditional_event_ledger_commit_rollback',C,U],['A24','extra_domain_fields_rejected',O,W],
  ['A25','terminal_history_file_digest_preserved',H,C],['A26','workers_preserve_assignments',N,C],
  ['A27','frozen_accessible_scoped_browser_recovery',U],['A28','reactivation_refused',O,I,M],

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
+import { requireIdempotencyKey } from '@/lib/idempotency';
+import { executeAuthorizedTicketMutation } from '@/lib/ticket-mutation-idempotency';
 import { withRequestCorrelation } from '@/lib/correlation';
 import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
@@ -19,7 +20,7 @@ export async function POST(
       const ctx = await getTicketRouteContext(req, ticketId);
       const repo = new TicketRepository();
       const result = await withTicketMutation(req, ctx, (client, ctx) =>
-        executeIdempotentHttpMutation(
+        executeAuthorizedTicketMutation(
           client,
           {
             tenantId: ctx.tenantId,

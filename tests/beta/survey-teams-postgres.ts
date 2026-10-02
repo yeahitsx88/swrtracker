@@ -211,6 +211,11 @@ async function main() {
       handlePatchSurveyRole(request('PATCH',{...roleBody,userId:manager},'',crossToken),{params:Promise.resolve({projectId:sameTenantProject})},crossDeps),
     ]);
     assert.deepEqual(crossResults.map(r=>r.status).sort(),[200,401],'The second actor renews its session after the winning role change');scenarios++;
+    // Either cross-project actor can win. Normalize only this synthetic fixture's
+    // session version for downstream staffing scripts and a distinct renewed JWT.
+    const crossVersion=(await pool.query('SELECT session_version FROM users WHERE id=$1',[manager])).rows[0].session_version;
+    assert.ok([1,2].includes(crossVersion));
+    await pool.query('UPDATE users SET session_version=2 WHERE id=$1',[manager]);
     const latestManagerToken=signToken(manager,tenant,(await pool.query('SELECT session_version FROM users WHERE id=$1',[manager])).rows[0].session_version);
     await pool.query('INSERT INTO revoked_auth_sessions (token_hash,tenant_id,user_id,expires_at) VALUES ($1,$2,$3,NOW()+interval \'8 hours\')',[sessionTokenHash(token),tenant,manager]);
     await call(handleGetSurveyTeams(request('GET',undefined),ctx,deps),401);

@@ -4,7 +4,8 @@ import { errorResponse } from '@/lib/api-error';
 import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { delayTicket } from '@/modules/ticket/application/delay-ticket';
-import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
+import { requireIdempotencyKey } from '@/lib/idempotency';
+import { executeAuthorizedTicketMutation } from '@/lib/ticket-mutation-idempotency';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export async function POST(
 
     const { reason } = body as { reason: string };
     const repo = new TicketRepository();
-    const result = await withTicketMutation(req, ctx, (client, ctx) => executeIdempotentHttpMutation(
+    const result = await withTicketMutation(req, ctx, (client, ctx) => executeAuthorizedTicketMutation(
       client,
       { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/delay`, idempotencyKey },
       { ticketId, reason },

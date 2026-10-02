@@ -13,7 +13,7 @@ const check=(actual,expected,label)=>{assert.deepEqual(actual,expected,label);ch
 try{
  if(mode==='setup'){
   const schema='phase5_acceptance_'+randomUUID().replaceAll('-','');assert.match(schema,/^phase5_acceptance_[a-f0-9]{32}$/);
-  const f={schema};for(const k of ['tenant','foreignTenant','company','foreignCompany','project','otherProject','archivedProject','foreignProject','actor','localAdmin','subject','foreignSubject','foreignAdmin','manager','superintendent','chief','im','area','level','team','draft','attachment','event'])f[k]=randomUUID();
+  const f={schema};for(const k of ['tenant','foreignTenant','company','foreignCompany','project','otherProject','archivedProject','foreignProject','actor','localAdmin','subject','foreignSubject','foreignAdmin','manager','superintendent','chief','im','area','level','team','draft','fileTicket','attachment','event'])f[k]=randomUUID();
   const db=await pg.connect();
   try{await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET LOCAL search_path TO "${schema}",public`);
    for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort())await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));
@@ -36,6 +36,7 @@ try{
    await db.query("INSERT INTO ticket_events(id,tenant_id,ticket_id,actor_id,event_type,payload) VALUES($1,$2,$3,$4,'ticket.created','{\"retained\":true}')",[f.event,f.tenant,f.draft,f.subject]);
    await db.query("INSERT INTO attachments(id,tenant_id,ticket_id,uploaded_by,filename,mime_type,storage_key,size_bytes) VALUES($1,$2,$3,$4,'retained.txt','text/plain','synthetic-history',7)",[f.attachment,f.tenant,f.draft,f.subject]);
    for(const status of ['COMPLETED','REQUESTER_CANCELED'])await db.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description,aor_node_id,ticket_type,requested_date,ticket_number) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL',$6,'Survey','Retained terminal history',$7,'TOPO','2026-10-01',$8)",[randomUUID(),f.tenant,f.project,f.company,f.subject,status,f.area,'SYN-'+status]);
+   await db.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description,aor_node_id,ticket_type,requested_date) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','APPROVED','Survey','Retained real storage bytes',$6,'TOPO','2026-10-01')",[f.fileTicket,f.tenant,f.project,f.company,f.subject,f.area]);
    const digest=createHash('sha256').update('Retained synthetic file bytes').digest('hex');await db.query('UPDATE attachments SET content_sha256=$2 WHERE id=$1',[f.attachment,digest]);
    await db.query('COMMIT');
   }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
@@ -55,6 +56,18 @@ try{
     const local=(p=f.project,u=f.subject)=>`/api/projects/${p}/members/${u}/offboarding`,global=(u=f.subject)=>`/api/accounts/${u}/offboarding`;
     const command=(p,scope,subject=f.subject)=>({subjectUserId:subject,scope,reason:'Confirmed synthetic departure',snapshot:p.snapshot,confirmed:true});
     const preserve=async()=>{const out={};for(const table of ['tickets','ticket_events','attachments','companies','aor_assignments','crew_rosters','survey_reporting_links','survey_teams','survey_team_members','project_responsibility_grants'])out[table]=(await db.query(`SELECT to_jsonb(t) AS row FROM ${table} t ORDER BY to_jsonb(t)::text`)).rows;return out;};
+    // Use the production upload/download handlers and actual Linux filesystem.
+    // This is distinct from the retained legacy attachment metadata fixture.
+    const bytes=Buffer.from('Retained synthetic file bytes\nAcross scoped local and tenant disablement.');
+    const digest=createHash('sha256').update(bytes).digest('hex'),form=new FormData();
+    form.set('file',new Blob([bytes],{type:'text/plain'}),'retained-real.txt');form.set('purpose','FIELD_SUPPORT');
+    const uploaded=await expect(await fetch(origin+`/api/tickets/${f.fileTicket}/attachments`,{method:'POST',headers:{cookie:cookie(),'idempotency-key':randomUUID()},body:form,signal:AbortSignal.timeout(12000)}),201);
+    const download=async()=>{
+     const response=await request(uploaded.attachment.downloadUrl);check(response.status,200,'Authorized stored file download');
+     return createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex');
+    };
+    check(await download(),digest,'Actual stored bytes match upload before disablement');
+    check((await db.query('SELECT content_sha256 FROM attachments WHERE id=$1',[uploaded.attachment.id])).rows[0].content_sha256,digest,'Stored digest derives from actual upload bytes');
     const before=await preserve();
     await expect(await request(global(),undefined,cookie(f.localAdmin)),403);
     await expect(await request(local(f.foreignProject),undefined,cookie(f.localAdmin)),404);
@@ -82,6 +95,7 @@ try{
     const noCentral=(await expect(await request(local(f.foreignProject,f.foreignSubject),undefined,cookie(f.foreignAdmin,f.foreignTenant)))).preview;check(noCentral.centralITRecipientCount,0,'No eligible Central IT');
     const second=(await expect(await request(local(f.foreignProject,f.foreignSubject),command(noCentral,{kind:'PROJECT_ACCESS',projectId:f.foreignProject},f.foreignSubject),cookie(f.foreignAdmin,f.foreignTenant)))).result;check(second.centralReview,'NOT_QUEUED_NO_CENTRAL_IT','Local disable succeeds without Central IT');
     check(await preserve(),before,'History, duties and files preserved across scoped actions');
+    check(await download(),digest,'Actual storage bytes remain identical after local and tenant disablement');
     // A14/A16: actual tenant commands race with same and different keys.
     const race=randomUUID();await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Global concurrent departure','fixture')",[race,f.tenant,f.company,race+'@example.test']);
     const racePreview=(await expect(await request(global(race)))).preview,raceBody=command(racePreview,{kind:'TENANT_ACCOUNT'},race),raceKey=randomUUID();

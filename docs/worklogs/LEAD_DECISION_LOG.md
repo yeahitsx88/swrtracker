@@ -234,3 +234,9 @@
 - Owner explicitly selected “Fresh Survey review and approval” after direct-assignment return/resubmission. Preserve durable record/reference/history; no direct reassign bypass.
 - Reconciliation: docs/PHASE5_REVIEW_RECONCILIATION_20261001.md records every A–D finding and standard-practice recommendation, bounded corrections, existing lifecycle integrations, pilot gates and remaining owner decisions. Generic recommendations do not override stacked independent actors, no auto reassignment/expiry, retention deferral or reactivation exclusion.
 - Continue Native approved development after reconciling the review. No production/Sabine deployment, external services, purge or retained data repair inferred.
+
+### Decision 36 - owner resumes the approved bounded Phase5 plan (2026-10-02)
+- Provenance: owner supplied the current assessment, requested a reconciliation plan, selected the authoritative phase5 track despite the dirty local review branch, then said "Implement the plan."
+- Authority: resumes Decision34's approved seven-task plan from d45ad0c, with Native execution and independent final review. The earlier owner pause is superseded; implementation uses an isolated worktree and preserves the original dirty Phase5-RedTeam checkout.
+- Outcome: Tasks3-7 now have current local implementation/acceptance evidence and a compatible release runbook. Whole-range review covers the approved92e5b45 baseline through d45ad0c and this increment, with material replay/eligibility/wait findings corrected. Exact evidence and limits are in audits/phase5-scoped-offboarding-completion-20261002.md.
+- Preserved boundaries: ordinary verified phase5 checkpoints remain authorized. No production/Sabine deployment, retained-data repair, automatic cleanup/reactivation, external service purchase, purge, SSO or new pilot-policy approval is inferred. Pilot/Owner/Rollout concerns remain separately classified by the reconciliation review.
