@@ -1,8 +1,9 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
-import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { withTransaction } from '@/lib/with-transaction';
@@ -61,25 +62,32 @@ export async function handlePostDepartmentMembers(
       throw new ValidationError('userId is required');
     }
 
-    const actorRole = await deps.resolveActorRole(
-      pool,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
-    const membership = await deps.withTransaction((client) =>
-      addDepartmentMember(repo, client, {
+    const membership = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.resolveActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+      );
+      await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+      const changed = await addDepartmentMember(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         departmentId: departmentId as UUID,
         userId: body.userId as UUID,
         actorRole: actorRole as 'PROJECT_ADMIN' | 'TENANT_ADMIN',
-      }),
-    );
+      });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: body.userId as UUID,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'DEPARTMENT_MEMBER', result: changed },
+      });
+      return changed;
+    });
 
     return NextResponse.json({ membership }, { status: 201 });
   } catch (err) {
@@ -100,14 +108,6 @@ export async function handlePatchDepartmentMembers(
       throw new ValidationError('kind and userId are required');
     }
 
-    const actorRole = await deps.resolveActorRole(
-      pool,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
     if (body.kind === 'ASSIGN_TITLE') {
@@ -116,8 +116,18 @@ export async function handlePatchDepartmentMembers(
       }
       const { title } = body as { title: string };
 
-      const membership = await deps.withTransaction((client) =>
-        assignDepartmentTitle(repo, client, {
+      const membership = await deps.withTransaction(async (client) => {
+        await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+        const actorRole = await deps.resolveActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+
+      );
+        await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+        const changed = await assignDepartmentTitle(repo, client, {
           tenantId: auth.tenantId,
           projectId: projectId as UUID,
           departmentId: departmentId as UUID,
@@ -126,23 +136,45 @@ export async function handlePatchDepartmentMembers(
           actorId: auth.userId,
           actorRole,
           superintendentId: typeof body.superintendentId === 'string'
-            ? body.superintendentId as UUID
-            : null,
-        }),
-      );
+          ? body.superintendentId as UUID
+          : null,
+        });
+        await appendAdministrativeEvent(client, {
+          auth, projectId: projectId as UUID, subjectUserId: body.userId as UUID,
+          eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+          changes: { resource: 'DEPARTMENT_TITLE_ASSIGNMENT', result: changed },
+        });
+        return changed;
+      });
       return NextResponse.json({ membership });
     }
 
     if (body.kind === 'REASSIGN_MEMBER') {
-      const membership = await deps.withTransaction((client) =>
-        reassignDepartmentMember(repo, client, {
+      const membership = await deps.withTransaction(async (client) => {
+        await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+        const actorRole = await deps.resolveActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+
+      );
+        await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+        const changed = await reassignDepartmentMember(repo, client, {
           tenantId: auth.tenantId,
           projectId: projectId as UUID,
           departmentId: departmentId as UUID,
           userId: body.userId as UUID,
           actorRole: actorRole as 'PROJECT_ADMIN' | 'TENANT_ADMIN',
-        }),
-      );
+        });
+        await appendAdministrativeEvent(client, {
+          auth, projectId: projectId as UUID, subjectUserId: body.userId as UUID,
+          eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+          changes: { resource: 'DEPARTMENT_MEMBER_REASSIGNED', result: changed },
+        });
+        return changed;
+      });
       return NextResponse.json({ membership });
     }
 

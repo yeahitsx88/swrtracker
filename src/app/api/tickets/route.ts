@@ -1,3 +1,4 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { parseNeedBy } from '@/lib/requester-intake-input';
 /**
  * POST /api/tickets -- create a ticket
@@ -24,7 +25,7 @@ import { createTicket } from '@/modules/ticket/application/create-ticket';
 import { authorizeDirectAssignment, createDirectAssignmentTicket } from '@/modules/ticket/application/create-direct-assignment-ticket';
 import type { WorkflowVariant } from '@/modules/workflow/domain/transitions';
 import type { TicketType } from '@/modules/ticket/domain/types';
-import type { UUID } from '@/shared/types';
+import type { DbClient, UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,14 +109,17 @@ export async function POST(req: NextRequest) {
     }
 
     const ticketRepo = new TicketRepository();
+    return await withTransaction(async client => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'SHARED', requireAuth);
+      const runOnClient = <T>(fn: (db: DbClient) => Promise<T>): Promise<T> => fn(client);
     const actorRole = await getProjectRole(
-      pool,
+      client,
       auth.tenantId,
       projectId as UUID,
       auth.userId,
       auth.sessionVersion,
     );
-    const projectStatus = await ticketRepo.findProjectStatus(pool, auth.tenantId, projectId as UUID);
+    const projectStatus = await ticketRepo.findProjectStatus(client, auth.tenantId, projectId as UUID);
     if (!projectStatus) {
       throw new NotFoundError('Project not found');
     }
@@ -137,7 +141,7 @@ export async function POST(req: NextRequest) {
         throw new ValidationError('assignedInstrumentManId is required for direct-assignment tickets');
       }
 
-      const result = await withTransaction(async client => {
+      const result = await runOnClient(async client => {
         const currentRole = await getProjectRole(client, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion);
         await authorizeDirectAssignment(ticketRepo, client, { tenantId: auth.tenantId,
           projectId: projectId as UUID, actorId: auth.userId, actorRole: currentRole,
@@ -188,13 +192,13 @@ export async function POST(req: NextRequest) {
       throw new ConflictError('Archived projects are read-only');
     }
 
-    const companyInfo = await ticketRepo.findUserCompanyInfo(pool, auth.tenantId, auth.userId);
+    const companyInfo = await ticketRepo.findUserCompanyInfo(client, auth.tenantId, auth.userId);
     if (!companyInfo) {
       throw new ForbiddenError('Authenticated user is missing company context');
     }
 
     const membership = await ticketRepo.findRequesterDepartmentMembership(
-      pool,
+      client,
       auth.tenantId,
       projectId as UUID,
       auth.userId,
@@ -207,7 +211,7 @@ export async function POST(req: NextRequest) {
 
     if (resolvedDepartmentId) {
       const department = await ticketRepo.findDepartmentById(
-        pool,
+        client,
         auth.tenantId,
         projectId as UUID,
         resolvedDepartmentId,
@@ -216,7 +220,7 @@ export async function POST(req: NextRequest) {
         throw new ValidationError('departmentId must reference a department in this project');
       }
 
-      const result = await withTransaction((client) =>
+      const result = await runOnClient((client) =>
         executeIdempotentHttpMutation(
           client,
           {
@@ -250,7 +254,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result.body, { status: result.status });
     }
 
-    const result = await withTransaction((client) =>
+    const result = await runOnClient((client) =>
       executeIdempotentHttpMutation(
         client,
         {
@@ -281,6 +285,7 @@ export async function POST(req: NextRequest) {
     );
 
       return NextResponse.json(result.body, { status: result.status });
+    });
     } catch (err) {
       return errorResponse(err);
     }

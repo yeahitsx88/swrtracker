@@ -1,3 +1,6 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { withTransaction } from '@/lib/with-transaction';
 /**
  * GET  /api/project-templates
  * POST /api/project-templates
@@ -23,6 +26,7 @@ export interface ProjectTemplatesRouteDeps {
   requireAuth: typeof requireAuth | typeof requireActiveAuth;
   getTenantRole: typeof getTenantRole;
   createRepo: () => ITenancyRepository;
+  withTransaction?: typeof withTransaction;
 }
 
 const defaultDeps: ProjectTemplatesRouteDeps = {
@@ -74,19 +78,28 @@ export async function handlePostProjectTemplates(
       );
     }
 
-    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
-    const repo = deps.createRepo();
-    const template = await createProjectTemplate(repo, pool, {
+    const template = await (deps.withTransaction ?? withTransaction)(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      const repo = deps.createRepo();
+      const template = await createProjectTemplate(repo, client, {
       tenantId: auth.tenantId,
       actorId: auth.userId,
       actorRole,
-      name: body.name,
+      name: body.name as string,
       crewBuild: body.crewBuild as CrewBuild,
-      aorDepth: body.aorDepth,
+      aorDepth: body.aorDepth as number,
       aorLevelLabels: body.aorLevelLabels as string[],
       disciplineGroups: body.disciplineGroups as string[],
     });
 
+      await appendAdministrativeEvent(client, {
+        auth, projectId: null, subjectUserId: null,
+        eventType: 'tenant.template_created', authorityEvidence: { actorRole },
+        changes: { result: template },
+      });
+      return template;
+    });
     return NextResponse.json({ template }, { status: 201 });
   } catch (err) {
     return errorResponse(err);

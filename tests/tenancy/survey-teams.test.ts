@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import { deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamContext, readTeamAreas, saveSurveyTeam,
   type SurveyTeamDetail, type TeamActor, type TeamPersonnel } from '@/modules/tenancy/application/survey-teams';
@@ -11,7 +11,9 @@ import { changeSurveyRole, type ChangeSurveyRoleInput, type SurveyRoleRepository
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
 const tenantId=id(1), projectId=id(2), actorId=id(3), chiefId=id(4), imId=id(5), areaId=id(6), teamId=id(7);
-const db = {} as DbClient;
+const db:DbClient={query:async<T extends object>(sql:string)=>({
+ rows:[sql.includes('pg_current_xact_id')?{transaction_id:'teams-route'}:{id:tenantId}] as T[],
+})};
 const actor: TeamActor = { tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', sessionVersion: 1 };
 const chief: TeamPersonnel = { userId: chiefId, name:'Chief',email:'chief@example.test',role:'PARTY_CHIEF',active:true,teamId:null,teamName:null,roleVersion:1 };
 const im: TeamPersonnel = { ...chief, userId:imId,name:'Instrument Man',role:'INSTRUMENT_MAN' };
@@ -63,7 +65,7 @@ test('all team reads and writes reject non-Manager roles before repository acces
 test('Manager picker context and Area pages use scoped reads and reject incompatible detail parameters',async()=>{
   const f=fixture();
   const deps:TeamDeps={repo:f.repo,requireAuth:()=>({userId:actorId,tenantId,sessionVersion:1}),getProjectRole:async()=>actor.actorRole,
-    withTransaction:async fn=>fn(db),executeIdempotent:async(_db,_ctx,_input,fn)=>({...await fn(),replayed:false})};
+    withTransaction:async fn=>fn({query:db.query}),executeIdempotent:async(_db,_ctx,_input,fn)=>({...await fn(),replayed:false})};
   const ctx={params:Promise.resolve({projectId})};
   const request=(query:string)=>new NextRequest(`http://localhost/api/projects/${projectId}/survey/teams${query}`);
   assert.deepEqual(await (await handleGetSurveyTeams(request('?mode=context'),ctx,deps)).json(),{project:{status:'ACTIVE',crewBuild:'FULL'}});
@@ -143,7 +145,7 @@ test('team trust boundary rejects duplicate people, unbounded pages, missing ver
 test('team route resolves project membership, rejects wrong roles and requires delete confirmation',async()=>{
   const f=fixture();let resolvedProject:UUID|null=null;
   const deps:TeamDeps={repo:f.repo,requireAuth:()=>({tenantId,userId:actorId,sessionVersion:1}),
-    getProjectRole:async(_db,_tenant,project)=>{resolvedProject=project;return 'SURVEY_MANAGER';},withTransaction:async fn=>fn(db),
+    getProjectRole:async(_db,_tenant,project)=>{resolvedProject=project;return 'SURVEY_MANAGER';},withTransaction:async fn=>fn({query:db.query}),
     executeIdempotent:async(_db,_scope,_payload,mutation)=>({...await mutation(),replayed:false})};
   const ctx={params:Promise.resolve({projectId})};
   const request=(method:string,value:unknown)=>new NextRequest('http://localhost/api',{method,headers:{'idempotency-key':'team-test-key'},body:JSON.stringify(value)});
@@ -240,8 +242,23 @@ test('role command trust boundary refuses arbitrary permissions and requires a c
   assert.throws(()=>parseSurveyRoleInput({...body,action:'custom-role'}),ValidationError);
   const f=fixture();
   const deps:TeamDeps={repo:f.repo,requireAuth:()=>({tenantId,userId:actorId,sessionVersion:1}),getProjectRole:async()=> 'SURVEY_MANAGER',
-    withTransaction:async fn=>fn(db),executeIdempotent:async(_db,_scope,_payload,mutation)=>({...await mutation(),replayed:false})};
+    withTransaction:async fn=>fn({query:db.query}),executeIdempotent:async(_db,_scope,_payload,mutation)=>({...await mutation(),replayed:false})};
   const req=new NextRequest('http://localhost/api',{method:'PATCH',headers:{'idempotency-key':'role-command'},body:JSON.stringify(body)});
   const result=await handlePatchSurveyRole(req,{params:Promise.resolve({projectId})},deps);
   assert.equal(result.status,200);assert.equal((await result.json()).roleVersion,2);
+});
+
+test('team and survey-role commands recheck current session before any domain or replay read',async()=>{
+ for(const method of ['POST','PATCH','DELETE'] as const){
+   const f=fixture();let domain=0,ledger=0;
+   const deps:TeamDeps={repo:f.repo,requireAuth:async(_req,currentDb)=>{
+     if(currentDb)throw new UnauthorizedError();return {tenantId,userId:actorId,sessionVersion:1};
+   },getProjectRole:async()=>{domain++;return 'SURVEY_MANAGER';},withTransaction:async fn=>fn({query:db.query}),
+     executeIdempotent:async()=>{ledger++;throw Error('must not replay');}};
+   const value=method==='POST'?input():method==='PATCH'?{action:'set-role',...roleInput()}:{teamId,expectedVersion:1,confirmDelete:true};
+   const req=new NextRequest('http://localhost/api',{method,headers:{'idempotency-key':'team-wait'},body:JSON.stringify(value)});
+   const handler=method==='POST'?handlePostSurveyTeam:method==='PATCH'?handlePatchSurveyRole:handleDeleteSurveyTeam;
+   assert.equal((await handler(req,{params:Promise.resolve({projectId})},deps)).status,401);
+   assert.equal(domain,0);assert.equal(ledger,0);assert.deepEqual(f.writes,[]);
+ }
 });

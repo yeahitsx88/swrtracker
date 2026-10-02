@@ -4,6 +4,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
+import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import { withTransaction } from '@/lib/with-transaction';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { authorizeTeamMutation, deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamContext, readTeamAreas, saveSurveyTeam,
@@ -76,6 +77,10 @@ async function transact<T>(req: NextRequest, ctx: Context, deps: TeamDeps, fn: (
   const auth = await deps.requireAuth(req);
   const projectId = uuid((await ctx.params).projectId, 'Project');
   return deps.withTransaction(async db => {
+    if(req.method!=='GET'){
+      await acquireTenantLifecycleLock(db,auth.tenantId,req.method==='PATCH'?'EXCLUSIVE':'SHARED');
+      assertMutationIdentity(await deps.requireAuth(req,db),auth);
+    }
     const actorRole = await deps.getProjectRole(db, auth.tenantId, projectId, auth.userId, auth.sessionVersion);
     return fn(db, { tenantId: auth.tenantId, projectId, actorId: auth.userId, actorRole, sessionVersion: auth.sessionVersion });
   });

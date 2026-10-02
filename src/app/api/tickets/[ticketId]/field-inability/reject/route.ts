@@ -3,7 +3,7 @@ import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { withRequestCorrelation } from '@/lib/correlation';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { rejectFieldInability } from '@/modules/ticket/application/field-inability';
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tic
       const body = await req.json() as Record<string, unknown>;
       if (typeof body.reason !== 'string' || !body.reason.trim()) throw new ValidationError('reason is required');
       const repo = new TicketRepository();
-      const result = await withTransaction((db) => executeIdempotentHttpMutation(
+      const result = await withTicketMutation(req, ctx, (db, ctx) => executeIdempotentHttpMutation(
         db,
         { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/field-inability/reject`, idempotencyKey },
         { ticketId, reason: body.reason },

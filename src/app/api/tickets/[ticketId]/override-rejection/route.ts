@@ -6,7 +6,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { overrideRejection } from '@/modules/ticket/application/override-rejection';
 
@@ -28,7 +28,7 @@ export async function POST(
     const { reason } = body as { reason: string };
 
     const repo = new TicketRepository();
-    const ticket = await withTransaction((client) =>
+    const ticket = await withTicketMutation(req, ctx, (client, ctx) =>
       overrideRejection(repo, client, { ...ctx, reason }),
     );
     return NextResponse.json({ ticket });

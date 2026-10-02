@@ -1,3 +1,5 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -12,7 +14,7 @@ import {
 } from '@/modules/tenancy/application/project-request-config';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole, TenantRole } from '@/modules/identity/domain/types';
-import type { UUID } from '@/shared/types';
+import type { DbClient, UUID } from '@/shared/types';
 
 export interface ProjectRequestConfigRouteDeps {
   requireAuth: typeof requireAuth | typeof requireActiveAuth;
@@ -36,13 +38,14 @@ async function resolveActorRoles(
   projectId: UUID,
   userId: UUID,
   sessionVersion?: number,
+  db: DbClient = pool,
 ): Promise<{ tenantRole: TenantRole | null; projectRole: ProjectRole | null }> {
-  const tenantRole = await deps.getTenantRole(pool, tenantId, userId, sessionVersion);
+  const tenantRole = await deps.getTenantRole(db, tenantId, userId, sessionVersion);
   if (tenantRole === 'TENANT_ADMIN') {
     return { tenantRole, projectRole: null };
   }
 
-  const projectRole = await deps.getProjectRole(pool, tenantId, projectId, userId, sessionVersion);
+  const projectRole = await deps.getProjectRole(db, tenantId, projectId, userId, sessionVersion);
   return { tenantRole, projectRole };
 }
 
@@ -97,17 +100,19 @@ export async function handlePatchProjectRequestConfig(
       throw new ValidationError('leadTimeEnforcementEnabled, leadTimeDays, and maxAttachmentsPerTicket are required');
     }
 
-    const { tenantRole, projectRole } = await resolveActorRoles(
+    const repo = deps.createRepo();
+    const config = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const { tenantRole, projectRole } = await resolveActorRoles(
       deps,
       auth.tenantId,
       projectUuid,
       auth.userId,
       auth.sessionVersion,
-    );
+      client,
+      );
 
-    const repo = deps.createRepo();
-    const config = await deps.withTransaction((client) =>
-      updateProjectRequestConfig(repo, client, {
+      const changed = await updateProjectRequestConfig(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectUuid,
         actorProjectRole: projectRole,
@@ -115,8 +120,14 @@ export async function handlePatchProjectRequestConfig(
         leadTimeEnforcementEnabled: body.leadTimeEnforcementEnabled as boolean,
         leadTimeDays: body.leadTimeDays as number,
         maxAttachmentsPerTicket: body.maxAttachmentsPerTicket as number | null,
-      }),
-    );
+      });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { tenantRole, projectRole },
+        changes: { resource: 'REQUEST_CONFIG', result: changed },
+      });
+      return changed;
+    });
 
     return NextResponse.json({ config });
   } catch (err) {

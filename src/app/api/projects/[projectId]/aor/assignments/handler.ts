@@ -1,8 +1,9 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
-import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import {
   assignAorDepartment,
@@ -56,8 +57,9 @@ async function resolveActorRole(
   projectId: UUID,
   userId: UUID,
   sessionVersion: number,
+  db: DbClient,
 ): Promise<ProjectSetupActorRole> {
-  return deps.resolveProjectSetupActorRole(pool, tenantId, projectId, userId, sessionVersion);
+  return deps.resolveProjectSetupActorRole(db, tenantId, projectId, userId, sessionVersion);
 }
 
 export async function handlePostAorAssignments(
@@ -70,14 +72,6 @@ export async function handlePostAorAssignments(
     const { projectId } = await params;
     const body = await req.json() as Record<string, unknown>;
     const kind = requireSetupKind(body?.kind);
-    const actorRole = await resolveActorRole(
-      deps,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
     if (kind === 'USER') {
@@ -92,16 +86,25 @@ export async function handlePostAorAssignments(
         throw new ValidationError('USER assignments require userId, aorNodeId, and optional deactivateAssignmentIds[]');
       }
 
-      const assignment = await deps.withTransaction((client) =>
-        assignAorUser(repo, client, {
+      const assignment = await deps.withTransaction(async (client) => {
+        await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+        const actorRole = await resolveActorRole(deps, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion, client);
+        await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+        const changed = await assignAorUser(repo, client, {
           tenantId: auth.tenantId,
           projectId: projectId as UUID,
           userId: body.userId as UUID,
           aorNodeId: body.aorNodeId as UUID,
           actorRole,
           deactivateAssignmentIds: (body.deactivateAssignmentIds ?? []) as UUID[],
-        }),
-      );
+        });
+        await appendAdministrativeEvent(client, {
+          auth, projectId: projectId as UUID, subjectUserId: body.userId as UUID,
+          eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+          changes: { resource: 'AREA_USER_ASSIGNMENT', result: changed },
+        });
+        return changed;
+      });
       return NextResponse.json({ assignment }, { status: 201 });
     }
 
@@ -116,16 +119,25 @@ export async function handlePostAorAssignments(
       throw new ValidationError('DEPARTMENT assignments require departmentId, aorNodeId, and optional deactivateAssignmentIds[]');
     }
 
-    const assignment = await deps.withTransaction((client) =>
-      assignAorDepartment(repo, client, {
+    const assignment = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await resolveActorRole(deps, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion, client);
+      await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+      const changed = await assignAorDepartment(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         departmentId: body.departmentId as UUID,
         aorNodeId: body.aorNodeId as UUID,
         actorRole,
         deactivateAssignmentIds: (body.deactivateAssignmentIds ?? []) as UUID[],
-      }),
-    );
+      });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'AREA_DEPARTMENT_ASSIGNMENT', result: changed },
+      });
+      return changed;
+    });
     return NextResponse.json({ assignment }, { status: 201 });
   } catch (err) {
     return errorResponse(err);
@@ -146,31 +158,39 @@ export async function handleDeleteAorAssignments(
       throw new ValidationError('assignmentId is required');
     }
 
-    const actorRole = await resolveActorRole(
-      deps,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
-    const assignment = await deps.withTransaction((client) => {
+    const assignment = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await resolveActorRole(deps, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion, client);
+      await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+
       if (kind === 'USER') {
-        return deactivateAorUserAssignment(repo, client, {
+        const changed = await deactivateAorUserAssignment(repo, client, {
           tenantId: auth.tenantId,
           projectId: projectId as UUID,
           assignmentId: body.assignmentId as UUID,
           actorRole,
         });
+        await appendAdministrativeEvent(client, {
+          auth, projectId: projectId as UUID, subjectUserId: null,
+          eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+          changes: { resource: 'AREA_USER_ASSIGNMENT_ENDED', result: changed },
+        });
+        return changed;
       }
-      return deactivateAorDepartmentAssignment(repo, client, {
+      const changed = await deactivateAorDepartmentAssignment(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         assignmentId: body.assignmentId as UUID,
         actorRole,
       });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'AREA_DEPARTMENT_ASSIGNMENT_ENDED', result: changed },
+      });
+      return changed;
     });
     return NextResponse.json({ assignment });
   } catch (err) {

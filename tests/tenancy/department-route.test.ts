@@ -103,7 +103,10 @@ function makeRequest(url: string, method: 'POST' | 'GET', body?: Record<string, 
 
 function makeDeps(repo: ITenancyRepository, actorRole: 'PROJECT_ADMIN' | 'TENANT_ADMIN'): DepartmentsRouteDeps {
   const db: DbClient = {
-    query: async () => ({ rows: [] }),
+    query: async <T extends object = Record<string, unknown>>(sql: string) => ({
+          rows: (/pg_current_xact_id/.test(sql) ? [{transaction_id:'fixture-transaction'}] :
+            /SELECT id FROM tenants/.test(sql) ? [{id:tenantId}] : []) as T[],
+        }),
   };
 
   return {

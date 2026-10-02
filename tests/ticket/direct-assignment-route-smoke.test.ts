@@ -110,6 +110,10 @@ test('direct-assignment tickets move through create, assign, start, and direct c
   };
   pool.connect = async () => ({
     query: async (sql: string, params?: unknown[]) => {
+      if (/pg_current_xact_id/.test(sql)) return { rows: [{transaction_id: 'fixture-transaction'}] };
+      if (/SELECT id FROM tenants/.test(sql)) return { rows: [{id: tenantId}] };
+      if (/FROM revoked_auth_sessions|FROM users|FROM project_memberships|SELECT project_id FROM tickets|SELECT t.id FROM tickets/.test(sql)) return pool.query(sql, params);
+
       if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql.trim())) {
         return { rows: [] };
       }

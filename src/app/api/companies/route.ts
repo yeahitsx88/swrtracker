@@ -1,3 +1,6 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { withTransaction } from '@/lib/with-transaction';
 /**
  * POST /api/companies
  * Creates a company within the authenticated user's tenant.
@@ -29,13 +32,22 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, type } = body as { name: string; type: CompanyType };
-    const actorRole = await getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
-    const repo = new TenancyRepository();
-    const company = await createCompany(repo, pool, {
+    const company = await withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
+      const actorRole = await getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      const repo = new TenancyRepository();
+      const company = await createCompany(repo, client, {
       tenantId: auth.tenantId,
       name: name.trim(),
       type,
       actorRole,
+    });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: null, subjectUserId: null,
+        eventType: 'tenant.company_created', authorityEvidence: { actorRole },
+        changes: { result: company },
+      });
+      return company;
     });
     return NextResponse.json({ company }, { status: 201 });
   } catch (err) {

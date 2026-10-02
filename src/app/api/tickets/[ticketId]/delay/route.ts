@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { delayTicket } from '@/modules/ticket/application/delay-ticket';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
@@ -25,7 +25,7 @@ export async function POST(
 
     const { reason } = body as { reason: string };
     const repo = new TicketRepository();
-    const result = await withTransaction((client) => executeIdempotentHttpMutation(
+    const result = await withTicketMutation(req, ctx, (client, ctx) => executeIdempotentHttpMutation(
       client,
       { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/delay`, idempotencyKey },
       { ticketId, reason },

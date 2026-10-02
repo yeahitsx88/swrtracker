@@ -22,8 +22,19 @@ export async function acquireTenantLifecycleLock(db:DbClient,tenantId:UUID,mode:
 /** Repeat cookie/logout/current-account checks after the tenant lock wait, before any replay or write. */
 export async function revalidateMutationAuth(db:DbClient,req:NextRequest,expected:AuthContext):Promise<AuthContext>{
  const current=await requireActiveAuth(req,db);
- if(current.tenantId!==expected.tenantId||current.userId!==expected.userId||current.sessionVersion!==expected.sessionVersion){
-  throw new UnauthorizedError('Mutation identity changed','AUTH_SESSION_REVOKED');
- }
+ assertMutationIdentity(current,expected);
  return current;
+}
+/** For entry points with an explicitly injected current-auth reader. */
+export function assertMutationIdentity(current:AuthContext,expected:AuthContext):void{
+ if(current.tenantId!==expected.tenantId||current.userId!==expected.userId||
+    current.sessionVersion!==expected.sessionVersion||
+    (current.expiresAt&&current.expiresAt.getTime()<=Date.now())){
+  throw new UnauthorizedError('Mutation identity changed or expired','AUTH_SESSION_REVOKED');
+ }
+}
+/** Coordinate an explicitly authenticated writer before current authority or domain reads. */
+export async function coordinateAuthenticatedMutation(db:DbClient,req:NextRequest,expected:AuthContext,mode:Mode,readAuth:(req:NextRequest,db?:DbClient)=>AuthContext|Promise<AuthContext>=requireActiveAuth):Promise<void>{
+ await acquireTenantLifecycleLock(db,expected.tenantId,mode);
+ assertMutationIdentity(await readAuth(req,db),expected);
 }

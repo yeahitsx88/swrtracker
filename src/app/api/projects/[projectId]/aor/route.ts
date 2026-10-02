@@ -1,3 +1,5 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 /**
  * POST /api/projects/[projectId]/aor
  *
@@ -9,7 +11,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
-import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import { createAorLevel } from '@/modules/tenancy/application/create-aor-level';
 import { createAorNode } from '@/modules/tenancy/application/create-aor-node';
@@ -33,15 +34,6 @@ export async function POST(
       throw new ValidationError('kind is required');
     }
 
-    const actorRole = await resolveProjectSetupActorRole(
-      pool,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
-
     const repo = new TenancyRepository();
 
     if (body.kind === 'LEVEL') {
@@ -51,15 +43,31 @@ export async function POST(
 
       const { depth, label } = body as { depth: number; label: string };
 
-      const level = await withTransaction((client) =>
-        createAorLevel(repo, client, {
+      const level = await withTransaction(async (client) => {
+        await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
+        const actorRole = await resolveProjectSetupActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+        );
+        await assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+
+        const changed = await createAorLevel(repo, client, {
           tenantId: auth.tenantId,
           projectId: projectId as UUID,
           depth,
           label,
           actorRole,
-        }),
-      );
+        });
+        await appendAdministrativeEvent(client, {
+          auth, projectId: projectId as UUID, subjectUserId: null,
+          eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+          changes: { resource: 'AREA_LEVEL', result: changed },
+        });
+        return changed;
+      });
 
       return NextResponse.json({ level }, { status: 201 });
     }
@@ -85,8 +93,18 @@ export async function POST(
         code,
       } = body as { levelId: string; parentId?: string | null; name: string; code: string };
 
-      const node = await withTransaction((client) =>
-        createAorNode(repo, client, {
+      const node = await withTransaction(async (client) => {
+        await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
+        const actorRole = await resolveProjectSetupActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+        );
+        await assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+
+        const changed = await createAorNode(repo, client, {
           tenantId: auth.tenantId,
           projectId: projectId as UUID,
           levelId: levelId as UUID,
@@ -94,8 +112,14 @@ export async function POST(
           name,
           code,
           actorRole,
-        }),
-      );
+        });
+        await appendAdministrativeEvent(client, {
+          auth, projectId: projectId as UUID, subjectUserId: null,
+          eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+          changes: { resource: 'AREA_NODE', result: changed },
+        });
+        return changed;
+      });
 
       return NextResponse.json({ node }, { status: 201 });
     }

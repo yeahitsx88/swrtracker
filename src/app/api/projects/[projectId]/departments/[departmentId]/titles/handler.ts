@@ -1,3 +1,5 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -55,18 +57,19 @@ export async function handlePostDepartmentTitles(
       assignmentLayer,
     } = body as { title: string; defaultPriority: string; assignmentLayer: string };
 
-    const actorRole = await deps.resolveProjectSetupActorRole(
-      pool,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
-    const departmentTitle = await deps.withTransaction((client) =>
-      upsertDepartmentTitle(repo, client, {
+    const departmentTitle = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.resolveProjectSetupActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+      );
+      await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+      const changed = await upsertDepartmentTitle(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         departmentId: departmentId as UUID,
@@ -74,8 +77,14 @@ export async function handlePostDepartmentTitles(
         defaultPriority: defaultPriority as never,
         assignmentLayer: assignmentLayer as never,
         actorRole,
-      }),
-    );
+      });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'DEPARTMENT_TITLE', result: changed },
+      });
+      return changed;
+    });
 
     return NextResponse.json({ title: departmentTitle }, { status: 201 });
   } catch (err) {

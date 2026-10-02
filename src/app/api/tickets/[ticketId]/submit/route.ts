@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { submitTicket } from '@/modules/ticket/application/submit-ticket';
 import { ValidationError } from '@/shared/errors';
@@ -39,7 +39,7 @@ export async function POST(
     if (urgentReason !== undefined && typeof urgentReason !== 'string') {
       throw new ValidationError('urgentReason must be a string when provided');
     }
-    const result = await withTransaction(async (client) => {
+    const result = await withTicketMutation(req, ctx, async (client, ctx) => {
       await lockDraftActor(client, { ...ctx, sessionVersion: auth.sessionVersion }, 'REQUESTER');
       await lockRequesterTicket(client, ctx);
       return executeIdempotentHttpMutation(

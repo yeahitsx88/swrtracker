@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { approvePcStatus } from '@/modules/ticket/application/approve-pc-status';
 
@@ -14,7 +14,7 @@ export async function POST(
     const { ticketId } = await params;
     const ctx = await getTicketRouteContext(req, ticketId);
     const repo = new TicketRepository();
-    const ticket = await withTransaction((client) =>
+    const ticket = await withTicketMutation(req, ctx, (client, ctx) =>
       approvePcStatus(repo, client, ctx),
     );
     return NextResponse.json({ ticket });

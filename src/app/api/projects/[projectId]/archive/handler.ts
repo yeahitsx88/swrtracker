@@ -1,7 +1,8 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
-import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
 import { withTransaction } from '@/lib/with-transaction';
 import { archiveProject } from '@/modules/tenancy/application/archive-project';
@@ -33,17 +34,24 @@ export async function handlePostProjectArchive(
   try {
     const auth = await deps.requireAuth(req);
     const { projectId } = await params;
-    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
     const repo = deps.createRepo();
 
-    const project = await deps.withTransaction((client) =>
-      archiveProject(repo, client, {
+    const project = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      const changed = await archiveProject(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         actorId: auth.userId,
         actorRole,
-      }),
-    );
+      });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.archived', authorityEvidence: { actorRole },
+        changes: { resource: 'ARCHIVE', result: changed },
+      });
+      return changed;
+    });
 
     return NextResponse.json({ project });
   } catch (err) {

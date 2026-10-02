@@ -65,3 +65,24 @@ No current search result is uncategorized. Reconcile every added consumer here b
 ## Remaining transaction and release gates
 
 Task3 must acquire tenant row locks before domain/replay locks for every lifecycle-relevant writer and revalidate account/version/logout/authority after waits. Exclusive writes must not upgrade a shared lock. Task4 introduces previews/transitions/reviews/outbox. Task5 completes local parity without tenant escalation. Tasks6/7 verify UI and all cases with real races, HTTP/browser evidence. This manifest classifies access treatment; it does not authorize partially enforced deployment.
+## Task3 writer coordination verified to date
+
+| Writer entry point | Held tenant mode / post-wait enforcement | Actual SQL evidence |
+| --- | --- | --- |
+| Project member POST; tenant membership POST/DELETE | EXCLUSIVE; fresh cookie/logout/account/version and current eligible Central IT before writes | project-member-atomic-postgres.ts; account-offboarding-concurrency-postgres.ts (continuity primitive race, not tenant endpoint race) |
+| Initial registration; reset issuance/completion; logout | EXCLUSIVE before invite/account/token locks; token scope peek is nonlocking; disabled account refuses reset; bearer rechecked after wait | identity-lifecycle-atomic-postgres.ts (rollback/preservation); session primitives two-client race |
+| Staffing POST | EXCLUSIVE selected upfront because role changes can revoke sessions; current bearer, operational role and actual Manager checked before ledger | lifecycle-writer-handlers-postgres.ts staffing-role-and-links |
+| Staffing PATCH targeted link unlink | EXCLUSIVE authority/visibility links; current bearer/actual Manager before ledger | lifecycle-writer-handlers-postgres.ts staffing-unlink |
+| Teams POST/DELETE; role PATCH | SHARED organizational writes; EXCLUSIVE role changes; current bearer/actual Manager before ledger | lifecycle-writer-handlers-postgres.ts team-save/team-delete/team-role |
+| Protected reviewer resolution POST | EXCLUSIVE authority-grant mutation; bearer before context locks, again before ledger; current Central/project-admin/Manager authority retained | lifecycle-writer-handlers-postgres.ts protected-review-handover |
+| Superintendent Area unlink PATCH | EXCLUSIVE Area coverage authority; bearer before context locks and after domain wait before ledger; actual Manager | lifecycle-writer-handlers-postgres.ts superintendent-area-unlink |
+| Workforce move POST | EXCLUSIVE roster-based visibility; bearer before role/domain locks; current operational viewer/move authority before ledger | lifecycle-writer-handlers-postgres.ts workforce-roster-move |
+
+The new handler race script creates a unique fully migrated owned schema, uses two actual clients plus pg_blocking_pids, commits a synthetic account disablement while the handler waits, then proves401, selected lock mode and no domain/audit/ledger changes.40 checks cover eight real handlers; no public offboarding command exists yet.
+
+Remaining writer families include ticket workflow/assignment/create/draft/attachments, setup/configuration/activation/archive, departments/titles/members, generic Area assignments, invitation issuance/company authority, shared templates/company/project creation, notification/read-state and relevant workers. Direct and indirect repository writers still need a complete entry-point inventory and each-family races before Task3 closes. Administrative audit coverage is currently bounded to the verified Task3 identity/membership slice; existing non-ticket events retain their own provenance contracts.
+## Checkpoint continuation: metadata and ticket writers
+- EXCLUSIVE: Department membership/title/configuration, Area assignments and structure, activation/archive, request configuration, invitation/company-authority writes, company/project creation, shared template writes and whitelist writes.
+- Each mutation acquires the tenant barrier and rereads current bearer and action authority on the held client before domain effects. Existing operational roles are not replaced by administrative capabilities.
+- SHARED:24 ticket transition/update callbacks through withTicketMutation; creation and draft deletion/recovery use explicit coordination on the held client. Fresh operational role and visibility precede replay.
+- Actual default entrypoint concurrency acceptance:31 handlers /155 race assertions plus5 atomic department audit assertions (160 total). Subject departure, action-specific positive authorization, attachments/downloads, workers, complete indirect writer search and integrated offboarding races remain open; this is not a complete enforcement inventory.

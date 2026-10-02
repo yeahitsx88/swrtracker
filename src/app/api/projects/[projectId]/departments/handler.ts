@@ -1,3 +1,5 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -47,26 +49,33 @@ export async function handlePostDepartments(
     }
     const { name, managerTitle } = body as { name: string; managerTitle: string };
 
-    const actorRole = await deps.resolveProjectSetupActorRole(
-      pool,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
-    await deps.assertProjectSetupMutable(pool, auth.tenantId, projectId as UUID);
     const repo = deps.createRepo();
 
-    const department = await deps.withTransaction((client) =>
-      createDepartment(repo, client, {
+    const department = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.resolveProjectSetupActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+      );
+      await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+      const changed = await createDepartment(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         name,
         managerTitle,
         actorId: auth.userId,
         actorRole,
-      }),
-    );
+      });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'DEPARTMENT', result: changed },
+      });
+      return changed;
+    });
 
     return NextResponse.json({ department }, { status: 201 });
   } catch (err) {

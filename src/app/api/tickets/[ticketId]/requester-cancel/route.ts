@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { withRequestCorrelation } from '@/lib/correlation';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { requesterCancel } from '@/modules/ticket/application/requester-cancel';
 
@@ -18,7 +18,7 @@ export async function POST(
       const idempotencyKey = requireIdempotencyKey(req);
       const ctx = await getTicketRouteContext(req, ticketId);
       const repo = new TicketRepository();
-      const result = await withTransaction((client) =>
+      const result = await withTicketMutation(req, ctx, (client, ctx) =>
         executeIdempotentHttpMutation(
           client,
           {

@@ -9,7 +9,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { NotFoundError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { pool } from '@/lib/db';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { updateRequesterTicket } from '@/modules/ticket/application/update-requester-ticket';
@@ -61,7 +61,7 @@ export async function PATCH(
     const { changes, expectedVersion } = parseRequesterIntake(body);
     const auth = await requireActiveAuth(req);
     const repo = new TicketRepository();
-    const result = await withTransaction(async (db) => {
+    const result = await withTicketMutation(req, ctx, async (db, ctx) => {
       await lockDraftActor(db, { ...ctx, sessionVersion: auth.sessionVersion }, 'REQUESTER');
       await lockRequesterTicket(db, ctx);
       return executeIdempotentHttpMutation(

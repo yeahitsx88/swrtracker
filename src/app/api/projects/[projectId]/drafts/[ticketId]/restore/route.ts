@@ -1,3 +1,4 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
       actorId: auth.userId, sessionVersion: auth.sessionVersion,
       reason: body.reason, expectedVersion: body.expectedVersion as number };
     const result = await withTransaction(async db => {
+      await coordinateAuthenticatedMutation(db, req, auth, 'SHARED', requireActiveAuth);
       await lockDraftActor(db, scope, 'PROJECT_ADMIN');
       return executeIdempotentHttpMutation(db, { tenantId: scope.tenantId, actorId: scope.actorId,
         endpoint: `POST:/api/projects/${projectId}/drafts/${ticketId}/restore`, idempotencyKey: key }, body,

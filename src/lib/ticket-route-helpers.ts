@@ -10,7 +10,7 @@ import { getProjectRole } from './get-project-role';
 import { resolveVisibility } from './resolve-visibility';
 import { buildVisibilityClause } from './ticket-visibility-clause';
 import { requireResourceUuid } from './resource-uuid';
-import type { UUID } from '@/shared/types';
+import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
 
@@ -30,11 +30,12 @@ export interface TicketRouteContext {
 export async function getTicketRouteContext(
   req: NextRequest,
   ticketId: string,
+  db: DbClient = pool,
 ): Promise<TicketRouteContext> {
-  const auth = await requireAuth(req);
+  const auth = await requireAuth(req, db);
   requireResourceUuid(ticketId, 'ticketId');
 
-  const { rows } = await pool.query<{ project_id: string }>(
+  const { rows } = await db.query<{ project_id: string }>(
     `SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1`,
     [ticketId, auth.tenantId],
   );
@@ -44,7 +45,7 @@ export async function getTicketRouteContext(
   let actorRole: ProjectRole;
   try {
     actorRole = await getProjectRole(
-      pool, auth.tenantId, projectId, auth.userId, auth.sessionVersion,
+      db, auth.tenantId, projectId, auth.userId, auth.sessionVersion,
     );
   } catch (error) {
     // Missing membership must not reveal the existence of a ticket. Preserve
@@ -54,13 +55,13 @@ export async function getTicketRouteContext(
   }
 
   const visibility = await resolveVisibility(
-    pool, auth.tenantId, projectId, auth.userId, actorRole,
+    db, auth.tenantId, projectId, auth.userId, actorRole,
   );
 
   // Hide inaccessible resources before any route performs role/state checks or
   // replays a mutation. The use case still rechecks visibility at its own read.
   const clause = buildVisibilityClause(visibility, 4);
-  const visible = await pool.query(
+  const visible = await db.query(
     `SELECT t.id FROM tickets t
      WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 ${clause.sql} LIMIT 1`,
     [ticketId, auth.tenantId, projectId, ...clause.params],
@@ -75,6 +76,28 @@ export async function getTicketRouteContext(
     projectId,
     visibility,
   };
+}
+
+/**
+ * Fresh current session, operational role and visibility before any domain lock
+ * or idempotency replay. Administrative capabilities do not grant workflow power.
+ */
+export async function withTicketMutation<T>(
+  req: NextRequest,
+  expected: TicketRouteContext,
+  fn: (db: DbClient, current: TicketRouteContext) => Promise<T>,
+): Promise<T> {
+  const auth = await requireAuth(req);
+  if (auth.tenantId !== expected.tenantId || auth.userId !== expected.actorId) {
+    throw new NotFoundError('Ticket not found');
+  }
+  let current = expected;
+  return withTransaction(db => fn(db, current), {
+    req, auth, mode: 'SHARED',
+    authorize: async db => {
+      current = await getTicketRouteContext(req, expected.ticketId, db);
+    },
+  });
 }
 
 export { withTransaction };

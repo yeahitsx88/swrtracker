@@ -5,6 +5,7 @@ import { handleGetSurveyStaffing, handlePostSurveyStaffing, handlePatchSurveySta
 import { SurveyStaffingPgRepository } from '@/modules/tenancy/infrastructure/survey-staffing.repository';
 import { executeIdempotentHttpMutation } from '@/lib/idempotency';
 import type { DbClient, UUID } from '@/shared/types';
+import {UnauthorizedError} from '@/shared/errors';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 
 const id=(n:number)=>`30000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
@@ -15,6 +16,8 @@ function fixture(){
   const writes:string[]=[],lockOrder:UUID[][]=[];
   const ledger=new Map<string,{request_hash:string;response_status:number|null;response_body:unknown}>();
   const db:DbClient={async query<T extends object>(sql:string,params:unknown[]=[]){
+    if(sql.includes('pg_current_xact_id'))return {rows:[{transaction_id:'staffing-route'}] as T[]};
+    if(sql.includes('FROM tenants'))return {rows:[{id:tenantId}] as T[]};
     ledgerCalls++; const key=JSON.stringify(params.slice(0,4));
     if(sql.startsWith('INSERT INTO api_idempotency')){
       if(ledger.has(key))return {rows:[]};
@@ -135,4 +138,15 @@ test('cached unlink is denied after Manager role/session loss or project closure
     if(denial==='role')f.setRole('SURVEY_SUPERINTENDENT');else if(denial==='revoke')f.revoke();else f.archive();
     assert.equal((await f.patch()).status,denial==='archive'?409:403);assert.equal(f.ledgerCalls(),before);assert.deepEqual(f.writes,['unlink','audit']);
   }
+});
+
+test('staffing post-wait logout refusal occurs before role, staffing or saved ledger access',async()=>{
+ const f=fixture();let domain=0;
+ f.deps.requireAuth=async(_req,db)=>{
+   if(db)throw new UnauthorizedError('Logged out during lifecycle wait');
+   return {tenantId,userId:actorId,sessionVersion:1};
+ };
+ f.deps.getProjectRole=async()=>{domain++;return 'SURVEY_MANAGER';};
+ assert.equal((await handlePostSurveyStaffing(f.request(),f.ctx,f.deps)).status,401);
+ assert.equal(domain,0);assert.equal(f.ledgerCalls(),0);assert.deepEqual(f.writes,[]);
 });

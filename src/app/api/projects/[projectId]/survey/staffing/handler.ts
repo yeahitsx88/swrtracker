@@ -4,6 +4,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
+import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import { withTransaction } from '@/lib/with-transaction';
 import { authorizeStaffingMutation, readStaffingSnapshot, saveSurveyStaffing, type SurveyStaffingInput, type SurveyStaffingRepository } from '@/modules/tenancy/application/save-survey-staffing';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
@@ -40,6 +41,8 @@ export async function handlePatchSurveyStaffing(req: NextRequest, { params }: { 
     const input = body as unknown as StaffingUnlinkInput;
     const idempotencyKey = requireIdempotencyKey(req);
     const result = await deps.withTransaction(async db => {
+      await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
+      assertMutationIdentity(await deps.requireAuth(req,db),auth);
       const actorRole = await deps.getProjectRole(db, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion);
       const actor = { tenantId: auth.tenantId, projectId: projectId as UUID, actorId: auth.userId, actorRole, sessionVersion: auth.sessionVersion };
       await authorizeStaffingMutation(deps.repo, db, actor);
@@ -118,6 +121,8 @@ export async function handlePostSurveyStaffing(
     const input = parseInput(value);
     const idempotencyKey = requireIdempotencyKey(req);
     const result = await deps.withTransaction(async db => {
+      await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
+      assertMutationIdentity(await deps.requireAuth(req,db),auth);
       const actorRole = await deps.getProjectRole(db, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion);
       const actor = { tenantId: auth.tenantId, projectId: projectId as UUID, actorId: auth.userId, actorRole, sessionVersion: auth.sessionVersion };
       await authorizeStaffingMutation(deps.repo, db, actor);

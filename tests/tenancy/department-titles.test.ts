@@ -109,7 +109,10 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
 }
 
 const db: DbClient = {
-  query: async () => ({ rows: [] }),
+  query: async <T extends object = Record<string, unknown>>(sql: string) => ({
+          rows: (/pg_current_xact_id/.test(sql) ? [{transaction_id:'fixture-transaction'}] :
+            /SELECT id FROM tenants/.test(sql) ? [{id:tenantId}] : []) as T[],
+        }),
 };
 
 function makeRequest(url: string, method: 'POST' | 'GET', body?: Record<string, unknown>): NextRequest {

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
+import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import { withTransaction } from '@/lib/with-transaction';
 import { errorResponse } from '@/lib/api-error';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
@@ -15,7 +16,12 @@ const uuid=(value:unknown):UUID=>{if(typeof value!=='string'||!/^[0-9a-f]{8}-(?:
 type Context={params:Promise<{projectId:string}>};
 async function run<T>(req:NextRequest,context:Context,fn:(db:import('@/shared/types').DbClient,actor:import('@/modules/tenancy/application/survey-teams').TeamActor)=>Promise<T>){
  const auth=await requireActiveAuth(req);const projectId=uuid((await context.params).projectId);
- return withTransaction(async db=>{const actor={tenantId:auth.tenantId,projectId,actorId:auth.userId,sessionVersion:auth.sessionVersion,actorRole:await getProjectRole(db,auth.tenantId,projectId,auth.userId,auth.sessionVersion)};assertWorkforceViewer(actor);return fn(db,actor);});
+ return withTransaction(async db=>{
+ if(req.method!=='GET'){
+   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
+   assertMutationIdentity(await requireActiveAuth(req,db),auth);
+ }
+ const actor={tenantId:auth.tenantId,projectId,actorId:auth.userId,sessionVersion:auth.sessionVersion,actorRole:await getProjectRole(db,auth.tenantId,projectId,auth.userId,auth.sessionVersion)};assertWorkforceViewer(actor);return fn(db,actor);});
 }
 export async function GET(req:NextRequest,context:Context){
  try{

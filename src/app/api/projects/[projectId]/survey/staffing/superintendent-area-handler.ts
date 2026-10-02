@@ -1,5 +1,6 @@
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
+import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import {withTransaction} from '@/lib/with-transaction';
 import {errorResponse} from '@/lib/api-error';
 import {executeIdempotentHttpMutation,requireIdempotencyKey} from '@/lib/idempotency';
@@ -36,6 +37,8 @@ export async function handlePatchSuperintendentArea(req:NextRequest,{params}:Con
   let body:unknown;try{body=await req.json();}catch{throw new ValidationError('A valid JSON body is required');}
   const input=parseSuperintendentAreaUnlink(body),idempotencyKey=requireIdempotencyKey(req),canonicalProject=projectId.toLowerCase() as UUID;
   const result=await deps.withTransaction(async db=>{
+   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
+   assertMutationIdentity(await deps.requireAuth(req,db),auth);
    const context=await authorizeSuperintendentAreaUnlink(deps.repo,db,auth,canonicalProject,input);
    const current=await deps.requireAuth(req,db);
    if(current.userId!==context.authority.actorId||current.tenantId!==context.authority.tenantId||current.sessionVersion!==context.authority.actorSessionVersion||(current.expiresAt&&current.expiresAt.getTime()<=Date.now()))throw new UnauthorizedError('Current active session is required','AUTH_SESSION_REVOKED');

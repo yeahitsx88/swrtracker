@@ -1,8 +1,9 @@
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
-import { pool } from '@/lib/db';
 import { withTransaction } from '@/lib/with-transaction';
 import {
   activateProject,
@@ -67,27 +68,34 @@ export async function handlePostProjectActivation(
       throw new ValidationError('acknowledgeWarnings must be a boolean when provided');
     }
 
-    const actorRole = await deps.resolveProjectSetupActorRole(
-      pool,
-      auth.tenantId,
-      projectId as UUID,
-      auth.userId,
-      auth.sessionVersion,
-    );
     const repo = deps.createRepo();
 
-    const result = await deps.withTransaction((client) =>
-      activateProject(repo, client, {
+    const result = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.resolveProjectSetupActorRole(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+      );
+      const changed = await activateProject(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         actorId: auth.userId,
         actorRole,
         acknowledgeWarnings:
-          body !== null && typeof body === 'object'
-            ? body.acknowledgeWarnings as boolean | undefined
-            : undefined,
-      }),
-    );
+        body !== null && typeof body === 'object'
+        ? body.acknowledgeWarnings as boolean | undefined
+        : undefined,
+      });
+      if (changed.outcome === 'ACTIVATED') await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.activated', authorityEvidence: { actorRole },
+        changes: { resource: 'ACTIVATION', result: changed },
+      });
+      return changed;
+    });
 
     if (result.outcome === 'BLOCKED') {
       return blockedResponse(result);

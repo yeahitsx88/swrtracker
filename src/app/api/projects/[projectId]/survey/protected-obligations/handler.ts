@@ -1,5 +1,6 @@
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
+import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import {withTransaction} from '@/lib/with-transaction';
 import {errorResponse} from '@/lib/api-error';
 import {executeIdempotentHttpMutation,requireIdempotencyKey} from '@/lib/idempotency';
@@ -35,6 +36,8 @@ export async function handlePostProtectedObligations(req:NextRequest,{params}:Co
   let value:unknown;try{value=await req.json();}catch{throw new ValidationError('A valid JSON body is required');}
   const input=parseReviewerResolution(value),idempotencyKey=requireIdempotencyKey(req);
   const result=await deps.withTransaction(async db=>{
+   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
+   assertMutationIdentity(await deps.requireAuth(req,db),auth);
    const context=await authorizeReviewerResolution(deps.repo,db,auth,projectId.toLowerCase() as UUID,input);
    await deps.requireAuth(req,db);
    return deps.executeIdempotent(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST:/api/projects/${projectId.toLowerCase()}/survey/protected-obligations`,idempotencyKey},input,

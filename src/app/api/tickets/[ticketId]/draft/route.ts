@@ -1,3 +1,4 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
@@ -30,6 +31,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ t
       actorId: auth.userId, ticketId: ticketId as UUID, sessionVersion: auth.sessionVersion,
       expectedVersion: body.expectedVersion as number };
     const result = await withTransaction(async db => {
+      await coordinateAuthenticatedMutation(db, req, auth, 'SHARED', requireActiveAuth);
       await lockDraftActor(db, scope, 'REQUESTER');
       return executeIdempotentHttpMutation(db, { tenantId: scope.tenantId, actorId: scope.actorId,
         endpoint: `DELETE:/api/tickets/${ticketId}/draft`, idempotencyKey: key }, body,

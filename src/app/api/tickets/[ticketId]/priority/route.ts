@@ -3,7 +3,7 @@ import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { withRequestCorrelation } from '@/lib/correlation';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { revisePriority } from '@/modules/ticket/application/revise-priority';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import type { TicketPriority } from '@/modules/ticket/domain/types';
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tic
         throw new ValidationError('priority and reason are required');
       }
       const repo = new TicketRepository();
-      const result = await withTransaction((db) => executeIdempotentHttpMutation(
+      const result = await withTicketMutation(req, ctx, (db, ctx) => executeIdempotentHttpMutation(
         db,
         { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/priority`, idempotencyKey },
         { ticketId, priority: body.priority, reason: body.reason },

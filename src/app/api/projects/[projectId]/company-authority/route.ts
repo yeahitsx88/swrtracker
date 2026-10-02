@@ -1,3 +1,4 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ConflictError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -40,6 +41,7 @@ export async function POST(
     }
     const repo = new CompanyAccessRepository();
     const grant = await withTransaction(async (db) => {
+      await coordinateAuthenticatedMutation(db, req, auth, 'EXCLUSIVE', requireAuth);
       await assertAccessAdministrator(db, auth, projectId as UUID);
       const created = await repo.grantCompanyAuthority(db, {
         tenantId: auth.tenantId,

@@ -3,10 +3,11 @@ import type {AuthContext} from '@/lib/auth';
 import type {DbClient,UUID} from '@/shared/types';
 export type AdministrativeEventType =
   | 'project.member_added' | 'project.role_changed' | 'project.admin_granted' | 'project.admin_revoked'
-  | 'project.company_registered' | 'project.company_associated' | 'project.archived'
+  | 'project.company_registered' | 'project.company_associated' | 'project.archived' | 'project.activated'
   | 'project.configuration_changed' | 'tenant.membership_changed' | 'tenant.membership_removed'
   | 'user.invited' | 'user.registered' | 'password.reset_requested' | 'password.reset_completed'
-  | 'session.logged_out';
+  | 'session.logged_out' | 'tenant.company_created' | 'project.created'
+  | 'tenant.template_created' | 'tenant.template_updated' | 'tenant.template_deleted';
 /** Same held transaction as the administrative effect; never include passwords or bearer/reset tokens. */
 export async function appendAdministrativeEvent(db:DbClient,input:{
   auth:Pick<AuthContext,'tenantId'|'userId'>|{tenantId:UUID;userId:null}; projectId:UUID|null; subjectUserId:UUID|null;

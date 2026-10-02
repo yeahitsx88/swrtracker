@@ -1,3 +1,6 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { withTransaction } from '@/lib/with-transaction';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -10,8 +13,8 @@ import type { CrewBuild } from '@/modules/tenancy/domain/types';
 import type { UUID } from '@/shared/types';
 
 
-export interface ProjectCreateDeps { requireAuth: typeof requireAuth; getTenantRole: typeof getTenantRole; repo: import('@/modules/tenancy/application/ports').ITenancyRepository; db: import('@/shared/types').DbClient }
-const defaults:ProjectCreateDeps={requireAuth,getTenantRole,repo:new TenancyRepository(),db:pool};
+export interface ProjectCreateDeps { requireAuth: typeof requireAuth; getTenantRole: typeof getTenantRole; repo: import('@/modules/tenancy/application/ports').ITenancyRepository; db: import('@/shared/types').DbClient; withTransaction: typeof withTransaction }
+const defaults:ProjectCreateDeps={requireAuth,getTenantRole,repo:new TenancyRepository(),db:pool,withTransaction};
 
 const VALID_CREW_BUILDS: CrewBuild[] = ['FULL', 'MEDIUM', 'SLIM'];
 
@@ -42,14 +45,23 @@ export async function handlePostProject(req: NextRequest, deps:ProjectCreateDeps
       crewBuild,
       templateId,
     } = body as { name: string; crewBuild?: CrewBuild; templateId?: string | null };
-    const actorRole = await deps.getTenantRole(deps.db, auth.tenantId, auth.userId, auth.sessionVersion);
-    const repo = deps.repo;
-    const project = await createProject(repo, deps.db, {
+    const project = await deps.withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      const repo = deps.repo;
+      const project = await createProject(repo, client, {
       tenantId: auth.tenantId,
       name,
       actorRole,
       crewBuild,
       templateId: templateId ? templateId as UUID : null,
+    });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: project.id, subjectUserId: null,
+        eventType: 'project.created', authorityEvidence: { actorRole },
+        changes: { result: project },
+      });
+      return project;
     });
     return NextResponse.json({ project }, { status: 201 });
   } catch (err) {

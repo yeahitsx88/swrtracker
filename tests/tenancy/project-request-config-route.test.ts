@@ -50,7 +50,10 @@ function makeDeps(
     createRepo: () => repo,
     withTransaction: async (fn) =>
       fn({
-        query: async () => ({ rows: [] }),
+        query: async <T extends object = Record<string, unknown>>(sql: string) => ({
+          rows: (/pg_current_xact_id/.test(sql) ? [{transaction_id:'fixture-transaction'}] :
+            /SELECT id FROM tenants/.test(sql) ? [{id:tenantId}] : []) as T[],
+        }),
       }),
     ...overrides,
   };
