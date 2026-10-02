@@ -37,22 +37,31 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  }
  void revision;
  return <div className="stack">
- <Card title="Project members and access" description="Membership, operational roles and independent Project Admin authority are separate."><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {loading&&<p role="status">Loading project administration…</p>}
  {closed&&<p>This archived project retains history. Access removal remains available; other administration is read-only.</p>}
+ <RequesterInvitations key={projectId} projectId={projectId} commandOwner={owner}/>
+ <details className="panel project-admin-section">
+ <summary><h2 className="panel-title">Add a project member</h2></summary>
+ <div className="stack project-admin-section-content"><p>Associate the person's company with this project first. Up to 100 eligible candidates are shown.</p>
+ <label className="field"><span className="field-label">Person</span><select className="select" value={candidate} disabled={locked||closed} onChange={e=>setCandidate(e.target.value)}><option value="">Choose a person</option>{companies?.candidates.map(c=><option key={c.userId} value={c.userId}>{c.name} · {c.companyName}</option>)}</select></label>
+ <label className="field"><span className="field-label">Operational role</span><select className="select" value={role} disabled={locked||closed} onChange={e=>setRole(e.target.value)}>{['REQUESTER','SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN','CAD_TECHNICIAN','CAD_LEAD','VIEWER'].map(r=><option key={r} value={r}>{r.replaceAll('_',' ')}</option>)}</select></label>
+ <Button disabled={!candidate||locked||closed} onClick={()=>propose({url:`${base}/members`,method:'POST',body:{userId:candidate,role},label:'Add project member'})}>Review member addition</Button>
+ </div></details>
+ <details className="panel project-admin-section">
+ <summary><h2 className="panel-title">Independent Project Admin assignments</h2></summary>
+ <div className="stack project-admin-section-content"><p>Granting administration preserves the person's operational role.</p>
+ <ul className="tm-list">{admins.map(m=><li key={m.userId}>{m.name} · {m.role.replaceAll('_',' ')} · {m.canAdminister?'Admin grant active':'No admin grant'} <Button variant="secondary" disabled={locked||closed||!!m.accessDisabledAt||!!m.accountDisabledAt} onClick={()=>propose({url:`${base}/administrators`,method:'POST',body:{userId:m.userId,enabled:!m.canAdminister,confirmed:true},label:`${m.canAdminister?'Revoke':'Grant'} Project Admin for ${m.name}`})}>{m.canAdminister?'Revoke Admin':'Grant Admin'}</Button></li>)}</ul>
+ </div></details>
+ <details className="panel project-admin-section">
+ <summary><h2 className="panel-title">Project members and access</h2></summary>
+ <div className="stack project-admin-section-content">
+ <p className="muted">Membership, operational roles and independent Project Admin authority are separate.</p>
  <label className="field"><span className="field-label">Find a project member</span><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);setSelected(undefined);}}/></label>
  <ul className="tm-list">{members.map(m=><li key={m.userId}><strong>{m.name}</strong> · {m.email} · {m.role.replaceAll('_',' ')}{m.accountDisabledAt?' · Tenant account disabled':m.accessDisabledAt?' · Project access disabled':''} <Button variant="secondary" disabled={locked} onClick={()=>setSelected(m)}>Preview access removal</Button></li>)}</ul>
  {!loading&&!members.length&&<p>No matching project members.</p>}
  <div className="row"><Button variant="secondary" disabled={locked||offset===0} onClick={()=>setOffset(n=>Math.max(0,n-25))}>Previous members</Button><span>{offset+1}–{Math.min(offset+members.length,total)} of {total}</span><Button variant="secondary" disabled={locked||offset+25>=total} onClick={()=>setOffset(n=>n+25)}>Next members</Button></div>
  {selected&&<AccountOffboarding key={selected.userId} subjectUserId={selected.userId} subjectName={selected.name} commandOwner={owner} scope={{kind:'PROJECT_ACCESS',projectId:projectId as UUID}} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
- <h3 className="panel-title">Independent Project Admin assignments</h3><p>Granting administration preserves the person's operational role.</p>
- <ul className="tm-list">{admins.map(m=><li key={m.userId}>{m.name} · {m.role.replaceAll('_',' ')} · {m.canAdminister?'Admin grant active':'No admin grant'} <Button variant="secondary" disabled={locked||closed||!!m.accessDisabledAt||!!m.accountDisabledAt} onClick={()=>propose({url:`${base}/administrators`,method:'POST',body:{userId:m.userId,enabled:!m.canAdminister,confirmed:true},label:`${m.canAdminister?'Revoke':'Grant'} Project Admin for ${m.name}`})}>{m.canAdminister?'Revoke Admin':'Grant Admin'}</Button></li>)}</ul>
- <h3 className="panel-title">Add a project member</h3><p>Associate the person's company with this project first. Up to 100 eligible candidates are shown.</p>
- <label className="field"><span className="field-label">Person</span><select className="select" value={candidate} disabled={locked||closed} onChange={e=>setCandidate(e.target.value)}><option value="">Choose a person</option>{companies?.candidates.map(c=><option key={c.userId} value={c.userId}>{c.name} · {c.companyName}</option>)}</select></label>
- <label className="field"><span className="field-label">Operational role</span><select className="select" value={role} disabled={locked||closed} onChange={e=>setRole(e.target.value)}>{['REQUESTER','SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN','CAD_TECHNICIAN','CAD_LEAD','VIEWER'].map(r=><option key={r} value={r}>{r.replaceAll('_',' ')}</option>)}</select></label>
- <Button disabled={!candidate||locked||closed} onClick={()=>propose({url:`${base}/members`,method:'POST',body:{userId:candidate,role},label:'Add project member'})}>Review member addition</Button>
- <RequesterInvitations key={projectId} projectId={projectId} commandOwner={owner}/>
- </div></Card>
+ </div></details>
  <Card title="Project companies" description="Associating a company here grants no access to another project."><div className="stack">
  <ul>{companies?.companies.map(c=><li key={c.id}>{c.name} · {c.type} · {c.id}</li>)}</ul>
  <label className="field"><span className="field-label">New company name</span><Input value={name} maxLength={200} disabled={locked||closed} onChange={e=>setName(e.target.value)}/></label>

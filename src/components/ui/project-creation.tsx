@@ -4,6 +4,7 @@ import { useEffect,useState,type FormEvent } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button,Card,ErrorBanner,Input,SuccessBanner } from '@/components/ui';
+import { PROJECT_STATUS_LABELS } from '@/lib/display-labels';
 import type { CrewBuild } from '@/modules/tenancy/domain/types';
 export function ProjectCreation(){
  const [data,setData]=useState<Awaited<ReturnType<typeof apiClient.projectAdministration>>>();
@@ -30,6 +31,6 @@ export function ProjectCreation(){
  <div className="row"><Button type="submit" disabled={busy||!name.trim()}>{busy?'Creating…':'Create Project'}</Button><Button type="button" variant="secondary" disabled={busy} onClick={()=>setOpen(false)}>Cancel</Button></div>
  </form>)}
  {data.canCreateProject&&<Link className="app-link" href="/accounts">Tenant accounts and Central IT reviews</Link>}
- <h3 className="panel-title">Administered projects</h3><p className="muted">Up to 100 administered projects, newest first.</p><ul className="tm-list">{data.projects.map(p=><li key={p.id}><Link className="app-link" href={`/projects/${p.id}/admin`}>{p.name}</Link> · {p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}</li>)}</ul>
+ <h3 className="panel-title">Administered projects</h3><p className="muted">Up to 100 administered projects, newest first.</p><ul className="tm-list">{data.projects.map(p=><li key={p.id}><Link className="app-link" href={`/projects/${p.id}/admin`}>{p.name}</Link> <span className={`badge status-badge ${p.status==='ACTIVE'?'tone-success':'tone-neutral'}`}>{PROJECT_STATUS_LABELS[p.status]}</span></li>)}</ul>
  </div></Card>;
 }

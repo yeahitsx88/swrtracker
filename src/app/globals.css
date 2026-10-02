@@ -798,3 +798,15 @@ main {
 .scroll-to-top { border-radius: var(--button-radius); z-index: 20; width: 44px; height: 44px; padding: 0; display: grid; place-items: center; box-shadow: 0 3px 10px rgb(46 46 46 / 20%); }
 @media (max-width: 759px) { .scroll-to-top { margin-bottom: var(--bottom-bar); } }
 .popout-dialog:has(> .scroll-to-top) { padding-bottom: 60px; }
+
+/* Project administration disclosures retain mounted command/session state. */
+.project-admin-section { display: block; padding: 0; }
+.project-admin-section > summary { cursor: pointer; min-height: 44px; padding: 1rem 1.25rem; overflow-wrap: anywhere; }
+.project-admin-section > summary::marker { color: var(--action); }
+.project-admin-section > summary:hover { background: var(--surface-hover); }
+.project-admin-section > summary .panel-title { display: inline; }
+.project-admin-section[open] > summary { border-bottom: 1px solid var(--line); }
+.project-admin-section-content { padding: 1.25rem; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .project-admin-section > summary, .project-admin-section-content { padding: 1rem; }
+}

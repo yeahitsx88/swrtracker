@@ -55,9 +55,10 @@ export function RequesterInvitations({projectId,commandOwner}:{projectId:string;
     commandOwner.release(token);setIntent(undefined);setConfirmed(false);void load();refresh(n=>n+1);
   }
   const selected=options?.companies.find(c=>c.id===intent?.companyId);
-  return <section className="stack" aria-label="Invite a new requester">
-    <h3 className="panel-title">Invite a new requester</h3>
-    <p>For a new employee or external requester without a tenant account. They choose their own password and receive Requester access to this project. For an existing account, use “Add a project member” above.</p>
+  return <details className="panel project-admin-section" open>
+    <summary><h2 className="panel-title">Invite a new requester</h2></summary>
+    <div className="stack project-admin-section-content">
+    <p>For a new employee or external requester without a tenant account. They choose their own password and receive Requester access to this project. For an existing account, use “Add a project member”.</p>
     <p className="muted">Up to 100 associated companies are shown.</p>
     {error&&<ErrorBanner message={error}/>}
     {loading&&<p role="status">Loading invitation companies…</p>}
@@ -81,5 +82,6 @@ export function RequesterInvitations({projectId,commandOwner}:{projectId:string;
     </div>}
     <Button variant="secondary" disabled={commandOwner.blocked(token)||gate.pending||!!gate.command&&!gate.stale} onClick={reload}>{intent&&!gate.locked?'Cancel and reload invitations':'Reload invitations'}</Button>
     {!!options?.pendingInvites.length&&<div><h4 className="panel-title">Pending requester invitations</h4><p>Up to 100 active invitations, newest first.</p><ul className="tm-list">{options.pendingInvites.map(invite=><li key={invite.email}>{invite.email} · {invite.companyName} · Expires {new Date(invite.expiresAt).toLocaleDateString()}</li>)}</ul></div>}
-  </section>;
+    </div>
+  </details>;
 }
