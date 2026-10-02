@@ -5,6 +5,7 @@ import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {AccountOffboarding} from './account-offboarding';
+import {RequesterInvitations} from './requester-invitations';
 import type {UUID} from '@/shared/types';
 interface Member {userId:string;name:string;email:string;role:string;accessDisabledAt:string|null;accountDisabledAt:string|null;canAdminister?:boolean}
 interface Companies {companies:Array<{id:string;name:string;type:string}>;candidates:Array<{userId:string;name:string;email:string;companyName:string}>}
@@ -50,6 +51,7 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  <label className="field"><span className="field-label">Person</span><select className="select" value={candidate} disabled={locked||closed} onChange={e=>setCandidate(e.target.value)}><option value="">Choose a person</option>{companies?.candidates.map(c=><option key={c.userId} value={c.userId}>{c.name} · {c.companyName}</option>)}</select></label>
  <label className="field"><span className="field-label">Operational role</span><select className="select" value={role} disabled={locked||closed} onChange={e=>setRole(e.target.value)}>{['REQUESTER','SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN','CAD_TECHNICIAN','CAD_LEAD','VIEWER'].map(r=><option key={r} value={r}>{r.replaceAll('_',' ')}</option>)}</select></label>
  <Button disabled={!candidate||locked||closed} onClick={()=>propose({url:`${base}/members`,method:'POST',body:{userId:candidate,role},label:'Add project member'})}>Review member addition</Button>
+ <RequesterInvitations key={projectId} projectId={projectId} commandOwner={owner}/>
  </div></Card>
  <Card title="Project companies" description="Associating a company here grants no access to another project."><div className="stack">
  <ul>{companies?.companies.map(c=><li key={c.id}>{c.name} · {c.type} · {c.id}</li>)}</ul>

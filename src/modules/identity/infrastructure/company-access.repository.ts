@@ -1,4 +1,5 @@
 import type { DbClient, UUID } from '@/shared/types';
+import {NotFoundError} from '@/shared/errors';
 
 export interface CompanyAuthorityGrant {
   id: UUID;
@@ -28,6 +29,41 @@ export interface ProjectCompanyAccessOverview {
 }
 
 export class CompanyAccessRepository {
+  async isProjectOpen(db: DbClient, tenantId: UUID, projectId: UUID): Promise<boolean> {
+    const {rows}=await db.query<{open:boolean}>("SELECT status <> 'ARCHIVED' AS open FROM projects WHERE tenant_id=$1 AND id=$2",[tenantId,projectId]);
+    return rows[0]?.open===true;
+  }
+  async isRequesterCompanyAvailable(db: DbClient, tenantId: UUID, projectId: UUID, companyId: UUID): Promise<boolean> {
+    const {rows}=await db.query<{available:boolean}>(
+      `SELECT EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=$1 AND c.id=$3 AND c.type IN ('GC','OWNER_REP','SUBCONTRACTOR')
+        AND (EXISTS(SELECT 1 FROM project_companies pc WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id)
+          OR (c.type='SUBCONTRACTOR' AND EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id
+            WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id)))) AS available`,[tenantId,projectId,companyId]);
+    return rows[0]?.available===true;
+  }
+  async hasRegisteredEmail(db: DbClient, tenantId: UUID, email: string): Promise<boolean> {
+    const {rows}=await db.query<{registered:boolean}>('SELECT EXISTS(SELECT 1 FROM users WHERE tenant_id=$1 AND lower(email)=lower($2)) AS registered',[tenantId,email]);
+    return rows[0]?.registered===true;
+  }
+  async hasPendingRequesterInvite(db: DbClient, tenantId: UUID, projectId: UUID, email: string): Promise<boolean> {
+    const {rows}=await db.query<{pending:boolean}>(`SELECT EXISTS(SELECT 1 FROM invites WHERE tenant_id=$1 AND project_id=$2 AND lower(email)=lower($3)
+      AND accepted_at IS NULL AND canceled_at IS NULL AND expires_at>NOW()) AS pending`,[tenantId,projectId,email]);
+    return rows[0]?.pending===true;
+  }
+  async listRequesterInvitationOptions(db: DbClient, tenantId: UUID, projectId: UUID) {
+    const {rows}=await db.query<{status:'SETUP'|'ACTIVE'|'ARCHIVED'}>('SELECT status FROM projects WHERE tenant_id=$1 AND id=$2',[tenantId,projectId]);
+    if(!rows[0]) throw new NotFoundError('Project not found');
+    const companies=(await db.query<{id:UUID;name:string;type:string}>(`SELECT c.id,c.name,c.type FROM companies c
+      WHERE c.tenant_id=$1 AND c.type IN ('GC','OWNER_REP','SUBCONTRACTOR') AND (EXISTS(SELECT 1 FROM project_companies pc
+        WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id) OR (c.type='SUBCONTRACTOR' AND EXISTS(
+        SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id)))
+      ORDER BY lower(c.name),c.id LIMIT 100`,[tenantId,projectId])).rows;
+    const pendingInvites=(await db.query<{email:string;companyName:string;expiresAt:Date|string}>(`SELECT i.email,c.name AS "companyName",i.expires_at AS "expiresAt"
+      FROM invites i JOIN companies c ON c.id=i.company_id AND c.tenant_id=i.tenant_id
+      WHERE i.tenant_id=$1 AND i.project_id=$2 AND i.role='REQUESTER' AND i.accepted_at IS NULL AND i.canceled_at IS NULL AND i.expires_at>NOW()
+      ORDER BY i.created_at DESC,i.id LIMIT 100`,[tenantId,projectId])).rows.map(i=>({...i,expiresAt:new Date(i.expiresAt).toISOString()}));
+    return {projectStatus:rows[0].status,companies,pendingInvites};
+  }
   async listProjectCompanyAccess(
     db: DbClient,
     tenantId: UUID,
@@ -109,10 +145,10 @@ export class CompanyAccessRepository {
        SELECT $1, p.id, c.id, $4, 'REQUESTER', $5, $6
        FROM projects p JOIN companies c ON c.tenant_id = p.tenant_id
        WHERE p.id = $2 AND p.tenant_id = $1 AND p.status <> 'ARCHIVED'
-         AND c.id = $3 AND c.type = 'SUBCONTRACTOR'
+         AND c.id = $3 AND c.type IN ('GC','OWNER_REP','SUBCONTRACTOR')
          AND (EXISTS(SELECT 1 FROM project_companies pc WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id)
-           OR EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id
-             WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id))
+           OR (c.type='SUBCONTRACTOR' AND EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id
+             WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id)))
        RETURNING token`,
       [params.tenantId, params.projectId, params.companyId, params.email, params.invitedBy, params.expiresAt],
     );

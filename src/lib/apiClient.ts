@@ -198,9 +198,9 @@ export const apiClient = {
     return apiRequest<ProjectCompanyAccessResponse>(`/api/projects/${projectId}/company-authority`);
   },
 
-  createRequesterInvite(projectId: string, input: { companyId: string; email: string }): Promise<{ inviteToken: string }> {
+  createRequesterInvite(projectId: string, input: { companyId: string; email: string }, key: string): Promise<{ inviteToken: string }> {
     return apiRequest<{ inviteToken: string }>(`/api/projects/${projectId}/invites`, {
-      method: 'POST', body: input,
+      method: 'POST', body: input, headers: {'Idempotency-Key':key},
     });
   },
 

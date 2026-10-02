@@ -14,7 +14,7 @@ const root = path.join(checkout,'.data','dot-sim');
 assertDataRoot(checkout,root);
 const settings = path.join(root,'runtime.json'), credentials = path.join(root,'credentials.json');
 const command = process.argv[2];
-if (!['setup','start','stop','status','smoke','recreate-web'].includes(command)) throw new Error('Expected setup, start, stop, status, smoke or recreate-web');
+if (!['setup','start','stop','status','smoke','smoke-invitations','recreate-web'].includes(command)) throw new Error('Expected setup, start, stop, status, smoke, smoke-invitations or recreate-web');
 const shellEnv = {...process.env, NEXT_TELEMETRY_DISABLED:'1'};
 // Child tools receive only named, generated app settings. Ignore inherited integration settings.
 for (const key of Object.keys(shellEnv)) if (/DATABASE_URL|JWT_SECRET|EMAIL_|SWR_ATTACHMENT_ROOT/.test(key)) delete shellEnv[key];
@@ -158,10 +158,11 @@ if (command === 'setup') {
     if(!inspect('container',names.web,config)?.State.Running)throw new Error('Start the dot application before smoke');
     if(inspect('container',names.web,config).Image!==docker(['image','inspect',names.appImage,'--format','{{.Id}}']))throw new Error('Dot smoke refuses a stale app image; use guarded recreate-web, then start');
     await readyWeb(config);
-    console.log(run(process.execPath,['scripts/dot-sim/smoke.mjs'],shellEnv));
+    console.log(run(process.execPath,[command==='smoke-invitations'?'scripts/dot-sim/invitation-smoke.mjs':'scripts/dot-sim/smoke.mjs'],shellEnv));
     const evidence=JSON.parse(helper(config,'scripts/dot-sim/bootstrap.mjs',['evidence']));
     const {verifyEvidence}=await import('./dot-sim/evidence.mjs');
     verifyEvidence(evidence,JSON.parse(fs.readFileSync(path.join(root,'last-run.json'),'utf8')),JSON.parse(fs.readFileSync(credentials,'utf8')));
+    if(command==='smoke-invitations'){const {verifyInvitationEvidence}=await import('./dot-sim/evidence.mjs');verifyInvitationEvidence(evidence,JSON.parse(fs.readFileSync(path.join(root,'last-invitation-run.json'),'utf8')),JSON.parse(fs.readFileSync(credentials,'utf8')));}
     save('evidence.json',evidence); console.log('Authoritative audit/identity evidence reconciled.');
   }
 }

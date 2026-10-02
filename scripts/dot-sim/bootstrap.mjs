@@ -55,6 +55,8 @@ try {
         FROM tickets t ORDER BY t.id`)).rows,
       administrativeEvents:(await db.query('SELECT event_type,actor_id,project_id,subject_user_id FROM administrative_events ORDER BY occurred_at,id')).rows,
       staffingEvents:(await db.query('SELECT event_type,actor_id,project_id FROM survey_staffing_events ORDER BY created_at,id')).rows,
+      accounts:(await db.query('SELECT id,tenant_id,company_id,email,name FROM users ORDER BY id')).rows,
+      invitations:(await db.query('SELECT id,tenant_id,project_id,company_id,email,role,invited_by,accepted_at FROM invites ORDER BY id')).rows,
       totalAccountCount:(await db.query('SELECT count(*)::integer AS count FROM users')).rows[0].count,
     };
     console.log(JSON.stringify(result));

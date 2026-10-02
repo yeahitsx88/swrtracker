@@ -2,9 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
 import {DotActor,ActorHttpError} from './actors.mjs';
 import {validateRuntime,validatePopulation} from './policy.mjs';
 
+export async function runSmoke(purpose='LIFECYCLE_PROOF') {
 const root = path.resolve('.data/dot-sim');
 const config = validateRuntime(JSON.parse(fs.readFileSync(path.join(root,'runtime.json'),'utf8')));
 const population = validatePopulation(JSON.parse(fs.readFileSync(path.join(root,'credentials.json'),'utf8')),config);
@@ -122,10 +124,13 @@ assert.equal((await instrument.act('completeWork',{ticketId})).ticket.status,'CO
 assert.equal((await requester.act('viewRequest',{ticketId})).ticket.status,'COMPLETED');
 await denial(other,'completeWork',{ticketId},404);
 for(const actor of Object.values(actors))if(actor.hasSession)await actor.logout();
-const report = {schema:1,runId,projectId,unrelatedProjectId:unrelated.id,foreignProjectId:foreignProject.id,ticketId,
+const report = {schema:1,purpose,runId,projectId,aorNodeId:area.id,unrelatedProjectId:unrelated.id,foreignProjectId:foreignProject.id,ticketId,
   completed:true,denials:results,traceFile:path.basename(tracePath),
   checks:['separate pure Project Admin','company prerequisite reproduced','OWNER_REP grant/revoke','disabled and duplicate member refusal',
     'scoped fixed roles','independent sessions and logout','HTTP invitation/registration','Manager staffing','Project Admin activation',
     'tenant/project/company denials','idempotent create/approval and mismatch refusal','HTTP draft-submit-approve-assign-start-complete']};
 fs.writeFileSync(path.join(root,'last-run.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});
 console.log(JSON.stringify(report));
+return report;
+}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await runSmoke();

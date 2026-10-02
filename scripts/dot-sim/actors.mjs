@@ -6,6 +6,8 @@ const id = value => { if (!uuid.test(value ?? '')) throw new Error('A valid reso
 // These adapters describe HTTP shapes only. Authorization and business rules remain in SWRTracker.
 export const actions = Object.freeze({
   listProjects: () => ['GET', '/api/projects'],
+  invitationOptions: input => ['GET', `/api/projects/${id(input.projectId)}/invites`],
+  archiveProject: input => ['POST', `/api/projects/${id(input.projectId)}/archive`, {}],
   inviteRequester: ({projectId, ...body}) => ['POST', `/api/projects/${id(projectId)}/invites`, body],
   createProject: input => ['POST', '/api/projects', input],
   capabilities: input => ['GET', `/api/projects/${id(input.projectId)}/capabilities`],

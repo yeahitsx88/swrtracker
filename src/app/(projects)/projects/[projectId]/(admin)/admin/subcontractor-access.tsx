@@ -4,14 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { ProjectCompanyAccessResponse } from '@/lib/contracts/projects';
 import { getErrorMessage } from '@/lib/errors';
-import { Button, Card, ErrorBanner, Input, Select, SuccessBanner } from '@/components/ui';
-import { Field } from '@/components/forms';
+import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
 
 export function SubcontractorAccess({ projectId }: { projectId: string }) {
   const [overview, setOverview] = useState<ProjectCompanyAccessResponse | null>(null);
-  const [companyId, setCompanyId] = useState('');
-  const [email, setEmail] = useState('');
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -21,31 +17,12 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
     try {
       const next = await apiClient.getProjectCompanyAccess(projectId);
       setOverview(next);
-      setCompanyId((current) => current || next.companies[0]?.id || '');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load subcontractor access.'));
     }
   }, [projectId]);
 
   useEffect(() => { void load(); }, [load]);
-
-  async function invite() {
-    setBusy('invite');
-    setError(null);
-    setSuccess(null);
-    setInviteUrl(null);
-    try {
-      const response = await apiClient.createRequesterInvite(projectId, { companyId, email });
-      setInviteUrl(`${window.location.origin}/invite/${response.inviteToken}`);
-      setEmail('');
-      setSuccess('Requester invitation created. Share the registration link with the intended recipient.');
-      await load();
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to create requester invitation.'));
-    } finally {
-      setBusy(null);
-    }
-  }
 
   async function setAuthority(userId: string, grantId: string | null) {
     setBusy(userId);
@@ -70,7 +47,7 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
   return (
     <Card
       title="Subcontractor Access"
-      description="Invite subcontractor requesters and designate who may view all requests from their company on this project."
+      description="Manage company-wide request visibility for subcontractor requesters. Create invitations in Invite a new requester above."
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
@@ -78,25 +55,6 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
         {!overview ? <p className="muted">Loading subcontractor access...</p> : null}
         {overview ? (
           <>
-            <Field label="Subcontractor Company">
-              <Select value={companyId} onChange={(event) => setCompanyId(event.target.value)}>
-                {overview.companies.map((company) => (
-                  <option key={company.id} value={company.id}>{company.name}</option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Requester Email">
-              <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-            </Field>
-            <Button disabled={busy !== null || !companyId || !email.trim()} onClick={() => void invite()}>
-              {busy === 'invite' ? 'Creating...' : 'Create Invitation'}
-            </Button>
-            {inviteUrl ? (
-              <Field label="Registration Link (shown for this new invitation)">
-                <Input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} />
-              </Field>
-            ) : null}
-
             <h3>Subcontractor Requesters</h3>
             {overview.requesters.length === 0 ? <p className="muted">No subcontractor requesters have joined this project.</p> : null}
             {overview.requesters.map((requester) => (
