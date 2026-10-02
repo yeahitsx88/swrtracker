@@ -97,3 +97,9 @@ Remaining writer families include ticket workflow/assignment/create/draft/attach
 - Actual default helper/application/repository/job-run integration: three observed wait-and-disable races, positive recipient/dedup checks, preserved orphan assignments and a second tenant's SQL exclusion;40 isolated PostgreSQL assertions.
 - A3 remains escalation-only. These workers append existing operational signals, never assign duties or restore disabled access. External email transport is not transactional; existing delivery/provider and configured system-actor gates remain separate evidence limits.
 - Next: effective subject validation for Area/department/duty writers and full direct/indirect mutation classification. Task3 is not complete.
+
+## Task3 effective duty subject continuation
+- Area user assignment and department add/title/move use the held-client active project subject lookup, bounded by tenant/project/user, global and local disablement and effective company-role eligibility. Assignment rejection precedes old Area link replacement.
+- Inactive department membership rows remain historical: title/move refuse them; inactive actor department scope confers no title authority. Unlink-only resolution remains available under existing authorization.
+- active-duty-subject-postgres.ts:57 assertions, eight observed real wait-and-disable races plus current-subject, cross-tenant, subcontractor and inactive department checks.491 normal tests, strict types and build pass.
+- Task3 writer inventory and remaining family proofs are still open; this does not certify full enforcement or deployment.

@@ -80,6 +80,7 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
     saveTenant: async () => undefined,
     saveCompany: async () => undefined,
     saveProject: async () => undefined,
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject(),
     getProjectActivationReadiness: async () => ({
       aorLevelsCount: 0,
@@ -362,4 +363,47 @@ test('handlePostDepartmentMembers returns 409 when setup is locked after activat
   );
 
   assert.equal(response.status, 409);
+});
+
+
+for(const operation of ['add','title','move'] as const){
+ test('department '+operation+' refuses an inactive project subject before duty writes',async()=>{
+  let writes=0,checks=0;
+  const repo=makeRepo({
+   isActiveProjectMember:async(client,tenant,project,user)=>{assert.equal(client,db);assert.deepEqual([tenant,project,user],[tenantId,projectId,userId]);checks++;return false;},
+   findDepartmentMembershipByUser:async()=>operation==='add'?null:makeMembership(),
+   saveDepartmentMembership:async()=>{writes++;},updateDepartmentMembership:async()=>{writes++;},
+  });
+  const action=()=>operation==='add'
+   ?addDepartmentMember(repo,db,{tenantId,projectId,departmentId,userId,actorRole:'PROJECT_ADMIN'})
+   :operation==='move'
+   ?reassignDepartmentMember(repo,db,{tenantId,projectId,departmentId:otherDepartmentId,userId,actorRole:'PROJECT_ADMIN'})
+   :assignDepartmentTitle(repo,db,{tenantId,projectId,departmentId,userId,title:'Controls Superintendent',actorId,actorRole:'DEPARTMENT_LEAD'});
+  await assert.rejects(action,/Active project member not found/);
+  assert.equal(checks,1);assert.equal(writes,0);
+ });
+}
+
+
+for(const operation of ['title','move'] as const){
+ test('department '+operation+' preserves inactive historical department membership',async()=>{
+  let writes=0;
+  const repo=makeRepo({
+   isActiveProjectMember:async()=>true,
+   findDepartmentMembershipByUser:async()=>makeMembership({deactivatedAt:new Date('2026-03-01')}),
+   findDepartmentTitleByName:async()=>({id:'title' as UUID,tenantId,departmentId,title:'Manager',defaultPriority:'NORMAL',assignmentLayer:'MANAGER',createdAt:new Date()}),
+   updateDepartmentMembership:async()=>{writes++;},
+  });
+  await assert.rejects(()=>operation==='move'
+   ?reassignDepartmentMember(repo,db,{tenantId,projectId,departmentId:otherDepartmentId,userId,actorRole:'TENANT_ADMIN'})
+   :assignDepartmentTitle(repo,db,{tenantId,projectId,departmentId,userId,title:'Manager',actorId,actorRole:'TENANT_ADMIN'}),
+   /Inactive department membership cannot receive duties/);
+  assert.equal(writes,0);
+ });
+}
+test('inactive department scope cannot confer title-assignment authority',async()=>{
+ const repo=makeRepo({
+  findDepartmentMembershipByUser:async(_db,_tenant,_project,target)=>makeMembership({userId:target,deactivatedAt:target===actorId?new Date('2026-03-01'):null}),
+ });
+ await assert.rejects(()=>assignDepartmentTitle(repo,db,{tenantId,projectId,departmentId,userId,title:'Controls Superintendent',actorId,actorRole:'DEPARTMENT_LEAD'}),ForbiddenError);
 });

@@ -1,3 +1,4 @@
+import { assertActiveProjectSubject } from './active-project-subject';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
@@ -41,7 +42,7 @@ async function assertActorDepartmentScope(
     params.projectId,
     params.actorId,
   );
-  if (!actorMembership || actorMembership.departmentId !== params.departmentId) {
+  if (!actorMembership || actorMembership.deactivatedAt || actorMembership.departmentId !== params.departmentId) {
     throw new ForbiddenError('Department role actors may assign titles only within their department');
   }
 }
@@ -57,6 +58,8 @@ export async function assignDepartmentTitle(
 
   const titleName = params.title.trim();
   if (!titleName) throw new ValidationError('title is required');
+
+  await assertActiveProjectSubject(repo, db, params);
 
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);
   if (!project) throw new NotFoundError('Project not found');
@@ -82,6 +85,9 @@ export async function assignDepartmentTitle(
   );
   if (!membership || membership.departmentId !== params.departmentId) {
     throw new NotFoundError('Department member not found');
+  }
+  if (membership.deactivatedAt) {
+    throw new ConflictError('Inactive department membership cannot receive duties');
   }
   if (membership.title !== null) {
     throw new ConflictError('Department member is not in the free-agent pool');

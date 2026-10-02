@@ -130,6 +130,7 @@ export interface ITenancyRepository {
   saveSubarea(db: DbClient, subarea: Subarea): Promise<void>;
 
   // Project memberships
+  isActiveProjectMember(db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID): Promise<boolean>;
   saveMembership(db: DbClient, membership: {
     id: UUID;
     tenantId: UUID;

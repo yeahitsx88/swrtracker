@@ -40,6 +40,7 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
     saveTenant: async () => undefined,
     saveCompany: async () => undefined,
     saveProject: async () => undefined,
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject(),
     getProjectActivationReadiness: async () => ({
       aorLevelsCount: 0,
@@ -91,6 +92,7 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
 
 test('addProjectMember rejects cross-tenant project membership mutations', async () => {
   const repo = makeRepo({
+    isActiveProjectMember: async () => true,
     findProjectById: async () => null,
   });
 

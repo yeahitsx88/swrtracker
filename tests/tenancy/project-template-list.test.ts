@@ -50,6 +50,7 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
     saveTenant: async () => undefined,
     saveCompany: async () => undefined,
     saveProject: async () => undefined,
+    isActiveProjectMember: async () => true,
     findProjectById: async () => null,
     getProjectActivationReadiness: async () => ({
       aorLevelsCount: 0,

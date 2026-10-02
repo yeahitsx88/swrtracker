@@ -55,6 +55,7 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
     saveTenant: async () => undefined,
     saveCompany: async () => undefined,
     saveProject: async () => undefined,
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject(),
     getProjectActivationReadiness: async () => ({
       aorLevelsCount: 0,
@@ -220,4 +221,17 @@ test('deactivateAorDepartmentAssignment rejects non-setup actors', async () => {
     }),
     ForbiddenError,
   );
+});
+
+
+test('assignAorUser refuses an inactive or unavailable subject before replacing retained scopes',async()=>{
+ let writes=0,checks=0;
+ const repo=makeRepo({
+  isActiveProjectMember:async(client,tenant,project,user)=>{assert.equal(client,db);assert.deepEqual([tenant,project,user],[tenantId,projectId,userId]);checks++;return false;},
+  saveAorAssignment:async()=>{writes++;},
+  deactivateAorAssignment:async()=>{writes++;},
+  findAorAssignmentById:async()=>({id:'old-link' as UUID,tenantId,projectId,userId,aorNodeId,departmentId:null,deactivatedAt:null,createdAt:new Date()}),
+ });
+ await assert.rejects(()=>assignAorUser(repo,db,{tenantId,projectId,userId,aorNodeId,actorRole:'PROJECT_ADMIN',deactivateAssignmentIds:['old-link' as UUID]}),/Active project member not found/);
+ assert.equal(checks,1);assert.equal(writes,0);
 });

@@ -1,3 +1,4 @@
+import { assertActiveProjectSubject } from './active-project-subject';
 import { randomUUID } from 'crypto';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
@@ -66,6 +67,7 @@ export async function assignAorUser(
 ): Promise<AorAssignment> {
   assertSetupActorRole(params.actorRole);
   await assertProjectAndNode(repo, db, params.tenantId, params.projectId, params.aorNodeId);
+  await assertActiveProjectSubject(repo, db, params);
 
   for (const assignmentId of params.deactivateAssignmentIds ?? []) {
     const assignment = await loadActiveUserAssignment(repo, db, {

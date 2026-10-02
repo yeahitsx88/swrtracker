@@ -1,3 +1,4 @@
+import { assertActiveProjectSubject } from './active-project-subject';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { DepartmentMembership } from '../domain/types';
@@ -26,6 +27,8 @@ export async function reassignDepartmentMember(
 ): Promise<DepartmentMembership> {
   assertMembershipAdminRole(params.actorRole);
 
+  await assertActiveProjectSubject(repo, db, params);
+
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);
   if (!project) throw new NotFoundError('Project not found');
 
@@ -42,6 +45,9 @@ export async function reassignDepartmentMember(
   );
   if (!membership) {
     throw new NotFoundError('Department member not found');
+  }
+  if (membership.deactivatedAt) {
+    throw new ConflictError('Inactive department membership cannot receive duties');
   }
   if (membership.departmentId === params.departmentId) {
     throw new ConflictError('Department member already belongs to this department');

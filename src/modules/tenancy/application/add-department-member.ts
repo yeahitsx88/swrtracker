@@ -1,3 +1,4 @@
+import { assertActiveProjectSubject } from './active-project-subject';
 import { randomUUID } from 'crypto';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
@@ -26,6 +27,8 @@ export async function addDepartmentMember(
   params: AddDepartmentMemberParams,
 ): Promise<DepartmentMembership> {
   assertMembershipAdminRole(params.actorRole);
+
+  await assertActiveProjectSubject(repo, db, params);
 
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);
   if (!project) throw new NotFoundError('Project not found');

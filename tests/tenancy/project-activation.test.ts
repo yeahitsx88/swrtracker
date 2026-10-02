@@ -77,6 +77,7 @@ function makeRepo(overrides?: Partial<ITenancyRepository>): ITenancyRepository {
     saveTenant: async () => undefined,
     saveCompany: async () => undefined,
     saveProject: async () => undefined,
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject(),
     getProjectActivationReadiness: async () => makeReadiness(),
     markProjectActive: async () => undefined,
@@ -296,6 +297,7 @@ test('handlePostProjectActivation returns 403 when setup role resolution fails',
 
 test('archiveProject requires TENANT_ADMIN', async () => {
   const repo = makeRepo({
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject({ status: 'ACTIVE' }),
   });
 
@@ -312,6 +314,7 @@ test('archiveProject requires TENANT_ADMIN', async () => {
 
 test('archiveProject rejects non-ACTIVE projects', async () => {
   const repo = makeRepo({
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject({ status: 'SETUP' }),
   });
 
@@ -329,6 +332,7 @@ test('archiveProject rejects non-ACTIVE projects', async () => {
 test('archiveProject marks the project ARCHIVED and stamps archive metadata', async () => {
   const archives: Array<{ archivedAt: Date; archivedBy: UUID }> = [];
   const repo = makeRepo({
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject({ status: 'ACTIVE' }),
     markProjectArchived: async (_db, _tenantId, _projectId, archivedAt, archivedBy) => {
       archives.push({ archivedAt, archivedBy });
@@ -354,7 +358,8 @@ test('handlePostProjectArchive returns 403 when the actor is not a tenant admin'
     makeArchiveRequest(),
     { params: Promise.resolve({ projectId }) },
     makeArchiveDeps(makeRepo({
-      findProjectById: async () => makeProject({ status: 'ACTIVE' }),
+      isActiveProjectMember: async () => true,
+    findProjectById: async () => makeProject({ status: 'ACTIVE' }),
     }), null),
   );
 
@@ -363,6 +368,7 @@ test('handlePostProjectArchive returns 403 when the actor is not a tenant admin'
 
 test('handlePostProjectArchive archives an active project for tenant admins', async () => {
   const repo = makeRepo({
+    isActiveProjectMember: async () => true,
     findProjectById: async () => makeProject({ status: 'ACTIVE' }),
   });
 
