@@ -37,6 +37,8 @@ export interface BackgroundJobRunRepository {
   ): Promise<void>;
 }
 
+export type TenantNotificationTransaction = <T>(tenantId: UUID, fn: (db: DbClient) => Promise<T>) => Promise<T>;
+
 export interface NotificationWorkerResult {
   runId: UUID;
   warningCount: number;
@@ -54,6 +56,7 @@ export async function runNotificationWorkerCycle(
     db: DbClient;
     runRepo: BackgroundJobRunRepository;
     actorId: UUID;
+    withTenantLifecycle: TenantNotificationTransaction;
     now?: Date;
   },
 ): Promise<NotificationWorkerResult> {
@@ -77,33 +80,34 @@ export async function runNotificationWorkerCycle(
     });
 
     try {
-      const approver = await dispatchApproverTimeoutNotifications(
-        deps.repo,
-        deps.transport,
-        deps.db,
-        { actorId: deps.actorId, now },
-      );
-      const vacancy = await dispatchDailyVacancyNotifications(
-        deps.repo,
-        deps.transport,
-        deps.db,
-        { now },
-      );
-      const orphanRecovery = await dispatchOrphanWorkflowRecovery(
-        deps.repo,
-        deps.transport,
-        deps.db,
-        { actorId: deps.actorId, now },
-      );
+      // Discovery supplies tenant IDs only. Never dispatch from these cached candidates.
+      const discovered = [
+        ...await deps.repo.listApproverTimeoutCandidates(deps.db, now),
+        ...await deps.repo.listVacancyEscalationCandidates(deps.db, now),
+        ...await deps.repo.listOrphanWorkflowCandidates(deps.db),
+      ];
+      const tenants = [...new Set(discovered.map(candidate => candidate.tenantId))].sort();
       const result: NotificationWorkerResult = {
-        runId,
-        warningCount: approver.warningCount,
-        unlockedCount: approver.unlockedCount,
-        vacancyCount: vacancy.sentCount,
-        orphanReassignedCount: orphanRecovery.reassignedCount,
-        orphanEscalatedCount: orphanRecovery.escalatedCount,
-        orphanUnresolvedCount: orphanRecovery.unresolvedCount,
+        runId, warningCount: 0, unlockedCount: 0, vacancyCount: 0,
+        orphanReassignedCount: 0, orphanEscalatedCount: 0, orphanUnresolvedCount: 0,
       };
+      for (const tenantId of tenants) {
+        const current = await deps.withTenantLifecycle(tenantId, async db => {
+          const approver = await dispatchApproverTimeoutNotifications(
+            deps.repo, deps.transport, db, { actorId: deps.actorId, tenantId, now });
+          const vacancy = await dispatchDailyVacancyNotifications(
+            deps.repo, deps.transport, db, { tenantId, now });
+          const orphan = await dispatchOrphanWorkflowRecovery(
+            deps.repo, deps.transport, db, { actorId: deps.actorId, tenantId, now });
+          return { approver, vacancy, orphan };
+        });
+        result.warningCount += current.approver.warningCount;
+        result.unlockedCount += current.approver.unlockedCount;
+        result.vacancyCount += current.vacancy.sentCount;
+        result.orphanReassignedCount += current.orphan.reassignedCount;
+        result.orphanEscalatedCount += current.orphan.escalatedCount;
+        result.orphanUnresolvedCount += current.orphan.unresolvedCount;
+      }
       await deps.runRepo.finishRunSuccess(deps.db, {
         runId,
         details: {

@@ -57,6 +57,7 @@ export class NotificationRepository implements INotificationRepository {
   async listApproverTimeoutCandidates(
     db: DbClient,
     now: Date,
+    tenantId?: UUID,
   ): Promise<ApproverTimeoutCandidate[]> {
     const { rows } = await db.query<ApproverTimeoutRow>(
       `SELECT
@@ -94,7 +95,8 @@ export class NotificationRepository implements INotificationRepository {
        LEFT JOIN users u
          ON u.id = pm.user_id
         AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
-       WHERE t.status = 'SUBMITTED'
+       WHERE ($2::uuid IS NULL OR t.tenant_id = $2)
+         AND t.status = 'SUBMITTED'
          AND t.submitted_at IS NOT NULL
          AND p.status = 'ACTIVE'
          AND $1::timestamptz - t.submitted_at >= interval '18 hours'
@@ -104,7 +106,7 @@ export class NotificationRepository implements INotificationRepository {
          t.id,
          t.ticket_number,
          t.submitted_at`,
-      [now],
+      [now, tenantId ?? null],
     );
 
     return rows.map((row) => ({
@@ -122,6 +124,7 @@ export class NotificationRepository implements INotificationRepository {
   async listVacancyEscalationCandidates(
     db: DbClient,
     now: Date,
+    tenantId?: UUID,
   ): Promise<VacancyEscalationCandidate[]> {
     const { rows } = await db.query<VacancyEscalationRow>(
       `SELECT
@@ -163,14 +166,15 @@ export class NotificationRepository implements INotificationRepository {
            AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
            AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
        ) AS project_admins ON TRUE
-       WHERE ag.revoked_at IS NULL
+       WHERE ($2::uuid IS NULL OR ag.tenant_id = $2)
+         AND ag.revoked_at IS NULL
          AND p.status = 'ACTIVE'
          AND ag.role IN ('SURVEY_MANAGER', 'PARTY_CHIEF', 'INSTRUMENT_MAN')
          AND $1::timestamptz - ag.created_at >= CASE
            WHEN ag.role = 'SURVEY_MANAGER' THEN interval '24 hours'
            ELSE interval '48 hours'
          END`,
-      [now],
+      [now, tenantId ?? null],
     );
 
     return rows.map((row) => ({
@@ -187,6 +191,7 @@ export class NotificationRepository implements INotificationRepository {
 
   async listOrphanWorkflowCandidates(
     db: DbClient,
+    tenantId?: UUID,
   ): Promise<OrphanWorkflowCandidate[]> {
     const { rows } = await db.query<OrphanWorkflowRow>(
       `SELECT
@@ -275,13 +280,15 @@ export class NotificationRepository implements INotificationRepository {
            AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
          ) AS recipients
        ) AS escalation_recipients ON TRUE
-       WHERE p.status = 'ACTIVE'
+       WHERE ($1::uuid IS NULL OR t.tenant_id = $1)
+         AND p.status = 'ACTIVE'
          AND t.status IN ('ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'PENDING_FIELD_VALIDATION', 'DELAYED')
          AND (
            (t.assigned_party_chief_id IS NOT NULL AND (pc.id IS NULL OR pc.deactivated_at IS NOT NULL OR pc_membership.id IS NULL OR pc_membership.access_disabled_at IS NOT NULL)) OR
            (t.assigned_instrument_man_id IS NOT NULL AND (im.id IS NULL OR im.deactivated_at IS NOT NULL OR im_membership.id IS NULL OR im_membership.access_disabled_at IS NOT NULL)) OR
            (t.survey_lead_id IS NOT NULL AND (sl.id IS NULL OR sl.deactivated_at IS NOT NULL OR sl_membership.id IS NULL OR sl_membership.access_disabled_at IS NOT NULL))
          )`,
+      [tenantId ?? null],
     );
 
     return rows.map((row) => ({

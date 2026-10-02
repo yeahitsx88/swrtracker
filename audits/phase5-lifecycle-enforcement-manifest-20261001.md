@@ -91,3 +91,9 @@ Remaining writer families include ticket workflow/assignment/create/draft/attach
 - Uploads (keyed and unkeyed) and downloads: SHARED tenant barrier and fresh held-client role/visibility through withTicketMutation. Download attachment lookup and successful audit share that client; audit failure withholds buffered bytes.
 - lifecycle-writer-handlers-postgres.ts now verifies34 distinct handler entrypoints /40 wait-and-revoke scenarios, with attachment global-disable/version/logout races and positive upload/replay/download/audit rollback.228 total assertions, not a full release proof.
 - Remaining worker search confirms orphan recovery currently escalates only, following approved A3; no automatic reassignment is to be restored. Worker candidate freshness, recipient eligibility/audit ordering, other read-state mutations and complete indirect inventory still require classification and proof.
+
+## Task3 notification worker continuation
+- Both notification worker entrypoints use withTenantNotificationTransaction: SHARED tenant lock in a caller-owned transaction; discovery never dispatches cached recipients, all three candidate families reread bounded SQL on the held client.
+- Actual default helper/application/repository/job-run integration: three observed wait-and-disable races, positive recipient/dedup checks, preserved orphan assignments and a second tenant's SQL exclusion;40 isolated PostgreSQL assertions.
+- A3 remains escalation-only. These workers append existing operational signals, never assign duties or restore disabled access. External email transport is not transactional; existing delivery/provider and configured system-actor gates remain separate evidence limits.
+- Next: effective subject validation for Area/department/duty writers and full direct/indirect mutation classification. Task3 is not complete.

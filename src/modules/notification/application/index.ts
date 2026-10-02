@@ -60,13 +60,16 @@ export interface INotificationRepository {
   listApproverTimeoutCandidates(
     db: DbClient,
     now: Date,
+    tenantId?: UUID,
   ): Promise<ApproverTimeoutCandidate[]>;
   listVacancyEscalationCandidates(
     db: DbClient,
     now: Date,
+    tenantId?: UUID,
   ): Promise<VacancyEscalationCandidate[]>;
   listOrphanWorkflowCandidates(
     db: DbClient,
+    tenantId?: UUID,
   ): Promise<OrphanWorkflowCandidate[]>;
   reassignOrphanWorkflowTicket(
     db: DbClient,
@@ -124,17 +127,19 @@ export async function dispatchApproverTimeoutNotifications(
   db: DbClient,
   params: {
     actorId: UUID;
+    tenantId?: UUID;
     now?: Date;
   },
 ): Promise<ApproverTimeoutDispatchSummary> {
   const now = params.now ?? new Date();
-  const candidates = await repo.listApproverTimeoutCandidates(db, now);
+  const candidates = await repo.listApproverTimeoutCandidates(db, now, params.tenantId);
   const summary: ApproverTimeoutDispatchSummary = {
     warningCount: 0,
     unlockedCount: 0,
   };
 
   for (const candidate of candidates) {
+    assertDispatchTenant(candidate.tenantId, params.tenantId);
     const recipients = dedupeRecipients(candidate.recipients);
     if (recipients.length === 0) {
       continue;
@@ -221,14 +226,16 @@ export async function dispatchDailyVacancyNotifications(
   transport: INotificationTransport,
   db: DbClient,
   params?: {
+    tenantId?: UUID;
     now?: Date;
   },
 ): Promise<{ sentCount: number }> {
   const now = params?.now ?? new Date();
-  const candidates = await repo.listVacancyEscalationCandidates(db, now);
+  const candidates = await repo.listVacancyEscalationCandidates(db, now, params?.tenantId);
   let sentCount = 0;
 
   for (const candidate of candidates) {
+    assertDispatchTenant(candidate.tenantId, params?.tenantId);
     const thresholdHours = VACANCY_ESCALATION_HOURS[candidate.role];
     const hoursElapsed = getElapsedHours(now, candidate.createdAt);
     if (hoursElapsed < thresholdHours) {
@@ -274,11 +281,12 @@ export async function dispatchOrphanWorkflowRecovery(
   db: DbClient,
   params: {
     actorId: UUID;
+    tenantId?: UUID;
     now?: Date;
   },
 ): Promise<OrphanWorkflowRecoverySummary> {
   const now = params.now ?? new Date();
-  const candidates = await repo.listOrphanWorkflowCandidates(db);
+  const candidates = await repo.listOrphanWorkflowCandidates(db, params.tenantId);
   const summary: OrphanWorkflowRecoverySummary = {
     reassignedCount: 0,
     escalatedCount: 0,
@@ -286,6 +294,7 @@ export async function dispatchOrphanWorkflowRecovery(
   };
 
   for (const candidate of candidates) {
+    assertDispatchTenant(candidate.tenantId, params.tenantId);
     summary.unresolvedCount += 1;
     const hoursElapsed = getElapsedHours(now, candidate.orphanedAt);
     if (hoursElapsed < ORPHAN_ESCALATION_SLA_HOURS || candidate.hasEscalationSignal) {
@@ -354,4 +363,8 @@ function describeTicket(candidate: Pick<ApproverTimeoutCandidate, 'ticketId' | '
   return candidate.ticketNumber
     ? `ticket ${candidate.ticketNumber}`
     : `ticket ${candidate.ticketId}`;
+}
+
+function assertDispatchTenant(actual: UUID, expected?: UUID): void {
+  if (expected && actual !== expected) throw new Error('Notification candidate crossed held tenant scope');
 }

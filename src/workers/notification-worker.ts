@@ -1,3 +1,4 @@
+import { withTenantNotificationTransaction } from '@/lib/notification-worker-transaction';
 import { pool } from '@/lib/db';
 import { createEmailTransportFromEnv } from '@/lib/email';
 import { logError, logInfo } from '@/lib/observability';
@@ -18,6 +19,7 @@ async function main(): Promise<void> {
     db: pool,
     runRepo: new PgBackgroundJobRunRepository(),
     actorId: SYSTEM_ACTOR_ID,
+    withTenantLifecycle: withTenantNotificationTransaction,
   });
 
   logInfo('Notification worker run completed', {

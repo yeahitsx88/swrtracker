@@ -527,3 +527,26 @@ test('NotificationRepository maps orphan workflow rows into candidates', async (
   assert.equal(candidates[0]?.fallbackProjectAdminId, 'project-admin-1');
   assert.equal(candidates[0]?.escalationRecipients.length, 1);
 });
+
+
+test('all worker candidate queries partition by the held tenant in SQL',async()=>{
+ const now=new Date('2026-03-04');
+ const repo=new NotificationRepository();
+ const calls:Array<{sql:string;params?:unknown[]}>=[];
+ const db:DbClient={query:async(sql,params)=>{calls.push({sql,params});return{rows:[]};}};
+ await repo.listApproverTimeoutCandidates(db,now,tenantId);
+ await repo.listVacancyEscalationCandidates(db,now,tenantId);
+ await repo.listOrphanWorkflowCandidates(db,tenantId);
+ assert.equal(calls.length,3);
+ assert.deepEqual(calls[0]!.params,[now,tenantId]);assert.match(calls[0]!.sql,/t\.tenant_id = \$2/);
+ assert.deepEqual(calls[1]!.params,[now,tenantId]);assert.match(calls[1]!.sql,/ag\.tenant_id = \$2/);
+ assert.deepEqual(calls[2]!.params,[tenantId]);assert.match(calls[2]!.sql,/t\.tenant_id = \$1/);
+});
+
+test('held tenant dispatch refuses a cross-tenant repository candidate before send or audit',async()=>{
+ let sends=0,audits=0;
+ const repo=makeRepo({listApproverTimeoutCandidates:async()=>[makeApproverCandidate({tenantId:'wrong-tenant' as UUID})]});
+ await assert.rejects(()=>dispatchApproverTimeoutNotifications(repo,{send:async()=>{sends++;}},
+  makeDb(()=>{audits++;}),{actorId:workerActorId,tenantId,now:new Date('2026-03-04')}),/crossed held tenant scope/);
+ assert.equal(sends,0);assert.equal(audits,0);
+});

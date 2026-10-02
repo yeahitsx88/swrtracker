@@ -46,6 +46,7 @@ test('runNotificationWorkerCycle records a successful worker run', async () => {
     db,
     runRepo,
     actorId,
+    withTenantLifecycle: async (_tenant,fn)=>fn(db),
     now: new Date('2026-03-04T12:00:00Z'),
   });
 
@@ -94,6 +95,7 @@ test('runNotificationWorkerCycle records a failed worker run', async () => {
         db,
         runRepo,
         actorId,
+        withTenantLifecycle: async (_tenant,fn)=>fn(db),
         now: new Date('2026-03-04T12:00:00Z'),
       }),
     /transport failure/,
@@ -102,4 +104,30 @@ test('runNotificationWorkerCycle records a failed worker run', async () => {
   assert.equal(runRepo.starts, 1);
   assert.equal(runRepo.successes, 0);
   assert.equal(runRepo.failures, 1);
+});
+
+
+test('worker rereads candidates and recipient eligibility on its held tenant client',async()=>{
+ const tenant='tenant-worker' as UUID;
+ let held=false,coordinated=0,sends=0,audits=0;
+ const heldDb:DbClient={query:async()=>{assert.equal(held,true);audits++;return{rows:[]};}};
+ const candidate={tenantId:tenant,projectId:'project-worker' as UUID,ticketId:'ticket-worker' as UUID,
+  ticketNumber:'SYN-1',submittedAt:new Date('2026-03-01'),recipients:[{userId:'manager' as UUID,email:'manager@example.invalid',name:null}],
+  hasWarningSent:false,hasUnlockedSent:false};
+ const repo:INotificationRepository={
+  listApproverTimeoutCandidates:async(client,_now,scope)=>{
+   if(client===db)return[candidate];
+   assert.equal(client,heldDb);assert.equal(held,true);assert.equal(scope,tenant);
+   // Manager lost account access while the worker waited for tenant coordination.
+   return[{...candidate,recipients:[]}];
+  },
+  listVacancyEscalationCandidates:async(client,_now,scope)=>{if(client===heldDb){assert.equal(held,true);assert.equal(scope,tenant);}return[];},
+  listOrphanWorkflowCandidates:async(client,scope)=>{if(client===heldDb){assert.equal(held,true);assert.equal(scope,tenant);}return[];},
+  reassignOrphanWorkflowTicket:async()=>{throw Error('Must never reassign');},
+ };
+ const result=await runNotificationWorkerCycle({repo,db,actorId,runRepo:new InMemoryRunRepo(),
+  transport:{send:async()=>{sends++;}},now:new Date('2026-03-04'),
+  withTenantLifecycle:async(_tenant,fn)=>{assert.equal(_tenant,tenant);coordinated++;held=true;try{return await fn(heldDb);}finally{held=false;}},
+ });
+ assert.equal(coordinated,1);assert.equal(sends,0);assert.equal(audits,0);assert.equal(result.unlockedCount,0);
 });
