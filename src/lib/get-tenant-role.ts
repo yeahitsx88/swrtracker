@@ -22,9 +22,13 @@ export async function getTenantRole(
 
   const { rows } = await db.query<TenantMembershipRow>(
     `SELECT role
-     FROM tenant_memberships
-     WHERE tenant_id = $1
-       AND user_id = $2
+     FROM tenant_memberships tm
+     JOIN users u ON u.id=tm.user_id AND u.tenant_id=tm.tenant_id
+     JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+     WHERE tm.tenant_id = $1
+       AND tm.user_id = $2
+       AND u.deactivated_at IS NULL
+       AND (tm.role <> 'TENANT_ADMIN' OR c.type IN ('GC','OWNER_REP'))
      LIMIT 1`,
     [tenantId, userId],
   );

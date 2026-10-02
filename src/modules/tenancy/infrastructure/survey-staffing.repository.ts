@@ -11,9 +11,10 @@ import type { StaffingLink, StaffingLinkKind, SurveyStaffingUnlinkRepository } f
 export const snapshotCte = `snapshot AS (
   SELECT md5(jsonb_build_object(
     'project',jsonb_build_array(p.id,p.status,p.crew_build),
-    'members',COALESCE((SELECT jsonb_agg(jsonb_build_array(pm.user_id,pm.role,u.session_version,u.deactivated_at,u.company_id,c.type) ORDER BY pm.user_id)
+    'members',COALESCE((SELECT jsonb_agg(jsonb_build_array(pm.user_id,pm.role,pm.access_disabled_at,pm.access_disabled_by,u.session_version,u.deactivated_at,u.company_id,c.type) ORDER BY pm.user_id)
       FROM project_memberships pm JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1
       JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1 WHERE pm.project_id=$2),'[]'::jsonb),
+    'administrators',COALESCE((SELECT jsonb_agg(jsonb_build_array(g.id,g.user_id,g.granted_at,g.revoked_at) ORDER BY g.id) FROM project_admin_grants g WHERE g.tenant_id=$1 AND g.project_id=$2),'[]'::jsonb),
     'areas',COALESCE((SELECT jsonb_agg(jsonb_build_array(n.id,n.parent_id,n.level_id,n.retired_at,l.depth) ORDER BY n.id)
       FROM aor_nodes n JOIN aor_levels l ON l.id=n.level_id AND l.tenant_id=$1 AND l.project_id=$2
       WHERE n.tenant_id=$1 AND n.project_id=$2),'[]'::jsonb),
@@ -34,7 +35,7 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
       `WITH ${snapshotCte}, chief AS (
          SELECT u.id,u.name,u.email,pm.role FROM project_memberships pm
          JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
-         JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL
+         JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)
          JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
          WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='PARTY_CHIEF'
        ), areas AS (
@@ -45,7 +46,7 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
          WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL
          GROUP BY n.id,n.name,n.retired_at
        ), roster AS (
-         SELECT cr.id AS roster_link_id,u.id,u.name,u.email,pm.role,(u.deactivated_at IS NULL) AS active FROM crew_rosters cr
+         SELECT cr.id AS roster_link_id,u.id,u.name,u.email,pm.role,((u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)) AS active FROM crew_rosters cr
          JOIN users u ON u.tenant_id=cr.tenant_id AND u.id=cr.instrument_man_id
          LEFT JOIN project_memberships pm ON pm.project_id=cr.project_id AND pm.user_id=u.id
          WHERE cr.tenant_id=$1 AND cr.project_id=$2 AND cr.party_chief_id=$3 AND cr.deactivated_at IS NULL
@@ -56,7 +57,7 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
          'partyChief',jsonb_build_object('userId',chief.id,'name',chief.name,'email',chief.email,'role',chief.role,'active',true),
          'reporting',(
            SELECT jsonb_build_object('id',rl.id,'assignedAt',rl.assigned_at,
-             'superintendent',jsonb_build_object('userId',u.id,'name',u.name,'email',u.email,'role',pm.role,'active',u.deactivated_at IS NULL),
+             'superintendent',jsonb_build_object('userId',u.id,'name',u.name,'email',u.email,'role',pm.role,'active',(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)),
              'area',jsonb_build_object('id',n.id,'name',n.name,'retired',n.retired_at IS NOT NULL))
            FROM survey_reporting_links rl
            JOIN users u ON u.tenant_id=rl.tenant_id AND u.id=rl.superintendent_id
@@ -89,7 +90,7 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
        JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1
        JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1 AND c.type<>'SUBCONTRACTOR'
        WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='SURVEY_MANAGER'
-         AND u.deactivated_at IS NULL AND u.session_version=$4 FOR UPDATE OF pm`,
+         AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AND u.session_version=$4 FOR UPDATE OF pm`,
       [actor.tenantId,actor.projectId,actor.actorId,actor.sessionVersion]);
     return rows.length === 1;
   }
@@ -111,7 +112,7 @@ export class SurveyStaffingPgRepository implements SurveyStaffingRepository, Sur
     const { rows } = await db.query<{ user_id: UUID; role: ProjectRole }>(
       `SELECT pm.user_id, pm.role FROM project_memberships pm
        JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
-       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL
+       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)
        JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
        WHERE pm.project_id=$2 AND pm.user_id=$3 FOR UPDATE OF pm`, [tenantId, projectId, userId]);
     return rows[0] ? { userId: rows[0].user_id, role: rows[0].role } : null;

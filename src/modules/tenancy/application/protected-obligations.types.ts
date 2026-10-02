@@ -4,7 +4,7 @@ import type {ProjectStatus,CrewBuild} from '@/modules/tenancy/domain/types';
 import type {ProjectRole} from '@/modules/identity/domain/types';
 export type CoverageIntent='TEMPORARY'|'PERMANENT';
 export type ProtectedScope={tenantId:UUID;projectId:UUID};
-export type ResolutionAuthority=ProtectedScope&{branch:'CENTRAL_IT'|'PROJECT_IT'|'SURVEY_MANAGER';actorId:UUID;actorMembershipId:UUID;actorCompanyId:UUID;actorCompanyType:string;actorSessionVersion:number;expiresAt?:Date;project:{status:ProjectStatus;crewBuild:CrewBuild}};
+export type ResolutionAuthority=ProtectedScope&{branch:'CENTRAL_IT'|'PROJECT_IT'|'SURVEY_MANAGER';actorId:UUID;actorMembershipId:UUID;actorAdminGrantId?:UUID;actorCompanyId:UUID;actorCompanyType:string;actorSessionVersion:number;expiresAt?:Date;project:{status:ProjectStatus;crewBuild:CrewBuild}};
 export type ResolveReviewerInput={userId:UUID;grantId:UUID;replacementUserId:UUID;expectedSnapshot:string;confirmResolution:true}&({coverageMode:'reuse'}|{coverageMode:'assignAdditional';confirmAdditionalCoverage:true;coverageIntent:CoverageIntent});
 export type ResolveReviewerResult={resolved:true;grantId:UUID;resolutionEventId:UUID;resolvedAt:string;replacementUserId:UUID;replacementGrantId:UUID;replacementAssignmentId:UUID;createdReviewGrant:boolean;createdIndividualAssignment:boolean};
 export type ProtectedPageQuery={search:string;limit:10|25|50|100;offset:number};
@@ -13,7 +13,7 @@ export type ProtectedPerson={userId:UUID;name:string;email:string;role:ProjectRo
 export type ReviewerObligation={grantId:UUID;responsibility:'SURVEY_REVIEWER'|'FIELD_COORDINATOR';areaId:UUID|null;areaName:string|null;canResolve:boolean;unsupportedReason:string|null;addedCoverageIntent:CoverageIntent|null;addedIndividualAssignment:{id:UUID;coverageIntent:CoverageIntent}|null};
 export type ReviewerCandidate={userId:UUID;name:string;email:string;replacementGrantId:UUID|null;replacementAssignmentId:UUID|null;canReuse:boolean;missingReviewGrant:boolean;missingIndividualAssignment:boolean};
 export type ProtectedReadResult={mode:'personnel';project:ResolutionAuthority['project'];personnel:Page<ProtectedPerson>}|{mode:'obligations';project:ResolutionAuthority['project'];person:ProtectedPerson;obligations:Page<ReviewerObligation>;actingCount:number;departmentMembershipCount:number;snapshotToken:string}|{mode:'candidates';candidates:Page<ReviewerCandidate>;snapshotToken:string};
-export type ResolutionPerson={id:UUID;companyId:UUID;companyType:string;role:ProjectRole|null;membershipId:UUID|null;sessionVersion:number;deactivatedAt:string|null};
+export type ResolutionPerson={id:UUID;companyId:UUID;companyType:string;role:ProjectRole|null;membershipId:UUID|null;sessionVersion:number;deactivatedAt:string|null;accessDisabledAt?:string|null};
 export type ResponsibilityGrantEvidence={id:UUID;userId:UUID;areaId:UUID|null;responsibility:string;grantedBy:UUID;grantedAt:string;revokedAt:string|null};
 export type IndividualAssignmentEvidence={id:UUID;userId:UUID;areaId:UUID;createdAt:string;deactivatedAt:string|null};
 export type ResolutionArea={id:UUID;name:string;levelId:UUID;depth:number;parentId:UUID|null;retiredAt:string|null};

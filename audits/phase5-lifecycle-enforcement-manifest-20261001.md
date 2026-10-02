@@ -1,0 +1,67 @@
+# Phase5 lifecycle enforcement manifest
+
+Date: 2026-10-01. Authoritative branch: phase5. Storage baseline030a654.
+Owner approved scoped implementation; Tasks3–7 remain release gates.
+
+## Access boundary and evidence
+
+Project operational access requires a same-tenant, globally active user, effective project membership and actual operational role. Independent Project Admin grants compose with operational roles, require an eligible GC/OWNER_REP company and cannot bypass project disablement. Central IT is a separate eligible tenant authority. Its support exception applies to administration and redacted delivery diagnostics; it does not fabricate ticket-content or Manager workflow authority. Archived projects retain evidence and existing read-only behavior; archived status never bypasses effective membership checks.
+
+Source inventory: rg -l 'project_memberships|tenant_memberships|deactivated_at|session_version' src, augmented with rg -l 'deactivatedAt|accessDisabledAt' src. Rows below classify every current direct SQL consumer and additional application/type consumer. Existing tests listed are regression evidence; mocked SQL does not verify PostgreSQL semantics.
+
+Real SQL evidence: tests/beta/project-capabilities-postgres.ts runs inside the rollback-only unique-schema fixture from tests/beta/account-offboarding-postgres.ts. It verifies combined Manager/admin, legacy admin revocation, disabled access, cached Manager denial, workforce context, staffing snapshot/member/Chief access, ticket assignment eligibility, retained disabled protected-person and Area diagnostics, disabled Manager denial, My Account assignments, project discovery and deduplicated eligible escalation recipients. Schema acceptance separately verifies28 storage invariants and original history preservation.
+
+## Direct consumers
+
+Paths below are repository-relative. Mutation coordination is tracked separately; effective read/assignment eligibility does not establish a concurrency barrier.
+
+| Consumer | Entry point and access treatment | Verification and next gate |
+| --- | --- | --- |
+| src/lib/project-capabilities.ts | Fresh account/version, same tenant, independent grants, eligible Central IT, effective membership | project-capabilities.test.ts8 cases; project-capabilities-postgres.ts |
+| src/lib/get-project-role.ts | Operational prelude; globally/local active, actual role, retained legacy admin requires active grant | project-capabilities-postgres.ts; ticket visibility regression |
+| src/lib/get-tenant-role.ts | Tenant administrative prelude; globally active eligible tenant administrator | get-tenant-role.test.ts; Task3 postwait auth |
+| src/lib/access-administrator.ts | Project company/invite/grant actor; current combined capabilities | project-capabilities.test.ts; Task3 write barrier |
+| src/lib/project-insight-auth.ts | Actual Manager semantics retained; explicit Central/local administrative diagnostics | local-preview.test.ts; Task5 scoped parity |
+| src/lib/auth.ts | Session decoding, logout denylist and user/version validation | session-auth.test.ts; Task3 entry-point and postwait checks |
+| src/lib/survey-review-authority.ts | Fresh actual Manager; Superintendent grant requires effective membership | project-capabilities-postgres.ts; assessment-authorization.test.ts |
+| src/lib/ticket-visibility-clause.ts | Effective actual role from project context; subcontractor company grant also checks local access | visibility-repository.test.ts; Task7 SQL HTTP coverage |
+| src/app/api/projects/get-handler.ts | Discovery excludes local/global inactive and revoked legacy admin | project-capabilities-postgres.ts; project-list-route.test.ts; Task6 administered-project metadata |
+| src/app/api/projects/[projectId]/members/route.ts | Operational member selector excludes local/global inactive | add-project-member-security.test.ts; Tasks3/5 transaction and capability parity |
+| src/app/api/tickets/[ticketId]/attachments/handler.ts | Effective operational context before download; upload SQL rechecks local/global activity/version | attachment-read-route.test.ts; Task3 upload reauthorization; Task7 HTTP denial |
+| src/app/api/ops/diagnostics/handler.ts | Existing tenant support diagnostics | Task5 diagnostics_query_is_project_partitioned; Task3 entry-point auth |
+| src/modules/identity/infrastructure/company-access.repository.ts | Requester candidates/new company grants require effective membership; historical audit retained | company-access-overview.test.ts; Task3 invitation/grant writes |
+| src/modules/identity/infrastructure/user.repository.ts | Historical identity lookup preserves attribution; registration creates membership; reset/deactivate changes account | identity-auth.test.ts; Tasks3/4 reset/register/global disable |
+| src/modules/notification/infrastructure/index.ts | Current Manager/admin recipients effective/active; Central eligible/active; deduplicated; actual legacy admin fallback distinct from recipients | project-capabilities-postgres.ts; timeout-and-vacancy.test.ts; Task3 worker writes |
+| src/modules/notification/application/local-preview.ts | Stored transport history preserves attribution; current insight authority; admin responses redact ticket content | local-preview.test.ts; Task3 reauthorization |
+| src/modules/tenancy/infrastructure/my-account.reader.ts | Profile globally active; Area/crew requires actor/partner effective membership; stored links retained | project-capabilities-postgres.ts |
+| src/modules/tenancy/infrastructure/protected-obligations.repository.ts | Retained subjects truthful active flags; effective candidates; independent IT authority; grant witness locked/rechecked; snapshot local stamps | project-capabilities-postgres.ts; protected-obligations-command.test.ts; Task3 tenant-first |
+| src/modules/tenancy/infrastructure/superintendent-areas.repository.ts | Truthful diagnostics; actual effective Manager; effective replacement witnesses; inactive subject cannot confirm | project-capabilities-postgres.ts; superintendent-area-command.test.ts; Task3 tenant-first |
+| src/modules/tenancy/infrastructure/superintendent-crews.repository.ts | Chief/Superintendent joins require effective active membership | superintendent-cohort.test.ts; Task7 seeded linked-crew SQL |
+| src/modules/tenancy/infrastructure/survey-staffing.repository.ts | Effective actors/subjects, retained inactive roster/reporting flags; snapshot stamps/admin grants | project-capabilities-postgres.ts; survey-staffing tests; Task3 writes |
+| src/modules/tenancy/infrastructure/survey-teams.repository.ts | Effective candidates/Manager; inactive historical flags; role update cannot alter disabled membership | project-capabilities-postgres.ts; survey-teams tests; Task3 writes |
+| src/modules/tenancy/infrastructure/survey-workforce.repository.ts | Effective actor/population/Chief witnesses; same-tenant current version | project-capabilities-postgres.ts; survey-workforce.test.ts; Task3 writes |
+| src/modules/tenancy/infrastructure/tenancy.repository.ts | Activation witnesses effective/globally active; memberships/assignments retained | project-capabilities-postgres.ts; project-activation.test.ts; Tasks3/5 writers |
+| src/modules/ticket/application/draft-access.ts | Locked actual Requester or independent Project Admin; Central alone no draft recovery | project-capabilities-postgres.ts; draft-recovery.test.ts; Task3 barrier |
+| src/modules/ticket/application/recover-draft.ts | Recipient Requester globally/local active; original authors/draft data retained | draft-recovery.test.ts; Task3 barrier |
+| src/modules/ticket/infrastructure/ticket.repository.ts | Effective assignment/company-grant/direct-authority; common context prevents disabled visibility; history retains attribution | project-capabilities-postgres.ts; visibility-repository.test.ts; Task3 writes |
+
+## Additional application and type consumers
+
+| Consumer | Classification |
+| --- | --- |
+| src/modules/identity/application/authenticate.ts | Login global deactivation; Task3 login/reset coordination |
+| src/modules/identity/domain/types.ts | Retained global user state; no independent authorization |
+| src/modules/tenancy/domain/types.ts | Retained duty/assignment state; no independent authorization |
+| src/modules/tenancy/application/ports.ts | Repository contracts; Task3 effective subject checks on duty writers |
+| src/modules/tenancy/application/protected-obligations.types.ts | Separate accessDisabledAt; independent admin grant witness |
+| src/modules/tenancy/application/resolve-survey-reviewer.ts | Fresh subject/replacement local inactivity refuses before coverage/revoke/audit |
+| src/modules/tenancy/application/unlink-superintendent-area.ts | Fresh subject/replacement local inactivity refuses before unlink/audit |
+| src/modules/tenancy/application/add-department-member.ts | Retains department links; Task3 effective subject writer validation |
+| src/modules/tenancy/application/assign-aor-user.ts | Retains Area links; Task3 effective subject writer validation |
+| src/modules/tenancy/application/assign-aor-department.ts | Shared department duties preserved; Task3 coordinated writes |
+
+No current search result is uncategorized. Reconcile every added consumer here before release.
+
+## Remaining transaction and release gates
+
+Task3 must acquire tenant row locks before domain/replay locks for every lifecycle-relevant writer and revalidate account/version/logout/authority after waits. Exclusive writes must not upgrade a shared lock. Task4 introduces previews/transitions/reviews/outbox. Task5 completes local parity without tenant escalation. Tasks6/7 verify UI and all cases with real races, HTTP/browser evidence. This manifest classifies access treatment; it does not authorize partially enforced deployment.

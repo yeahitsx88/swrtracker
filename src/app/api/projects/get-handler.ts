@@ -47,7 +47,10 @@ export async function handleGetProjects(
        WHERE p.tenant_id = $1
          AND pm.user_id = $2
          AND p.status = 'ACTIVE'
-         AND u.deactivated_at IS NULL
+         AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
+         AND (pm.role <> 'PROJECT_ADMIN' OR EXISTS(
+           SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=p.tenant_id
+             AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL))
          AND (c.type <> 'SUBCONTRACTOR' OR pm.role = 'REQUESTER')
        ORDER BY p.name, p.id`,
       [auth.tenantId, auth.userId],

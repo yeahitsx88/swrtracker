@@ -4,7 +4,10 @@ import { randomUUID, createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-export async function runLifecycleSchemaAcceptance(): Promise<void> {
+export interface LifecycleSchemaFixture { tenant: string; project: string; actor: string; subject: string; foreignProject: string }
+export async function runLifecycleSchemaAcceptance(
+  acceptance?: (db: PoolClient, fixture: LifecycleSchemaFixture) => Promise<void>,
+): Promise<void> {
   const url = new URL(process.env.DATABASE_URL ?? '');
   if (process.env.SWR_TEAM_POSTGRES !== '1' || url.hostname !== '127.0.0.1' ||
       url.port !== '15489' || url.pathname !== '/swr_team_isolated') {
@@ -168,6 +171,7 @@ export async function runLifecycleSchemaAcceptance(): Promise<void> {
       const stored=(await db.query('SELECT scope,project_id,event_type,actor_id,authority_evidence FROM account_lifecycle_events WHERE id=$1',[emitted])).rows[0];
       assert.deepEqual(stored,{scope:'TENANT_ACCOUNT',project_id:null,event_type:'user.deactivated',actor_id:actor,authority_evidence:{branch:'CENTRAL_IT'}});
     });
+    if (typeof acceptance === 'function') await acceptance(db,{tenant,project,actor,subject,foreignProject});
     console.log(`Scoped lifecycle PostgreSQL schema checks passed: ${checks}`);
   } finally {
     await db.query('ROLLBACK'); db.release(); await pool.end();

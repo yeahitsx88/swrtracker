@@ -41,7 +41,7 @@ export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): 
               WHERE g.tenant_id = t.tenant_id AND g.project_id = t.project_id
                 AND g.company_id = t.company_id AND g.user_id = $${baseIdx}
                 AND g.revoked_at IS NULL AND pm.role = 'REQUESTER'
-                AND u.deactivated_at IS NULL
+                AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
             )
           ))`,
           params: [actorId, companyId, projectId],

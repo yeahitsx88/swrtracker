@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@/shared/errors';
+import { getProjectRole } from './get-project-role';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 
@@ -8,7 +9,11 @@ export async function requireSurveyReviewAuthority(
   scope: { tenantId: UUID; projectId: UUID; aorNodeId: UUID | null },
   actor: { actorId: UUID; actorRole: ProjectRole },
 ): Promise<Record<string, unknown>> {
-  if (actor.actorRole === 'SURVEY_MANAGER') return { kind: 'PROJECT_ROLE', role: 'SURVEY_MANAGER' };
+  if (actor.actorRole === 'SURVEY_MANAGER') {
+    const current = await getProjectRole(db, scope.tenantId, scope.projectId, actor.actorId);
+    if (current !== 'SURVEY_MANAGER') throw new ForbiddenError('Current Survey Manager authority is required');
+    return { kind: 'PROJECT_ROLE', role: 'SURVEY_MANAGER' };
+  }
   if (actor.actorRole !== 'SURVEY_SUPERINTENDENT') {
     throw new ForbiddenError('Survey review requires the Survey Manager or an explicitly authorized Area Superintendent');
   }
@@ -32,7 +37,7 @@ export async function requireSurveyReviewAuthority(
      WHERE g.tenant_id = $1 AND g.project_id = $2 AND g.user_id = $4
        AND g.responsibility = 'SURVEY_REVIEWER' AND g.revoked_at IS NULL
        AND g.aor_node_id IN (SELECT id FROM ancestors)
-       AND u.deactivated_at IS NULL AND pm.role = 'SURVEY_SUPERINTENDENT'
+       AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL AND pm.role = 'SURVEY_SUPERINTENDENT'
        AND c.type <> 'SUBCONTRACTOR'
      ORDER BY g.granted_at, g.id LIMIT 1
      FOR SHARE OF g, u, pm, c`,

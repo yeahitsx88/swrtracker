@@ -48,7 +48,7 @@ test('restore keeps identity/files and requires current requester, reason, windo
 });
 test('draft authority locks current project membership and never derives recovery from tenant role', async () => {
   const h = harness(); await assert.rejects(() => lockDraftActor(h.db, scope, 'PROJECT_ADMIN'), ForbiddenError);
-  assert.match(h.calls[0]!.sql, /pm.role = \$4/); assert.match(h.calls[0]!.sql, /u.session_version = \$5/);
+  assert.match(h.calls[0]!.sql, /u.session_version = \$5/);
   assert.match(h.calls[0]!.sql, /FOR SHARE OF pm, p, u, c/); assert.equal(h.calls[0]!.values?.[3], 'PROJECT_ADMIN');
 });
 test('partial intake accepts omissions/nulls but rejects malformed supplied values and rollover dates', () => {

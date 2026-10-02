@@ -58,7 +58,7 @@ export class CompanyAccessRepository {
            ON cag.tenant_id = p.tenant_id AND cag.project_id = p.id
           AND cag.company_id = c.id AND cag.user_id = u.id AND cag.revoked_at IS NULL
          WHERE pm.project_id = $2 AND pm.role = 'REQUESTER'
-           AND p.status <> 'ARCHIVED' AND u.deactivated_at IS NULL
+           AND p.status <> 'ARCHIVED' AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
            AND c.type = 'SUBCONTRACTOR'
          ORDER BY LOWER(c.name), LOWER(u.name), u.id`,
       [tenantId, projectId],
@@ -128,7 +128,7 @@ export class CompanyAccessRepository {
        JOIN companies c ON c.id = u.company_id AND c.tenant_id = u.tenant_id
        JOIN project_memberships pm ON pm.project_id = p.id AND pm.user_id = u.id
        WHERE p.tenant_id = $1 AND p.id = $2 AND p.status <> 'ARCHIVED'
-         AND u.id = $3 AND u.deactivated_at IS NULL
+         AND u.id = $3 AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
          AND c.type = 'SUBCONTRACTOR' AND pm.role = 'REQUESTER'
        ON CONFLICT DO NOTHING
        RETURNING id, tenant_id, project_id, company_id, user_id`,

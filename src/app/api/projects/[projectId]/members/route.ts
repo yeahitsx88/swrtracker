@@ -41,7 +41,7 @@ export async function GET(
     }>(
       `SELECT pm.user_id, u.name, u.email, pm.role
        FROM project_memberships pm JOIN users u ON u.id = pm.user_id
-       WHERE pm.project_id = $1 AND u.tenant_id = $2 AND u.deactivated_at IS NULL
+       WHERE pm.project_id = $1 AND u.tenant_id = $2 AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
        ORDER BY pm.role, u.name, u.email`,
       [projectUuid, auth.tenantId],
     );

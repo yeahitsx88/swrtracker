@@ -7,12 +7,13 @@ const editable="('VIEWER','REQUESTER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INS
 // Every read page and checksum below use one statement snapshot. The checksum
 // deliberately ignores search/offset and includes candidates without coverage.
 const accessCte=`current_access AS (
- SELECT $8::uuid AS selected_grant_id,CASE WHEN tm.id IS NOT NULL THEN 'CENTRAL_IT' WHEN pm.role='PROJECT_ADMIN' THEN 'PROJECT_IT' ELSE 'SURVEY_MANAGER' END AS branch
+ SELECT $8::uuid AS selected_grant_id,CASE WHEN tm.id IS NOT NULL THEN 'CENTRAL_IT' WHEN pag.id IS NOT NULL THEN 'PROJECT_IT' ELSE 'SURVEY_MANAGER' END AS branch
  FROM projects p JOIN users u ON u.tenant_id=p.tenant_id AND u.id=$4 JOIN companies c ON c.tenant_id=u.tenant_id AND c.id=u.company_id
- LEFT JOIN tenant_memberships tm ON tm.tenant_id=p.tenant_id AND tm.user_id=u.id AND tm.role='TENANT_ADMIN'
+ LEFT JOIN tenant_memberships tm ON tm.tenant_id=p.tenant_id AND tm.user_id=u.id AND tm.role='TENANT_ADMIN' AND c.type IN ('GC','OWNER_REP')
  LEFT JOIN project_memberships pm ON pm.project_id=p.id AND pm.user_id=u.id
+ LEFT JOIN project_admin_grants pag ON pag.tenant_id=p.tenant_id AND pag.project_id=p.id AND pag.user_id=u.id AND pag.revoked_at IS NULL AND pm.access_disabled_at IS NULL AND pm.id IS NOT NULL AND c.type IN ('GC','OWNER_REP')
  WHERE p.tenant_id=$1 AND p.id=$2 AND u.deactivated_at IS NULL AND u.session_version=$9 AND ($10::timestamptz IS NULL OR clock_timestamp()<$10::timestamptz)
- AND (tm.id IS NOT NULL OR pm.role='PROJECT_ADMIN' OR (pm.role='SURVEY_MANAGER' AND c.type<>'SUBCONTRACTOR'))
+ AND (tm.id IS NOT NULL OR pag.id IS NOT NULL OR (pm.role='SURVEY_MANAGER' AND pm.access_disabled_at IS NULL AND c.type<>'SUBCONTRACTOR'))
 )`;
 const stateCte=`subject_grants AS (
  SELECT * FROM project_responsibility_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3
@@ -20,8 +21,8 @@ const stateCte=`subject_grants AS (
  SELECT n.*,l.depth FROM aor_nodes n JOIN aor_levels l ON l.id=n.level_id AND l.tenant_id=n.tenant_id AND l.project_id=n.project_id
  WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.id IN (SELECT aor_node_id FROM subject_grants)
 ), people AS (
- SELECT u.id AS "userId",u.name,u.email,pm.role,u.deactivated_at IS NULL AS active,u.company_id,c.type AS "companyType",
- pm.id AS "membershipId",pm.created_at AS "membershipCreatedAt",u.session_version AS "sessionVersion",u.deactivated_at AS "deactivatedAt",
+ SELECT u.id AS "userId",u.name,u.email,pm.role,(u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL) AS active,u.company_id,c.type AS "companyType",
+ pm.id AS "membershipId",pm.created_at AS "membershipCreatedAt",u.session_version AS "sessionVersion",u.deactivated_at AS "deactivatedAt",pm.access_disabled_at AS "accessDisabledAt",
  (SELECT count(*)::int FROM project_responsibility_grants g WHERE g.tenant_id=$1 AND g.project_id=$2 AND g.user_id=u.id AND g.revoked_at IS NULL) AS "responsibilityCount",
  (SELECT count(*)::int FROM acting_grants g WHERE g.tenant_id=$1 AND g.project_id=$2 AND g.user_id=u.id AND g.revoked_at IS NULL) AS "actingCount"
  FROM project_memberships pm JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1
@@ -44,14 +45,15 @@ export class ProtectedObligationsPgRepository implements ProtectedObligationsRep
  async readAuthority(db:DbClient,auth:AuthContext,projectId:UUID):Promise<ResolutionAuthority>{
   if(auth.expiresAt&&auth.expiresAt.getTime()<=Date.now())throw new UnauthorizedError('Session expired');
   await assertActiveSession(db,auth);
-  const {rows}=await db.query<{status:ResolutionAuthority['project']['status'];crewBuild:ResolutionAuthority['project']['crewBuild'];companyId:UUID;companyType:string;centralId:UUID|null;projectMembershipId:UUID|null;role:string|null}>(`SELECT p.status,p.crew_build AS "crewBuild",u.company_id AS "companyId",c.type AS "companyType",tm.id AS "centralId",pm.id AS "projectMembershipId",pm.role
+  const {rows}=await db.query<{status:ResolutionAuthority['project']['status'];crewBuild:ResolutionAuthority['project']['crewBuild'];companyId:UUID;companyType:string;centralId:UUID|null;projectMembershipId:UUID|null;projectAdminGrantId:UUID|null;accessDisabledAt:string|null;role:string|null}>(`SELECT p.status,p.crew_build AS "crewBuild",u.company_id AS "companyId",c.type AS "companyType",tm.id AS "centralId",pm.id AS "projectMembershipId",pag.id AS "projectAdminGrantId",pm.access_disabled_at::text AS "accessDisabledAt",pm.role
  FROM projects p JOIN users u ON u.tenant_id=p.tenant_id AND u.id=$3 JOIN companies c ON c.tenant_id=u.tenant_id AND c.id=u.company_id
- LEFT JOIN tenant_memberships tm ON tm.tenant_id=p.tenant_id AND tm.user_id=u.id AND tm.role='TENANT_ADMIN'
- LEFT JOIN project_memberships pm ON pm.project_id=p.id AND pm.user_id=u.id WHERE p.tenant_id=$1 AND p.id=$2`,[auth.tenantId,projectId,auth.userId]);
+ LEFT JOIN tenant_memberships tm ON tm.tenant_id=p.tenant_id AND tm.user_id=u.id AND tm.role='TENANT_ADMIN' AND c.type IN ('GC','OWNER_REP')
+ LEFT JOIN project_memberships pm ON pm.project_id=p.id AND pm.user_id=u.id
+ LEFT JOIN project_admin_grants pag ON pag.tenant_id=p.tenant_id AND pag.project_id=p.id AND pag.user_id=u.id AND pag.revoked_at IS NULL AND pm.access_disabled_at IS NULL AND pm.id IS NOT NULL AND c.type IN ('GC','OWNER_REP') WHERE p.tenant_id=$1 AND p.id=$2`,[auth.tenantId,projectId,auth.userId]);
   const row=rows[0];if(!row)throw new NotFoundError('Project not found');
-  const branch=row.centralId?'CENTRAL_IT':row.role==='PROJECT_ADMIN'?'PROJECT_IT':row.role==='SURVEY_MANAGER'&&row.companyType!=='SUBCONTRACTOR'?'SURVEY_MANAGER':null;
+  const branch=row.centralId?'CENTRAL_IT':row.projectAdminGrantId?'PROJECT_IT':row.role==='SURVEY_MANAGER'&&!row.accessDisabledAt&&row.companyType!=='SUBCONTRACTOR'?'SURVEY_MANAGER':null;
   if(!branch)throw new ForbiddenError('Reviewer handover requires current project Survey Manager or IT');
-  return{branch,tenantId:auth.tenantId,projectId,actorId:auth.userId,actorMembershipId:branch==='CENTRAL_IT'?row.centralId!:row.projectMembershipId!,actorCompanyId:row.companyId,actorCompanyType:row.companyType,actorSessionVersion:auth.sessionVersion,expiresAt:auth.expiresAt,project:{status:row.status,crewBuild:row.crewBuild}};
+  return{branch,tenantId:auth.tenantId,projectId,actorId:auth.userId,actorMembershipId:branch==='CENTRAL_IT'?row.centralId!:row.projectMembershipId!,actorAdminGrantId:row.projectAdminGrantId??undefined,actorCompanyId:row.companyId,actorCompanyType:row.companyType,actorSessionVersion:auth.sessionVersion,expiresAt:auth.expiresAt,project:{status:row.status,crewBuild:row.crewBuild}};
  }
  async readPage(db:DbClient,scope:ProtectedScope,authority:ResolutionAuthority,input:ProtectedReadQuery):Promise<ProtectedReadResult>{
   const userId=input.mode==='personnel'?null:input.userId,q=input.query;
@@ -115,10 +117,12 @@ export class ProtectedObligationsPgRepository implements ProtectedObligationsRep
   const heldProjectMemberships=await db.query<{id:UUID}>('SELECT id FROM project_memberships WHERE project_id=$1 AND user_id=ANY($2::uuid[]) ORDER BY user_id,id FOR SHARE',[projectId,users]);
   const heldTenantMemberships=await db.query<{id:UUID}>('SELECT id FROM tenant_memberships WHERE tenant_id=$1 AND user_id=$2 ORDER BY user_id,id FOR SHARE',[auth.tenantId,auth.userId]);
   await db.query(`SELECT id FROM companies WHERE tenant_id=$1 AND id IN (SELECT company_id FROM users WHERE tenant_id=$1 AND id=ANY($2::uuid[])) ORDER BY id FOR SHARE`,[auth.tenantId,users]);
+  const heldAdminGrants=await db.query<{id:UUID}>('SELECT id FROM project_admin_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 ORDER BY id FOR SHARE',[auth.tenantId,projectId,auth.userId]);
   authority=await this.readAuthority(db,auth,projectId);
+  if(authority.actorAdminGrantId&&!heldAdminGrants.rows.some(row=>row.id===authority.actorAdminGrantId))throw new ConflictError('Admin authority changed during validation');
   const heldAuthorityIds=new Set([...heldProjectMemberships.rows,...heldTenantMemberships.rows].map(row=>row.id));
   if(!heldAuthorityIds.has(authority.actorMembershipId))throw new ConflictError('Resolution authority changed during validation; retry with current evidence');
-  const people=(await db.query<ResolutionPerson>(`SELECT u.id,u.company_id AS "companyId",c.type AS "companyType",u.session_version AS "sessionVersion",u.deactivated_at::text AS "deactivatedAt",pm.id AS "membershipId",pm.role FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id LEFT JOIN project_memberships pm ON pm.project_id=$2 AND pm.user_id=u.id WHERE u.tenant_id=$1 AND u.id=ANY($3::uuid[])`,[...scope,users])).rows;
+  const people=(await db.query<ResolutionPerson>(`SELECT u.id,u.company_id AS "companyId",c.type AS "companyType",u.session_version AS "sessionVersion",u.deactivated_at::text AS "deactivatedAt",pm.access_disabled_at::text AS "accessDisabledAt",pm.id AS "membershipId",pm.role FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id LEFT JOIN project_memberships pm ON pm.project_id=$2 AND pm.user_id=u.id WHERE u.tenant_id=$1 AND u.id=ANY($3::uuid[])`,[...scope,users])).rows;
   const selected=(await db.query<ResponsibilityGrantEvidence>(`SELECT id,user_id AS "userId",aor_node_id AS "areaId",responsibility,granted_by AS "grantedBy",granted_at::text AS "grantedAt",revoked_at::text AS "revokedAt" FROM project_responsibility_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND id=$4`,[...scope,input.userId,input.grantId])).rows[0];
   if(!selected)throw new NotFoundError('Scoped reviewer obligation not found');
   if(selected.areaId){

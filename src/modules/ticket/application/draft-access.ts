@@ -10,7 +10,11 @@ export async function lockDraftActor(db: DbClient, scope: {
      JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
      JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
      JOIN companies c ON c.id = u.company_id AND c.tenant_id = u.tenant_id
-     WHERE pm.project_id = $2 AND pm.user_id = $3 AND pm.role = $4
+     WHERE pm.project_id = $2 AND pm.user_id = $3 AND pm.access_disabled_at IS NULL
+       AND (($4='REQUESTER' AND pm.role='REQUESTER') OR
+         ($4='PROJECT_ADMIN' AND c.type IN ('GC','OWNER_REP') AND EXISTS(
+           SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=p.tenant_id
+             AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)))
        AND u.deactivated_at IS NULL AND u.session_version = $5
        AND (c.type <> 'SUBCONTRACTOR' OR pm.role = 'REQUESTER')
      FOR SHARE OF pm, p, u, c`,

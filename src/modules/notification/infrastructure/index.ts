@@ -90,10 +90,10 @@ export class NotificationRepository implements INotificationRepository {
         AND p.tenant_id = t.tenant_id
        LEFT JOIN project_memberships pm
          ON pm.project_id = t.project_id
-        AND pm.role = 'SURVEY_MANAGER'
+        AND pm.role = 'SURVEY_MANAGER' AND pm.access_disabled_at IS NULL
        LEFT JOIN users u
          ON u.id = pm.user_id
-        AND u.tenant_id = t.tenant_id
+        AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
        WHERE t.status = 'SUBMITTED'
          AND t.submitted_at IS NOT NULL
          AND p.status = 'ACTIVE'
@@ -147,7 +147,8 @@ export class NotificationRepository implements INotificationRepository {
            ON u.id = tm.user_id
           AND u.tenant_id = ag.tenant_id
          WHERE tm.tenant_id = ag.tenant_id
-           AND tm.role = 'TENANT_ADMIN'
+           AND tm.role = 'TENANT_ADMIN' AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
        ) AS tenant_admins ON TRUE
        LEFT JOIN LATERAL (
          SELECT jsonb_agg(
@@ -158,7 +159,9 @@ export class NotificationRepository implements INotificationRepository {
            ON u.id = pm.user_id
           AND u.tenant_id = ag.tenant_id
          WHERE pm.project_id = ag.project_id
-           AND pm.role = 'PROJECT_ADMIN'
+           AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
        ) AS project_admins ON TRUE
        WHERE ag.revoked_at IS NULL
          AND p.status = 'ACTIVE'
@@ -233,10 +236,11 @@ export class NotificationRepository implements INotificationRepository {
          FROM project_memberships pm
          JOIN users u
            ON u.id = pm.user_id
-          AND u.tenant_id = t.tenant_id
-          AND u.deactivated_at IS NULL
+          AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
          WHERE pm.project_id = t.project_id
-           AND pm.role = 'PROJECT_ADMIN'
+           AND pm.role IN ('PROJECT_ADMIN') AND pm.access_disabled_at IS NULL
+           AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
          ORDER BY pm.user_id
          LIMIT 1
        ) AS fallback_admin ON TRUE
@@ -249,19 +253,20 @@ export class NotificationRepository implements INotificationRepository {
            FROM tenant_memberships tm
            JOIN users u
              ON u.id = tm.user_id
-            AND u.tenant_id = t.tenant_id
-            AND u.deactivated_at IS NULL
+            AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
            WHERE tm.tenant_id = t.tenant_id
-             AND tm.role = 'TENANT_ADMIN'
+             AND tm.role = 'TENANT_ADMIN' AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
            UNION
            SELECT u.id AS user_id, u.email, u.name
            FROM project_memberships pm
            JOIN users u
              ON u.id = pm.user_id
-            AND u.tenant_id = t.tenant_id
-            AND u.deactivated_at IS NULL
+            AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
            WHERE pm.project_id = t.project_id
-             AND pm.role = 'PROJECT_ADMIN'
+             AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
          ) AS recipients
        ) AS escalation_recipients ON TRUE
        WHERE p.status = 'ACTIVE'
@@ -385,13 +390,16 @@ function parseRecipients(raw: unknown): NotificationRecipient[] {
     return [];
   }
 
-  return parsed
+  const recipients = parsed
     .filter((value): value is Record<string, unknown> => !!value && typeof value === 'object')
     .map((recipient) => ({
       userId: String(recipient.userId) as UUID,
       email: String(recipient.email),
       name: recipient.name == null ? null : String(recipient.name),
     }));
+  const unique = new Map<UUID, NotificationRecipient>();
+  for (const recipient of recipients) unique.set(recipient.userId, recipient);
+  return [...unique.values()];
 }
 
 function toDate(value: Date | string): Date {

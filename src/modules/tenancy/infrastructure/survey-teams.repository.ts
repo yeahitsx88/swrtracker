@@ -21,7 +21,7 @@ const summary = (row: TeamRow): SurveyTeamSummary => ({
 });
 const person = (row: PersonRow): TeamPerson => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role, active: row.active });
 const teamSelect = `SELECT t.id,t.name,t.aor_node_id,n.name AS area_name,t.lead_user_id,
-  u.name AS lead_name,u.email AS lead_email,pm.role AS lead_role,u.deactivated_at IS NULL AS lead_active,
+  u.name AS lead_name,u.email AS lead_email,pm.role AS lead_role,(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AS lead_active,
   t.row_version,(SELECT COUNT(*)::int FROM survey_team_members m
     WHERE m.tenant_id=t.tenant_id AND m.project_id=t.project_id AND m.team_id=t.id AND m.deactivated_at IS NULL) AS member_count
   FROM survey_teams t
@@ -65,7 +65,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
        JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id
        JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
        WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='SURVEY_MANAGER'
-         AND u.deactivated_at IS NULL AND u.session_version=$4 FOR UPDATE OF pm`,
+         AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AND u.session_version=$4 FOR UPDATE OF pm`,
       [actor.tenantId, actor.projectId, actor.actorId, actor.sessionVersion]);
     return rows.length === 1;
   }
@@ -74,7 +74,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     const { rows } = await db.query<TeamRow>(`${teamSelect} AND t.id=$3`, [tenantId, projectId, teamId]);
     if (!rows[0]) return null;
     const members = await db.query<PersonRow>(
-      `SELECT u.id AS user_id,u.name,u.email,pm.role,u.deactivated_at IS NULL AS active,
+      `SELECT u.id AS user_id,u.name,u.email,pm.role,(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AS active,
          m.team_id,t.name AS team_name FROM survey_team_members m
        JOIN survey_teams t ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id
        JOIN users u ON u.tenant_id=m.tenant_id AND u.id=m.user_id
@@ -99,7 +99,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
   async personnel(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery): Promise<Page<TeamPersonnel>> {
     const from = `FROM project_memberships pm
       JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
-      JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL
+      JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)
       JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
       WHERE pm.project_id=$2 AND pm.role IN ('REQUESTER','VIEWER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
         AND (u.name ILIKE $3 OR u.email ILIKE $3 OR pm.role ILIKE $3 OR replace(pm.role,'_',' ') ILIKE $3)`;
@@ -121,7 +121,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     const { rows } = await db.query<PersonRow>(
       `SELECT u.id AS user_id,u.name,u.email,pm.role,TRUE AS active,u.session_version AS role_version,m.team_id,t.name AS team_name
        FROM project_memberships pm JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
-       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL
+       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)
        JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
        LEFT JOIN survey_team_members m ON m.tenant_id=$1 AND m.project_id=$2 AND m.user_id=u.id AND m.deactivated_at IS NULL
        LEFT JOIN survey_teams t ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id
@@ -144,7 +144,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
 
   async changeOperationalRole(db: DbClient, actor: TeamActor, input: ChangeSurveyRoleInput): Promise<number> {
     const membership = await db.query<{ user_id: UUID }>(
-      `UPDATE project_memberships pm SET role=$4 WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$5
+      `UPDATE project_memberships pm SET role=$4 WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$5 AND pm.access_disabled_at IS NULL
        AND EXISTS(SELECT 1 FROM projects p WHERE p.id=pm.project_id AND p.tenant_id=$1)
        RETURNING pm.user_id`, [actor.tenantId, actor.projectId, input.userId, input.role, input.expectedRole]);
     if (!membership.rows[0]) throw new ConflictError('This person’s role changed; reload before saving', 'STALE_SURVEY_ROLE');

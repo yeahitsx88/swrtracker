@@ -451,7 +451,7 @@ export class TicketRepository implements ITicketRepository {
          JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
          JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
          WHERE pm.project_id = $2 AND pm.user_id = $3
-           AND pm.role = ANY($4::text[]) AND u.deactivated_at IS NULL
+           AND pm.role = ANY($4::text[]) AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
        ) AS eligible`,
       [tenantId, projectId, userId, roles],
     );
@@ -469,7 +469,7 @@ export class TicketRepository implements ITicketRepository {
          JOIN users u ON u.id = g.user_id AND u.tenant_id = g.tenant_id
          WHERE g.tenant_id = $1 AND g.project_id = $2
            AND g.user_id = $3 AND g.company_id = $4
-           AND g.revoked_at IS NULL AND u.deactivated_at IS NULL
+           AND g.revoked_at IS NULL AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
            AND pm.role = 'REQUESTER'
        ) AS granted`,
       [tenantId, projectId, userId, companyId],
@@ -511,7 +511,7 @@ export class TicketRepository implements ITicketRepository {
        JOIN companies c ON c.id=u.company_id AND c.tenant_id=p.tenant_id
        WHERE p.tenant_id=$1 AND p.id=$2 AND p.status='ACTIVE'
          AND pm.role=$4 AND pm.role IN ('SURVEY_MANAGER','SURVEY_SUPERINTENDENT')
-         AND u.deactivated_at IS NULL AND c.type<>'SUBCONTRACTOR'
+         AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL) AND c.type<>'SUBCONTRACTOR'
          AND ($5::int IS NULL OR u.session_version=$5)
        FOR SHARE OF p,pm,u,c`,
       [scope.tenantId,scope.projectId,scope.actorId,scope.actorRole,scope.sessionVersion ?? null]);

@@ -24,7 +24,7 @@ export async function resolveSurveyReviewer(repo:ProtectedObligationsRepository,
  if(authority.project.status==='ARCHIVED')throw new ConflictError('Archived projects are read-only');
  if(subject.id!==input.userId||grant.id!==input.grantId||grant.userId!==subject.id||replacement.id!==input.replacementUserId)throw new NotFoundError('Scoped reviewer obligation not found');
  if(!subject.membershipId||!replacement.membershipId)throw new NotFoundError('Current project member not found');
- if(subject.deactivatedAt||subject.companyType==='SUBCONTRACTOR'||replacement.deactivatedAt||replacement.companyType==='SUBCONTRACTOR'||replacement.role!=='SURVEY_SUPERINTENDENT'||replacement.id===subject.id)throw new ConflictError('Current eligible subject and replacement Superintendent are required');
+ if(subject.deactivatedAt||subject.accessDisabledAt||subject.companyType==='SUBCONTRACTOR'||replacement.deactivatedAt||replacement.accessDisabledAt||replacement.companyType==='SUBCONTRACTOR'||replacement.role!=='SURVEY_SUPERINTENDENT'||replacement.id===subject.id)throw new ConflictError('Current eligible subject and replacement Superintendent are required');
  if(authority.branch==='SURVEY_MANAGER'&&!['VIEWER','REQUESTER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(subject.role??''))throw new ConflictError('This subject is outside Manager role-management scope');
  if(grant.revokedAt||grant.responsibility!=='SURVEY_REVIEWER'||!area||area.id!==grant.areaId||area.depth!==0||area.parentId||area.retiredAt)throw new ConflictError('Choose a current reviewer obligation on a live top-level Area');
  const scope={tenantId:authority.tenantId,projectId:authority.projectId};

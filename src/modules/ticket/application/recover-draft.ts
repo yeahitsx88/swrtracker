@@ -21,7 +21,7 @@ export async function recoverDraft(db: DbClient, scope: {
   const owner = await db.query(
     `SELECT u.id FROM users u JOIN project_memberships pm ON pm.user_id = u.id
      WHERE u.tenant_id = $1 AND u.id = $2 AND pm.project_id = $3
-       AND u.deactivated_at IS NULL AND pm.role = 'REQUESTER' FOR SHARE OF u, pm`,
+       AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL) AND pm.role = 'REQUESTER' FOR SHARE OF u, pm`,
     [scope.tenantId, draft.requester_id, scope.projectId]);
   if (!owner.rows[0]) throw new ConflictError('Restore requester access before recovering their draft');
   await db.query(`UPDATE tickets SET draft_deleted_at = NULL, draft_deleted_reason = NULL,

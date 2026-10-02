@@ -228,7 +228,10 @@ export class TenancyRepository implements ITenancyRepository {
              ON p.id = pm.project_id
            WHERE p.tenant_id = $1
              AND pm.project_id = $2
-             AND pm.role = 'SURVEY_MANAGER'
+             AND pm.role = 'SURVEY_MANAGER' AND pm.access_disabled_at IS NULL AND EXISTS(
+   SELECT 1 FROM users au JOIN companies ac ON ac.id=au.company_id AND ac.tenant_id=au.tenant_id
+   WHERE au.id=pm.user_id AND au.tenant_id=p.tenant_id AND au.deactivated_at IS NULL
+     AND ac.type IN ('GC','OWNER_REP'))
          ) AS survey_manager_count,
          (
            SELECT COUNT(*)::int
@@ -241,7 +244,10 @@ export class TenancyRepository implements ITenancyRepository {
            WHERE p.tenant_id = $1
              AND aa.project_id = $2
              AND aa.deactivated_at IS NULL
-             AND pm.role = 'SURVEY_SUPERINTENDENT'
+             AND pm.role = 'SURVEY_SUPERINTENDENT' AND pm.access_disabled_at IS NULL AND EXISTS(
+   SELECT 1 FROM users au JOIN companies ac ON ac.id=au.company_id AND ac.tenant_id=au.tenant_id
+   WHERE au.id=pm.user_id AND au.tenant_id=p.tenant_id AND au.deactivated_at IS NULL
+     AND ac.type IN ('GC','OWNER_REP'))
          ) AS superintendent_aor_assignment_count,
          (
            SELECT COUNT(*)::int
@@ -256,7 +262,10 @@ export class TenancyRepository implements ITenancyRepository {
              ON p.id = pm.project_id
            WHERE p.tenant_id = $1
              AND pm.project_id = $2
-             AND pm.designated_acting_for = 'SURVEY_MANAGER'
+             AND pm.designated_acting_for = 'SURVEY_MANAGER' AND pm.access_disabled_at IS NULL AND EXISTS(
+   SELECT 1 FROM users au JOIN companies ac ON ac.id=au.company_id AND ac.tenant_id=au.tenant_id
+   WHERE au.id=pm.user_id AND au.tenant_id=p.tenant_id AND au.deactivated_at IS NULL
+     AND ac.type IN ('GC','OWNER_REP'))
          ) AS acting_survey_manager_count,
          (
            SELECT COUNT(*)::int

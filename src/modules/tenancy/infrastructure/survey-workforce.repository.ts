@@ -11,22 +11,22 @@ const population=`covered AS (
  SELECT rl.party_chief_id FROM survey_reporting_links rl
  JOIN covered n ON n.id=rl.aor_node_id
  JOIN project_memberships pm ON pm.project_id=rl.project_id AND pm.user_id=rl.party_chief_id AND pm.role='PARTY_CHIEF'
- JOIN users u ON u.tenant_id=rl.tenant_id AND u.id=pm.user_id AND u.deactivated_at IS NULL
+ JOIN users u ON u.tenant_id=rl.tenant_id AND u.id=pm.user_id AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
  JOIN companies c ON c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type<>'SUBCONTRACTOR'
  WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.superintendent_id=$3 AND rl.deactivated_at IS NULL
 ), members AS (
  SELECT u.id AS "userId",u.name,u.email,pm.role,
  (SELECT cr.party_chief_id FROM crew_rosters cr JOIN project_memberships cp ON cp.project_id=cr.project_id AND cp.user_id=cr.party_chief_id AND cp.role='PARTY_CHIEF'
- JOIN users cu ON cu.tenant_id=cr.tenant_id AND cu.id=cp.user_id AND cu.deactivated_at IS NULL
+ JOIN users cu ON cu.tenant_id=cr.tenant_id AND cu.id=cp.user_id AND (cu.deactivated_at IS NULL AND cp.access_disabled_at IS NULL)
  JOIN companies cc ON cc.tenant_id=cu.tenant_id AND cc.id=cu.company_id AND cc.type<>'SUBCONTRACTOR'
  WHERE cr.tenant_id=$1 AND cr.project_id=$2 AND cr.instrument_man_id=u.id AND cr.deactivated_at IS NULL) AS "partyChiefId"
  FROM project_memberships pm JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
- JOIN users u ON u.tenant_id=p.tenant_id AND u.id=pm.user_id AND u.deactivated_at IS NULL
+ JOIN users u ON u.tenant_id=p.tenant_id AND u.id=pm.user_id AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
  JOIN companies c ON c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type<>'SUBCONTRACTOR'
  WHERE pm.project_id=$2 AND pm.role IN ('SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
  AND EXISTS(SELECT 1 FROM project_memberships ap JOIN users au ON au.id=ap.user_id AND au.tenant_id=$1
  JOIN companies ac ON ac.id=au.company_id AND ac.tenant_id=au.tenant_id AND ac.type<>'SUBCONTRACTOR'
- WHERE ap.project_id=$2 AND ap.user_id=$3 AND ap.role=$4 AND au.deactivated_at IS NULL AND au.session_version=$5)
+ WHERE ap.project_id=$2 AND ap.user_id=$3 AND ap.role=$4 AND (au.deactivated_at IS NULL AND ap.access_disabled_at IS NULL) AND au.session_version=$5)
 ), population AS (
  SELECT * FROM members m WHERE $4='SURVEY_MANAGER'
  OR ($4='SURVEY_SUPERINTENDENT' AND ((m.role='PARTY_CHIEF' AND m."userId" IN (SELECT party_chief_id FROM chiefs))
@@ -45,13 +45,13 @@ export class SurveyWorkforcePgRepository extends SurveyStaffingPgRepository impl
  async context(db:DbClient,actor:TeamActor):Promise<TeamProjectContext|null>{
  const {rows}=await db.query<TeamProjectContext>(`SELECT p.status,p.crew_build AS "crewBuild" FROM projects p
  JOIN project_memberships pm ON pm.project_id=p.id AND pm.user_id=$3 AND pm.role=$4
- JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND u.deactivated_at IS NULL AND u.session_version=$5
+ JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL) AND u.session_version=$5
  JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
  WHERE p.tenant_id=$1 AND p.id=$2`,values(actor));return rows[0]??null;
  }
  async lockActor(db:DbClient,actor:TeamActor){
  const {rows}=await db.query(`SELECT pm.user_id FROM project_memberships pm JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
- JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 AND u.deactivated_at IS NULL AND u.session_version=$5
+ JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL) AND u.session_version=$5
  JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
  WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$4 FOR UPDATE OF pm`,values(actor));return rows.length===1;
  }
