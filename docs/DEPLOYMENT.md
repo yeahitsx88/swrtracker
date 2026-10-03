@@ -30,10 +30,10 @@ The full platform (API/UI + background notification worker) can be launched with
 docker compose up --build
 ```
 
-Apply migrations 025–027 before starting the new application build. They add
-per-session logout revocation, reset-request throttling, and an encrypted reset
-email outbox. A running web process will reject protected API calls until the
-revocation table exists. With local `.env`, run `pnpm db:migrate` before
+Apply all pending migrations through034 before starting the new build. The
+025–027 authentication migrations add per-session logout revocation, reset-request
+throttling and an encrypted reset email outbox; later migrations add current
+administrative/lifecycle storage. With local `.env`, run `pnpm db:migrate` before
 `docker compose up --build`.
 
 ## Service Layout

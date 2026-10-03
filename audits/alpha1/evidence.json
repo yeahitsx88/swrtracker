@@ -1,0 +1,381 @@
+{
+  "date": "2026-10-03",
+  "branch": "alpha1-audit-hardening",
+  "sourceBranch": "codex/customer-lifecycle-rehearsal",
+  "checkpoint": "dafa89ea316fcedca3409e49bfe765c70e155405",
+  "verifiedImplementationCommit": "a0e480e4b4dfa7465c55a501d9b31281ed96d81f",
+  "implementationDigest": "f8c182fba02d9cdd886bfa616ca971ef64abd400c84ca737e788503827b34660",
+  "baseline": {
+    "unit": {
+      "passed": 552,
+      "total": 554
+    },
+    "postgres": {
+      "passed": 18,
+      "total": 23
+    },
+    "types": "PASS",
+    "standardDockerBuild": "FAIL at test gate",
+    "separateLinuxCompilation": "PASS",
+    "productionAuditAdvisories": 0,
+    "lint": "NOT CONFIGURED"
+  },
+  "final": {
+    "unit": {
+      "passed": 559,
+      "total": 559
+    },
+    "typesIncludingUnused": "PASS",
+    "standardDockerBuild": "PASS Node22.23.3",
+    "postgres": {
+      "passed": 27,
+      "total": 27
+    },
+    "alpha1PostgresChecks": 25,
+    "coldLinuxPostgres": "PASS",
+    "httpChecks": 52,
+    "browserExistingChecks": 24,
+    "browserAlpha1Checks": 26,
+    "namedAcceptanceCases": {
+      "passed": 55,
+      "total": 55
+    },
+    "productionAuditAdvisories": 0,
+    "developmentAuditAdvisories": {
+      "low": 1
+    },
+    "lint": "NOT CONFIGURED",
+    "remoteCI": "NOT OBSERVED"
+  },
+  "security": {
+    "scanId": "248a03b5-6d45-4bac-8655-bd30e4c58e99",
+    "revision": "dafa89ea316fcedca3409e49bfe765c70e155405",
+    "reportableFindings": {
+      "medium": 1
+    },
+    "reviewedTrackedPaths": 453,
+    "remainingNotFullyAudited": 391,
+    "coverage": "partial",
+    "manifestSha256": "98b604b842e507de5b339a470c3c5a65f32250aff3fff32d3d8695264566ee94",
+    "sixArtifactHashesVerified": true,
+    "daybreakAccess": "not_granted"
+  },
+  "performance": {
+    "syntheticRequests": 50000,
+    "contentComparisons": 4,
+    "currentAllBeforeMs": [
+      348.835,
+      347.389,
+      349.699
+    ],
+    "currentAllAfterMs": [
+      349.498,
+      349.617,
+      348.823
+    ],
+    "currentAreaBeforeMs": [
+      121.66,
+      121.031,
+      121.929
+    ],
+    "currentAreaAfterMs": [
+      119.594,
+      119.332,
+      119.847
+    ],
+    "productionQueriesChanged": false,
+    "retainedPublicWitnessUnchanged": true
+  },
+  "dispositionCounts": {
+    "FIXED": 14,
+    "ACCEPTED": 1,
+    "DEFERRED": 4,
+    "OPEN / PENDING": 3,
+    "FALSE POSITIVE": 1,
+    "REJECTED / NOT JUSTIFIED": 1
+  },
+  "severityCounts": {
+    "Medium": 11,
+    "Low": 9,
+    "Info": 4
+  },
+  "register": [
+    {
+      "id": "A01",
+      "area": "Testing",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Pre-audit two unit failures and five PostgreSQL fixture failures",
+      "evidence": "tests/tenancy/my-account.test.ts; project-list-route.test.ts; tests/beta fixture migration dependencies",
+      "change": "Stable contract assertions, current migrations and isolated evidence output",
+      "verification": "559 tests;27 PostgreSQL suites",
+      "remainingRisk": "Old explicit migration assertions remain historical"
+    },
+    {
+      "id": "A02",
+      "area": "Authentication",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Anonymous arbitrary tenant/email pairs accumulated durable limiter rows",
+      "evidence": "login-rate-limit.repository.ts INSERT path; baseline security finding",
+      "change": "Insert only for existing local-password accounts; canonical UUID; prune inactive keys",
+      "verification": "80 unknown pairs persist zero; known-account lockout and pruning tests",
+      "remainingRisk": "Anonymous CPU/source traffic still needs ingress controls"
+    },
+    {
+      "id": "A03",
+      "area": "API",
+      "severity": "Low",
+      "disposition": "FIXED",
+      "observation": "Malformed JSON and malformed login tenant IDs reached generic500 handling",
+      "evidence": "auth/login/handler.ts; read-json-body.ts",
+      "change": "Narrow JSON adapter plus login UUID/empty-credential validation",
+      "verification": "Focused invalid-input and runtime adapter tests",
+      "remainingRisk": "Other legacy JSON adapters not universally standardized"
+    },
+    {
+      "id": "A04",
+      "area": "Resources",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Webhook fetch had no timeout while work held tenant coordination",
+      "evidence": "src/lib/email.ts; tenant worker path",
+      "change": "Abort after ten seconds and release response body",
+      "verification": "Actual stalled loopback webhook test",
+      "remainingRisk": "Remote delivery may succeed before an abort; receiver dedupe remains necessary"
+    },
+    {
+      "id": "A05",
+      "area": "Observability",
+      "severity": "Low",
+      "disposition": "FIXED",
+      "observation": "Unexpected API500 responses lacked correlated server evidence",
+      "evidence": "src/lib/api-error.ts",
+      "change": "Safe allowlisted class/database code with public correlation ID",
+      "verification": "Secret/SQL/message exclusion regression",
+      "remainingRisk": "Legacy operator log messages and deployment log access still require operational policy"
+    },
+    {
+      "id": "A06",
+      "area": "Files",
+      "severity": "Low",
+      "disposition": "FIXED",
+      "observation": "Attachment cleanup swallowed non-missing filesystem failures",
+      "evidence": "src/modules/attachment/infrastructure/index.ts",
+      "change": "Ignore only ENOENT; surface permission/directory/I/O failures",
+      "verification": "Actual owned filesystem negative cases; HTTP bytes/digest acceptance",
+      "remainingRisk": "Host ACLs, malware policy and backups are deployment gates"
+    },
+    {
+      "id": "A07",
+      "area": "Data integrity",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Ticket-event immutability and event-ticket tenant binding were conventions",
+      "evidence": "db/migrations/001_initial_schema.sql;034_ticket_event_integrity.sql",
+      "change": "Refuse inconsistent legacy ticket ownership; composite ticket FK; immutable row/truncate triggers",
+      "verification": "Actual update/delete/truncate/FK/preflight/repeatability checks",
+      "remainingRisk": "Privileged DB owners can bypass controls; service actor contract preserved"
+    },
+    {
+      "id": "A08",
+      "area": "Frontend",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Team/staffing changed payload and workforce reload could discard uncertain intent",
+      "evidence": "team-management.tsx; assigned-workforce.tsx",
+      "change": "Retain exact key/body; freeze edits/reload; definitive409 latch",
+      "verification": "Real commit-then-abort browser retries for all three paths",
+      "remainingRisk": "Browser departure still requires operator acknowledgment; reload loses memory"
+    },
+    {
+      "id": "A09",
+      "area": "API/frontend",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Project creation generated another project after a lost response retry",
+      "evidence": "post-handler.ts; project-creation.tsx; apiClient.ts",
+      "change": "Optional ledger key with current authority before replay and frozen UI",
+      "verification": "Concurrent replay, mismatch, revoked authority, audit rollback; actual browser retry",
+      "remainingRisk": "Legacy unkeyed clients retain their existing contract and can still duplicate"
+    },
+    {
+      "id": "A10",
+      "area": "Repository guidance",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Phase2 status, old roles/recovery and fictional reset/testing guidance conflicted with current approvals",
+      "evidence": "docs/README.md;docs/AGENTS.md;docs/skills/*",
+      "change": "Root entry points; current authority/commands/safe-state protections",
+      "verification": "Commands executed; approved Decision44–50 consistency review",
+      "remainingRisk": "Historical CLAUDE specification remains explicitly superseded where conflicting"
+    },
+    {
+      "id": "A11",
+      "area": "Code quality",
+      "severity": "Low",
+      "disposition": "FIXED",
+      "observation": "Compiler found unused imports, obsolete helpers and unused admin state",
+      "evidence": "TypeScript noUnused diagnostics;18 source/test cleanup paths",
+      "change": "Remove confirmed dead symbols; preserve synchronous owner/ref guards",
+      "verification": "Strict unused-symbol check; unit/PG/browser gates",
+      "remainingRisk": "No blanket unused-export or architecture rewrite claimed"
+    },
+    {
+      "id": "A12",
+      "area": "Configuration",
+      "severity": "Low",
+      "disposition": "FIXED",
+      "observation": "No typecheck/PG entry point; CI only audited dependencies; generated/env ignore gaps",
+      "evidence": "package.json;Dockerfile;workflow;tsconfig;.gitignore",
+      "change": "Current scripts, unused-symbol checks, CI unit/types/PG/build; generated exclusions",
+      "verification": "Host/pinned Linux build and cold PostgreSQL gate",
+      "remainingRisk": "Remote GitHub Actions execution not observed; cache was already untracked"
+    },
+    {
+      "id": "A13",
+      "area": "Regression coverage",
+      "severity": "Medium",
+      "disposition": "FIXED",
+      "observation": "Latest appearance/recommissioning increment lacked full concurrency/fault coverage",
+      "evidence": "CODEX Batch116;tests/beta/alpha1-stabilization-postgres.ts",
+      "change": "Actual current-route rollback, replay, current authority, exact readiness/history checks",
+      "verification": "25 Alpha1 PostgreSQL cases",
+      "remainingRisk": "External email/support and every possible browser workflow not certified"
+    },
+    {
+      "id": "A14",
+      "area": "Test tooling",
+      "severity": "Low",
+      "disposition": "FIXED",
+      "observation": "Prior browser selectors/assertions assumed obsolete list/layout/access results",
+      "evidence": "scoped-offboarding browser and HTTP harness",
+      "change": "Current table/disclosure selectors; archived access expectation; ignored captures",
+      "verification": "52 HTTP checks;24 existing browser checks;55/55 named cases",
+      "remainingRisk": "Browser uses existing Edge/Playwright; separate provisioning required"
+    },
+    {
+      "id": "A15",
+      "area": "Performance",
+      "severity": "Info",
+      "disposition": "ACCEPTED",
+      "observation": "Current aggregate queries already have one event scan and equal content",
+      "evidence": "Existing synthetic50k query comparator",
+      "change": "Production queries retained; repair fixture only",
+      "verification": "Four comparisons before/after;similar current timings",
+      "remainingRisk": "Synthetic samples are not hosted latency percentiles"
+    },
+    {
+      "id": "A16",
+      "area": "Performance",
+      "severity": "Low",
+      "disposition": "DEFERRED",
+      "observation": "Administrative inventory loads complete paged populations and client selection checks repeatedly scan arrays",
+      "evidence": "project-administration.tsx readAll;administration-records.tsx",
+      "change": "Record scaling concern; benchmark before changing approved loaded-inventory selection/export",
+      "verification": "Source complexity review;no demonstrated failure at current workload",
+      "remainingRisk": "Large populations can increase request count and client CPU"
+    },
+    {
+      "id": "A17",
+      "area": "Dependencies",
+      "severity": "Low",
+      "disposition": "DEFERRED",
+      "observation": "tsx transitively locks esbuild0.27.3 with a Windows development-server advisory",
+      "evidence": "GHSA-g7r4-m6w7-qqqr;pnpm audit full;pnpm-lock.yaml",
+      "change": "Record narrow transitive patch follow-up; no broad upgrade",
+      "verification": "Production audit0;full audit1Low;no repository esbuild serve call",
+      "remainingRisk": "Do not expose vulnerable esbuild servedir;patched line0.28.1"
+    },
+    {
+      "id": "A18",
+      "area": "Tooling",
+      "severity": "Info",
+      "disposition": "DEFERRED",
+      "observation": "No repository lint configuration exists",
+      "evidence": "package.json and tracked config inventory",
+      "change": "Keep type/unused-symbol and build gates; select lint rules separately",
+      "verification": "Lint status NOT CONFIGURED",
+      "remainingRisk": "Next build status line is not a standalone lint pass"
+    },
+    {
+      "id": "A19",
+      "area": "Operations",
+      "severity": "Medium",
+      "disposition": "DEFERRED",
+      "observation": "Hosted ingress, backup/restore, email and recovery controls are unverified",
+      "evidence": "Deployment contracts; prior beta gates; scan coverage exclusions",
+      "change": "Preserve explicit beta release gates",
+      "verification": "Loopback source and disposable acceptance only",
+      "remainingRisk": "No hosted beta operational approval"
+    },
+    {
+      "id": "A20",
+      "area": "Product workflow",
+      "severity": "Medium",
+      "disposition": "OPEN / PENDING",
+      "observation": "Preparation cancellation chain may require an ordinary approval currently gated",
+      "evidence": "Recommission policy + cancellation policy review",
+      "change": "No invented preparation-cancel or bypass path",
+      "verification": "Static policy trace;preparation ordinary-work denial tests",
+      "remainingRisk": "Owner must approve allowed cancellation completion behavior"
+    },
+    {
+      "id": "A21",
+      "area": "Product authority",
+      "severity": "Low",
+      "disposition": "OPEN / PENDING",
+      "observation": "Central-only Setup template restriction remains an unapproved proposal",
+      "evidence": "CODEX Batch115;decision provenance",
+      "change": "Preserve approved current Project Admin capability",
+      "verification": "Current authority regressions",
+      "remainingRisk": "Needs owner decision before restricting capability"
+    },
+    {
+      "id": "A22",
+      "area": "Worker attribution",
+      "severity": "Medium",
+      "disposition": "OPEN / PENDING",
+      "observation": "One configured worker actor serves multiple tenants; default UUID is not automatically seeded",
+      "evidence": "src/workers/notification-worker*.ts;DEPLOYMENT.md",
+      "change": "Preserve existing actor FK;defer actor-tenant binding pending contract",
+      "verification": "Actual worker schema regression;034 narrowed before any deployment",
+      "remainingRisk": "Operator must supply a valid account;multi-tenant service attribution needs direction"
+    },
+    {
+      "id": "A23",
+      "area": "Authentication analysis",
+      "severity": "Info",
+      "disposition": "FALSE POSITIVE",
+      "observation": "Suspicion that dummy bcrypt tail caused a fast reject",
+      "evidence": "Native bcrypt6 implementation and authenticate dummy path",
+      "change": "Reject unsupported weakness;retain existing cost12 work",
+      "verification": "Native source inspection;no timing equality claim",
+      "remainingRisk": "Do not interpret as measured constant-time guarantee"
+    },
+    {
+      "id": "A24",
+      "area": "Architecture",
+      "severity": "Info",
+      "disposition": "REJECTED / NOT JUSTIFIED",
+      "observation": "Generalized RBAC/new services/stack or aesthetic redesign not supported by evidence",
+      "evidence": "Current modular architecture and approved scope",
+      "change": "Local remediation preferred;empty structural opportunity portfolio",
+      "verification": "Source architecture review and local regressions",
+      "remainingRisk": "Reconsider only with new measured/evidenced requirements"
+    }
+  ],
+  "privateEvidenceHashes": {
+    "unit-final.txt": "5327c7320c89201d91dafbf4f1d1c9d1e0d4e6e1b895d08f40afc1b259f63c3f",
+    "pg-verification.txt": "640c3f7beac3ff2e92f5d72c975362d9bda9e04997578e2fa825a9c000177eb9",
+    "cold-pg-verification.txt": "7c2da8ad727797aeafbd130c6c0fa00ff9ee4b12203cbf06199327461311f13a",
+    "docker-final.txt": "be9d1393f82b5805c3ed81ccc0062f9aa3db28dc93d4596f7f3ec3a69daaf6da",
+    "docker-builder-final.txt": "062d49844f147f837d43a8e1b809c1627557efbf48b1452c3b494b4f56abc616",
+    "external.txt": "7660a8a6180afeddefad4731c5cc8f18c27ce44f3bbe8e5f5d3d3f0898a94b87",
+    "browser-audit.txt": "2e64f6a2712786156ba809f3a46d4d99295d319845550e7dd5072a7594176941",
+    "performance-before.txt": "12c8317107d2d7a048049fa61b82881e4a60d710ca51f2ff286f00511d3ae8be",
+    "performance-after.txt": "395a7fae658836f86e6e9452b76de9527ba32d60c0365cdc6cefa0da607ca559",
+    "dependency-prod-final.json": "8db10d0911132a0131af0365c252661afbf49b47d80bfc508b60e8ed41fc0813",
+    "dependency-all.txt": "666620f3ae52e2f9728c54b70b0f47d2a165022aa7a85a1f5e40727096323a76"
+  }
+}
