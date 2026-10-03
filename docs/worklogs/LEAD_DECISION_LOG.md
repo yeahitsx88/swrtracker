@@ -301,3 +301,13 @@
 - Owner directs the promoted manager to inspect disproportionate allocation and reorganize teams fairly. Authorized normal synthetic operations through existing guarded staffing, reporting, Area cleanup, named-team and ticket assignment APIs.
 - Rehearsal choice: retain15 intact four-person crews; move3 to match observed demand with8 Structures/4 Utilities/3 Civil crews. Resolve active work before changing coverage. Dispatch new requests across eligible crews within each Area; measure the new cohort separately from retained history.
 - No automatic balancing feature, new organizational permission, historical rewrite or unrelated product improvement is authorized.
+
+### Decision 47 - continuity investigation and administration review (2026-10-02)
+- Owner reported Taylor unable to find project history and supplied scoped UI comments and a continuity/recovery investigation directive. Approved narrow investigation/correction, departure and manpower movement verification, existing secure password recovery reuse, synthetic evidence and a report; owner decisions remain required for tenancy ownership and recovery authority.
+- Requested order: add member, current members, independent administration. Those and subcontractor requester records use collapsible/filterable/sortable tables and named multiple-action review; protected Survey obligations collapse. No historical rewrite, custom roles or unarchive inferred.
+- Root discovery defect: Casey archived Northbank during review; Taylor's active Survey Manager membership remains. Archived permitted history is discoverable, with current authorization preserved. Approved bounded coordinated Manager movement uses existing staffing/team operations, active-work blockers, snapshot/reason/confirmation, atomic audit and exact retry.
+
+### Decision 48 - internal capture and emergency recovery authority (2026-10-02)
+- Owner chose local email capture for internal testing; verified external password-recovery delivery is a closed-beta gate.
+- Owner approved a tenant-designated organizational recovery contact registered at onboarding and approval by two independent provider recovery officers. Fallback entry is Axiom customer support, which must be established before beta rollout. Contact with support does not itself confer tenant ownership or bypass verification.
+- Recorded reviewable policy in audits/customer-lifecycle-rehearsal/continuity/EMERGENCY-RECOVERY-POLICY.md. Contacts/operator designation, verified support channel, controlled evidence storage/retention, disputed ownership procedure, executable scoped recovery and independently witnessed rehearsal remain pending beta gates. No support takeover privilege or endpoint implemented.

@@ -47,7 +47,7 @@ test('GET /api/projects returns active tenant-scoped memberships for the signed-
   assert.deepEqual(queries[0]?.params, [tenantId, userId]);
   assert.match(queries[0]?.text ?? '', /p\.tenant_id = \$1/);
   assert.match(queries[0]?.text ?? '', /pm\.user_id = \$2/);
-  assert.match(queries[0]?.text ?? '', /p\.status = 'ACTIVE'/);
+  assert.match(queries[0]?.text ?? '', /p\.status IN \('ACTIVE', 'ARCHIVED'\)/);
   assert.match(queries[0]?.text ?? '', /c\.type <> 'SUBCONTRACTOR' OR pm\.role = 'REQUESTER'/);
 });
 
@@ -62,4 +62,9 @@ test('GET /api/projects returns an empty list when the user has no active member
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { projects: [] });
+});
+
+test('archived membership discovery retains session, tenant and disabled-access gates',async()=>{
+ let sql='';const response=await handleGetProjects(makeRequest(),{requireAuth:()=>({tenantId,userId,sessionVersion:1}),assertActiveSession:async()=>{},db:{query:async<T extends object>(text:string)=>{sql=text;return {rows:[{id:'retained',name:'Northbank',status:'ARCHIVED',role:'SURVEY_MANAGER'}] as T[]};}}});
+ assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.equal((await response.json()).projects[0].status,'ARCHIVED');assert.match(sql,/pm.access_disabled_at IS NULL/);assert.match(sql,/u.deactivated_at IS NULL/);assert.match(sql,/p.tenant_id = \$1/);
 });

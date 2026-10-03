@@ -6,6 +6,8 @@ import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {AccountOffboarding} from './account-offboarding';
 import {SurveyManagerHandover} from './survey-manager-handover';
+import {AdministrationSection,AdministrationRecords} from './administration-records';
+import {AdministrationBatch,type AdministrationAction} from './administration-batch';
 import type {UUID} from '@/shared/types';
 interface Member {userId:string;name:string;email:string;role:string;accessDisabledAt:string|null;accountDisabledAt:string|null;canAdminister?:boolean}
 interface Companies {companies:Array<{id:string;name:string;type:string}>;candidates:Array<{userId:string;name:string;email:string;companyName:string}>}
@@ -20,16 +22,18 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  const [diagnostics,setDiagnostics]=useState<Record<string,string|number>>(),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[intent,setIntent]=useState<Intent>(),[consent,setConsent]=useState(false),[revision,setRevision]=useState(0),[loading,setLoading]=useState(false);
  const [childLocked,setChildLocked]=useState(false);const childLock=useRef(false);
  const gate=useRef(new FrozenCommand<Intent>()),generation=useRef(0);
+ const [memberSelection,setMemberSelection]=useState<string[]>([]),[adminSelection,setAdminSelection]=useState<string[]>([]),[candidateSelection,setCandidateSelection]=useState<string[]>([]),[removalQueue,setRemovalQueue]=useState<Member[]>([]),[batch,setBatch]=useState<AdministrationAction[]>();
+ async function readAll<T>(path:string,field:string):Promise<T[]>{const all:T[]=[];for(let page=0;page<1000;page++){const result=await apiRequest<Record<string,T[]>>(`${path}?includeDisabled=true&limit=100&offset=${page*100}`);const rows=result[field];if(!Array.isArray(rows))throw new Error("Invalid administrative page");all.push(...rows);if(rows.length<100)return all;}throw new Error('Too many records; narrow the administrative population.');}
  async function load(){const epoch=++generation.current;setLoading(true);setError(undefined);
-  try{const results=await Promise.all([apiRequest<{members:Member[];total:number}>(`${base}/members?includeDisabled=true&limit=25&offset=${offset}&search=${encodeURIComponent(search)}`),apiRequest<{administrators:Member[]}>(`${base}/administrators`),apiRequest<Companies>(`${base}/companies`),apiRequest<NonNullable<typeof template>>(`${base}/template`)]);
-   if(epoch!==generation.current)return;setMembers(results[0].members);setTotal(results[0].total);setAdmins(results[1].administrators);setCompanies(results[2]);setTemplate(results[3]);setTemplateId(results[3].project.templateId??'');
+  try{const results=await Promise.all([readAll<Member>(`${base}/members`,'members'),readAll<Member>(`${base}/administrators`,'administrators'),apiRequest<Companies>(`${base}/companies`),apiRequest<NonNullable<typeof template>>(`${base}/template`),readAll<Companies['candidates'][number]>(`${base}/companies`,'candidates')]);
+   if(epoch!==generation.current)return;setMembers(results[0]);setTotal(results[0].length);setAdmins(results[1]);setCompanies({...results[2],candidates:results[4]});setTemplate(results[3]);setTemplateId(results[3].project.templateId??'');
   }catch(cause){if(epoch===generation.current)setError(getErrorMessage(cause,'Unable to load project administration.'));}
   finally{if(epoch===generation.current)setLoading(false);}
  }
- useEffect(()=>{void load();return()=>{generation.current++;};},[projectId,offset,search]);
+ useEffect(()=>{void load();return()=>{generation.current++;};},[projectId]);
  const closed=template?.project.status==='ARCHIVED';
  const locked=gate.current.locked||ownerToken!==null;
- function propose(value:Intent){if(locked||childLock.current||closed)return;setIntent(value);setConsent(false);setSuccess(undefined);}
+ function propose(value:Intent){if(locked||childLock.current||closed||batch)return;setIntent(value);setConsent(false);setSuccess(undefined);}
  async function submit(){if(!intent||!owner.claim(token))return;const frozen=gate.current.begin(intent,crypto.randomUUID());if(!frozen){if(!gate.current.locked)owner.release(token);return;}setRevision(n=>n+1);setError(undefined);
   try{await apiRequest(frozen.body.url,{method:frozen.body.method,body:frozen.body.body,headers:{'Idempotency-Key':frozen.key}});gate.current.success();setSuccess(`${frozen.body.label} completed. Affected authority changes require sign-in renewal.`);setIntent(undefined);setConsent(false);void load();}
   catch(cause){gate.current.fail(cause instanceof ApiClientError?cause.status:undefined);setError(getErrorMessage(cause,'The outcome is uncertain. Retry the same action.'));}
@@ -37,22 +41,28 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  }
  void revision;
  return <div className="stack">
- <Card title="Project members and access" description="Membership, operational roles and independent Project Admin authority are separate."><div className="stack">
+ <Card title="Project personnel administration" description="Membership, operational roles and independent Project Admin authority are separate."><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {loading&&<p role="status">Loading project administration…</p>}
  {closed&&<p>This archived project retains history. Access removal remains available; other administration is read-only.</p>}
- <label className="field"><span className="field-label">Find a project member</span><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);setSelected(undefined);}}/></label>
- <ul className="tm-list">{members.map(m=><li key={m.userId}><strong>{m.name}</strong> · {m.email} · {m.role.replaceAll('_',' ')}{m.accountDisabledAt?' · Tenant account disabled':m.accessDisabledAt?' · Project access disabled':''} <Button variant="secondary" disabled={locked} onClick={()=>{setPromotion(undefined);setSelected(m);}}>Preview access removal</Button>{m.role==='SURVEY_SUPERINTENDENT'&&!m.accessDisabledAt&&!m.accountDisabledAt&&<Button variant="secondary" disabled={locked||closed} onClick={()=>{setSelected(undefined);setPromotion(m);}}>Appoint as Survey Manager</Button>}</li>)}</ul>
- {!loading&&!members.length&&<p>No matching project members.</p>}
- <div className="row"><Button variant="secondary" disabled={locked||offset===0} onClick={()=>setOffset(n=>Math.max(0,n-25))}>Previous members</Button><span>{offset+1}–{Math.min(offset+members.length,total)} of {total}</span><Button variant="secondary" disabled={locked||offset+25>=total} onClick={()=>setOffset(n=>n+25)}>Next members</Button></div>
- {selected&&<AccountOffboarding key={selected.userId} subjectUserId={selected.userId} subjectName={selected.name} commandOwner={owner} scope={{kind:'PROJECT_ACCESS',projectId:projectId as UUID}} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
- {promotion&&<SurveyManagerHandover key={promotion.userId} projectId={projectId} incoming={promotion} owner={owner} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
- <h3 className="panel-title">Independent Project Admin assignments</h3><p>Granting administration preserves the person's operational role.</p>
- <ul className="tm-list">{admins.map(m=><li key={m.userId}>{m.name} · {m.role.replaceAll('_',' ')} · {m.canAdminister?'Admin grant active':'No admin grant'} <Button variant="secondary" disabled={locked||closed||!!m.accessDisabledAt||!!m.accountDisabledAt} onClick={()=>propose({url:`${base}/administrators`,method:'POST',body:{userId:m.userId,enabled:!m.canAdminister,confirmed:true},label:`${m.canAdminister?'Revoke':'Grant'} Project Admin for ${m.name}`})}>{m.canAdminister?'Revoke Admin':'Grant Admin'}</Button></li>)}</ul>
- <h3 className="panel-title">Add a project member</h3><p>Associate the person's company with this project first. Up to 100 eligible candidates are shown.</p>
- <label className="field"><span className="field-label">Person</span><select className="select" value={candidate} disabled={locked||closed} onChange={e=>setCandidate(e.target.value)}><option value="">Choose a person</option>{companies?.candidates.map(c=><option key={c.userId} value={c.userId}>{c.name} · {c.companyName}</option>)}</select></label>
+ <AdministrationSection title="Add a project member" open locked={locked}>
+ <p>Associate the person's company with this project first. Select eligible accounts, then review their project role.</p>
+ <AdministrationRecords label="eligible accounts" rows={companies?.candidates??[]} id={c=>c.userId} columns={[{key:'name',label:'Name',text:c=>c.name},{key:'email',label:'Email',text:c=>c.email},{key:'company',label:'Company',text:c=>c.companyName}]} selected={candidateSelection} onSelection={setCandidateSelection} disabled={locked} eligible={()=>!closed}/>
  <label className="field"><span className="field-label">Operational role</span><select className="select" value={role} disabled={locked||closed} onChange={e=>setRole(e.target.value)}>{['REQUESTER','SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN','CAD_TECHNICIAN','CAD_LEAD','VIEWER'].map(r=><option key={r} value={r}>{r.replaceAll('_',' ')}</option>)}</select></label>
- <Button disabled={!candidate||locked||closed} onClick={()=>propose({url:`${base}/members`,method:'POST',body:{userId:candidate,role},label:'Add project member'})}>Review member addition</Button>
- </div></Card>
+ <Button disabled={!candidateSelection.length||locked||closed||!!batch||!!intent} onClick={()=>setBatch(companies?.candidates.filter(c=>candidateSelection.includes(c.userId)).map(c=>({url:`${base}/members`,method:'POST',body:{userId:c.userId,role},label:`Add ${c.name} (${c.email}) as ${role.replaceAll('_',' ')}`})))}>Review selected member additions</Button>
+ </AdministrationSection>
+ <AdministrationSection title="Project members and access" locked={locked}>
+ <AdministrationRecords label="project members" rows={members} id={m=>m.userId} columns={[{key:'name',label:'Name',text:m=>m.name},{key:'email',label:'Email',text:m=>m.email},{key:'role',label:'Operational role',text:m=>m.role.replaceAll('_',' ')},{key:'access',label:'Access',text:m=>m.accountDisabledAt?'Tenant disabled':m.accessDisabledAt?'Project disabled':'Enabled'}]} selected={memberSelection} onSelection={setMemberSelection} disabled={locked} actions={m=><><Button variant="secondary" disabled={locked||!!batch} onClick={()=>{setPromotion(undefined);setRemovalQueue([]);setSelected(m);}}>Preview access removal</Button>{m.role==='SURVEY_SUPERINTENDENT'&&!m.accessDisabledAt&&!m.accountDisabledAt&&<Button variant="secondary" disabled={locked||closed||!!batch} onClick={()=>{setSelected(undefined);setRemovalQueue([]);setPromotion(m);}}>Appoint as Survey Manager</Button>}</>}/>
+ <Button variant="secondary" disabled={!memberSelection.length||locked||!!batch} onClick={()=>{const queue=members.filter(m=>memberSelection.includes(m.userId));setPromotion(undefined);setRemovalQueue(queue);setSelected(queue[0]);}}>Review selected access removals</Button>
+ {removalQueue.length>0&&<p>Reviewing {selected?.name}. Each person requires their own blocker evidence, reason and confirmation. {removalQueue.length} remaining in this review.</p>}
+ {selected&&<AccountOffboarding key={selected.userId} subjectUserId={selected.userId} subjectName={selected.name} commandOwner={owner} scope={{kind:'PROJECT_ACCESS',projectId:projectId as UUID}} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
+ {selected&&<Button variant="secondary" disabled={locked} onClick={()=>{const remaining=removalQueue.filter(m=>m.userId!==selected.userId);setRemovalQueue(remaining);setSelected(remaining[0]);}}> {removalQueue.length>1?'Review next selected person':'Close access review'}</Button>}
+ {promotion&&<SurveyManagerHandover key={promotion.userId} projectId={projectId} incoming={promotion} owner={owner} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
+ </AdministrationSection>
+ <AdministrationSection title="Independent Project Admin assignments" locked={locked}>
+ <p>Granting administration preserves the person's operational role. Central IT can recover a project administration vacancy.</p>
+ <AdministrationRecords label="admin candidates" rows={admins} id={m=>m.userId} columns={[{key:'name',label:'Name',text:m=>m.name},{key:'email',label:'Email',text:m=>m.email},{key:'role',label:'Operational role',text:m=>m.role.replaceAll('_',' ')},{key:'grant',label:'Project Admin',text:m=>m.canAdminister?'Active grant':'No grant'}]} selected={adminSelection} onSelection={setAdminSelection} disabled={locked} eligible={m=>!closed&&!m.accessDisabledAt&&!m.accountDisabledAt} actions={m=><Button variant="secondary" disabled={locked||closed||!!batch||!!m.accessDisabledAt||!!m.accountDisabledAt} onClick={()=>propose({url:`${base}/administrators`,method:'POST',body:{userId:m.userId,enabled:!m.canAdminister,confirmed:true},label:`${m.canAdminister?'Revoke':'Grant'} Project Admin for ${m.name}`})}>{m.canAdminister?'Revoke Admin':'Grant Admin'}</Button>}/>
+ <div className="row">{[true,false].map(enabled=><Button key={String(enabled)} variant="secondary" disabled={!adminSelection.length||locked||closed||!!batch||!!intent} onClick={()=>setBatch(admins.filter(m=>adminSelection.includes(m.userId)&&!m.accessDisabledAt&&!m.accountDisabledAt&&!!m.canAdminister!==enabled).map(m=>({url:`${base}/administrators`,method:'POST',body:{userId:m.userId,enabled,confirmed:true},label:`${enabled?'Grant':'Revoke'} Project Admin for ${m.name} (${m.email})`})))}>{enabled?'Review selected Admin grants':'Review selected Admin revocations'}</Button>)}</div>
+ </AdministrationSection> </div></Card>
  <Card title="Project companies" description="Associating a company here grants no access to another project."><div className="stack">
  <ul>{companies?.companies.map(c=><li key={c.id}>{c.name} · {c.type} · {c.id}</li>)}</ul>
  <label className="field"><span className="field-label">New company name</span><Input value={name} maxLength={200} disabled={locked||closed} onChange={e=>setName(e.target.value)}/></label>
@@ -67,6 +77,7 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  {diagnostics&&<dl>{Object.entries(diagnostics).map(([k,v])=><div key={k}><dt>{k}</dt><dd>{String(v)}</dd></div>)}</dl>}
  <Button variant="danger" disabled={locked||template?.project.status!=='ACTIVE'} onClick={()=>propose({url:`${base}/archive`,method:'POST',body:{},label:'Archive this project; historical work is retained'})}>Review project archive</Button>
  </div></Card>
+ {batch&&<AdministrationBatch actions={batch} owner={owner} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setMemberSelection([]);setAdminSelection([]);setCandidateSelection([]);void load();}}/>}
  {intent&&<section className="stack" aria-label="Confirm project administration"><h3 className="panel-title">{intent.label}</h3><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this action applies to this project.</span></label><div className="row"><Button disabled={owner.blocked(token)||!consent||gate.current.pending||gate.current.stale} onClick={()=>void submit()}>{gate.current.pending?'Submitting…':gate.current.command?'Retry same action':'Confirm action'}</Button><Button variant="secondary" disabled={owner.blocked(token)||gate.current.pending||!!gate.current.command&&!gate.current.stale} onClick={()=>{if(!owner.blocked(token)&&gate.current.reload()){owner.release(token);setIntent(undefined);setConsent(false);void load();}}}>Reload administration</Button></div>{gate.current.stale&&<p role="alert">State changed. Reload before another action.</p>}</section>}
  </div>;
 }

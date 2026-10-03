@@ -7,6 +7,7 @@ import {apiClient,createIdempotencyKey} from '@/lib/apiClient';
 import {getErrorMessage} from '@/lib/errors';
 import {initialProtectedEditor,reduceProtectedEditor,canConfirmProtectedResolution,coveragePreview,protectedResolutionFailure} from '@/lib/protected-obligations-view';
 import {Button,ErrorBanner,SuccessBanner} from '@/components/ui';
+import {AdministrationSection} from './administration-records';
 import {PaginationControls} from '@/components/forms';
 import './team-management.css';
 
@@ -55,7 +56,8 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
  const label=state.userId?(state.grant?'Search replacement Superintendents':'Search obligations by Area or responsibility'):'Search project personnel';
  const preview=state.candidate?coveragePreview(state.candidate):null;
  return <section className="tm-section stack tm-workspace" aria-label="Protected Survey Reviewer obligations">
-  <h3 className="panel-title" tabIndex={-1} ref={heading}>Protected Survey Reviewer obligations</h3>
+  <AdministrationSection title="Protected Survey Reviewer obligations" open={!!userId} locked={frozen}>
+  <h4 tabIndex={-1} ref={heading}>Survey Reviewer coverage</h4>
   <p className="muted">Hand over one live Area review grant to another current Superintendent. Role changes and remaining staffing are separate.</p>
   {!open?<Button type="button" variant="secondary" onClick={()=>setOpen(true)}>Inspect protected obligations</Button>:<>
    {success?<SuccessBanner message={success}/>:null}
@@ -91,5 +93,6 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
    {page&&page.total>0?<div className="tm-footer"><span className="muted" role="status">{page.total} results</span>{!frozen?<PaginationControls total={page.total} limit={limit} offset={offset} onChange={next=>{if(!frozen)setOffset(next);}}/>:null}</div>:null}
    <div className="row"><Button type="button" variant="secondary" disabled={frozen} onClick={reload}>Reload current obligations</Button>{!userId&&state.userId?<Button type="button" variant="secondary" disabled={frozen} onClick={()=>{dispatch({type:'reload'});dispatch({type:'person',userId:null});resetQuery();setSuccess(null);}}>Back to project personnel</Button>:null}</div>
   </>}
+  </AdministrationSection>
  </section>;
 }

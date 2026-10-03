@@ -9,8 +9,9 @@ import type { DbClient } from '@/shared/types';
 interface ProjectMembershipRow {
   id: string;
   name: string;
-  status: 'ACTIVE';
+  status: 'ACTIVE' | 'ARCHIVED';
   role: ProjectRole;
+  canAdminister?: boolean;
 }
 
 export interface ProjectListRouteDeps {
@@ -34,7 +35,10 @@ export async function handleGetProjects(
     await deps.assertActiveSession(deps.db, auth);
 
     const { rows } = await deps.db.query<ProjectMembershipRow>(
-      `SELECT p.id, p.name, p.status, pm.role
+      `SELECT p.id, p.name, p.status, pm.role,
+         EXISTS(SELECT 1 FROM project_admin_grants grant_row WHERE grant_row.tenant_id=p.tenant_id
+           AND grant_row.project_id=p.id AND grant_row.user_id=pm.user_id AND grant_row.revoked_at IS NULL
+           AND c.type IN ('GC','OWNER_REP')) AS "canAdminister"
        FROM project_memberships pm
        JOIN projects p
          ON p.id = pm.project_id
@@ -46,7 +50,7 @@ export async function handleGetProjects(
         AND c.tenant_id = u.tenant_id
        WHERE p.tenant_id = $1
          AND pm.user_id = $2
-         AND p.status = 'ACTIVE'
+         AND p.status IN ('ACTIVE', 'ARCHIVED')
          AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
          AND (pm.role <> 'PROJECT_ADMIN' OR EXISTS(
            SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=p.tenant_id
@@ -62,8 +66,9 @@ export async function handleGetProjects(
         name: row.name,
         status: row.status,
         role: row.role,
+        ...(row.canAdminister ? {canAdminister:true} : {}),
       })),
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (err) {
     return errorResponse(err);
   }

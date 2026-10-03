@@ -1,0 +1,166 @@
+{
+  "at": "2026-10-03T02:53:59.534Z",
+  "checks": [
+    {
+      "name": "SURVEY_MANAGER: archived Northbank discoverable",
+      "pass": true
+    },
+    {
+      "name": "SURVEY_MANAGER: correct permitted landing",
+      "pass": true
+    },
+    {
+      "name": "SURVEY_MANAGER: historical request rows visible",
+      "pass": true
+    },
+    {
+      "name": "SURVEY_MANAGER: no mobile document overflow",
+      "pass": true
+    },
+    {
+      "name": "PROJECT_ADMIN: archived Northbank discoverable",
+      "pass": true
+    },
+    {
+      "name": "PROJECT_ADMIN: correct permitted landing",
+      "pass": true
+    },
+    {
+      "name": "Requested personnel section order",
+      "pass": true
+    },
+    {
+      "name": "Project members and access initially collapsed",
+      "pass": true
+    },
+    {
+      "name": "Project members and access expands",
+      "pass": true
+    },
+    {
+      "name": "Independent Project Admin assignments initially collapsed",
+      "pass": true
+    },
+    {
+      "name": "Independent Project Admin assignments expands",
+      "pass": true
+    },
+    {
+      "name": "Subcontractor Requesters initially collapsed",
+      "pass": true
+    },
+    {
+      "name": "Subcontractor Requesters expands",
+      "pass": true
+    },
+    {
+      "name": "Protected Survey Reviewer obligations initially collapsed",
+      "pass": true
+    },
+    {
+      "name": "Protected Survey Reviewer obligations expands",
+      "pass": true
+    },
+    {
+      "name": "Member table filter finds Taylor",
+      "pass": true
+    },
+    {
+      "name": "Table sorting exposes descending state",
+      "pass": true
+    },
+    {
+      "name": "Member multi-selection available",
+      "pass": true
+    },
+    {
+      "name": "Archived admin table filtering stays enabled",
+      "pass": true
+    },
+    {
+      "name": "Archived subcontractor filtering stays enabled",
+      "pass": true
+    },
+    {
+      "name": "Archived request configuration cannot save",
+      "pass": true
+    },
+    {
+      "name": "Subcontractor table displays archived records",
+      "pass": true
+    },
+    {
+      "name": "PROJECT_ADMIN: no mobile document overflow",
+      "pass": true
+    },
+    {
+      "name": "PARTY_CHIEF: archived Northbank discoverable",
+      "pass": true
+    },
+    {
+      "name": "PARTY_CHIEF: correct permitted landing",
+      "pass": true
+    },
+    {
+      "name": "PARTY_CHIEF: historical request rows visible",
+      "pass": true
+    },
+    {
+      "name": "PARTY_CHIEF: no mobile document overflow",
+      "pass": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "timings": [
+    {
+      "role": "SURVEY_MANAGER",
+      "run": 0,
+      "navigationToNetworkIdleMs": 616
+    },
+    {
+      "role": "SURVEY_MANAGER",
+      "run": 1,
+      "navigationToNetworkIdleMs": 586
+    },
+    {
+      "role": "SURVEY_MANAGER",
+      "run": 2,
+      "navigationToNetworkIdleMs": 588
+    },
+    {
+      "role": "PROJECT_ADMIN",
+      "run": 0,
+      "navigationToNetworkIdleMs": 704
+    },
+    {
+      "role": "PROJECT_ADMIN",
+      "run": 1,
+      "navigationToNetworkIdleMs": 695
+    },
+    {
+      "role": "PROJECT_ADMIN",
+      "run": 2,
+      "navigationToNetworkIdleMs": 694
+    },
+    {
+      "role": "PARTY_CHIEF",
+      "run": 0,
+      "navigationToNetworkIdleMs": 586
+    },
+    {
+      "role": "PARTY_CHIEF",
+      "run": 1,
+      "navigationToNetworkIdleMs": 572
+    },
+    {
+      "role": "PARTY_CHIEF",
+      "run": 2,
+      "navigationToNetworkIdleMs": 571
+    }
+  ],
+  "measurement": "Real password logins in separate browser contexts. Navigation timings include Playwright network-idle quiet interval; not Core Web Vitals. Archived retained project inspected without mutations."
+}

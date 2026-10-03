@@ -42,7 +42,7 @@ export class CompanyAccessRepository {
                WHERE pm.project_id=$2 AND u.tenant_id=$1 AND u.company_id=c.id))
            AND EXISTS (
              SELECT 1 FROM projects p
-             WHERE p.id = $2 AND p.tenant_id = c.tenant_id AND p.status <> 'ARCHIVED'
+             WHERE p.id = $2 AND p.tenant_id = c.tenant_id
            )
          ORDER BY LOWER(c.name), c.id`,
       [tenantId, projectId],
@@ -61,7 +61,7 @@ export class CompanyAccessRepository {
            ON cag.tenant_id = p.tenant_id AND cag.project_id = p.id
           AND cag.company_id = c.id AND cag.user_id = u.id AND cag.revoked_at IS NULL
          WHERE pm.project_id = $2 AND pm.role = 'REQUESTER'
-           AND p.status <> 'ARCHIVED' AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
+           AND (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL)
            AND c.type = 'SUBCONTRACTOR'
          ORDER BY LOWER(c.name), LOWER(u.name), u.id`,
       [tenantId, projectId],
@@ -75,7 +75,7 @@ export class CompanyAccessRepository {
          JOIN projects p ON p.id = i.project_id AND p.tenant_id = i.tenant_id
          WHERE i.tenant_id = $1 AND i.project_id = $2 AND i.role = 'REQUESTER'
            AND i.accepted_at IS NULL AND i.canceled_at IS NULL AND i.expires_at > NOW()
-           AND c.type = 'SUBCONTRACTOR' AND p.status <> 'ARCHIVED'
+           AND c.type = 'SUBCONTRACTOR'
          ORDER BY i.created_at DESC, i.id`,
       [tenantId, projectId],
     );

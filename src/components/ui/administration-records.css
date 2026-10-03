@@ -1,0 +1,17 @@
+.administration-section {border-top:1px solid var(--line);padding-top:16px;}
+.administration-disclosure {display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:12px 0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;}
+.administration-disclosure:focus-visible,.administration-table button:focus-visible {outline:2px solid var(--action);outline-offset:3px;}
+.administration-disclosure:disabled {cursor:default;}
+.administration-section-content {padding-top:8px;padding-bottom:16px;}
+.administration-section-content[hidden] {display:none;}
+.administration-table-scroll {max-width:100%;overflow:auto;}
+.administration-table {width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+.administration-table th,.administration-table td {text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+.administration-table th {background:var(--surface-sunken);}
+.administration-table th button {padding:0;border:0;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap;}
+.administration-table td {overflow-wrap:anywhere;min-width:100px;}
+.administration-table td:first-child:has(input),.administration-table th:first-child:has(input) {min-width:32px;width:32px;}
+.administration-table input[type=checkbox] {width:18px;height:18px;accent-color:var(--action);}
+@media(max-width:600px){.administration-table {min-width:640px;}.administration-disclosure {min-height:48px;}}
+
+.manpower-existing-controls {padding:0;margin:0;border:0;min-width:0;}

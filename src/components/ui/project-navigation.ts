@@ -68,11 +68,17 @@ export function getProjectLandingHref(projectId: string, role: ProjectRole): str
   return getProjectNavigation(role)[0]?.href(projectId) ?? `/projects/${projectId}/requests`;
 }
 
+export function getMembershipLandingHref(project:ProjectMembershipRecord):string {
+  if(project.role==='PROJECT_ADMIN'||project.canAdminister&&project.role==='REQUESTER')return `/projects/${project.id}/admin`;
+  if(project.status==='ARCHIVED')return `/projects/${project.id}/${project.role==='REQUESTER'?'my-requests':'requests'}`;
+  return getProjectLandingHref(project.id,project.role);
+}
+
 export function findProjectLandingHref(
   projects: readonly ProjectMembershipRecord[],
   projectId: string,
 ): string | null {
   const normalizedProjectId = projectId.trim();
   const membership = projects.find((project) => project.id === normalizedProjectId);
-  return membership ? getProjectLandingHref(membership.id, membership.role) : null;
+  return membership ? getMembershipLandingHref(membership) : null;
 }

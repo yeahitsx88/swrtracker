@@ -13,11 +13,13 @@ export const dynamic='force-dynamic';
 type Context={params:Promise<{projectId:string}>};
 export async function GET(req:NextRequest,ctx:Context){try{
   const auth=await requireActiveAuth(req),{projectId}=await ctx.params;requireResourceUuid(projectId,'projectId');await assertProjectAdministrator(pool,auth,projectId as UUID);
+  const limit=Number(req.nextUrl.searchParams.get('limit')??100),offset=Number(req.nextUrl.searchParams.get('offset')??0);
+  if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ValidationError('Invalid administrator page');
   const {rows}=await pool.query(`SELECT pm.user_id AS "userId",u.name,u.email,pm.role,pm.access_disabled_at AS "accessDisabledAt",u.deactivated_at AS "accountDisabledAt",
     EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=$1 AND g.project_id=$2 AND g.user_id=u.id AND g.revoked_at IS NULL) AS "canAdminister"
     FROM project_memberships pm JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
-    WHERE pm.project_id=$2 AND c.type IN ('GC','OWNER_REP') ORDER BY lower(u.name),u.id LIMIT 100`,[auth.tenantId,projectId]);
-  return NextResponse.json({administrators:rows});
+    WHERE pm.project_id=$2 AND c.type IN ('GC','OWNER_REP') ORDER BY lower(u.name),u.id LIMIT $3 OFFSET $4`,[auth.tenantId,projectId,limit,offset]);
+  return NextResponse.json({administrators:rows,limit,offset},{headers:{'Cache-Control':'private, no-store'}});
 }catch(error){return errorResponse(error);}}
 export async function POST(req:NextRequest,ctx:Context){try{
   const auth=await requireActiveAuth(req),{projectId}=await ctx.params;requireResourceUuid(projectId,'projectId');

@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-03T02:33:41.001Z",
+  "project": {
+    "name": "Northbank Pump Station",
+    "status": "ARCHIVED",
+    "archived_at": "2026-10-03T01:59:53.931Z",
+    "archived_by": "Casey Brooks"
+  },
+  "counts": [
+    {
+      "status": "APPROVED",
+      "n": 1
+    },
+    {
+      "status": "COMPLETED",
+      "n": 1502
+    },
+    {
+      "status": "DRAFT",
+      "n": 45
+    },
+    {
+      "status": "IN_PROGRESS",
+      "n": 2
+    },
+    {
+      "status": "REQUESTER_CANCELED",
+      "n": 44
+    },
+    {
+      "status": "SUBMITTED",
+      "n": 4
+    }
+  ],
+  "hashes": {
+    "tickets": "ae381d1117944a06bc9bf46ad91a29c2b60081a6dd13c06dc649d829ced51d1d",
+    "ticket_events": "51a5c2bf83040e9ae2a89dc1c08a4a079462adb97667bbebec11a1aff213d0e8",
+    "attachments": "486d472e0fb0fa99fa1bd12eaa8fcea49aa8a7c902fe109982e1814d1b97ccb8",
+    "ticket_assignment_history": "108f955c63c18fa8d8046091b2aedc5f3528ae6ee949f840d4de76a62a083dd8",
+    "users": "70ff718a3be7091282e8bbf1764619d0237e5540f020c92efceaabdd71ee0aaa",
+    "project_memberships": "173ad24b7bea19a2c61abc2899b7adfb8e1cec060c01e2f952a8db2255bcbd87",
+    "survey_teams": "9dd46cd171323d94a782d35ad09d1dd69f038a069b8bb586b2c59689154df185",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_reporting_links": "7457033cbba2a03e1424a235f317a57cbf949852680c7d97324eb7d81ed4514a",
+    "aor_assignments": "545daade10fcde89443be8e75a84acf81494e64c63e3052d324ef3f96117b3c0"
+  }
+}

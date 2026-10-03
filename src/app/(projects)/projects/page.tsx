@@ -9,7 +9,7 @@ import { Field } from '@/components/forms';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
-import { findProjectLandingHref, getProjectLandingHref } from '@/components/ui/project-navigation';
+import { findProjectLandingHref, getMembershipLandingHref } from '@/components/ui/project-navigation';
 import { Icon } from '@/components/ui/icon';
 import { PROJECT_STATUS_LABELS, roleLabel } from '@/lib/display-labels';
 
@@ -57,22 +57,22 @@ export default function ProjectsLauncherPage() {
           {loading ? <p className="muted">Loading your projects…</p> : null}
           {error ? <p className="error-banner">{error}</p> : null}
           {!loading && !error && projects.length === 0 ? (
-            <p className="muted">You do not have an active project membership.</p>
+            <p className="muted">You do not have access to an active or archived project.</p>
           ) : null}
           {projects.length > 0 ? (
             <div className="project-grid">
               {projects.map((project) => (
                 <Link
                   className="ticket-card request-card project-card"
-                  href={getProjectLandingHref(project.id, project.role)}
+                  href={getMembershipLandingHref(project)}
                   key={project.id}
                 >
                   <div className="request-card-top">
                     <h3 className="ticket-headline">{project.name}</h3>
-                    <span className="badge status-badge tone-success">{PROJECT_STATUS_LABELS[project.status] ?? project.status}</span>
+                    <span className={`badge status-badge ${project.status === 'ARCHIVED' ? 'tone-neutral' : 'tone-success'}`}>{PROJECT_STATUS_LABELS[project.status] ?? project.status}</span>
                   </div>
-                  <p className="meta-row"><span className="meta-item"><Icon name="user" size={15} />{roleLabel(project.role)}</span></p>
-                  <span className="project-card-open">Open project <Icon name="chevron" size={16} /></span>
+                  <p className="meta-row"><span className="meta-item"><Icon name="user" size={15} />{roleLabel(project.role)}{project.canAdminister&&project.role!=='PROJECT_ADMIN'?' · Project Admin':''}</span></p>
+                  <span className="project-card-open">{project.status === 'ARCHIVED' ? 'View project history' : 'Open project'} <Icon name="chevron" size={16} /></span>
                 </Link>
               ))}
             </div>
@@ -82,7 +82,7 @@ export default function ProjectsLauncherPage() {
 
       <Card
         title="Open by project ID"
-        description="Use the ID of one of your active project memberships for troubleshooting."
+        description="Use the ID of one of your accessible projects for troubleshooting."
       >
         <div className="stack">
           <Field label="Project ID">

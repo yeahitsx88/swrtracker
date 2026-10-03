@@ -7,6 +7,8 @@ import { assertAccessAdministrator } from '@/lib/access-administrator';
 import { withTransaction } from '@/lib/with-transaction';
 import { CompanyAccessRepository } from '@/modules/identity/infrastructure/company-access.repository';
 import type { UUID } from '@/shared/types';
+import {executeIdempotentHttpMutation,requireIdempotencyKey} from '@/lib/idempotency';
+import {requireResourceUuid} from '@/lib/resource-uuid';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,9 +42,12 @@ export async function POST(
       throw new ValidationError('userId is required');
     }
     const repo = new CompanyAccessRepository();
+    requireResourceUuid(projectId,'projectId');requireResourceUuid(body.userId,'userId');
+    const key=req.headers.has('Idempotency-Key')?requireIdempotencyKey(req):null;
     const grant = await withTransaction(async (db) => {
       await coordinateAuthenticatedMutation(db, req, auth, 'EXCLUSIVE', requireAuth);
       await assertAccessAdministrator(db, auth, projectId as UUID);
+      const apply=async()=>{
       const created = await repo.grantCompanyAuthority(db, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
@@ -52,6 +57,10 @@ export async function POST(
       if (!created) throw new ConflictError('User is ineligible or already has company authority');
       await repo.appendEvent(db, created, auth.userId, 'COMPANY_AUTHORITY_GRANTED');
       return created;
+      };
+      if(!key)return apply();
+      const result=await executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST /api/projects/${projectId}/company-authority`,idempotencyKey:key},{userId:body.userId},async()=>({status:201,body:{grant:await apply()}}));
+      return (result.body as {grant:Awaited<ReturnType<typeof apply>>}).grant;
     });
     return NextResponse.json({ grant }, { status: 201 });
   } catch (err) {

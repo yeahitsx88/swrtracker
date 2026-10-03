@@ -78,8 +78,9 @@ export interface ProjectCompanyAccessResponse {
 export interface ProjectMembershipRecord {
   id: string;
   name: string;
-  status: 'ACTIVE';
+  status: 'ACTIVE' | 'ARCHIVED';
   role: ProjectRole;
+  canAdminister?: boolean;
 }
 
 export interface ProjectListResponse {

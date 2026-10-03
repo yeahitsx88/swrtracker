@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, apiRequest } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
@@ -19,6 +19,7 @@ export default function AdminProjectPage() {
   const [leadTimeDays, setLeadTimeDays] = useState(2);
   const [maxAttachmentsPerTicket, setMaxAttachmentsPerTicket] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [archived,setArchived]=useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -29,8 +30,9 @@ export default function AdminProjectPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await apiClient.getProjectRequestConfig(projectId);
+        const [response,context]=await Promise.all([apiClient.getProjectRequestConfig(projectId),apiRequest<{project:{status:string}}>(`/api/projects/${projectId}/template`)]);
         if (!active) return;
+        setArchived(context.project.status==='ARCHIVED');
         setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);
         setLeadTimeDays(response.config.leadTimeDays);
         setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
@@ -51,6 +53,7 @@ export default function AdminProjectPage() {
   }, [projectId]);
 
   async function saveConfig() {
+    if(loading||saving||archived)return;
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -84,16 +87,19 @@ export default function AdminProjectPage() {
           {loading ? <p className="muted">Loading project configuration...</p> : null}
           {!loading ? (
             <>
+              {archived?<p className="muted">Archived project — request configuration is read-only.</p>:null}
               <label className="checkbox-row">
                 <input
                   type="checkbox"
                   checked={leadTimeEnforcementEnabled}
+                  disabled={saving||archived}
                   onChange={(event) => setLeadTimeEnforcementEnabled(event.target.checked)}
                 />
                 <span>Enable lead-time enforcement for requester submit</span>
               </label>
               <Field label="Lead-Time Days">
                 <Input
+                  disabled={saving||archived}
                   type="number"
                   min={1}
                   max={30}
@@ -104,6 +110,7 @@ export default function AdminProjectPage() {
               </Field>
               <Field label="Maximum Files per SWR (blank for no count cap)">
                 <Input
+                  disabled={saving||archived}
                   type="number"
                   min={1}
                   max={100}
@@ -111,7 +118,7 @@ export default function AdminProjectPage() {
                   onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
                 />
               </Field>
-              <Button disabled={saving} onClick={() => void saveConfig()}>
+              <Button disabled={saving||archived} onClick={() => void saveConfig()}>
                 {saving ? 'Saving...' : 'Save Configuration'}
               </Button>
             </>
