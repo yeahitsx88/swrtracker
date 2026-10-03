@@ -3379,3 +3379,9 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Added typecheck with unused-symbol checks and test:postgres entry point; Docker/CI now enforce current types, unit tests and PostgreSQL gates. No dependencies upgraded or new lint tool installed.
 - Verification: unused-symbol/strict type check passes,559 unit tests and27 PostgreSQL suites pass. Production/development dependency audit reports zero advisories; CI execution remains unobserved until remote run.
 
+
+### 2026-10-03 - Batch 124 - current repository guidance and audit corrections
+- Added concise root entry points and corrected current setup, precedence, testing, fixed-role/grant, recovery and recommissioning guidance. Removed obsolete first-task instructions and fictional Jest/global-reset fixture guidance. Strengthened generated/environment ignore patterns and documented034 preflight/worker retention/webhook limits.
+- Corrections to Batch123: incremental TypeScript cache was already untracked/ignored, so no tracked cache removal occurred. Full dependency metadata initially hid an advisory body: production is clear, but full audit identifies one Low tsx-to-esbuild Windows development-server advisory. This repository does not invoke esbuild serve; patch upgrade is deferred and documented, not claimed fixed.
+- Verification: documented typecheck/test/guarded PostgreSQL and pinned Docker commands run successfully. Remote CI execution is unobserved. No operational beta approval inferred.
+

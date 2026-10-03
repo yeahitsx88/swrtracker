@@ -1,65 +1,75 @@
-# swrtracker
+# SWRTracker development and verification
 
-Field Survey Support Ticketing Platform — multi-tenant, enterprise-grade work request management for industrial construction projects.
+SWRTracker is a modular monolith for construction Survey work requests. Next.js App Router serves React UI and HTTP routes; TypeScript application/domain modules use PostgreSQL repositories. Private attachments are served through parent-authorized APIs. Ticket and administrative evidence accompany mutations in the same transaction. Workers dispatch notification and encrypted password-reset outboxes.
 
-## What This Is
+## Read first
 
-A structured ticketing system purpose-built for survey support operations on large construction sites. Replaces email and spreadsheets with auditable intake, approval, crew assignment, and completion workflows.
+- [AGENTS.md](AGENTS.md): safe work and authority order.
+- [Approved requirements](REQUIREMENTS_ADCQ-260923-001.md) and [decision log](worklogs/LEAD_DECISION_LOG.md), including Decisions 44–50: current product rules.
+- [CLAUDE.md](CLAUDE.md): architecture and unaffected historical specification.
+- [CODEX.md](CODEX.md): implementation history and restart point.
+- [DEPLOYMENT.md](DEPLOYMENT.md): migration, attachment, ingress and worker contracts.
+- [Alpha 1 report](../audits/alpha1/REPORT.md): audit register and verification.
 
-Built for the energy sector GC environment. Not a generic helpdesk tool.
+## Toolchain and local setup
 
-## Tech Stack
+Use **Node 22.23.3**, **pnpm 11.19.0** and **PostgreSQL 15**. Docker pins Node; packageManager pins pnpm. A newer host Node does not establish pinned runtime compatibility.
 
-- **Frontend:** Next.js (React)
-- **Backend:** Node.js + TypeScript
-- **Database:** PostgreSQL
-- **Hosting:** Railway
-- **Auth:** Email + password (bcrypt), SSO-ready schema
+~~~sh
+corepack enable
+pnpm install --frozen-lockfile
+~~~
 
-## Quick Start (Local Development)
+Provision a dedicated development database with a generated password and loopback binding. Supply POSTGRES_PASSWORD in the shell before:
 
-```bash
-# Prerequisites: node >= 20, Docker or local PostgreSQL, pnpm
+~~~sh
+docker run --name swr-dev-db -e POSTGRES_PASSWORD -e POSTGRES_DB=survey_dev -p 127.0.0.1:5432:5432 -d postgres:15
+~~~
 
-# Start database
-docker run --name survey-db -e POSTGRES_PASSWORD=localdev -p 5432:5432 -d postgres
+Copy .env.example to .env (PowerShell: Copy-Item .env.example .env), set DATABASE_URL and a generated JWT_SECRET, then:
 
-# Environment
-cp .env.example .env
-# Set DATABASE_URL=postgresql://postgres:localdev@localhost:5432/survey_dev
-
-# Install and run
-pnpm install
+~~~sh
+pnpm db:migrate
 pnpm dev
-```
+~~~
 
-## Architecture
+Migrations do not bootstrap an administrator. Self-registration is closed; use approved operator bootstrap/seed procedures only in a newly owned disposable database. Never replay beta seed/reset scripts against retained customer data. Device-local procedures and boundaries: [AMELIA_PRIVATE_BETA.md](AMELIA_PRIVATE_BETA.md).
 
-Modular monolith. Single deployable application with strict internal module boundaries.
+## Verification
 
-```
-web → application → domain
-infrastructure → application (via interfaces)
-```
+~~~sh
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm audit --prod --audit-level=high
+docker build -t swrtracker:alpha1 .
+~~~
 
-Modules: Identity, Tenancy, Ticket, Workflow, Attachment, Notification, Reporting, Audit.
+pnpm test discovers *.test.ts with Node's test runner and tsx; opt-in PostgreSQL/HTTP/browser acceptance is separate. No lint tool is configured. Type checking also checks unused locals/parameters.
 
-## Current Status
+For PostgreSQL acceptance, provision a **disposable** database named **swr_team_isolated**, bound to **127.0.0.1:15489**. Set DATABASE_URL to that exact location and SWR_TEAM_POSTGRES=1, then:
 
-| Phase | Focus | Status |
-|---|---|---|
-| 0 | Stack, hosting, first tenant | ✅ Complete |
-| 1 | Data model + core backend | ✅ Complete |
-| 2 | Workflow variants, API | 🔄 In Progress |
-| 3 | Field-first mobile UI | Pending |
-| 4 | Traceability + reporting | Pending |
-| 5 | Integrations + scheduling | Pending |
+~~~sh
+pnpm test:postgres
+~~~
 
-## Documentation
+The runner initializes only an entirely empty public schema, then runs 27 suites in owned schemas. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
 
-- **CLAUDE.md** — implementation and architecture reference for rules unaffected by the approved realignment
-- **PROJECT_VISION_v2.md** — product and business narrative
-- **REQUIREMENTS_ADCQ-260923-001.md** — approved SWRTracker product-rule replacement and open design decisions
-- **BASELINE_TESTING.md** — Node 22 and disposable PostgreSQL baseline commands and Gate A evidence
-- **AMELIA_PRIVATE_BETA.md** — device-local setup, sample accounts, role walkthrough, and beta boundaries
-- **worklogs/LEAD_DECISION_LOG.md** — product decision provenance, including ADCQ-260923-001 Decision 9
+HTTP/browser acceptance requires a separate fixture and production runtime wired to its generated schema. tests/beta/scoped-offboarding-acceptance.mjs setup creates the schema and private .local-runtime.env; it requires .local-test.env. Supply SWR_ACCEPTANCE_ORIGIN as a loopback URL, that runtime's JWT_SECRET, and SWR_PLAYWRIGHT_MODULE pointing to an existing Playwright ESM module. Run scoped-offboarding-case-matrix.mjs external, then report: all 55 named cases require the same current source/migration digest. The acceptance cleanup mode removes only the fixture's owned schema. Keep credentials and runtime files ignored.
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| src/app/ | App Router pages and HTTP adapters |
+| src/components/, src/lib/ | UI, session/request/transaction utilities |
+| src/modules/ | Identity, Tenancy, Ticket, Workflow, Attachment, Notification, Reporting, Audit |
+| src/workers/ | Notification and administrative outbox entry points |
+| db/migrations/ | Sequential schema changes; db/migrate.ts records applied files |
+| tests/ | Module tests and opt-in beta acceptance |
+| scripts/ | Test discovery, guarded acceptance, local beta tools |
+| docs/, audits/ | Decisions, operator guidance, historical evidence |
+
+JWT sessions revalidate account/session version and current membership. Independent Project Admin grants do not replace operational roles; Central/Tenant IT does not gain request visibility merely through TENANT_ADMIN. Domain reads apply tenant/project/company/actor scope. Lifecycle writers take the tenant barrier before domain/idempotency locks and revalidate authority before replay.
+
+Keep .env*, .local*, .data/, build caches, stores and new screenshots ignored. Prior reports are historical evidence; current verification writes ignored output or a newly named artifact.

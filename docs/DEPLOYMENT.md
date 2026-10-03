@@ -1,4 +1,12 @@
-# Deployment Guide (Phase 4)
+# Deployment Guide
+
+## Alpha 1 migration and release gate
+
+Apply pending migrations through034 before the Alpha1 application starts. Migration033 gates recommissioning; an older runtime must not resume against a preparing project. Migration034 refuses inconsistent ticket/event tenant ownership without repair. Investigate and obtain an explicit operational resolution; never delete evidence to force success. It adds immutable update/delete/truncate protection and a tenant-bound ticket FK while preserving existing worker actor attribution.
+
+Run one migration operator at a time. Database owners/superusers can bypass triggers; application roles should not own tables. Use current [verification commands](README.md) and the [Alpha1 report](../audits/alpha1/REPORT.md). Hosted backup/restore, ingress/source limiting, mail and support recovery remain separate beta gates.
+
+Login counters are stored only for existing local-password accounts. The worker prunes inactive counters older than one day while preserving active lockouts. Webhook calls abort after ten seconds; uncertain delivery may have succeeded remotely, so receivers must deduplicate using existing message identifiers. External delivery is not transactionally atomic with PostgreSQL.
 
 ## Runtime Contracts
 

@@ -1,5 +1,7 @@
 # Baseline testing for ADCQ-260923-001
 
+Current Alpha1 commands and results are in [README.md](README.md) and the [Alpha1 audit](../audits/alpha1/REPORT.md). The Gate A checkpoint below is historical evidence, not the current test count or release approval.
+
 Gate A checkpoint: 2026-09-24. This verifies the selected `phase5` code baseline and the existing migration chain. It does not verify the newly approved Amelia workflow or pilot readiness.
 
 ## Supported local toolchain

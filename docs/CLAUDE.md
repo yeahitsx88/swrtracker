@@ -1,6 +1,6 @@
 # CLAUDE.md — Field Survey Support Ticketing Platform
 
-> Read this file in full before making changes. The approved product rules in [REQUIREMENTS_ADCQ-260923-001.md](REQUIREMENTS_ADCQ-260923-001.md) and Decision 9 in [LEAD_DECISION_LOG.md](worklogs/LEAD_DECISION_LOG.md) supersede conflicting product behavior below. This file remains the implementation and architecture reference for unaffected decisions; conflicting workflow, role, intake, date, and priority passages describe the pre-realignment design until revised. Do not treat existing code as proof of requirement approval.
+> Read this file in full before making changes. Approved [requirements](REQUIREMENTS_ADCQ-260923-001.md) and [decision log](worklogs/LEAD_DECISION_LOG.md) entries, including Decisions44–50, supersede conflicting passages below. Historical workflows, roles, administration and hosting describe earlier designs. Current operations are in [README.md](README.md), [AGENTS.md](AGENTS.md) and [DEPLOYMENT.md](DEPLOYMENT.md). Independent Project Admin grants, grant-only draft recovery, limited Central IT visibility and guarded recommissioning follow approved later decisions. Code and old proposals do not themselves establish approval.
 
 ---
 

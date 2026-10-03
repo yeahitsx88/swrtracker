@@ -9,6 +9,8 @@ out/
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
 
 # Build
 dist/
@@ -32,3 +34,8 @@ Thumbs.db
 # TypeScript incremental build cache
 tsconfig.tsbuildinfo
 .local-*
+.next-*/
+.pnpm-store/
+coverage/
+tmp/
+.superpowers/
