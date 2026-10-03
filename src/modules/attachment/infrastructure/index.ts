@@ -88,7 +88,12 @@ export class LocalAttachmentStorage {
   }
 
   async remove(storageKey: string): Promise<void> {
-    await unlink(this.resolve(storageKey)).catch(() => undefined);
+    try {
+      await unlink(this.resolve(storageKey));
+    } catch (error) {
+      // An already absent orphan is benign; permission/I/O failures need diagnosis.
+      if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
+    }
   }
 
   private resolve(storageKey: string): string {

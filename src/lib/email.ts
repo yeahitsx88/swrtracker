@@ -30,6 +30,7 @@ export class WebhookEmailTransport implements IEmailTransport {
   constructor(
     private readonly webhookUrl: string,
     private readonly apiKey?: string,
+    private readonly timeoutMs = 10_000,
   ) {}
 
   async send(message: EmailMessage): Promise<void> {
@@ -40,7 +41,10 @@ export class WebhookEmailTransport implements IEmailTransport {
         ...(this.apiKey ? { authorization: `Bearer ${this.apiKey}` } : {}),
       },
       body: JSON.stringify(message),
+      signal: AbortSignal.timeout(this.timeoutMs),
     });
+    // No response payload is used. Release the stream/connection even on errors.
+    await response.body?.cancel();
     if (!response.ok) {
       throw new Error(`Email webhook transport failed with status ${response.status}`);
     }

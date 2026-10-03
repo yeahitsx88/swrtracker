@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { getCorrelationId } from './correlation';
+import { logError } from './observability';
 import {
   ValidationError,
   UnauthorizedError,
@@ -50,11 +51,24 @@ function isAppError(err: unknown): err is AppError {
   );
 }
 
+function logUnexpectedError(err: unknown, correlationId: string): void {
+  // Raw messages, stacks, query text and causes can contain credentials or data.
+  const classes = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError']);
+  const codes = new Set(['23505', '23503', '23514', '40001', '40P01', '42P01', '42703', '57014', '53300', '57P01', '08006', '22P02']);
+  const code = err instanceof Error && 'code' in err && typeof err.code === 'string' && codes.has(err.code) ? err.code : undefined;
+  logError('API request failed', {
+    eventType: 'api.unexpected_error', correlation_id: correlationId,
+    error_class: err instanceof Error && classes.has(err.name) ? err.name : 'UnknownError',
+    ...(code ? { database_code: code } : {}),
+  });
+}
+
 export function errorResponse(err: unknown): NextResponse {
   const correlationId = getCorrelationId() ?? randomUUID();
 
   if (isAppError(err)) {
     const status = HTTP_STATUS[err.type];
+    if (status === 500) logUnexpectedError(err, correlationId);
     return NextResponse.json(
       {
         error: {
@@ -68,6 +82,7 @@ export function errorResponse(err: unknown): NextResponse {
       { status },
     );
   }
+  logUnexpectedError(err, correlationId);
   return NextResponse.json(
     {
       error: {

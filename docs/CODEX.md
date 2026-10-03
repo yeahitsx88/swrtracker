@@ -3352,3 +3352,8 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Bounded durable login keys to existing local-password accounts, canonicalized UUID keys, and pruned inactive records after one day without removing live lockouts. Unknown account responses remain generic; known-account five-attempt policy is preserved.
 - Login validates malformed JSON, UUID and empty credentials; appearance/recommissioning share the narrow JSON error adapter. Verification: strict types, 15 focused auth/runtime tests and disposable PostgreSQL lockout/pruning/canonical-key cases pass.
 
+
+### 2026-10-03 - Batch 119 - Alpha 1 bounded delivery and diagnosable failures
+- Webhook delivery aborts after ten seconds and releases unused response bodies. Attachment removal tolerates missing files but reports other filesystem failures. Unexpected API failures emit safe classifications with the public correlation ID, without raw exception/SQL/body content.
+- Verification: strict types and actual stalled loopback webhook, owned filesystem failure, safe-log/error adapter regression tests pass. Existing outbox retry semantics remain; external delivery is still a beta gate.
+
