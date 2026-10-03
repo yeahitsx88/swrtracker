@@ -39,4 +39,3 @@ try{
  check('No browser runtime errors',errors.length===0);
 }finally{await fs.writeFile(out+'/browser.json',JSON.stringify({at:new Date().toISOString(),checks,errors,timings,measurement:'Real password logins in separate browser contexts. Navigation timings include Playwright network-idle quiet interval; not Core Web Vitals. Archived retained project inspected without mutations.'},null,2));await browser.close();}
 console.log(JSON.stringify({checks:checks.length,pass:true}));
-
