@@ -1,0 +1,537 @@
+source,label,user,method,route,expected,actual,result
+results.json,Owner uploads synthetic attachment,Synthetic A coworker,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[201],201,PASS
+results.json,Owner uploads synthetic attachment,Synthetic A coworker,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,[201],201,PASS
+results.json,Owner uploads synthetic attachment,Synthetic B coworker,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,[201],201,PASS
+results.json,Owner uploads synthetic attachment,Synthetic B coworker,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,[201],201,PASS
+results.json,Owner uploads synthetic attachment,Synthetic B coworker,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,[201],201,PASS
+results.json,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7/attachments,Synthetic C requester,POST,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7/attachments,[201],201,PASS
+results.json,/api/projects,Synthetic A requester,GET,/api/projects,[200],200,PASS
+results.json,Exact project listing excludes denied projects,Synthetic A requester,,,"[""0eab2aea-be8d-4fbd-b386-03db9ef7b2d7""]","[""0eab2aea-be8d-4fbd-b386-03db9ef7b2d7""]",PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,[200],200,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&limit=1&offset=1,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&limit=1&offset=1,[200],200,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&search=CONFIDENTIAL,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&search=CONFIDENTIAL,[200],200,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,[200],200,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&status=DRAFT,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&status=DRAFT,[200],200,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,[200],200,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor,"[200, 403]",200,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,"[200, 403]",200,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/departments,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/departments,"[200, 403]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/metrics,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/metrics,"[200, 403]",200,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/review,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/review,"[200, 403]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/notifications,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/notifications,"[200, 403]",200,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/history,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/history,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,Synthetic A requester,PATCH,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,"[403, 404]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/submit,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/approve,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/assign,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/start,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/complete,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/requester-cancel,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/return,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/elevate-priority,Synthetic A requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/elevate-priority,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,Synthetic A requester,DELETE,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[405],405,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,"[200, 307]",200,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,[403],403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,Synthetic A requester,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,Synthetic A requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&limit=1&offset=1,Synthetic A requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&limit=1&offset=1,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&search=CONFIDENTIAL,Synthetic A requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&search=CONFIDENTIAL,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,Synthetic A requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&status=DRAFT,Synthetic A requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&status=DRAFT,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,Synthetic A requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/departments,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/departments,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/metrics,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/metrics,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/review,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/review,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/notifications,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/notifications,[403],403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,Synthetic A requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,[403],403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/history,Synthetic A requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/history,[403],403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,Synthetic A requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,[403],403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461,Synthetic A requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461,[403],403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,Synthetic A requester,PATCH,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,"[403, 404]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/submit,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/submit,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/approve,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/approve,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/assign,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/assign,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/start,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/start,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/complete,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/complete,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/requester-cancel,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/requester-cancel,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/return,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/return,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/elevate-priority,Synthetic A requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/elevate-priority,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,Synthetic A requester,DELETE,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,[405],405,PASS
+results.json,/api/tickets,Synthetic A requester,POST,/api/tickets,[403],403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,"[200, 307]",200,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,Synthetic A requester,POST,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,[403],403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3,Synthetic A requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&limit=1&offset=1,Synthetic A requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&limit=1&offset=1,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&search=CONFIDENTIAL,Synthetic A requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&search=CONFIDENTIAL,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,Synthetic A requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&status=DRAFT,Synthetic A requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&status=DRAFT,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,Synthetic A requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,"[403, 404]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor,"[403, 404]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,"[403, 404]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/departments,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/departments,"[403, 404]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/metrics,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/metrics,"[403, 404]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/review,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/review,"[403, 404]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/notifications,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/notifications,"[403, 404]",403,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,Synthetic A requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/history,Synthetic A requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/history,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,Synthetic A requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,Synthetic A requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,Synthetic A requester,PATCH,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,"[403, 404]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/submit,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/approve,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/assign,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/start,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/complete,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/requester-cancel,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/return,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/elevate-priority,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/elevate-priority,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,Synthetic A requester,DELETE,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,[405],405,PASS
+results.json,/api/tickets,Synthetic A requester,POST,/api/tickets,"[403, 404]",403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,"[200, 307]",200,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,[403],403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,Synthetic A requester,POST,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,[403],403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1,Synthetic A requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&limit=1&offset=1,Synthetic A requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&limit=1&offset=1,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&search=CONFIDENTIAL,Synthetic A requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&search=CONFIDENTIAL,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,Synthetic A requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&status=DRAFT,Synthetic A requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&status=DRAFT,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,Synthetic A requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,"[403, 404]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor,"[403, 404]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,"[403, 404]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/departments,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/departments,"[403, 404]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/metrics,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/metrics,"[403, 404]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/review,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/review,"[403, 404]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/notifications,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/notifications,"[403, 404]",403,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,Synthetic A requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/history,Synthetic A requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/history,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,Synthetic A requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197,Synthetic A requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,Synthetic A requester,PATCH,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,"[403, 404]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/submit,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/approve,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/assign,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/start,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/complete,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/requester-cancel,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/return,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/elevate-priority,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/elevate-priority,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,Synthetic A requester,DELETE,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,[405],405,PASS
+results.json,/api/tickets,Synthetic A requester,POST,/api/tickets,"[403, 404]",403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,"[200, 307]",200,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,[403],403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,Synthetic A requester,POST,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,Synthetic A requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&limit=1&offset=1,Synthetic A requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&limit=1&offset=1,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&search=CONFIDENTIAL,Synthetic A requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&search=CONFIDENTIAL,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,Synthetic A requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&status=DRAFT,Synthetic A requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&status=DRAFT,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,Synthetic A requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,"[403, 404]",403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor,"[403, 404]",403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,"[403, 404]",403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/departments,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/departments,"[403, 404]",403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/metrics,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/metrics,"[403, 404]",403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/review,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/review,"[403, 404]",403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/notifications,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/notifications,"[403, 404]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,Synthetic A requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,[404],404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/history,Synthetic A requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/history,[404],404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,Synthetic A requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,[404],404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96,Synthetic A requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96,[404],404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,Synthetic A requester,PATCH,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,"[403, 404]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/submit,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/approve,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/assign,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/start,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/complete,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/requester-cancel,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/return,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/elevate-priority,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/elevate-priority,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,Synthetic A requester,DELETE,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,[405],405,PASS
+results.json,/api/tickets,Synthetic A requester,POST,/api/tickets,"[403, 404]",403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic A requester,GET,/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,"[200, 307]",200,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,Synthetic A requester,POST,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,[403],403,PASS
+results.json,/api/companies,Synthetic A requester,GET,/api/companies,"[403, 405]",405,PASS
+results.json,/api/tenant-memberships,Synthetic A requester,GET,/api/tenant-memberships,"[403, 405]",405,PASS
+results.json,/api/project-templates,Synthetic A requester,GET,/api/project-templates,"[403, 405]",403,PASS
+results.json,/api/ops/diagnostics,Synthetic A requester,GET,/api/ops/diagnostics,"[403, 405]",403,PASS
+results.json,/api/tenant-memberships,Synthetic A requester,POST,/api/tenant-memberships,[403],403,PASS
+results.json,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7,Synthetic A requester,GET,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7,[404],404,PASS
+results.json,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7/attachments/ea56a8d9-72e3-4255-8c84-70b81b6b4b93,Synthetic A requester,GET,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7/attachments/ea56a8d9-72e3-4255-8c84-70b81b6b4b93,[404],404,PASS
+results.json,/api/tickets/not-a-uuid,Synthetic A requester,GET,/api/tickets/not-a-uuid,"[400, 403, 404]",500,FAIL
+results.json,/api/tickets/00000000-0000-0000-0000-000000000000,Synthetic A requester,GET,/api/tickets/00000000-0000-0000-0000-000000000000,"[400, 403, 404]",404,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,Synthetic A requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,"[400, 403]",200,FAIL
+results.json,/api/projects,Synthetic B requester,GET,/api/projects,[200],200,PASS
+results.json,Exact project listing excludes denied projects,Synthetic B requester,,,"[""53b04df4-42d4-489d-8bd3-9e853ee12ba3"", ""b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1""]","[""53b04df4-42d4-489d-8bd3-9e853ee12ba3"", ""b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1""]",PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&limit=1&offset=1,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&limit=1&offset=1,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&search=CONFIDENTIAL,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&search=CONFIDENTIAL,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&status=DRAFT,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&status=DRAFT,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,"[403, 404]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor,"[403, 404]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,"[403, 404]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/departments,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/departments,"[403, 404]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/metrics,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/metrics,"[403, 404]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/review,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/review,"[403, 404]",403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/notifications,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/notifications,"[403, 404]",403,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,Synthetic B requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/history,Synthetic B requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/history,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,Synthetic B requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,Synthetic B requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[404],404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,Synthetic B requester,PATCH,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,"[403, 404]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/submit,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/approve,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/assign,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/start,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/complete,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/requester-cancel,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/return,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/elevate-priority,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/elevate-priority,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,Synthetic B requester,DELETE,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[405],405,PASS
+results.json,/api/tickets,Synthetic B requester,POST,/api/tickets,"[403, 404]",403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,"[200, 307]",200,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,[403],403,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,Synthetic B requester,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,[403],403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,Synthetic B requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&limit=1&offset=1,Synthetic B requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&limit=1&offset=1,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&search=CONFIDENTIAL,Synthetic B requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&search=CONFIDENTIAL,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,Synthetic B requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&companyId=bd5688b4-603b-4ef6-85b4-d98841cea562&tenantId=a0b1e743-0c9f-47e5-8d89-633885c23ac6,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&status=DRAFT,Synthetic B requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&status=DRAFT,"[403, 404]",403,PASS
+results.json,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,Synthetic B requester,GET,/api/tickets?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6&requesterId=c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7,"[403, 404]",403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor,"[403, 404]",403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,"[403, 404]",403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/departments,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/departments,"[403, 404]",403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/metrics,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/metrics,"[403, 404]",403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/review,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/review,"[403, 404]",403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/notifications,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/notifications,"[403, 404]",403,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,Synthetic B requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,[404],404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/history,Synthetic B requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/history,[404],404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,Synthetic B requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,[404],404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461,Synthetic B requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461,[404],404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,Synthetic B requester,PATCH,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,"[403, 404]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/submit,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/approve,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/assign,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/start,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/complete,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/requester-cancel,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/return,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/elevate-priority,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/elevate-priority,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,Synthetic B requester,DELETE,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,[405],405,PASS
+results.json,/api/tickets,Synthetic B requester,POST,/api/tickets,"[403, 404]",403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,"[200, 307]",200,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,[403],403,PASS
+results.json,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,Synthetic B requester,POST,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/members,[403],403,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3,Synthetic B requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3,[200],200,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&limit=1&offset=1,Synthetic B requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&limit=1&offset=1,[200],200,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&search=CONFIDENTIAL,Synthetic B requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&search=CONFIDENTIAL,[200],200,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,Synthetic B requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,[200],200,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&status=DRAFT,Synthetic B requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&status=DRAFT,[200],200,PASS
+results.json,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,Synthetic B requester,GET,/api/tickets?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,[200],200,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor,"[200, 403]",200,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,"[200, 403]",200,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/departments,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/departments,"[200, 403]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/metrics,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/metrics,"[200, 403]",200,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/review,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/review,"[200, 403]",403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/notifications,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/notifications,"[200, 403]",200,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,Synthetic B requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/history,Synthetic B requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/history,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,Synthetic B requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,Synthetic B requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,[404],404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,Synthetic B requester,PATCH,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,"[403, 404]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/submit,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/approve,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/assign,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/start,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/complete,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/requester-cancel,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/return,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/elevate-priority,Synthetic B requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/elevate-priority,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,Synthetic B requester,DELETE,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,[405],405,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be,"[200, 307]",200,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,[403],403,PASS
+results.json,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,Synthetic B requester,POST,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,[403],403,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1,Synthetic B requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1,[200],200,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&limit=1&offset=1,Synthetic B requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&limit=1&offset=1,[200],200,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&search=CONFIDENTIAL,Synthetic B requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&search=CONFIDENTIAL,[200],200,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,Synthetic B requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,[200],200,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&status=DRAFT,Synthetic B requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&status=DRAFT,[200],200,PASS
+results.json,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,Synthetic B requester,GET,/api/tickets?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,[200],200,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor,"[200, 403]",200,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,"[200, 403]",200,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/departments,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/departments,"[200, 403]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/metrics,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/metrics,"[200, 403]",200,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/review,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/review,"[200, 403]",403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/notifications,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/notifications,"[200, 403]",200,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,Synthetic B requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/history,Synthetic B requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/history,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,Synthetic B requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197,Synthetic B requester,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197,[404],404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,Synthetic B requester,PATCH,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,"[403, 404]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/submit,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/submit,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/approve,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/approve,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/assign,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/assign,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/start,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/start,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/complete,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/complete,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/requester-cancel,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/requester-cancel,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/return,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/return,"[403, 404, 400]",404,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/elevate-priority,Synthetic B requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/elevate-priority,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,Synthetic B requester,DELETE,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,[405],405,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c,"[200, 307]",200,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,[403],403,PASS
+results.json,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,Synthetic B requester,POST,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/members,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,Synthetic B requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&limit=1&offset=1,Synthetic B requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&limit=1&offset=1,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&search=CONFIDENTIAL,Synthetic B requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&search=CONFIDENTIAL,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,Synthetic B requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&companyId=3223d905-e23a-4466-84cb-341c93033c6d&tenantId=d8a3b0ce-d419-4494-b874-289db22c012c,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&status=DRAFT,Synthetic B requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&status=DRAFT,[403],403,PASS
+results.json,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,Synthetic B requester,GET,/api/tickets?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a&requesterId=675ebd5b-76cb-45d4-8ded-e1a721cd4c63,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/departments,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/departments,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/metrics,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/metrics,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/review,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/review,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/notifications,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/notifications,[403],403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,Synthetic B requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,[403],403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/history,Synthetic B requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/history,[403],403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,Synthetic B requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,[403],403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96,Synthetic B requester,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96,[403],403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,Synthetic B requester,PATCH,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,"[403, 404]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/submit,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/submit,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/approve,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/approve,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/assign,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/assign,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/start,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/start,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/complete,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/complete,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/requester-cancel,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/requester-cancel,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/return,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/return,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/elevate-priority,Synthetic B requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/elevate-priority,"[403, 404, 400]",403,PASS
+results.json,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,Synthetic B requester,DELETE,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,[405],405,PASS
+results.json,/api/tickets,Synthetic B requester,POST,/api/tickets,[403],403,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/my-requests,"[200, 307]",200,PASS
+results.json,UI shell HTTP; data enforcement checked separately,Synthetic B requester,GET,/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c,"[200, 307]",200,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,[403],403,PASS
+results.json,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,Synthetic B requester,POST,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/members,[403],403,PASS
+results.json,/api/companies,Synthetic B requester,GET,/api/companies,"[403, 405]",405,PASS
+results.json,/api/tenant-memberships,Synthetic B requester,GET,/api/tenant-memberships,"[403, 405]",405,PASS
+results.json,/api/project-templates,Synthetic B requester,GET,/api/project-templates,"[403, 405]",403,PASS
+results.json,/api/ops/diagnostics,Synthetic B requester,GET,/api/ops/diagnostics,"[403, 405]",403,PASS
+results.json,/api/tenant-memberships,Synthetic B requester,POST,/api/tenant-memberships,[403],403,PASS
+results.json,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7,Synthetic B requester,GET,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7,[404],404,PASS
+results.json,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7/attachments/ea56a8d9-72e3-4255-8c84-70b81b6b4b93,Synthetic B requester,GET,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7/attachments/ea56a8d9-72e3-4255-8c84-70b81b6b4b93,[404],404,PASS
+results.json,/api/tickets/not-a-uuid,Synthetic B requester,GET,/api/tickets/not-a-uuid,"[400, 403, 404]",500,FAIL
+results.json,/api/tickets/00000000-0000-0000-0000-000000000000,Synthetic B requester,GET,/api/tickets/00000000-0000-0000-0000-000000000000,"[400, 403, 404]",404,PASS
+results.json,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,Synthetic B requester,GET,/api/tickets?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7&projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,"[400, 403]",403,PASS
+results.json,/api/tickets,Synthetic A requester,POST,/api/tickets,[201],201,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments,Synthetic A requester,POST,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments,[201],201,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic B requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[404],404,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Unauthenticated,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[401],401,PASS
+results.json,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[404],404,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/94c299f5-6c10-4846-ae29-f285a4642953,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[404],404,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,Synthetic A requester,PATCH,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/submit,Synthetic A requester,POST,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/submit,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/requester-cancel,Synthetic A requester,POST,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/requester-cancel,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/history,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/history,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/1,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/1,"[400, 404]",500,FAIL
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/2,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/2,"[400, 404]",500,FAIL
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/88438098-2f03-493e-acff-d4d12122b9f3,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/88438098-2f03-493e-acff-d4d12122b9f3,"[400, 404]",404,PASS
+results.json,/.data/attachments/a0b1e743-0c9f-47e5-8d89-633885c23ac6/7f7168f4-46fd-49c8-b86a-b43d603624ba/9b7a0c44-311e-4459-946f-c36c956dbfc7,Unauthenticated,GET,/.data/attachments/a0b1e743-0c9f-47e5-8d89-633885c23ac6/7f7168f4-46fd-49c8-b86a-b43d603624ba/9b7a0c44-311e-4459-946f-c36c956dbfc7,[404],404,PASS
+results.json,/attachments/a0b1e743-0c9f-47e5-8d89-633885c23ac6/7f7168f4-46fd-49c8-b86a-b43d603624ba/9b7a0c44-311e-4459-946f-c36c956dbfc7,Unauthenticated,GET,/attachments/a0b1e743-0c9f-47e5-8d89-633885c23ac6/7f7168f4-46fd-49c8-b86a-b43d603624ba/9b7a0c44-311e-4459-946f-c36c956dbfc7,[404],307,FAIL
+results.json,/api/attachments/a0b1e743-0c9f-47e5-8d89-633885c23ac6/7f7168f4-46fd-49c8-b86a-b43d603624ba/9b7a0c44-311e-4459-946f-c36c956dbfc7,Unauthenticated,GET,/api/attachments/a0b1e743-0c9f-47e5-8d89-633885c23ac6/7f7168f4-46fd-49c8-b86a-b43d603624ba/9b7a0c44-311e-4459-946f-c36c956dbfc7,[404],404,PASS
+results.json,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/notifications,Synthetic A projectIT,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/notifications,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,Synthetic A projectIT,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,[404],404,PASS
+results.json,/api/projects,Synthetic A admin,GET,/api/projects,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,Synthetic A admin,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,[403],403,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[403],403,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba,[403],403,PASS
+results.json,/api/projects,Synthetic A requester,GET,/api/projects,[200],200,PASS
+results.json,/api/auth/logout,Synthetic A requester,POST,/api/auth/logout,[200],200,PASS
+results.json,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,Synthetic A requester,GET,/api/tickets/7f7168f4-46fd-49c8-b86a-b43d603624ba/attachments/5c8b5be2-cbdb-4dae-8f1a-5230e8359894,[401],401,PASS
+results.json,/api/projects,Synthetic A requester,GET,/api/projects,[401],401,PASS
+results.json,/api/projects,Synthetic B requester,GET,/api/projects,[401],401,PASS
+results.json,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,Synthetic B requester,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,[401],401,PASS
+adversarial-results.json,AUTH-001 Superintendent creates outside authorized Area,Synthetic A superintendent,POST,/api/tickets,"[403, 404]",201,FAIL
+adversarial-results.json,AUTH-001 Superintendent cannot read newly created forbidden-Area request,Synthetic A superintendent,GET,/api/tickets/91b78a46-5a75-415e-9b56-7494c4c84c2b,[404],404,PASS
+adversarial-results.json,Crew visibility positive control,Synthetic A im1,GET,/api/tickets/e529e186-eb37-412a-a9c5-42b7e66d138c,[200],200,PASS
+adversarial-results.json,REQ-001 IM1 field-cancels IM2 delayed ticket,Synthetic A im1,POST,/api/tickets/e529e186-eb37-412a-a9c5-42b7e66d138c/field-cancel,[403],200,FAIL
+adversarial-results.json,REQ-001 database outcome,,,,null,"[{""status"": ""PENDING_PC_APPROVAL"", ""pending_pc_outcome"": ""FIELD_CANCELED""}]",OBSERVATION
+adversarial-results.json,Active crew copied attachment positive control,Synthetic A im1,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[200],200,PASS
+adversarial-results.json,Manager removes IM1 from chief roster,Synthetic A lead,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing,[200],400,FAIL
+adversarial-results.json,Revoked roster is inactive,,,,null,"[{""deactivated_at"": null}]",OBSERVATION
+adversarial-results.json,FILE-001 revoked crew cannot download former teammate attachment,Synthetic A im1,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[404],200,FAIL
+adversarial-results.json,FILE-001 revoked crew cannot read former teammate request,Synthetic A im1,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[404],200,FAIL
+adversarial-results.json,IT grants scoped company view,Synthetic A projectIT,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority,[201],201,PASS
+adversarial-results.json,Company view permits coworker request,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[200],200,PASS
+adversarial-results.json,Company view permits coworker attachment,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[200],200,PASS
+adversarial-results.json,Company view excludes Company C request,Synthetic A requester,GET,/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7,[404],404,PASS
+adversarial-results.json,Company view cannot edit coworker request,Synthetic A requester,PATCH,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[403],403,PASS
+adversarial-results.json,IT revokes scoped company view,Synthetic A projectIT,DELETE,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority/46bb4066-bae4-42de-a69b-c16397ff3e32,[200],200,PASS
+adversarial-results.json,Revoked company view copied file URL denied,Synthetic A requester,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[404],404,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Attachment SHA256 disk integrity,,,,null,null,PASS
+adversarial-results.json,Owner byte persistence original,Synthetic A coworker,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[200],200,PASS
+adversarial-results.json,Same filename upload receives distinct object,Synthetic A coworker,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[201],201,PASS
+adversarial-results.json,First object unchanged after same filename upload,Synthetic A coworker,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[200],200,PASS
+adversarial-results.json,No overwrite,,,,null,null,PASS
+adversarial-results.json,Archived request attachment remains readable by owner,Synthetic A coworker,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[200],200,PASS
+adversarial-results.json,Requester substitutes different-project Area,Synthetic A requester,POST,/api/tickets,[404],404,PASS
+adversarial-results.json,Account cross-tenant project,Synthetic A requester,GET,/api/account?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3,[403],403,PASS
+adversarial-results.json,Tenant-admin config cross-tenant,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,"[403, 404]",403,PASS
+adversarial-results.json,Account cross-tenant project,Synthetic A requester,GET,/api/account?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1,[403],403,PASS
+adversarial-results.json,Tenant-admin config cross-tenant,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,"[403, 404]",403,PASS
+adversarial-results.json,Account cross-tenant project,Synthetic A requester,GET,/api/account?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,[403],403,PASS
+adversarial-results.json,Tenant-admin config cross-tenant,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,"[403, 404]",403,PASS
+adversarial-results.json,Account cross-tenant project,Synthetic B admin,GET,/api/account?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,[403],403,PASS
+adversarial-results.json,Tenant-admin config cross-tenant,Synthetic B admin,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,"[403, 404]",404,PASS
+adversarial-results.json,Account cross-tenant project,Synthetic B admin,GET,/api/account?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,[403],403,PASS
+adversarial-results.json,Tenant-admin config cross-tenant,Synthetic B admin,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,"[403, 404]",404,PASS
+adversarial-results.json,Create replay positive control,Synthetic A requester,POST,/api/tickets,[201],201,PASS
+adversarial-results.json,Revoked membership idempotency replay denied,Synthetic A requester,POST,/api/tickets,[403],403,PASS
+revocation-results.json,Additive staffing accepts IM2 only,Synthetic A lead,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing,[200],200,PASS
+revocation-results.json,"Omitting IM1 is additive, not removal",,,,null,"[{""deactivated_at"": null}]",OBSERVATION
+revocation-results.json,Controlled SQL revocation applied to synthetic roster,,,,null,"[{""deactivated_at"": ""2026-09-30T21:23:04.132Z""}]",OBSERVATION
+revocation-results.json,FILE-001 inactive roster request denied,Synthetic A im1,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc,[404],200,FAIL
+revocation-results.json,FILE-001 inactive roster metadata denied,Synthetic A im1,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[404],200,FAIL
+revocation-results.json,FILE-001 inactive roster copied attachment URL denied,Synthetic A im1,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[404],200,FAIL
+revocation-results.json,Account agrees crew removed,Synthetic A im1,GET,/api/account?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,[200],200,PASS
+revocation-results.json,AUTH-002 known unassigned-project request,Synthetic A requester,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1,[404],403,FAIL
+revocation-results.json,AUTH-002 nonexistent request,Synthetic A requester,GET,/api/tickets/6ce87efd-2ed8-42b5-97c5-e6a5b827d774,[404],404,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic A requester,PATCH,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic A requester,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/archive,"[403, 404]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/company-authority,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic A requester,PATCH,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic A requester,POST,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic A requester,GET,/api/account?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,[403],403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/company-authority,"[403, 404, 405]",404,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic A requester,PATCH,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic A requester,POST,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic A requester,GET,/api/account?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3,[403],403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/company-authority,"[403, 404, 405]",404,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic A requester,PATCH,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic A requester,POST,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic A requester,GET,/api/account?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1,[403],403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/company-authority,"[403, 404, 405]",404,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic A requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic A requester,PATCH,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic A requester,POST,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic A requester,GET,/api/account?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,[403],403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority,"[403, 404, 405]",404,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic B requester,PATCH,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic B requester,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic B requester,GET,/api/account?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7,[403],403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/company-authority,"[403, 404, 405]",404,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic B requester,PATCH,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic B requester,POST,/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic B requester,GET,/api/account?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6,[403],403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/company-authority,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic B requester,PATCH,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic B requester,POST,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/archive,"[403, 404]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/company-authority,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic B requester,PATCH,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic B requester,POST,/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/archive,"[403, 404]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/teams?limit=1&offset=0,"[403, 404, 405]",400,FAIL
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/company-authority,"[403, 404, 405]",403,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/invites,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/whitelist,"[403, 404, 405]",405,PASS
+revocation-results.json,Secondary resource role/membership denial,Synthetic B requester,GET,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor/assignments,"[403, 404, 405]",405,PASS
+revocation-results.json,Config unauthorized write,Synthetic B requester,PATCH,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config,"[403, 404]",403,PASS
+revocation-results.json,Project archive unauthorized,Synthetic B requester,POST,/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/archive,"[403, 404]",403,PASS
+revocation-results.json,Denied project account,Synthetic B requester,GET,/api/account?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a,[403],403,PASS
+revocation-results.json,Completed attachment persists,Synthetic A coworker,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[200],200,PASS
+final-controls.json,Assigned project create positive control,Synthetic A requester,POST,/api/tickets,[201],201,PASS
+final-controls.json,Own direct request positive control,Synthetic A requester,GET,/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88,[200],200,PASS
+final-controls.json,Own attachment upload positive control,Synthetic A requester,POST,/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88/attachments,[201],201,PASS
+final-controls.json,Own attachment download positive control,Synthetic A requester,GET,/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88/attachments/d4ab7a23-9c4e-4c41-b17c-46d233bb5104,[200],200,PASS
+final-controls.json,Cross-tenant upload denied,Synthetic B requester,POST,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[404],404,PASS
+final-controls.json,Unauthenticated file denied,Unauthenticated,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953,[401],401,PASS
+final-controls.json,Unauthenticated attachment metadata denied,Unauthenticated,GET,/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments,[401],401,PASS
+final-controls.json,Cross-tenant upload denied,Synthetic B requester,POST,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,[404],404,PASS
+final-controls.json,Unauthenticated file denied,Unauthenticated,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461,[401],401,PASS
+final-controls.json,Unauthenticated attachment metadata denied,Unauthenticated,GET,/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments,[401],401,PASS
+final-controls.json,Assigned project create positive control,Synthetic B requester,POST,/api/tickets,[201],201,PASS
+final-controls.json,Own direct request positive control,Synthetic B requester,GET,/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866,[200],200,PASS
+final-controls.json,Own attachment upload positive control,Synthetic B requester,POST,/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866/attachments,[201],201,PASS
+final-controls.json,Own attachment download positive control,Synthetic B requester,GET,/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866/attachments/7ed7e655-644f-42a5-b856-9d1891222b30,[200],200,PASS
+final-controls.json,Cross-tenant upload denied,Synthetic A requester,POST,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,[404],404,PASS
+final-controls.json,Unauthenticated file denied,Unauthenticated,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044,[401],401,PASS
+final-controls.json,Unauthenticated attachment metadata denied,Unauthenticated,GET,/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments,[401],401,PASS
+final-controls.json,Assigned project create positive control,Synthetic B requester,POST,/api/tickets,[201],201,PASS
+final-controls.json,Own direct request positive control,Synthetic B requester,GET,/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46,[200],200,PASS
+final-controls.json,Own attachment upload positive control,Synthetic B requester,POST,/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46/attachments,[201],201,PASS
+final-controls.json,Own attachment download positive control,Synthetic B requester,GET,/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46/attachments/a6fae96d-2dc9-4344-a2eb-306074c6160c,[200],200,PASS
+final-controls.json,Cross-tenant upload denied,Synthetic A requester,POST,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,[404],404,PASS
+final-controls.json,Unauthenticated file denied,Unauthenticated,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197,[401],401,PASS
+final-controls.json,Unauthenticated attachment metadata denied,Unauthenticated,GET,/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments,[401],401,PASS
+final-controls.json,Cross-tenant upload denied,Synthetic A requester,POST,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,[404],404,PASS
+final-controls.json,Unauthenticated file denied,Unauthenticated,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96,[401],401,PASS
+final-controls.json,Unauthenticated attachment metadata denied,Unauthenticated,GET,/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments,[401],401,PASS
+final-controls.json,Admin cannot add foreign-tenant user,Synthetic A admin,POST,/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members,"[403, 404]",403,PASS
+final-controls.json,Admin cannot add member to foreign-tenant project,Synthetic A admin,POST,/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members,"[403, 404]",403,PASS

@@ -1,0 +1,101 @@
+{
+  "documentType": "codex-security.scan-manifest",
+  "scan": {
+    "artifacts": [
+      {
+        "mediaType": "application/json",
+        "path": "findings.json",
+        "sha256": "16c514a8853da8418e1f04ea5b69c1a3270cb8f3864f66e55e91a7959ed32fea"
+      },
+      {
+        "mediaType": "application/json",
+        "path": "coverage.json",
+        "sha256": "85eefbe12a2e198d064550f23f6a61771292eae653b22e7f21260254372aef52"
+      }
+    ],
+    "completedAt": "2026-09-30T21:33:37.865005Z",
+    "coverageRef": "coverage.json",
+    "findingsRef": "findings.json",
+    "hardening": {
+      "portfolioPath": "hardening/hardening.md"
+    },
+    "id": "faa776a4-c471-4091-ae1c-0dfe9ba8659f",
+    "preservedSources": {
+      "checkpoints/72119b4afa3f83fecda1647c9da8d4a6a59fb741317816d4b2f749890c836ddf.json": "4cdc709895cf3fdafcdea9d9b2639eded3d4426a838e987667c92015d29e02c9",
+      "checkpoints/7c40047e4809573dd649d9aef617fe8a3424856bb8ba99e57caeb9d0021c0fae.json": "e7fa73a9ab212f3e160d1548f5c170cd849be561134ddfb5d9887675bcdede52",
+      "checkpoints/8c6172c839bc6307efec078cb44c22609fb975f3113c194d3d2c1694fc34d976.json": "9b2e2ba5d83904a01b74eebd37d8a7f35fab791e47f7da1b4d60dced61f3ca3a",
+      "checkpoints/ca5c31bc783a5ce77c75da5f2363e25f1e1fceef1ad845247d367ea966b50cd7.json": "ca5c31bc783a5ce77c75da5f2363e25f1e1fceef1ad845247d367ea966b50cd7"
+    },
+    "producer": {
+      "name": "codex-security-plugin",
+      "version": "0.1.31"
+    },
+    "scope": {
+      "excludePaths": [],
+      "includePaths": [
+        "."
+      ],
+      "limitations": [
+        "Partial repository-wide source coverage, focused on requested boundaries.",
+        "No production/static proxy/ACL or concurrent revocation verification.",
+        "No implemented request deletion/move lifecycle."
+      ],
+      "runtimeStatus": "522 HTTP assertions and 14 integrity/state records; baseline 356 tests pass",
+      "summary": "Controlled local authorization and requester/admin workflow assessment of exact Phase 5 checkpoint.",
+      "validationMode": "local synthetic HTTP/PostgreSQL and independent source/browser reviews"
+    },
+    "sealedAt": "2026-09-30T21:33:37.865005Z",
+    "startedAt": "2026-09-30T21:08:03.139099Z",
+    "status": "completed",
+    "target": {
+      "displayName": "SWRTracker",
+      "kind": "git_revision",
+      "revision": "da855c0123d003585d83a11323282998e94a339c",
+      "targetId": "target_sha256_c34cee825c6767e0adc0d0e881b4a03a4f6731a56b9dd0963a8d0f625f7d2bc4"
+    },
+    "threatModel": {
+      "assets": [
+        "Tenant/project/company identity and memberships (001_initial_schema.sql:19-49; 012_tenant_memberships.sql:4-10; 021_identity_tenant_boundary_hardening.sql:14-16).",
+        "Request contents, operational state, assignments, audit histories and notification payloads.",
+        "Private bytes and metadata stored under configured root/<tenant>/<ticket>/<generated object> (attachment/infrastructure/index.ts:76-101).",
+        "JWT_SECRET signing authority, user session_version and per-token revocation hash (src/lib/auth.ts:35-79,106-128)."
+      ],
+      "assumptions": [
+        "Company is not tenant; A/B separate-tenant matrix and Company C same-tenant subcontractor test used.",
+        "Generic Compose lacks attachment volume/root configuration, whereas Sabine mounts named durable root; deployment durability not runtime tested.",
+        "Native beta merges inherited environment; its Unix socket setup is not directly Windows compatible. Assessment used separate Docker database and explicit env.",
+        "POSIX storage modes do not establish Windows ACL guarantees; production ACL/static proxy mounts unverified.",
+        "Historical audit claim of missing Superintendent review wiring is stale; current explicit SURVEY_REVIEWER transaction guards exist (survey-review-authority.ts:11-44).",
+        "No request delete/move or signed URLs to test. Every repository file, concurrent revocation race, real production deployment and full assistive-technology UX not audited.",
+        "Original phase5 ref moved concurrently from da855c0 to 0803d5e; assessment duplicate stayed pinned and did not alter original."
+      ],
+      "attackerCapabilities": [
+        "Unauthenticated client can submit login/bootstrap inputs; cannot sign identities.",
+        "Authenticated actor controls URL/query/body UUIDs, uploads and captured URLs, but has no assumed tenant/project/admin privileges.",
+        "Crew member can read shared Chief work while link active; read capability must not become teammate mutation or persist after link inactive.",
+        "Project Superintendent has current Area scope; project membership must not authorize other Area creation.",
+        "Operator filesystem/Docker/database authority trusted; direct SQL changed only synthetic fixture to test modeled inactive relationship."
+      ],
+      "securityObjectives": [
+        "No unauthorized tenant/project/request/file/metadata access through identifiers or UI alternatives.",
+        "Current relationships and logout/session revocation enforced server-side.",
+        "Separate company and tenant policies, inherited read scope and mutation authority.",
+        "Attachment persistence, correct request association, unique keys and integrity.",
+        "Preserve original source; no fixes, real users or external system testing."
+      ],
+      "summary": "Exact da855c0 SWRTracker is Next.js UI/API, PostgreSQL tenancy/ticket/workflow/audit data, filesystem attachments and optional notification worker (package.json:7-11; src/lib/db.ts:8-15). Assessment used independent synthetic loopback database 15495, web 3115 and duplicate .assessment/attachments, no delivery worker.",
+      "trustBoundaries": [
+        "Unauthenticated credentials to tenant-scoped bcrypt authentication; HttpOnly/Strict cookie with Secure in production (auth/login/handler.ts:35-86).",
+        "Signed identity to active session, tenant/project membership and DB-derived scope; middleware presence is UX only (src/lib/auth.ts:65-128; get-project-role.ts:25-43; middleware.ts:17-25).",
+        "Project role to requester/department/Area/crew visibility; current database links define inherited capabilities (resolve-visibility.ts:38-79; ticket-visibility-clause.ts:14-69).",
+        "Visible work to role/state/exact-assignee mutation authority; transaction and row version protect state/audit integrity (workflow/application/kernel.ts:54-75).",
+        "Visible ticket to attachment lookup binding tenant+ticket+attachment, server private storage read and audited private/no-store download (attachments/handler.ts:205-281).",
+        "Access administrator to scoped Company View grant/revoke: tenant admin or project IT; transaction stores grant and event (access-administrator.ts:11-33; company-authority/route.ts:35-52).",
+        "Operator configured DB pool consumes DATABASE_URL; generic compose web/worker load .env; no actual production credential or endpoint inspected (src/lib/db.ts:8-15; docker-compose.yml:7-23).",
+        "Local filesystem consumer root differs by deployment: generic image /app/.data/attachments without override (Dockerfile:18,26; storage index.ts:76); native beta .data/beta/attachments via beta.env (beta-runtime.ts:9-13,110-120); Sabine explicitly /var/lib/swr/attachments on named volume (sabine-runtime.mjs:93-103).",
+        "Email transport selects operator EMAIL_WEBHOOK_URL and optional bearer credential; console rejects password reset delivery. Synthetic test cleared webhook and did not launch worker (src/lib/email.ts:15-25,35-79)."
+      ]
+    }
+  },
+  "schemaVersion": "1.0"
+}

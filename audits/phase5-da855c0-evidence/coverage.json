@@ -1,0 +1,51 @@
+{
+  "completeness": "partial",
+  "deferred": [],
+  "documentType": "codex-security.coverage",
+  "excludePaths": [],
+  "explicitExclusions": [],
+  "includePaths": [
+    "."
+  ],
+  "inventoryStrategy": "repository",
+  "mode": "repository",
+  "openQuestions": [
+    {
+      "question": "Not all 503 repository files fully audited; focus is requested authorization boundaries."
+    },
+    {
+      "question": "No request move/delete or signed-URL implementations to exercise."
+    },
+    {
+      "question": "Concurrent permission-revocation races, deployment proxy/static mappings, Windows ACLs and durable production storage were not verified."
+    },
+    {
+      "question": "PROJECT_ADMIN notification payload policy conflicts with stated lack of ticket visibility; requires policy decision."
+    }
+  ],
+  "scanId": "faa776a4-c471-4091-ae1c-0dfe9ba8659f",
+  "schemaVersion": "1.0",
+  "surfaces": [
+    {
+      "disposition": "reported",
+      "id": "authorization",
+      "label": "Tenant/project/request guards, direct APIs and role mutations",
+      "notes": "Local synthetic matrix plus independent static review. AUTH-001 and REQ-001 reproduce unauthorized writes; AUTH-002 existence oracle. Tenant/project requester isolation held.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "reported",
+      "id": "attachments",
+      "label": "File upload/download, metadata and revocation",
+      "notes": "FILE-001 reproduced inactive crew file access. Cross-tenant/project identifiers and unauthenticated URLs denied; current membership/company-view/logout revocation passed.",
+      "receiptRefs": []
+    },
+    {
+      "disposition": "needs_follow_up",
+      "id": "ux",
+      "label": "Requester and IT/admin workflows",
+      "notes": "Independent source and browser/detector reviews; missing lifecycle and audit surfaces documented in requested brief.",
+      "receiptRefs": []
+    }
+  ]
+}

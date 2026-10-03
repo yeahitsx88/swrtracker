@@ -1,0 +1,513 @@
+{
+  "documentType": "codex-security.findings",
+  "findings": [
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "The creation route resolves project role and accepts the client-selected AOR. The use case verifies project ownership of that AOR and active field roles, then creates work without checking the Superintendent's current authorized Area population."
+        },
+        "reachability": {
+          "summary": "Log in as an Area-A Superintendent. POST /api/tickets with DIRECT_ASSIGNMENT, the Area-B UUID, an active requester and active project crew. Receive 201 and an assigned request outside the actor's visible population."
+        },
+        "summary": "Log in as an Area-A Superintendent. POST /api/tickets with DIRECT_ASSIGNMENT, the Area-B UUID, an active requester and active project crew. Receive 201 and an assigned request outside the actor's visible population."
+      },
+      "codeEvidence": [
+        {
+          "code": "const aorNodeCode = await repo.findAorNodeCode(db, params.tenantId, params.projectId, params.aorNodeId);\n  if (!aorNodeCode) {\n    throw new NotFoundError('AOR node not found');\n  }",
+          "endLine": 71,
+          "explanation": "The creation route resolves project role and accepts the client-selected AOR. The use case verifies project ownership of that AOR and active field roles, then creates work without checking the Superintendent's current authorized Area population.",
+          "id": "root",
+          "label": "Missing or inconsistent authorization control",
+          "language": "typescript",
+          "path": "src/modules/ticket/application/create-direct-assignment-ticket.ts",
+          "role": "root_control",
+          "startLine": 68
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Parent local HTTP and database reproduction plus source trace at exact da855c0."
+      },
+      "findingId": "csf_d4a834a4ad7ca8da4d70411e",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:6429c50ea07ab773403975c0379104f105df4f446bb4e5c49f040bf58faabf0c"
+      },
+      "identity": {
+        "anchor": "auth-001-superintendent-creates-work-outside-authorized-area"
+      },
+      "locations": [
+        {
+          "endLine": 71,
+          "path": "src/modules/ticket/application/create-direct-assignment-ticket.ts",
+          "role": "root_control",
+          "startLine": 68
+        }
+      ],
+      "occurrenceId": "occ_24074420a316edff3134bb6f",
+      "provenance": {
+        "candidateId": "AUTH-area-direct",
+        "originalCandidates": [
+          {
+            "cwe": "CWE-863",
+            "path": "src/modules/ticket/application/create-direct-assignment-ticket.ts",
+            "startLine": 68,
+            "summary": "DIRECT_ASSIGNMENT checks project role and project-owned AOR but not Superintendent authorized Area.",
+            "title": "Superintendent direct assignment bypasses Area scope"
+          }
+        ],
+        "source": "local_plugin"
+      },
+      "remediation": "Check current Superintendent Area authorization inside the direct-creation transaction before numbering, saving or returning work.",
+      "remediationTests": [
+        "Log in as an Area-A Superintendent. POST /api/tickets with DIRECT_ASSIGNMENT, the Area-B UUID, an active requester and active project crew. Receive 201 and an assigned request outside the actor's visible population. Expected: deny before unauthorized reads or writes."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "summary": "The creation route resolves project role and accepts the client-selected AOR. The use case verifies project ownership of that AOR and active field roles, then creates work without checking the Superintendent's current authorized Area population."
+      },
+      "ruleId": "authorization.direct-assignment-area",
+      "severity": {
+        "level": "high",
+        "rationale": "Same project only; tenant/project and crew eligibility controls remain effective."
+      },
+      "summary": "A project Superintendent assigned only Area A can POST a direct assignment in Area B. The API returns 201 and persists ASSIGNED work, even though the same actor's subsequent detail GET returns 404.",
+      "taxonomy": {
+        "category": "authorization",
+        "cwe": [
+          "CWE-863"
+        ]
+      },
+      "title": "AUTH-001: Superintendent creates work outside authorized Area",
+      "validation": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "limitations": [
+          "Same project only; tenant/project and crew eligibility controls remain effective."
+        ],
+        "method": "local HTTP and PostgreSQL synthetic fixtures plus source trace",
+        "summary": "A project Superintendent assigned only Area A can POST a direct assignment in Area B. The API returns 201 and persists ASSIGNED work, even though the same actor's subsequent detail GET returns 404."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator."
+        },
+        "reachability": {
+          "summary": "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1."
+        },
+        "summary": "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1."
+      },
+      "codeEvidence": [
+        {
+          "code": "return performTransition(db, repo, {\n    tenantId:       params.tenantId,\n    ticketId:       params.ticketId,\n    actorId:        params.actorId,\n    actorRole:      params.actorRole,\n    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'SURVEY_MANAGER'],\n    to:             'PENDING_PC_APPROVAL',\n    patch:          {\n      pendingPcOutcome: 'FIELD_CANCELED',\n      pendingPcReason: params.reason ?? null,\n    },",
+          "endLine": 31,
+          "explanation": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator.",
+          "id": "root",
+          "label": "Missing or inconsistent authorization control",
+          "language": "typescript",
+          "path": "src/modules/ticket/application/request-field-cancel.ts",
+          "role": "root_control",
+          "startLine": 19
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Parent local HTTP and database reproduction plus source trace at exact da855c0."
+      },
+      "findingId": "csf_3917f96f5d55b82a9f86ef1a",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:0b69f55d2a5806636d1b245f95ca008316a71553bcfdad44b949906b41114798"
+      },
+      "identity": {
+        "anchor": "req-001-crew-member-cancels-a-teammate-s-delayed-work"
+      },
+      "locations": [
+        {
+          "endLine": 31,
+          "path": "src/modules/ticket/application/request-field-cancel.ts",
+          "role": "root_control",
+          "startLine": 19
+        }
+      ],
+      "occurrenceId": "occ_6ba90dec81888755d181b8ee",
+      "provenance": {
+        "candidateId": "REQ-field-cancel",
+        "originalCandidates": [
+          {
+            "cwe": "CWE-863",
+            "path": "src/modules/ticket/application/request-field-cancel.ts",
+            "startLine": 19,
+            "summary": "Crew read visibility reaches teammate ticket; field cancel lacks exact assignee check.",
+            "title": "Instrument Man can field-cancel delayed teammate ticket"
+          }
+        ],
+        "previousFindings": [
+          {
+            "attackPath": {
+              "dataflow": {
+                "summary": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator."
+              },
+              "reachability": {
+                "summary": "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1."
+              },
+              "summary": "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1."
+            },
+            "codeEvidence": [
+              {
+                "code": "return performTransition(db, repo, {\n    tenantId:       params.tenantId,\n    ticketId:       params.ticketId,\n    actorId:        params.actorId,\n    actorRole:      params.actorRole,\n    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'SURVEY_MANAGER'],\n    to:             'PENDING_PC_APPROVAL',\n    patch:          {\n      pendingPcOutcome: 'FIELD_CANCELED',\n      pendingPcReason: params.reason ?? null,\n    },",
+                "endLine": 31,
+                "explanation": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator.",
+                "id": "root",
+                "label": "Missing or inconsistent authorization control",
+                "language": "typescript",
+                "path": "src/modules/ticket/application/request-field-cancel.ts",
+                "role": "root_control",
+                "startLine": 20
+              }
+            ],
+            "confidence": {
+              "level": "high",
+              "rationale": "Parent local HTTP and database reproduction plus source trace at exact da855c0."
+            },
+            "identity": {
+              "anchor": "req-001-crew-member-cancels-a-teammate-s-delayed-work"
+            },
+            "locations": [
+              {
+                "endLine": 31,
+                "path": "src/modules/ticket/application/request-field-cancel.ts",
+                "role": "root_control",
+                "startLine": 20
+              }
+            ],
+            "provenance": {
+              "candidateId": "REQ-field-cancel",
+              "originalCandidates": [
+                {
+                  "cwe": "CWE-863",
+                  "path": "src/modules/ticket/application/request-field-cancel.ts",
+                  "startLine": 19,
+                  "summary": "Crew read visibility reaches teammate ticket; field cancel lacks exact assignee check.",
+                  "title": "Instrument Man can field-cancel delayed teammate ticket"
+                }
+              ],
+              "source": "local_plugin"
+            },
+            "remediation": "Require Instrument Man actor ID to match assignedInstrumentManId for field disposition, or retire the legacy route under the approved workflow compatibility policy.",
+            "remediationTests": [
+              "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1. Expected: deny before unauthorized reads or writes."
+            ],
+            "rootCause": {
+              "evidenceRefs": [
+                "root"
+              ],
+              "summary": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator."
+            },
+            "ruleId": "authorization.field-cancel-assignee",
+            "severity": {
+              "level": "high",
+              "rationale": "Requires shared crew and DELAYED state; terminal cancellation still needs approval."
+            },
+            "summary": "IM1 sharing a Party Chief with IM2 can POST field-cancel on IM2's DELAYED request. The API returns 200 and the database becomes PENDING_PC_APPROVAL with FIELD_CANCELED.",
+            "taxonomy": {
+              "category": "authorization",
+              "cwe": [
+                "CWE-863"
+              ]
+            },
+            "title": "REQ-001: Crew member cancels a teammate's delayed work",
+            "validation": {
+              "evidenceRefs": [
+                "root"
+              ],
+              "limitations": [
+                "Requires shared crew and DELAYED state; terminal cancellation still needs approval."
+              ],
+              "method": "local HTTP and PostgreSQL synthetic fixtures plus source trace",
+              "summary": "IM1 sharing a Party Chief with IM2 can POST field-cancel on IM2's DELAYED request. The API returns 200 and the database becomes PENDING_PC_APPROVAL with FIELD_CANCELED."
+            }
+          },
+          {
+            "attackPath": {
+              "dataflow": {
+                "summary": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator."
+              },
+              "reachability": {
+                "summary": "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1."
+              },
+              "summary": "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1."
+            },
+            "codeEvidence": [
+              {
+                "code": "return performTransition(db, repo, {\n    tenantId:       params.tenantId,\n    ticketId:       params.ticketId,\n    actorId:        params.actorId,\n    actorRole:      params.actorRole,\n    permittedRoles: ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'SURVEY_MANAGER'],\n    to:             'PENDING_PC_APPROVAL',\n    patch:          {\n      pendingPcOutcome: 'FIELD_CANCELED',\n      pendingPcReason: params.reason ?? null,\n    },",
+                "endLine": 31,
+                "explanation": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator.",
+                "id": "root",
+                "label": "Missing or inconsistent authorization control",
+                "language": "typescript",
+                "path": "src/modules/ticket/application/request-field-cancel.ts",
+                "role": "root_control",
+                "startLine": 20
+              }
+            ],
+            "confidence": {
+              "level": "high",
+              "rationale": "Parent local HTTP and database reproduction plus source trace at exact da855c0."
+            },
+            "locations": [
+              {
+                "endLine": 31,
+                "path": "src/modules/ticket/application/request-field-cancel.ts",
+                "role": "root_control",
+                "startLine": 20
+              }
+            ],
+            "provenance": {
+              "candidateId": "REQ-field-cancel",
+              "source": "local_plugin"
+            },
+            "remediation": "Require Instrument Man actor ID to match assignedInstrumentManId for field disposition, or retire the legacy route under the approved workflow compatibility policy.",
+            "remediationTests": [
+              "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1. Expected: deny before unauthorized reads or writes."
+            ],
+            "rootCause": {
+              "evidenceRefs": [
+                "root"
+              ],
+              "summary": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator."
+            },
+            "ruleId": "authorization.field-cancel-assignee",
+            "severity": {
+              "level": "high",
+              "rationale": "Requires shared crew and DELAYED state; terminal cancellation still needs approval."
+            },
+            "summary": "IM1 sharing a Party Chief with IM2 can POST field-cancel on IM2's DELAYED request. The API returns 200 and the database becomes PENDING_PC_APPROVAL with FIELD_CANCELED.",
+            "taxonomy": {
+              "category": "authorization",
+              "cwe": [
+                "CWE-863"
+              ]
+            },
+            "title": "REQ-001: Crew member cancels a teammate's delayed work",
+            "validation": {
+              "evidenceRefs": [
+                "root"
+              ],
+              "limitations": [
+                "Requires shared crew and DELAYED state; terminal cancellation still needs approval."
+              ],
+              "method": "local HTTP and PostgreSQL synthetic fixtures plus source trace",
+              "summary": "IM1 sharing a Party Chief with IM2 can POST field-cancel on IM2's DELAYED request. The API returns 200 and the database becomes PENDING_PC_APPROVAL with FIELD_CANCELED."
+            }
+          }
+        ],
+        "source": "local_plugin"
+      },
+      "remediation": "Require Instrument Man actor ID to match assignedInstrumentManId for field disposition, or retire the legacy route under the approved workflow compatibility policy.",
+      "remediationTests": [
+        "Create two Instrument Men under one Party Chief, assign a delayed request only to IM2, then POST its field-cancel endpoint as IM1. Expected: deny before unauthorized reads or writes."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "summary": "Crew visibility permits reading a teammate's request. The field-cancel use case forwards that visibility to a role/state transition without requiring the Instrument Man to be the exact assigned operator."
+      },
+      "ruleId": "authorization.field-cancel-assignee",
+      "severity": {
+        "level": "high",
+        "rationale": "Requires shared crew and DELAYED state; terminal cancellation still needs approval."
+      },
+      "summary": "IM1 sharing a Party Chief with IM2 can POST field-cancel on IM2's DELAYED request. The API returns 200 and the database becomes PENDING_PC_APPROVAL with FIELD_CANCELED.",
+      "taxonomy": {
+        "category": "authorization",
+        "cwe": [
+          "CWE-863"
+        ]
+      },
+      "title": "REQ-001: Crew member cancels a teammate's delayed work",
+      "validation": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "limitations": [
+          "Requires shared crew and DELAYED state; terminal cancellation still needs approval."
+        ],
+        "method": "local HTTP and PostgreSQL synthetic fixtures plus source trace",
+        "summary": "IM1 sharing a Party Chief with IM2 can POST field-cancel on IM2's DELAYED request. The API returns 200 and the database becomes PENDING_PC_APPROVAL with FIELD_CANCELED."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "resolveVisibility obtains the former Party Chief from findPartyChiefForInstrumentMan, which ignores crew_rosters.deactivated_at. The resulting SQL grants Party-Chief crew visibility and attachment download trusts that visible-ticket result."
+        },
+        "reachability": {
+          "summary": "Give IM1 a current roster link to a Party Chief, obtain a teammate attachment URL, then mark that synthetic roster row inactive while retaining the account's Instrument Man membership. Replay the URL: bytes are still returned."
+        },
+        "summary": "Give IM1 a current roster link to a Party Chief, obtain a teammate attachment URL, then mark that synthetic roster row inactive while retaining the account's Instrument Man membership. Replay the URL: bytes are still returned."
+      },
+      "codeEvidence": [
+        {
+          "code": "`SELECT party_chief_id FROM crew_rosters\n       WHERE tenant_id = $1 AND project_id = $2 AND instrument_man_id = $3\n       LIMIT 1`,\n      [tenantId, projectId, instrumentManId],",
+          "endLine": 482,
+          "explanation": "resolveVisibility obtains the former Party Chief from findPartyChiefForInstrumentMan, which ignores crew_rosters.deactivated_at. The resulting SQL grants Party-Chief crew visibility and attachment download trusts that visible-ticket result.",
+          "id": "root",
+          "label": "Missing or inconsistent authorization control",
+          "language": "typescript",
+          "path": "src/modules/ticket/infrastructure/ticket.repository.ts",
+          "role": "root_control",
+          "startLine": 479
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Parent local HTTP and database reproduction plus source trace at exact da855c0."
+      },
+      "findingId": "csf_dfe9371a1d0b2aa6dad5d27a",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:13f0ed6fccfebbb2f085ddd88d2c7ced6dadce04524c31171fb8aec3b10c1c65"
+      },
+      "identity": {
+        "anchor": "file-001-inactive-crew-links-retain-request-and-attachment-access"
+      },
+      "locations": [
+        {
+          "endLine": 482,
+          "path": "src/modules/ticket/infrastructure/ticket.repository.ts",
+          "role": "root_control",
+          "startLine": 479
+        }
+      ],
+      "occurrenceId": "occ_1c7fa4902afc7eff0dee2565",
+      "provenance": {
+        "candidateId": "FILE-inactive-roster",
+        "source": "local_plugin"
+      },
+      "remediation": "Exclude inactive roster links when resolving all inherited request visibility; preserve exact-own assignment separately. Recheck every membership-derived file control after revocation and add a supported audited roster removal workflow.",
+      "remediationTests": [
+        "Give IM1 a current roster link to a Party Chief, obtain a teammate attachment URL, then mark that synthetic roster row inactive while retaining the account's Instrument Man membership. Replay the URL: bytes are still returned. Expected: deny before unauthorized reads or writes."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "summary": "resolveVisibility obtains the former Party Chief from findPartyChiefForInstrumentMan, which ignores crew_rosters.deactivated_at. The resulting SQL grants Party-Chief crew visibility and attachment download trusts that visible-ticket result."
+      },
+      "ruleId": "authorization.inactive-crew-file-access",
+      "severity": {
+        "level": "critical",
+        "rationale": "Revocation was a controlled SQL fixture change because this checkpoint lacks roster removal. No cross-project or cross-tenant file exposure was observed. User rubric classifies unauthorized attachment retrieval critical."
+      },
+      "summary": "After a synthetic roster link is deactivated, the former crew member still receives the teammate request, filenames and attachment bytes with HTTP 200. The account assignment API simultaneously reports an empty crew.",
+      "taxonomy": {
+        "category": "authorization",
+        "cwe": [
+          "CWE-863"
+        ]
+      },
+      "title": "FILE-001: Inactive crew links retain request and attachment access",
+      "validation": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "limitations": [
+          "Revocation was a controlled SQL fixture change because this checkpoint lacks roster removal. No cross-project or cross-tenant file exposure was observed. User rubric classifies unauthorized attachment retrieval critical."
+        ],
+        "method": "local HTTP and PostgreSQL synthetic fixtures plus source trace",
+        "summary": "After a synthetic roster link is deactivated, the former crew member still receives the teammate request, filenames and attachment bytes with HTTP 200. The account assignment API simultaneously reports an empty crew."
+      }
+    },
+    {
+      "attackPath": {
+        "dataflow": {
+          "summary": "The route looks up the tenant-scoped request before resolving membership. Existing unassigned requests fail membership with ForbiddenError, while absent requests fail NotFoundError."
+        },
+        "reachability": {
+          "summary": "As User A, GET the known A-Project-2 request UUID and then a nonexistent UUID. Observe 403 versus 404; both are otherwise unauthorized."
+        },
+        "summary": "As User A, GET the known A-Project-2 request UUID and then a nonexistent UUID. Observe 403 versus 404; both are otherwise unauthorized."
+      },
+      "codeEvidence": [
+        {
+          "code": "const { rows } = await pool.query<{ project_id: string }>(\n    `SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1`,\n    [ticketId, auth.tenantId],\n  );\n  if (!rows[0]) throw new NotFoundError(`Ticket ${ticketId} not found`);\n  const projectId = rows[0].project_id as UUID;\n\n  const actorRole = await getProjectRole(\n    pool, auth.tenantId, projectId, auth.userId, auth.sessionVersion,\n  );",
+          "endLine": 45,
+          "explanation": "The route looks up the tenant-scoped request before resolving membership. Existing unassigned requests fail membership with ForbiddenError, while absent requests fail NotFoundError.",
+          "id": "root",
+          "label": "Missing or inconsistent authorization control",
+          "language": "typescript",
+          "path": "src/lib/ticket-route-helpers.ts",
+          "role": "root_control",
+          "startLine": 34
+        }
+      ],
+      "confidence": {
+        "level": "high",
+        "rationale": "Parent local HTTP and database reproduction plus source trace at exact da855c0."
+      },
+      "findingId": "csf_9a8bfad4cf289343cb5ba20a",
+      "fingerprints": {
+        "algorithm": "codex-security/v1",
+        "primary": "codex-security/v1:sha256:5744e79ecdad84b809435d0eb1ea9f225c3a8a3375417ab2cbac6d4a9fd3cce7"
+      },
+      "identity": {
+        "anchor": "auth-002-denial-responses-reveal-unassigned-request-existence"
+      },
+      "locations": [
+        {
+          "endLine": 45,
+          "path": "src/lib/ticket-route-helpers.ts",
+          "role": "root_control",
+          "startLine": 34
+        }
+      ],
+      "occurrenceId": "occ_cb4dccebc4afe29799d51a29",
+      "provenance": {
+        "candidateId": "AUTH-existence",
+        "source": "local_plugin"
+      },
+      "remediation": "Use one intentional not-visible response for request metadata, details, history and attachment routes without returning existence signals to unauthorized members.",
+      "remediationTests": [
+        "As User A, GET the known A-Project-2 request UUID and then a nonexistent UUID. Observe 403 versus 404; both are otherwise unauthorized. Expected: deny before unauthorized reads or writes."
+      ],
+      "rootCause": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "summary": "The route looks up the tenant-scoped request before resolving membership. Existing unassigned requests fail membership with ForbiddenError, while absent requests fail NotFoundError."
+      },
+      "ruleId": "information-disclosure.request-existence",
+      "severity": {
+        "level": "medium",
+        "rationale": "Limited to same-tenant existence with identifiers; UUIDs are not sequential and other-tenant IDs remain 404."
+      },
+      "summary": "A requester receives 403 for an existing request in an unassigned project but 404 for a nonexistent request. This confirms same-tenant request existence without revealing its title or content.",
+      "taxonomy": {
+        "category": "information-disclosure",
+        "cwe": [
+          "CWE-203"
+        ]
+      },
+      "title": "AUTH-002: Denial responses reveal unassigned request existence",
+      "validation": {
+        "evidenceRefs": [
+          "root"
+        ],
+        "limitations": [
+          "Limited to same-tenant existence with identifiers; UUIDs are not sequential and other-tenant IDs remain 404."
+        ],
+        "method": "local HTTP and PostgreSQL synthetic fixtures plus source trace",
+        "summary": "A requester receives 403 for an existing request in an unassigned project but 404 for a nonexistent request. This confirms same-tenant request existence without revealing its title or content."
+      }
+    }
+  ],
+  "scanId": "faa776a4-c471-4091-ae1c-0dfe9ba8659f",
+  "schemaVersion": "1.0"
+}

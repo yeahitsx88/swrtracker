@@ -1,0 +1,174 @@
+{
+  "projects": [
+    {
+      "id": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+      "company": "A",
+      "n": 1,
+      "name": "A-Project-1",
+      "aor": "53dc4108-4223-4304-ae26-77e1feee7d06",
+      "level": "9215990c-cd49-46fe-97b3-91e17e846862",
+      "department": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+      "ticket": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+      "owner": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+      "attachment": "94c299f5-6c10-4846-ae29-f285a4642953",
+      "download": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953"
+    },
+    {
+      "id": "78be9af8-b83f-4d82-bb72-7a2547f0c4b6",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+      "company": "A",
+      "n": 2,
+      "name": "A-Project-2",
+      "aor": "0e3efe3f-f260-4cf9-a2d0-8e696268cff8",
+      "level": "0b538e8f-3837-4db3-b122-b62ddbd8186c",
+      "department": "be68c217-2a25-4d51-9f51-37eddaa8e462",
+      "ticket": "5020c834-daed-4a2b-a59e-dd4dc3f1b1f1",
+      "owner": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+      "attachment": "a0211999-3c0c-43ac-81af-c0ae4659f461",
+      "download": "/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461"
+    },
+    {
+      "id": "53b04df4-42d4-489d-8bd3-9e853ee12ba3",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+      "company": "B",
+      "n": 1,
+      "name": "B-Project-1",
+      "aor": "dbddab86-8c33-41f4-b888-e8024ce3d66e",
+      "level": "60023620-473f-41a8-b8a6-f952ee932d68",
+      "department": "efc9a554-a40e-4ab2-9f37-0dd13f028f8c",
+      "ticket": "30b610e7-9ce3-40b6-bbc8-adc38ace78be",
+      "owner": "675ebd5b-76cb-45d4-8ded-e1a721cd4c63",
+      "attachment": "9b395c02-46ac-4a4c-a695-b81e539d7044",
+      "download": "/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044"
+    },
+    {
+      "id": "b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+      "company": "B",
+      "n": 2,
+      "name": "B-Project-2",
+      "aor": "517e8688-97f9-4bae-90f2-2738fc5b3f2b",
+      "level": "eceec914-1266-42ca-8b81-87e002a5bcd6",
+      "department": "59a28368-f00d-46b4-b827-49770ba1f55c",
+      "ticket": "bed546e9-356d-4c17-8d6e-9eb79159af2c",
+      "owner": "675ebd5b-76cb-45d4-8ded-e1a721cd4c63",
+      "attachment": "2741f8d0-d54e-4d99-8e00-2b19b101b197",
+      "download": "/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197"
+    },
+    {
+      "id": "d284ffa9-6b43-4f49-b063-b6df0b66e34a",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+      "company": "B",
+      "n": 3,
+      "name": "B-Project-3",
+      "aor": "5acdb0b3-7f42-4d9e-80a5-c2ae37fa0869",
+      "level": "1e7b6b1c-d44b-4211-a585-e70d841d0652",
+      "department": "b450d309-af62-4fa8-821a-01ea22ff7355",
+      "ticket": "89d65078-dbe4-4b9b-8e68-49665e6d0d5c",
+      "owner": "675ebd5b-76cb-45d4-8ded-e1a721cd4c63",
+      "attachment": "49e719d3-8250-4af3-ad57-bb7bd4404d96",
+      "download": "/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96"
+    }
+  ],
+  "users": {
+    "A-requester": {
+      "id": "577bee80-b184-41b8-89e2-d840d3f91f41",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+      "email": "a-requester@example.invalid",
+      "name": "Synthetic A requester",
+      "role": "requester"
+    },
+    "A-admin": {
+      "id": "72912668-f2b0-4a72-bc8f-8a8c4ffc0044",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "email": "a-admin@example.invalid",
+      "name": "Synthetic A admin",
+      "role": "admin"
+    },
+    "A-projectIT": {
+      "id": "673422be-e3c3-4d49-99c6-17f8885a209b",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "email": "a-projectIT@example.invalid",
+      "name": "Synthetic A projectIT",
+      "role": "projectIT"
+    },
+    "A-coworker": {
+      "id": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+      "email": "a-coworker@example.invalid",
+      "name": "Synthetic A coworker",
+      "role": "coworker"
+    },
+    "A-lead": {
+      "id": "927b67a9-ea2d-401f-a360-3e92a992a594",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "email": "a-lead@example.invalid",
+      "name": "Synthetic A lead",
+      "role": "lead"
+    },
+    "B-requester": {
+      "id": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+      "email": "b-requester@example.invalid",
+      "name": "Synthetic B requester",
+      "role": "requester"
+    },
+    "B-admin": {
+      "id": "b0a4e68a-6ffc-48d3-b986-ab8751c481c3",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "2b91b63b-9462-48df-ac27-c2db9ff28a9b",
+      "email": "b-admin@example.invalid",
+      "name": "Synthetic B admin",
+      "role": "admin"
+    },
+    "B-projectIT": {
+      "id": "12155bbb-0ff5-4447-b008-a16ceaf59f6c",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "2b91b63b-9462-48df-ac27-c2db9ff28a9b",
+      "email": "b-projectIT@example.invalid",
+      "name": "Synthetic B projectIT",
+      "role": "projectIT"
+    },
+    "B-coworker": {
+      "id": "675ebd5b-76cb-45d4-8ded-e1a721cd4c63",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+      "email": "b-coworker@example.invalid",
+      "name": "Synthetic B coworker",
+      "role": "coworker"
+    },
+    "B-lead": {
+      "id": "cb4ebdd8-832b-4c52-87e0-6dabdc623690",
+      "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+      "companyId": "2b91b63b-9462-48df-ac27-c2db9ff28a9b",
+      "email": "b-lead@example.invalid",
+      "name": "Synthetic B lead",
+      "role": "lead"
+    },
+    "C-requester": {
+      "id": "36531f55-b8ab-40d7-ae23-a5684b5a0e30",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "03f1b6dd-e005-41a3-af17-dcdd207230be",
+      "email": "c-requester@example.invalid",
+      "name": "Synthetic C requester",
+      "role": "requester"
+    }
+  },
+  "sameTenantTicket": "c6202729-2f1b-4038-bb0b-46e94f4d1ae7",
+  "password": "SyntheticOnly!2026",
+  "sameTenantAttachment": "ea56a8d9-72e3-4255-8c84-70b81b6b4b93",
+  "ownTicket": "7f7168f4-46fd-49c8-b86a-b43d603624ba",
+  "ownAttachment": "5c8b5be2-cbdb-4dae-8f1a-5230e8359894"
+}

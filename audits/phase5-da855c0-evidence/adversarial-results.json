@@ -1,0 +1,913 @@
+[
+  {
+    "label": "AUTH-001 Superintendent creates outside authorized Area",
+    "user": "Synthetic A superintendent",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 201,
+    "result": "FAIL",
+    "body": {
+      "ticket": {
+        "id": "91b78a46-5a75-415e-9b56-7494c4c84c2b",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "95630466-3150-4913-b63e-45798dc4521f",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": "FSS-DENIED-00002",
+        "ticketType": "LAYOUT",
+        "requesterId": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "assignedPartyChiefId": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+        "assignedInstrumentManId": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+        "surveyLeadId": "f482a628-2740-49d5-bd3c-d21d325cc121",
+        "workflowVariant": "DIRECT_ASSIGNMENT",
+        "status": "ASSIGNED",
+        "craft": "",
+        "fieldContact": "Synthetic contact",
+        "fieldChannel": null,
+        "description": "AUTH-001 forbidden Area direct assignment",
+        "requestedDate": "2026-12-01T00:00:00.000Z",
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": "2026-09-30T21:21:23.553Z",
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "createdAt": "2026-09-30T21:21:23.553Z",
+        "updatedAt": "2026-09-30T21:21:23.553Z"
+      }
+    }
+  },
+  {
+    "label": "AUTH-001 Superintendent cannot read newly created forbidden-Area request",
+    "user": "Synthetic A superintendent",
+    "method": "GET",
+    "url": "/api/tickets/91b78a46-5a75-415e-9b56-7494c4c84c2b",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 91b78a46-5a75-415e-9b56-7494c4c84c2b not found",
+        "correlationId": "dd2fb7e4-7375-4899-8c90-19c42107704c",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Crew visibility positive control",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/e529e186-eb37-412a-a9c5-42b7e66d138c",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "e529e186-eb37-412a-a9c5-42b7e66d138c",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "assignedPartyChiefId": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+        "assignedInstrumentManId": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DELAYED",
+        "craft": "Civil",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Delayed teammate synthetic request",
+        "requestedDate": "2026-12-01T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:21:23.952Z",
+        "updatedAt": "2026-09-30T21:21:23.952Z",
+        "requesterName": "Synthetic A coworker",
+        "isOwnRequest": false
+      },
+      "capabilities": {
+        "canEditRequesterFields": false,
+        "canSubmit": false,
+        "canRequesterCancel": false,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": false,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "REQ-001 IM1 field-cancels IM2 delayed ticket",
+    "user": "Synthetic A im1",
+    "method": "POST",
+    "url": "/api/tickets/e529e186-eb37-412a-a9c5-42b7e66d138c/field-cancel",
+    "expected": [
+      403
+    ],
+    "actual": 200,
+    "result": "FAIL",
+    "body": {
+      "ticket": {
+        "id": "e529e186-eb37-412a-a9c5-42b7e66d138c",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "assignedPartyChiefId": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+        "assignedInstrumentManId": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "PENDING_PC_APPROVAL",
+        "craft": "Civil",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Delayed teammate synthetic request",
+        "requestedDate": "2026-12-01T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": "FIELD_CANCELED",
+        "pendingPcReason": "Unauthorized teammate cancellation",
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 1,
+        "createdAt": "2026-09-30T21:21:23.952Z",
+        "updatedAt": "2026-09-30T21:21:24.947Z"
+      }
+    }
+  },
+  {
+    "label": "REQ-001 database outcome",
+    "actual": [
+      {
+        "status": "PENDING_PC_APPROVAL",
+        "pending_pc_outcome": "FIELD_CANCELED"
+      }
+    ]
+  },
+  {
+    "label": "Active crew copied attachment positive control",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Manager removes IM1 from chief roster",
+    "user": "Synthetic A lead",
+    "method": "POST",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing",
+    "expected": [
+      200
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Choose the responsible Survey Superintendent for this Area",
+        "correlationId": "0a01a27a-9e1c-4848-b287-d4a3bc1b66a3",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Revoked roster is inactive",
+    "actual": [
+      {
+        "deactivated_at": null
+      }
+    ]
+  },
+  {
+    "label": "FILE-001 revoked crew cannot download former teammate attachment",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      404
+    ],
+    "actual": 200,
+    "result": "FAIL",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "FILE-001 revoked crew cannot read former teammate request",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "expected": [
+      404
+    ],
+    "actual": 200,
+    "result": "FAIL",
+    "body": {
+      "ticket": {
+        "id": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "assignedPartyChiefId": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+        "assignedInstrumentManId": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "Civil",
+        "fieldContact": "Synthetic contact",
+        "fieldChannel": null,
+        "description": "CONFIDENTIAL SYNTHETIC A-Project-1",
+        "requestedDate": "2026-12-01T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:16:11.405Z",
+        "updatedAt": "2026-09-30T21:16:11.405Z",
+        "requesterName": "Synthetic A coworker",
+        "isOwnRequest": false
+      },
+      "capabilities": {
+        "canEditRequesterFields": false,
+        "canSubmit": false,
+        "canRequesterCancel": false,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": false,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "IT grants scoped company view",
+    "user": "Synthetic A projectIT",
+    "method": "POST",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "grant": {
+        "id": "46bb4066-bae4-42de-a69b-c16397ff3e32",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "userId": "577bee80-b184-41b8-89e2-d840d3f91f41"
+      }
+    }
+  },
+  {
+    "label": "Company view permits coworker request",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "assignedPartyChiefId": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+        "assignedInstrumentManId": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "Civil",
+        "fieldContact": "Synthetic contact",
+        "fieldChannel": null,
+        "description": "CONFIDENTIAL SYNTHETIC A-Project-1",
+        "requestedDate": "2026-12-01T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:16:11.405Z",
+        "updatedAt": "2026-09-30T21:16:11.405Z",
+        "requesterName": "Synthetic A coworker",
+        "isOwnRequest": false
+      },
+      "capabilities": {
+        "canEditRequesterFields": false,
+        "canSubmit": false,
+        "canRequesterCancel": false,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": false,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "Company view permits coworker attachment",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Company view excludes Company C request",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/c6202729-2f1b-4038-bb0b-46e94f4d1ae7",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket c6202729-2f1b-4038-bb0b-46e94f4d1ae7 not found",
+        "correlationId": "5024c0dc-0bdc-42be-89a9-5cd242081d21",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Company view cannot edit coworker request",
+    "user": "Synthetic A requester",
+    "method": "PATCH",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You may only edit your own SWR",
+        "correlationId": "97e54e77-58b6-43d3-9b72-c4e713460cc0",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "IT revokes scoped company view",
+    "user": "Synthetic A projectIT",
+    "method": "DELETE",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority/46bb4066-bae4-42de-a69b-c16397ff3e32",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "success": true
+    }
+  },
+  {
+    "label": "Revoked company view copied file URL denied",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 94ec9131-de74-4dcb-a27b-6971b763afdc not found",
+        "correlationId": "657358c7-066d-4cef-8140-e6394450c9d8",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "94c299f5-6c10-4846-ae29-f285a4642953",
+    "result": "PASS"
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "a0211999-3c0c-43ac-81af-c0ae4659f461",
+    "result": "PASS"
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "9b395c02-46ac-4a4c-a695-b81e539d7044",
+    "result": "PASS"
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "2741f8d0-d54e-4d99-8e00-2b19b101b197",
+    "result": "PASS"
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "49e719d3-8250-4af3-ad57-bb7bd4404d96",
+    "result": "PASS"
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "ea56a8d9-72e3-4255-8c84-70b81b6b4b93",
+    "result": "PASS"
+  },
+  {
+    "label": "Attachment SHA256 disk integrity",
+    "attachmentId": "5c8b5be2-cbdb-4dae-8f1a-5230e8359894",
+    "result": "PASS"
+  },
+  {
+    "label": "Owner byte persistence original",
+    "user": "Synthetic A coworker",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Same filename upload receives distinct object",
+    "user": "Synthetic A coworker",
+    "method": "POST",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "attachment": {
+        "id": "e8e8c05a-3e83-4c1e-85e6-111e1512c32b",
+        "ticketId": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "uploadedBy": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "filename": "COMPANY_A_PROJECT_1_CONFIDENTIAL_TEST.txt",
+        "mimeType": "text/plain",
+        "sizeBytes": 51,
+        "purpose": "REQUEST_INSTRUCTION",
+        "returnCycle": 0,
+        "contentSha256": "3431a83b2c7ae922ff037c0c8a26b648c5fd2453e9b783170fc0f5272b0d07be",
+        "createdAt": "2026-09-30T21:21:27.781Z",
+        "downloadUrl": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/e8e8c05a-3e83-4c1e-85e6-111e1512c32b"
+      }
+    }
+  },
+  {
+    "label": "First object unchanged after same filename upload",
+    "user": "Synthetic A coworker",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "No overwrite",
+    "result": "PASS",
+    "firstId": "94c299f5-6c10-4846-ae29-f285a4642953",
+    "secondId": "e8e8c05a-3e83-4c1e-85e6-111e1512c32b"
+  },
+  {
+    "label": "Archived request attachment remains readable by owner",
+    "user": "Synthetic A coworker",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Requester substitutes different-project Area",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "AOR node not found in this project",
+        "correlationId": "e3e348ae-4e15-42c4-989e-19cc3fb67794",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Account cross-tenant project",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "c4c35738-e9f9-4b3c-a148-06297ccd49b1",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Tenant-admin config cross-tenant",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "74519ad2-0d98-4585-8ee1-3077d95d74ae",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Account cross-tenant project",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "1cf55bf1-c8dc-4759-a8d3-635d51bb2b2c",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Tenant-admin config cross-tenant",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "8dce99d9-dda7-4ecc-bdd0-f46238b08019",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Account cross-tenant project",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "cde4b65b-0bdd-4dbb-91ba-0084378a0c0c",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Tenant-admin config cross-tenant",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "7c4978ea-f893-41f9-a599-5593eda3d6e9",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Account cross-tenant project",
+    "user": "Synthetic B admin",
+    "method": "GET",
+    "url": "/api/account?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "d91a7bfa-9a36-427b-a567-64f5fcf2c51c",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Tenant-admin config cross-tenant",
+    "user": "Synthetic B admin",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "5ba97185-ebd7-4ff0-8b07-3f913bf45322",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Account cross-tenant project",
+    "user": "Synthetic B admin",
+    "method": "GET",
+    "url": "/api/account?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "7bed2b09-cd1c-4b47-ac2a-47f2f4c60314",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Tenant-admin config cross-tenant",
+    "user": "Synthetic B admin",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "ee636563-cabd-4f41-9d48-c2e7924ef82d",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Create replay positive control",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "c25ca1e5-f471-4f2a-8ba3-456cba6676df",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "577bee80-b184-41b8-89e2-d840d3f91f41",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Replay test",
+        "requestedDate": "2026-12-01T00:00:00.000Z",
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "createdAt": "2026-09-30T21:21:28.708Z",
+        "updatedAt": "2026-09-30T21:21:28.708Z"
+      }
+    }
+  },
+  {
+    "label": "Revoked membership idempotency replay denied",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "cc9f1c36-68b7-4e97-9e0f-e58a8331797e",
+        "status": 403
+      }
+    }
+  }
+]

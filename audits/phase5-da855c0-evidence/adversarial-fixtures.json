@@ -1,0 +1,35 @@
+{
+  "staff": {
+    "superintendent": {
+      "id": "f482a628-2740-49d5-bd3c-d21d325cc121",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "name": "Synthetic A superintendent",
+      "email": "superintendent@example.invalid"
+    },
+    "chief": {
+      "id": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "name": "Synthetic A chief",
+      "email": "chief@example.invalid"
+    },
+    "im1": {
+      "id": "5e51c906-b8be-4637-be32-7c81974f3d9b",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "name": "Synthetic A im1",
+      "email": "im1@example.invalid"
+    },
+    "im2": {
+      "id": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+      "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+      "companyId": "e978fca4-5e67-4bbb-a5f2-da5b638a6564",
+      "name": "Synthetic A im2",
+      "email": "im2@example.invalid"
+    }
+  },
+  "forbiddenArea": "95630466-3150-4913-b63e-45798dc4521f",
+  "delayed": "e529e186-eb37-412a-a9c5-42b7e66d138c",
+  "directTicket": "91b78a46-5a75-415e-9b56-7494c4c84c2b"
+}

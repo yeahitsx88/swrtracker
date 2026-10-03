@@ -1,0 +1,1872 @@
+[
+  {
+    "label": "Additive staffing accepts IM2 only",
+    "user": "Synthetic A lead",
+    "method": "POST",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "success": true,
+      "changed": true
+    }
+  },
+  {
+    "label": "Omitting IM1 is additive, not removal",
+    "actual": [
+      {
+        "deactivated_at": null
+      }
+    ]
+  },
+  {
+    "label": "Controlled SQL revocation applied to synthetic roster",
+    "actual": [
+      {
+        "deactivated_at": "2026-09-30T21:23:04.132Z"
+      }
+    ]
+  },
+  {
+    "label": "FILE-001 inactive roster request denied",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "expected": [
+      404
+    ],
+    "actual": 200,
+    "result": "FAIL",
+    "body": {
+      "ticket": {
+        "id": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+        "assignedPartyChiefId": "8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+        "assignedInstrumentManId": "7a93e48c-7979-4879-a78c-5b1cad75bfb0",
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "Civil",
+        "fieldContact": "Synthetic contact",
+        "fieldChannel": null,
+        "description": "CONFIDENTIAL SYNTHETIC A-Project-1",
+        "requestedDate": "2026-12-01T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:16:11.405Z",
+        "updatedAt": "2026-09-30T21:16:11.405Z",
+        "requesterName": "Synthetic A coworker",
+        "isOwnRequest": false
+      },
+      "capabilities": {
+        "canEditRequesterFields": false,
+        "canSubmit": false,
+        "canRequesterCancel": false,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": false,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "FILE-001 inactive roster metadata denied",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments",
+    "expected": [
+      404
+    ],
+    "actual": 200,
+    "result": "FAIL",
+    "body": {
+      "attachments": [
+        {
+          "id": "94c299f5-6c10-4846-ae29-f285a4642953",
+          "ticketId": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+          "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+          "uploadedBy": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+          "filename": "COMPANY_A_PROJECT_1_CONFIDENTIAL_TEST.txt",
+          "mimeType": "text/plain",
+          "sizeBytes": 98,
+          "purpose": "REQUEST_INSTRUCTION",
+          "returnCycle": 0,
+          "contentSha256": "31c1bf23cb769652d8c0b39a1a0c2881f491c53ac88a99784bdc1c056f959d37",
+          "createdAt": "2026-09-30T21:18:41.201Z",
+          "downloadUrl": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953"
+        },
+        {
+          "id": "e8e8c05a-3e83-4c1e-85e6-111e1512c32b",
+          "ticketId": "94ec9131-de74-4dcb-a27b-6971b763afdc",
+          "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+          "uploadedBy": "c1ea40cd-d087-4463-8c1e-2ac1c14fa5d7",
+          "filename": "COMPANY_A_PROJECT_1_CONFIDENTIAL_TEST.txt",
+          "mimeType": "text/plain",
+          "sizeBytes": 51,
+          "purpose": "REQUEST_INSTRUCTION",
+          "returnCycle": 0,
+          "contentSha256": "3431a83b2c7ae922ff037c0c8a26b648c5fd2453e9b783170fc0f5272b0d07be",
+          "createdAt": "2026-09-30T21:21:27.781Z",
+          "downloadUrl": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/e8e8c05a-3e83-4c1e-85e6-111e1512c32b"
+        }
+      ]
+    }
+  },
+  {
+    "label": "FILE-001 inactive roster copied attachment URL denied",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      404
+    ],
+    "actual": 200,
+    "result": "FAIL",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Account agrees crew removed",
+    "user": "Synthetic A im1",
+    "method": "GET",
+    "url": "/api/account?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "name": "Synthetic A im1",
+      "email": "im1@example.invalid",
+      "company": "Company A IT",
+      "assignment": {
+        "role": "INSTRUMENT_MAN",
+        "areas": [],
+        "crew": []
+      }
+    },
+    "cache": "private, no-store"
+  },
+  {
+    "label": "AUTH-002 known unassigned-project request",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1",
+    "expected": [
+      404
+    ],
+    "actual": 403,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "e476b0a2-ed77-47c1-bb1b-cf667f43da51",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "AUTH-002 nonexistent request",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/6ce87efd-2ed8-42b5-97c5-e6a5b827d774",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 6ce87efd-2ed8-42b5-97c5-e6a5b827d774 not found",
+        "correlationId": "9ec7fe61-7359-42e9-a5f1-e71067523509",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "9fde6901-0325-4ae5-8392-d2fa076ff12e",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only the Survey Manager can review staffing assignments",
+        "correlationId": "f795e04a-7b46-40a7-9121-c81f076fcb85",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Access administration requires central or project IT",
+        "correlationId": "1d704935-b10f-4150-b8e5-41fc22a8de70",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic A requester",
+    "method": "PATCH",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only PROJECT_ADMIN or TENANT_ADMIN may manage project request configuration",
+        "correlationId": "0579d232-07dc-4497-8d2f-71a83685949f",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "e2b432c4-3d12-41d6-a870-880c2657747f",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "33e45553-d567-466c-8b52-2939829d6835",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "8fd8586c-3021-48be-aea1-149c7a73535d",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Access administration requires central or project IT",
+        "correlationId": "cfc4a325-ff2b-46d5-add2-4699ff0e4633",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic A requester",
+    "method": "PATCH",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "5bff78c8-0d81-4a81-b347-f4947d970217",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "cfe3ada0-3ee9-419c-9c61-8f274e66480f",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "a511a1de-0327-4a16-ae48-e2f39cd559dc",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "349bbf80-e2e9-4d87-89a3-0d5d4e6bc408",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "7b83ebef-8257-4f91-8399-2a62bd784629",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "e4307240-b188-4b79-a90f-cd0f53a8977d",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic A requester",
+    "method": "PATCH",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "795d691b-f8b4-48d8-82c9-cdca5f396a9b",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "a77bb656-1383-413b-aef1-d60d437f435c",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=53b04df4-42d4-489d-8bd3-9e853ee12ba3",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "ddc083ac-5713-4d13-913a-3b16b6748ec9",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "8b39c686-9c20-4104-9758-eb36dff39fb0",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "a6957c42-4ce3-46b9-a903-5ad78b465931",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "a5b6164f-9744-4930-88e1-9dd578fdcc43",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic A requester",
+    "method": "PATCH",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "b06ee0ce-5aaa-4ea9-ad3e-99eb341f01e4",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "15060d9e-e710-43ed-b648-3b74607c1ab9",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "78abc02d-4bfb-4a1c-bb39-90182610cbfb",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "e85069ef-6671-480c-943a-ab2683ad96be",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "be7c01de-925b-46d2-bb51-f596d8458bc3",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "b2e1238e-e53f-4290-90e0-462719ddc904",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic A requester",
+    "method": "PATCH",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "9a083e44-3517-456f-b449-cafa289d996e",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "8b41e7cd-3af2-4e9c-b317-efa7c7ce1724",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/account?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "35af79bb-60ef-4294-8033-6234920b7411",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "376b6b63-5e1e-40f2-adb6-02c25a9ec734",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "54916bae-f3aa-4939-8d6a-5f1ba535549c",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "138c0de5-869d-4a91-b9a6-8b09153588a3",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic B requester",
+    "method": "PATCH",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "3ccc8927-1ef8-4306-8081-2a2a52a1b542",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "0d5d85dd-442e-45ed-a72d-536bfd410314",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/account?projectId=0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "23340f3e-d09d-4e79-895f-562dc2ac99b2",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "12fbb6eb-9e64-4eba-93e3-e2db5d7faa74",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "ff23d93f-e027-44f0-b078-3f6fe9c2ea2b",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Project not found",
+        "correlationId": "8ce3ecf3-f06c-4634-9e31-85fdca1d68b9",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic B requester",
+    "method": "PATCH",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "e403e7e4-d3bf-4786-b53a-3f201afa5c5d",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/projects/78be9af8-b83f-4d82-bb72-7a2547f0c4b6/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "fdd2d8e5-ea31-4645-b760-47d170718d20",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/account?projectId=78be9af8-b83f-4d82-bb72-7a2547f0c4b6",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "6f031ca2-6351-4c3e-8a07-0bd8b9237a15",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "2bb0b9c5-9697-4600-a9c4-cac5ca20c6f7",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only the Survey Manager can review staffing assignments",
+        "correlationId": "7a7d738b-6d5e-4ef7-a32a-457e3677dacf",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Access administration requires central or project IT",
+        "correlationId": "ccb9280d-b775-4ecb-99e3-5d33228baa71",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic B requester",
+    "method": "PATCH",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only PROJECT_ADMIN or TENANT_ADMIN may manage project request configuration",
+        "correlationId": "dcec27ea-63c1-4d3f-a283-e8f5a57e64e6",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "a12b2c5c-06df-4486-9775-8f28bc5556d8",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "0f2ce4ea-9334-4499-8d9e-dbde0b573679",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only the Survey Manager can review staffing assignments",
+        "correlationId": "9c8a354d-b06d-47eb-95d9-c9bd521af463",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Access administration requires central or project IT",
+        "correlationId": "cd07677b-3640-46ee-bdc4-0c9af4e85a65",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic B requester",
+    "method": "PATCH",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only PROJECT_ADMIN or TENANT_ADMIN may manage project request configuration",
+        "correlationId": "e9831a46-6477-4ccd-8aa0-e803b07b2f99",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/projects/b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "fbfc7735-a73f-4917-9f5b-1ba93e81aaa6",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/teams?limit=1&offset=0",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 400,
+    "result": "FAIL",
+    "body": {
+      "error": {
+        "type": "ValidationError",
+        "code": "VALIDATION_ERROR",
+        "message": "Use a page size of 10, 25, 50 or 100, a valid offset and search up to 120 characters",
+        "correlationId": "fe49cdf7-3963-4180-a535-1e95166cac93",
+        "status": 400
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/survey/staffing?partyChiefId=8a507ac5-31c4-4328-b4cd-93a84f1b85e7",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "40a45ee0-c0d0-4eb4-8535-d524555257ce",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/company-authority",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Access administration requires central or project IT",
+        "correlationId": "17899122-bd3e-4279-a527-6f24f0591ecf",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/invites",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/whitelist",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Secondary resource role/membership denial",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/aor/assignments",
+    "expected": [
+      403,
+      404,
+      405
+    ],
+    "actual": 405,
+    "result": "PASS",
+    "body": ""
+  },
+  {
+    "label": "Config unauthorized write",
+    "user": "Synthetic B requester",
+    "method": "PATCH",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/request-config",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "005e0de3-b55e-4bfe-8836-9e4522e39857",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Project archive unauthorized",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/projects/d284ffa9-6b43-4f49-b063-b6df0b66e34a/archive",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "Only TENANT_ADMIN can archive projects",
+        "correlationId": "5c8a2ad6-6673-458f-a167-5ceffa9a462c",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Denied project account",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/account?projectId=d284ffa9-6b43-4f49-b063-b6df0b66e34a",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "AUTH_FORBIDDEN",
+        "message": "You are not a member of this project",
+        "correlationId": "6d4e8e6d-e2e5-4dcc-b2a2-c347a6c85338",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Completed attachment persists",
+    "user": "Synthetic A coworker",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "SYNTHETIC ONLY; owner Company A; project A-Project-1; request 94ec9131-de74-4dcb-a27b-6971b763afdc",
+    "cache": "private, no-store"
+  }
+]

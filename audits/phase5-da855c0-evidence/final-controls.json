@@ -1,0 +1,827 @@
+[
+  {
+    "label": "Assigned project create positive control",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "e466d747-f207-49ad-948c-a3d8f9185d88",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "577bee80-b184-41b8-89e2-d840d3f91f41",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Own A-Project-1 positive control",
+        "requestedDate": "2026-12-01T00:00:00.000Z",
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "createdAt": "2026-09-30T21:24:50.671Z",
+        "updatedAt": "2026-09-30T21:24:50.671Z"
+      }
+    }
+  },
+  {
+    "label": "Own direct request positive control",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "e466d747-f207-49ad-948c-a3d8f9185d88",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "projectId": "0eab2aea-be8d-4fbd-b386-03db9ef7b2d7",
+        "aorNodeId": "53dc4108-4223-4304-ae26-77e1feee7d06",
+        "departmentId": "e527527d-997d-40e6-bce8-baf33bc0d78c",
+        "companyId": "bd5688b4-603b-4ef6-85b4-d98841cea562",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "577bee80-b184-41b8-89e2-d840d3f91f41",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Own A-Project-1 positive control",
+        "requestedDate": "2026-11-30T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:24:50.671Z",
+        "updatedAt": "2026-09-30T21:24:50.671Z",
+        "requesterName": "Synthetic A requester",
+        "isOwnRequest": true
+      },
+      "capabilities": {
+        "canEditRequesterFields": true,
+        "canSubmit": true,
+        "canRequesterCancel": true,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": true,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "Own attachment upload positive control",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88/attachments",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "attachment": {
+        "id": "d4ab7a23-9c4e-4c41-b17c-46d233bb5104",
+        "ticketId": "e466d747-f207-49ad-948c-a3d8f9185d88",
+        "tenantId": "a0b1e743-0c9f-47e5-8d89-633885c23ac6",
+        "uploadedBy": "577bee80-b184-41b8-89e2-d840d3f91f41",
+        "filename": "OWN_A-Project-1_TEST.txt",
+        "mimeType": "text/plain",
+        "sizeBytes": 36,
+        "purpose": "REQUEST_INSTRUCTION",
+        "returnCycle": 0,
+        "contentSha256": "1c54bf1cda943ed446a7c8cdca59af9b1955965e938e22de328a6b8d7154dbaf",
+        "createdAt": "2026-09-30T21:24:51.112Z",
+        "downloadUrl": "/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88/attachments/d4ab7a23-9c4e-4c41-b17c-46d233bb5104"
+      }
+    }
+  },
+  {
+    "label": "Own attachment download positive control",
+    "user": "Synthetic A requester",
+    "method": "GET",
+    "url": "/api/tickets/e466d747-f207-49ad-948c-a3d8f9185d88/attachments/d4ab7a23-9c4e-4c41-b17c-46d233bb5104",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "Own A-Project-1 synthetic attachment",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Cross-tenant upload denied",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 94ec9131-de74-4dcb-a27b-6971b763afdc not found",
+        "correlationId": "ab2360d4-4dc7-4a0a-a1be-616a8e42dbc5",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated file denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments/94c299f5-6c10-4846-ae29-f285a4642953",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "bb1011e7-9b7c-4273-9bfe-3c8124b8f63a",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated attachment metadata denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/94ec9131-de74-4dcb-a27b-6971b763afdc/attachments",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "0ed1a4d9-09a1-4880-824c-8c0b5cd51e53",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Cross-tenant upload denied",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 5020c834-daed-4a2b-a59e-dd4dc3f1b1f1 not found",
+        "correlationId": "f71f796d-c636-45a6-9c13-79666acaa938",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated file denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments/a0211999-3c0c-43ac-81af-c0ae4659f461",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "ac401544-5c8a-4aa3-849d-38c0abb2f5a8",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated attachment metadata denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/5020c834-daed-4a2b-a59e-dd4dc3f1b1f1/attachments",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "56fd1e66-1995-4669-93e1-d8f71cbad61d",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Assigned project create positive control",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "56aa9575-a659-4c3a-b201-ad19eb672866",
+        "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+        "projectId": "53b04df4-42d4-489d-8bd3-9e853ee12ba3",
+        "aorNodeId": "dbddab86-8c33-41f4-b888-e8024ce3d66e",
+        "departmentId": "efc9a554-a40e-4ab2-9f37-0dd13f028f8c",
+        "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Own B-Project-1 positive control",
+        "requestedDate": "2026-12-01T00:00:00.000Z",
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "createdAt": "2026-09-30T21:24:51.596Z",
+        "updatedAt": "2026-09-30T21:24:51.596Z"
+      }
+    }
+  },
+  {
+    "label": "Own direct request positive control",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "56aa9575-a659-4c3a-b201-ad19eb672866",
+        "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+        "projectId": "53b04df4-42d4-489d-8bd3-9e853ee12ba3",
+        "aorNodeId": "dbddab86-8c33-41f4-b888-e8024ce3d66e",
+        "departmentId": "efc9a554-a40e-4ab2-9f37-0dd13f028f8c",
+        "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Own B-Project-1 positive control",
+        "requestedDate": "2026-11-30T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:24:51.596Z",
+        "updatedAt": "2026-09-30T21:24:51.596Z",
+        "requesterName": "Synthetic B requester",
+        "isOwnRequest": true
+      },
+      "capabilities": {
+        "canEditRequesterFields": true,
+        "canSubmit": true,
+        "canRequesterCancel": true,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": true,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "Own attachment upload positive control",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866/attachments",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "attachment": {
+        "id": "7ed7e655-644f-42a5-b856-9d1891222b30",
+        "ticketId": "56aa9575-a659-4c3a-b201-ad19eb672866",
+        "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+        "uploadedBy": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+        "filename": "OWN_B-Project-1_TEST.txt",
+        "mimeType": "text/plain",
+        "sizeBytes": 36,
+        "purpose": "REQUEST_INSTRUCTION",
+        "returnCycle": 0,
+        "contentSha256": "11521d5fe6aa2044c1d62d2c40aba4ca441c05c4a5ba5d5567b81b42081cbd24",
+        "createdAt": "2026-09-30T21:24:51.709Z",
+        "downloadUrl": "/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866/attachments/7ed7e655-644f-42a5-b856-9d1891222b30"
+      }
+    }
+  },
+  {
+    "label": "Own attachment download positive control",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/tickets/56aa9575-a659-4c3a-b201-ad19eb672866/attachments/7ed7e655-644f-42a5-b856-9d1891222b30",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "Own B-Project-1 synthetic attachment",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Cross-tenant upload denied",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 30b610e7-9ce3-40b6-bbc8-adc38ace78be not found",
+        "correlationId": "6ac55711-59a2-42aa-b469-8e7f9f4e443d",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated file denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments/9b395c02-46ac-4a4c-a695-b81e539d7044",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "25f789b7-e381-4d36-a520-b133f10dc3ea",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated attachment metadata denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/30b610e7-9ce3-40b6-bbc8-adc38ace78be/attachments",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "1620f49a-010e-45ae-94bc-0087b35fb02b",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Assigned project create positive control",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/tickets",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "dbaeeedf-4147-4437-bc2e-04c091d88a46",
+        "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+        "projectId": "b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1",
+        "aorNodeId": "517e8688-97f9-4bae-90f2-2738fc5b3f2b",
+        "departmentId": "59a28368-f00d-46b4-b827-49770ba1f55c",
+        "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Own B-Project-2 positive control",
+        "requestedDate": "2026-12-01T00:00:00.000Z",
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "createdAt": "2026-09-30T21:24:51.899Z",
+        "updatedAt": "2026-09-30T21:24:51.899Z"
+      }
+    }
+  },
+  {
+    "label": "Own direct request positive control",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": {
+      "ticket": {
+        "id": "dbaeeedf-4147-4437-bc2e-04c091d88a46",
+        "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+        "projectId": "b4ccfa99-b882-44f5-b3e9-8d0e8a3116e1",
+        "aorNodeId": "517e8688-97f9-4bae-90f2-2738fc5b3f2b",
+        "departmentId": "59a28368-f00d-46b4-b827-49770ba1f55c",
+        "companyId": "3223d905-e23a-4466-84cb-341c93033c6d",
+        "ticketNumber": null,
+        "ticketType": "LAYOUT",
+        "requesterId": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+        "assignedPartyChiefId": null,
+        "assignedInstrumentManId": null,
+        "surveyLeadId": null,
+        "workflowVariant": "STANDARD_APPROVAL",
+        "status": "DRAFT",
+        "craft": "",
+        "fieldContact": "Synthetic",
+        "fieldChannel": null,
+        "description": "Own B-Project-2 positive control",
+        "requestedDate": "2026-11-30T06:00:00.000Z",
+        "originalRequestedDate": null,
+        "firstSubmittedAt": null,
+        "returnCycle": 0,
+        "fieldValidationReviewerId": null,
+        "submittedAt": null,
+        "approvedAt": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "pendingPcOutcome": null,
+        "pendingPcReason": null,
+        "surveyCancelRequestedBy": null,
+        "surveyCancelRequestedRole": null,
+        "surveyCancelReason": null,
+        "surveyCancelRequestedAt": null,
+        "completedAt": null,
+        "closedAt": null,
+        "rejectionReason": null,
+        "parentTicketId": null,
+        "priority": "NORMAL",
+        "prioritySetBy": null,
+        "prioritySetReason": null,
+        "rowVersion": 0,
+        "createdAt": "2026-09-30T21:24:51.899Z",
+        "updatedAt": "2026-09-30T21:24:51.899Z",
+        "requesterName": "Synthetic B requester",
+        "isOwnRequest": true
+      },
+      "capabilities": {
+        "canEditRequesterFields": true,
+        "canSubmit": true,
+        "canRequesterCancel": true,
+        "canCreateFollowUp": false,
+        "canUploadRequestInstruction": true,
+        "canUploadFieldSupport": false
+      }
+    }
+  },
+  {
+    "label": "Own attachment upload positive control",
+    "user": "Synthetic B requester",
+    "method": "POST",
+    "url": "/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46/attachments",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "result": "PASS",
+    "body": {
+      "attachment": {
+        "id": "a6fae96d-2dc9-4344-a2eb-306074c6160c",
+        "ticketId": "dbaeeedf-4147-4437-bc2e-04c091d88a46",
+        "tenantId": "d8a3b0ce-d419-4494-b874-289db22c012c",
+        "uploadedBy": "ce35bb68-bd81-47cf-8780-5008e6bbc7d0",
+        "filename": "OWN_B-Project-2_TEST.txt",
+        "mimeType": "text/plain",
+        "sizeBytes": 36,
+        "purpose": "REQUEST_INSTRUCTION",
+        "returnCycle": 0,
+        "contentSha256": "ea36d9b91884a8072245d59c10cf5c487f083a29888a772d3a170af8af95eab0",
+        "createdAt": "2026-09-30T21:24:51.974Z",
+        "downloadUrl": "/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46/attachments/a6fae96d-2dc9-4344-a2eb-306074c6160c"
+      }
+    }
+  },
+  {
+    "label": "Own attachment download positive control",
+    "user": "Synthetic B requester",
+    "method": "GET",
+    "url": "/api/tickets/dbaeeedf-4147-4437-bc2e-04c091d88a46/attachments/a6fae96d-2dc9-4344-a2eb-306074c6160c",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "result": "PASS",
+    "body": "Own B-Project-2 synthetic attachment",
+    "cache": "private, no-store"
+  },
+  {
+    "label": "Cross-tenant upload denied",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket bed546e9-356d-4c17-8d6e-9eb79159af2c not found",
+        "correlationId": "caa98fed-7ca0-469a-9df5-9e3fa5901487",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated file denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments/2741f8d0-d54e-4d99-8e00-2b19b101b197",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "4a20234d-4f46-4f3f-befa-13370add3cee",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated attachment metadata denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/bed546e9-356d-4c17-8d6e-9eb79159af2c/attachments",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "50b73839-8826-40d6-be44-5a3cf0388754",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Cross-tenant upload denied",
+    "user": "Synthetic A requester",
+    "method": "POST",
+    "url": "/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "NotFoundError",
+        "code": "NOT_FOUND",
+        "message": "Ticket 89d65078-dbe4-4b9b-8e68-49665e6d0d5c not found",
+        "correlationId": "a69de354-491f-4737-99cf-e277bb69a828",
+        "status": 404
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated file denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments/49e719d3-8250-4af3-ad57-bb7bd4404d96",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "80cb02ff-075b-4fbb-8f34-985f675099eb",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Unauthenticated attachment metadata denied",
+    "user": "Unauthenticated",
+    "method": "GET",
+    "url": "/api/tickets/89d65078-dbe4-4b9b-8e68-49665e6d0d5c/attachments",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "UnauthorizedError",
+        "code": "AUTH_UNAUTHORIZED",
+        "message": "Not authenticated",
+        "correlationId": "28159592-cf11-44fc-9877-744f4f09be46",
+        "status": 401
+      }
+    }
+  },
+  {
+    "label": "Admin cannot add foreign-tenant user",
+    "user": "Synthetic A admin",
+    "method": "POST",
+    "url": "/api/projects/0eab2aea-be8d-4fbd-b386-03db9ef7b2d7/members",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "SEC_TENANT_BOUNDARY_VIOLATION",
+        "message": "Project membership mutation violates tenant boundary",
+        "correlationId": "7c80fdf9-9bce-4bf1-8751-ba1fa8839466",
+        "status": 403
+      }
+    }
+  },
+  {
+    "label": "Admin cannot add member to foreign-tenant project",
+    "user": "Synthetic A admin",
+    "method": "POST",
+    "url": "/api/projects/53b04df4-42d4-489d-8bd3-9e853ee12ba3/members",
+    "expected": [
+      403,
+      404
+    ],
+    "actual": 403,
+    "result": "PASS",
+    "body": {
+      "error": {
+        "type": "ForbiddenError",
+        "code": "SEC_TENANT_BOUNDARY_VIOLATION",
+        "message": "Project membership mutation violates tenant boundary",
+        "correlationId": "9dbd006e-31f3-48a6-9019-9fe4bc9d3d70",
+        "status": 403
+      }
+    }
+  }
+]

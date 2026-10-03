@@ -1,0 +1,16 @@
+{
+  "adversarial-fixtures.json": "705ebe27b1e20455073ddae101141932e063a63dd53fc0d7a9e78e41cd3cefb7",
+  "adversarial-results.json": "f1e8a7fe042a6f6e5e9ec2435543d85bacabe3b847424afefb4036373e796071",
+  "baseline-tests.log": "8b9298e5c37cf3014cd9b16b7f3faf86dfcfe4fcdcbac3feccb1ecf3f055cddf",
+  "coverage.json": "85eefbe12a2e198d064550f23f6a61771292eae653b22e7f21260254372aef52",
+  "final-controls.json": "0ec2a3cbad6c66fa9579c385e2a8474f6d990d0e01a1f64b361183fb2cc5f59f",
+  "findings.json": "16c514a8853da8418e1f04ea5b69c1a3270cb8f3864f66e55e91a7959ed32fea",
+  "fixtures.json": "99fe64fe5d00009a79e7ad717a655e8a6a354820066fc321bd19cbc870622386",
+  "hardening.json": "8b7739021eefb139ae0e415b3d9704da5741fb3d1d13cceea33a28f481d63915",
+  "hardening.md": "3617a39a7439096840df2f84fba6a082a203082d2f1da3f30dd563f449c4de56",
+  "integrity.json": "71786a2f74931a2dcbf7d10e60344652995d23125c30b2e5fab2a2239ab01518",
+  "results.json": "2cc4278f1caaa17f1a387079f5ea845ddb107cefd75b30a664a7c13ab5cacb7e",
+  "revocation-results.json": "6874c51e656d9f350863dce5323ae82aafb54b212079dd974b08e10ce2d84dab",
+  "scan-manifest.json": "982eae782a6662f709f31cc4f8539c5413dee269932a50860fb7792f41db4866",
+  "test-records.csv": "b5c4f9905f9bbdbafa10388989689f7cb013b10b114382443219ad2be5d277f1"
+}

@@ -1,0 +1,30 @@
+{
+  "documentType": "codex-security.hardening-analysis",
+  "schemaVersion": "1.0",
+  "analysisId": "hardening_final",
+  "sourceScan": {
+    "scanId": "faa776a4-c471-4091-ae1c-0dfe9ba8659f",
+    "targetRevision": "da855c0123d003585d83a11323282998e94a339c",
+    "sourceDrift": "none"
+  },
+  "assessment": {
+    "outcome": "local_remediation_preferred",
+    "summary": "Existing server-side scope and workflow architecture can enforce the required boundaries. Correct the inactive crew predicate, direct-creation Area guard, exact field assignee check and denial response consistency; no structural rewrite is justified by current evidence."
+  },
+  "constraints": {
+    "profile": "balanced",
+    "changeHorizons": [
+      "incremental"
+    ],
+    "nonNegotiables": [
+      "Document before fixing",
+      "Preserve checkpoint and original application",
+      "Synthetic local testing only",
+      "No broad rewrite without necessity"
+    ],
+    "assumptions": [
+      "Latency and memory budgets not provided; production configuration and concurrent revocation not validated."
+    ]
+  },
+  "opportunities": []
+}
