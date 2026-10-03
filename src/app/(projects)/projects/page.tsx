@@ -49,7 +49,7 @@ export default function ProjectsLauncherPage() {
 
   return (
     <div className="stack">
-      <ProjectCreation />
+      <ProjectCreation>
       <Card
         title="Project Launcher"
         description="Choose a project to open its requests and work queues."
@@ -86,6 +86,7 @@ export default function ProjectsLauncherPage() {
           <Button onClick={openProject}>Open Project</Button>
         </div>
       </Card>
+      </ProjectCreation>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import type {ReactNode} from 'react';
 import {apiClient} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
@@ -12,8 +13,10 @@ import {AdministrationRecords,AdministrationSection} from './administration-reco
 import {ProjectRecommissioning} from './project-recommissioning';
 import {TenantHomeSettings} from './tenant-home-settings';
 import type {CrewBuild} from '@/modules/tenancy/domain/types';
+import './project-administration.css';
 
-export function ProjectCreation(){
+export function ProjectCreation({children}:{children?:ReactNode}){
+ const [workspace,setWorkspace]=useState<'projects'|'settings'>('projects');
  const owner=useRef(new CommandOwner()).current,token='project-creation';const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const [data,setData]=useState<Awaited<ReturnType<typeof apiClient.projectAdministration>>>();
  const [name,setName]=useState(''),[crewBuild,setCrewBuild]=useState<CrewBuild>('FULL'),[templateId,setTemplateId]=useState('');
@@ -34,9 +37,10 @@ export function ProjectCreation(){
   catch(cause){command.current.fail(cause instanceof ApiClientError?cause.status:undefined);setError(getErrorMessage(cause,'The creation response is uncertain. Retry the unchanged project.'));}
   finally{setBusy(false);}
  }
- if(!data||!data.canCreateProject&&!data.projects.length)return error?<div role="alert">{error}<Button variant="secondary" onClick={()=>{setError(undefined);setRevision(n=>n+1);}}>Retry administration</Button></div>:null;
+ if(!data||!data.canCreateProject&&!data.projects.length)return <>{error&&<div role="alert">{error}<Button variant="secondary" onClick={()=>{setError(undefined);setRevision(n=>n+1);}}>Retry administration</Button></div>}{children}</>;
  const selectedTemplate=data.templates.find(t=>t.id===templateId);
- return <><Card title="Project Administration" help="Create a project in Setup, establish its Project Admin and complete readiness before activation. Manage reusable templates in Tenant General Settings before creating a project."><div className="stack">
+ return <div className="stack">{data.canCreateProject&&<nav className="tabs admin-workspace-navigation" aria-label="Tenant home workspaces">{([{id:'projects',label:'Projects'},{id:'settings',label:'Settings'}] as const).map(item=><Button key={item.id} variant="secondary" aria-pressed={workspace===item.id} aria-controls={`tenant-home-${item.id}`} disabled={open||recommissionLocked||!!recommission||ownerToken!==null} onClick={()=>setWorkspace(item.id)}>{item.label}</Button>)}</nav>}
+ <section id="tenant-home-projects" className="stack admin-workspace-section" aria-label="Projects" hidden={data.canCreateProject&&workspace!=='projects'}><Card title="Project Administration" help="Create a project in Setup, establish its Project Admin and complete readiness before activation. Manage reusable templates in Settings before creating a project."><div className="stack">
  {error&&!open&&<ErrorBanner message={error}/>}
  {data.canCreateProject&&<div className="row"><Button disabled={recommissionLocked||!!recommission||ownerToken!==null||open} onClick={()=>{if(!owner.claim(token))return;setName('');setTemplateId('');setCrewBuild('FULL');setConsent(false);setStep(0);setOpen(true);setCreated(undefined);setError(undefined);}}>Create Project</Button></div>}
  {open&&<AdministrationDialog title={created?'Project Created':'Create a Project'} step={{current:step+1,total:4,label:['Project name','Starting configuration','Review','Complete'][step]!}} onClose={close} closeDisabled={busy||uncertain}
@@ -47,8 +51,7 @@ export function ProjectCreation(){
  {step===2&&<><dl className="administration-dialog-summary"><div><dt>Project</dt><dd>{name.trim()}</dd></div><div><dt>Starting configuration</dt><dd>{selectedTemplate?`${selectedTemplate.name} · ${selectedTemplate.crewBuild}`:`No template · ${crewBuild}`}</dd></div></dl><p>The project begins in Setup. Establish its Project Admin and complete readiness before activation.</p><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this project and starting configuration.</span></label></>}
  {created&&<><SuccessBanner message={`${created.name} was created in Setup.`}/><p>Next, set up the Project Admin who will configure this project and its personnel.</p><dl className="administration-dialog-summary"><div><dt>Project reference</dt><dd>{created.id}</dd></div></dl></>}
  </AdministrationDialog>}
- {data.canCreateProject&&<Link className="app-link" href="/accounts">Tenant accounts and Central IT reviews</Link>}
  {recommission&&<ProjectRecommissioning key={recommission} projectId={recommission} onClose={()=>setRecommission(undefined)} onChanged={()=>setRevision(n=>n+1)} onLockChange={setRecommissionLocked}/>}
  <AdministrationSection title="Administered Projects" open help="Filter, sort, select and export the loaded administered project inventory. Open a project's administration to manage personnel, companies, Survey and settings."><AdministrationRecords label="administered projects" rows={data.projects} id={p=>p.id} columns={[{key:'name',label:'Project',text:p=>p.name},{key:'status',label:'Status',text:p=>p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}]} actions={p=><><Link className="app-link" href={`/projects/${p.id}/admin`}>Open administration</Link>{data.canCreateProject&&(p.status==='ARCHIVED'||p.recommissioning)?<Button variant="secondary" disabled={recommissionLocked||locked||open||ownerToken!==null} onClick={()=>setRecommission(p.id)}>{p.status==='ARCHIVED'?'Review recommissioning':'Continue readiness review'}</Button>:null}</>}/></AdministrationSection>
- </div></Card>{data.canCreateProject&&<TenantHomeSettings owner={owner} disabled={open||recommissionLocked||!!recommission} onTemplatesChanged={()=>setRevision(n=>n+1)}/>}</>;
+ </div></Card>{children}</section>{data.canCreateProject&&<section id="tenant-home-settings" className="admin-workspace-section" aria-label="Settings" hidden={workspace!=='settings'}><TenantHomeSettings owner={owner} disabled={open||recommissionLocked||!!recommission} onTemplatesChanged={()=>setRevision(n=>n+1)}/></section>}</div>;
 }
