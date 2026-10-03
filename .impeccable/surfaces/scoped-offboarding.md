@@ -82,3 +82,28 @@ The six PNGs show archived Northbank history and administration using the incumb
 Inherited documentation drift remains reported without repair: DESIGN.md's Brand Lockup description says artwork plus SWRTracker while the authenticated incumbent shell uses the signed-in greeting, and its broad phone edge-to-edge panel language exceeds the stylesheet's specific project-header/detail selectors. Administration disclosures and sort controls also use a local two-pixel focus outline where the global document describes three pixels; this is a surface-specific implementation observation, not a new reusable token or approval to revise the global system. This finish preserves the current global files.
 
 No shipping raster asset was added or changed by this extension. The six PNGs are local acceptance evidence; incumbent artwork provenance remains in `public/brand/README.md`. This documentation finish appended only this brief, read existing evidence, ran no tests and edited no product, test, environment or secret files.
+
+
+## Manpower container padding correction — direction contract (2026-10-02)
+
+THESIS: Restore the existing panel inset around manpower movement.
+
+OWN-WORLD: Preserve incumbent Axiom panel appearance and responsive padding.
+
+STORY: Open or collapse movement controls without content touching the panel edges.
+
+FIRST VIEWPORT: Movement is a white panel aligned with Team Management beneath it.
+
+FORM: Separate neutral fieldset reset from panel styling; preserve shared command ownership.
+
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+
+### Manpower container padding documentation finish (2026-10-02)
+
+Finish verdict: **SHIP at the manpower padding correction scope**, reported by the independent finish reviewer through the coordinating agent. No material fixes remain within that scope. This ordinary refinement restores the incumbent panel inset around collapsed and expanded manpower movement controls. The movement fieldset retains panel styling; the neutral fieldset reset applies only to existing Team Management controls. The movement section's redundant top divider and top inset are removed inside the containing panel. Shared CommandOwner coordination and frozen-command behavior remain intact. Root `DESIGN.md` and `.impeccable/design.json` are preserved; this correction establishes no new global visual system.
+
+Evidence checked: incumbent `PRODUCT.md`, root `DESIGN.md`, the direction contract above, `src/components/ui/team-management-entry.tsx`, the scoped rules in `src/components/ui/administration-records.css`, `audits/customer-lifecycle-rehearsal/continuity/padding-browser.json`, and `.local-padding-design-findings.json` (`[]`). The four full-page captures in `.impeccable/review/manpower-padding/` are `desktop-collapsed.png`, `desktop-expanded.png`, `mobile-collapsed.png` and `mobile-expanded.png`. The independent reviewer accepted these captures. Computed browser evidence records matching movement and Team Management padding in all four cases: (24px) at desktop width (1625px) and (16px) at phone width (390px). Document widths equal the supplied viewport widths. The phone frame follows the incumbent edge-to-edge panel adaptation while retaining its internal inset.
+
+The recorded browser scope is a real Taylor session with archived, read-only movement and no mutations. These captures and computed measurements establish collapsed/expanded spacing at those two widths; they do not establish enabled movement commands, every command state, other viewport widths or broader personnel-surface acceptance. The coordinating agent reports a passing production build and no tests run for this correction. This documentation pass read existing evidence and ran no tests; the scoped ship verdict does not establish production deployment.
+
+No shipping raster asset was added or changed. The four PNGs are local acceptance evidence. Inherited global documentation drift remains as previously recorded without repair. This finish appends only this surface brief and makes no product, test, environment or other documentation edits.
