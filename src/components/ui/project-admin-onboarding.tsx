@@ -18,7 +18,6 @@ import {CompanyRegistration,type RegisteredCompany} from './company-registration
 import './project-admin-onboarding.css';
 import type {CustomRole} from '@/modules/tenancy/domain/custom-role';
 import {OperationalRolePicker} from './operational-role-picker';
-import {HomeOrganization} from './home-organization';
 
 type Purpose='PROJECT_ADMIN'|'EMPLOYEE';
 interface Invitation {
@@ -26,7 +25,7 @@ interface Invitation {
  purpose:Purpose;role:string;customRoleName:string|null;registrationPath:string|null;employee:AdminEmployee|null;
 }
 interface Directory {
- employees:AdminEmployee[];total:number;companies:RegisteredCompany[];tenantCompanies:RegisteredCompany[];canManageHomeOrganization:boolean;
+ employees:AdminEmployee[];total:number;companies:RegisteredCompany[];tenantCompanies:RegisteredCompany[];
  invitations:Invitation[];administrators:Array<{userId:string;name:string;companyName:string}>;
 }
 interface Review {command:AdminOnboardingCommand;title:string;detail:string}
@@ -44,12 +43,11 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
  const customRole=customRoles.find(r=>r.id===customRoleId);
  const [memberRole,setMemberRole]=useState<MemberInvitationRole>('REQUESTER');
  const [companyKind,setCompanyKind]=useState<'tenant'|'existing'>('tenant'),[company,setCompany]=useState<RegisteredCompany>();
- const [designatingHome,setDesignatingHome]=useState(false);
  const [creatingCompany,setCreatingCompany]=useState(false),[search,setSearch]=useState(''),[companySearch,setCompanySearch]=useState(''),[offset,setOffset]=useState(0);
  const [email,setEmail]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>();
  const [review,setReview]=useState<Review>(),[consent,setConsent]=useState(false),[revision,setRevision]=useState(0),[,render]=useState(0);
  const [renewal,setRenewal]=useState(false),[resultInviteId,setResultInviteId]=useState<string>();
- const blocked=disabled||owner.blocked(token),locked=blocked||gate.locked||creatingCompany||designatingHome;
+ const blocked=disabled||owner.blocked(token),locked=blocked||gate.locked||creatingCompany;
  const resultInvite=data?.invitations.find(i=>i.id===resultInviteId);
  const ready=data?.invitations.filter(i=>i.status==='Accepted'&&i.employee&&!i.employee.canAdminister)??[];
  useUnsavedProgress(gate.locked);
@@ -63,7 +61,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
   return()=>{clearTimeout(timer);generation.current++;};
  },[endpoint,search,companySearch,offset,revision]);
 
- useEffect(()=>{if(screen==='company'&&companyKind==='tenant'&&!gate.locked&&!designatingHome)setCompany(data?.tenantCompanies[0]);},[data,screen,companyKind,designatingHome,gate]);
+ useEffect(()=>{if(screen==='company'&&companyKind==='tenant'&&!gate.locked)setCompany(data?.tenantCompanies[0]);},[data,screen,companyKind,gate]);
 
  function start() {
   if(locked||!owner.claim(token))return;
@@ -72,11 +70,11 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
   setReview(undefined);setConsent(false);setError(undefined);setSuccess(undefined);setRenewal(false);setResultInviteId(undefined);
  }
  function close(){
-  if(blocked||creatingCompany||designatingHome||!gate.reload())return;
+  if(blocked||creatingCompany||!gate.reload())return;
   owner.release(token);setOpen(false);setReview(undefined);setConsent(false);setError(undefined);setRevision(n=>n+1);
  }
  function reload(){
-  if(blocked||creatingCompany||designatingHome||!gate.reload())return;
+  if(blocked||creatingCompany||!gate.reload())return;
   setReview(undefined);setConsent(false);setScreen(memberMode?'company':'choose');setCompany(undefined);setResultInviteId(undefined);setError(undefined);setRevision(n=>n+1);render(n=>n+1);
  }
  function propose(value:Review) {
@@ -93,10 +91,10 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
   if(!company||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))return;
   propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),purpose,...(companyKind==='tenant'?{expectedHomeCompanyId:company.id as UUID}:{}),...(memberMode?{role:memberRole,...(customRoleId?{customRoleId:customRoleId as UUID}:{})}:{}),confirmed:true},
    title:purpose==='PROJECT_ADMIN'?'Review Project Admin Invitation':'Review Project Member Invitation',
-   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${memberMode?`Acceptance grants ${customRole?`${customRole.name} (${roleLabel(memberRole)} profile)`:roleLabel(memberRole)} membership on this project.`:'Acceptance adds Requester membership. Return here to assign Project Admin after acceptance.'} This invitation does not grant administration. The link expires in seven days.`});
+   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${memberMode?`Acceptance grants ${customRole?`${customRole.name} (${roleLabel(memberRole)} profile)`:roleLabel(memberRole)} membership on this project.`:'Acceptance adds Requester membership. Return here to assign Project Admin after acceptance.'} ${memberMode&&memberRole==='AREA_VIEWER'?'Area assignments are required separately before requests become visible. ':memberMode&&memberRole==='DEPARTMENT_MANAGER'?'Department membership is required separately before requests become visible. ':''}This invitation does not grant administration. The link expires in seven days.`});
  }
  async function submit() {
-  if(!review||!consent||blocked||creatingCompany||designatingHome||!owner.claim(token))return;
+  if(!review||!consent||blocked||creatingCompany||!owner.claim(token))return;
   const frozen=gate.begin(review,crypto.randomUUID());if(!frozen)return;render(n=>n+1);setError(undefined);
   try {
    const result=await apiRequest<{action:string;signInRenewal?:boolean;inviteId?:string}>(endpoint,{method:'POST',body:frozen.body.command,headers:{'Idempotency-Key':frozen.key}});
@@ -123,7 +121,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
  const emailValid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
  const companyChoices=companyKind==='tenant'?data?.tenantCompanies??[]:data?.companies??[];
  const visibleCompanies=company&&!companyChoices.some(c=>c.id===company.id)?[company,...companyChoices]:companyChoices;
- const canDismiss=!blocked&&!creatingCompany&&!designatingHome&&!gate.pending&&(!gate.command||gate.stale);
+ const canDismiss=!blocked&&!creatingCompany&&!gate.pending&&(!gate.command||gate.stale);
 
  const content=<>
   <div className="stack">
@@ -151,7 +149,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
    footer={screen==='result'?<Button disabled={!canDismiss} onClick={close}>Close</Button>:screen==='review'?<>
     <Button variant="secondary" disabled={!canDismiss} onClick={gate.stale?reload:close}>{gate.stale?'Reload setup':'Cancel'}</Button>
     <div className="row"><Button variant="secondary" disabled={locked} onClick={()=>{setReview(undefined);setConsent(false);setScreen(memberMode?'role':mode==='invite'?'email':'employee');}}>Back</Button>
-    <Button disabled={!consent||blocked||creatingCompany||designatingHome||gate.pending||gate.stale} onClick={()=>void submit()}>{gate.pending?'Submitting…':gate.command?'Retry same action':review?.command.action==='INVITE'?'Create invitation':review?.command.action==='GRANT'?'Assign Project Admin':'Cancel invitation'}</Button></div>
+    <Button disabled={!consent||blocked||creatingCompany||gate.pending||gate.stale} onClick={()=>void submit()}>{gate.pending?'Submitting…':gate.command?'Retry same action':review?.command.action==='INVITE'?'Create invitation':review?.command.action==='GRANT'?'Assign Project Admin':'Cancel invitation'}</Button></div>
    </>:<><Button variant="secondary" disabled={locked} onClick={close}>Cancel</Button><div className="row">
     {screen!=='choose'&&!(memberMode&&screen==='company')&&<Button variant="secondary" disabled={locked} onClick={()=>setScreen(screen==='role'?'email':screen==='email'?'company':'choose')}>Back</Button>}
     {screen==='company'&&<Button disabled={locked||loading||!company} onClick={()=>setScreen('email')}>Next</Button>}
@@ -172,12 +170,11 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
      <label className="checkbox-row"><input type="radio" name="admin-company-source" checked={companyKind==='tenant'} disabled={locked} onChange={chooseTenant}/><span>Tenant company</span></label>
      <label className="checkbox-row"><input type="radio" name="admin-company-source" checked={companyKind==='existing'} disabled={locked} onChange={()=>{setCompanyKind('existing');setCompany(undefined);}}/><span>Previously created company</span></label>
     </fieldset>
-    {companyKind==='tenant'?<p className="muted">The tenant’s designated home organization. Tenant IT manages this tenant-wide choice.</p>:<Field label="Search previously created companies"><Input value={companySearch} maxLength={100} disabled={locked} onChange={e=>{setCompanySearch(e.target.value);setCompany(undefined);}}/></Field>}
+    {companyKind==='tenant'?<p className="muted">The tenant’s designated home organization. Axiom provisioned this account-bound organization. Contact customer support for changes.</p>:<Field label="Search previously created companies"><Input value={companySearch} maxLength={100} disabled={locked} onChange={e=>{setCompanySearch(e.target.value);setCompany(undefined);}}/></Field>}
     <Field label="Employee company"><select className="select" value={company?.id??''} disabled={locked||loading||companyKind==='tenant'} onChange={e=>setCompany(visibleCompanies.find(c=>c.id===e.target.value))}>
      <option value="">Choose a company</option>{visibleCompanies.map(c=><option key={c.id} value={c.id}>{c.name} · {c.type==='GC'?'General contractor':'Owner representative'}</option>)}
     </select></Field>
-    {!loading&&!visibleCompanies.length&&<p>No eligible company found. Tenant IT can designate a home organization; alternatively, choose or create another company.</p>}
-    {companyKind==='tenant'&&data?.canManageHomeOrganization&&<Button variant="secondary" disabled={locked||loading} onClick={()=>setDesignatingHome(true)}>{data.tenantCompanies.length?'Change Home Organization':'Set Home Organization'}</Button>}
+    {!loading&&!visibleCompanies.length&&<p>No eligible company found. Contact Axiom customer support for the account organization, or choose or create another company.</p>}
     {companyKind==='existing'&&<div><Button variant="secondary" disabled={locked||loading} onClick={()=>setCreatingCompany(true)}>Create new company</Button><p className="muted">Return here with the new company selected. Your invitation details are kept.</p></div>}
     {companyKind==='existing'&&<p className="muted">Up to 100 matching internal companies. Narrow your search to find another company.</p>}
    </>}
@@ -211,7 +208,6 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
      {memberMode&&resultInvite.employee?<SuccessBanner message={`${resultInvite.employee.name} is a project member. Current role: ${resultInvite.employee.customRoleName?`${resultInvite.employee.customRoleName} (${roleLabel(resultInvite.employee.role??resultInvite.role)} profile)`:roleLabel(resultInvite.employee.role??resultInvite.role)}.`}/>:!memberMode&&resultInvite.employee&&!resultInvite.employee.canAdminister?<><p>The employee has created their profile. Review their assignment to finish setup.</p><Button disabled={locked||loading} onClick={()=>assign(resultInvite.employee!)}>Assign Project Admin</Button></>:resultInvite.status==='Pending'?<><p>After they accept, check their profile here.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setRevision(n=>n+1);onDone();}}>Check acceptance and continue</Button></>:resultInvite.status==='Accepted'&&!resultInvite.employee?<p role="alert">This profile is not eligible for assignment. Review current account and project access before continuing.</p>:null}
     </>:<><p role="status">{loading?'Loading invitation status…':'Invitation status could not be loaded.'}</p><Button variant="secondary" disabled={locked||loading} onClick={()=>setRevision(n=>n+1)}>Reload invitation status</Button></>)}
    </>}
-   {designatingHome&&<HomeOrganization owner={owner} disabled={blocked} onDone={onDone} continuation={{token,onReturn:created=>{setDesignatingHome(false);if(created){setCompanyKind('tenant');setCompany(created);setData(current=>current?{...current,tenantCompanies:[created]}:current);setRevision(n=>n+1);}}}}/>}
    {creatingCompany&&<CompanyRegistration projectId={projectId} owner={owner} disabled={blocked} onDone={onDone} continuation={{token,onReturn:returnCompany}}/>}
   </AdministrationDialog>}
  </>;

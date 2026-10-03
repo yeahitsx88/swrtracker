@@ -58,7 +58,7 @@ export default function ProjectsLauncherPage() {
           {loading ? <p className="muted">Loading your projects…</p> : null}
           {error ? <p className="error-banner">{error}</p> : null}
           {!loading && !error && projects.length === 0 ? (
-            <p className="muted">You do not have access to an active or archived project.</p>
+            <p className="muted">You have no operational project memberships. Any administration access is listed under Project Administration above.</p>
           ) : null}
           {projects.length > 0 ? (
             <AdministrationRecords label="accessible projects" rows={projects} id={p=>p.id} columns={[

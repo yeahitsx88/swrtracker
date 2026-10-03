@@ -33,7 +33,7 @@ export const ROLE_LABELS: Record<ProjectRole, string> = {
   DEPARTMENT_LEAD: 'Department Lead',
   VIEWER: 'Viewer',
   AREA_VIEWER: 'Area Viewer',
-  SUBCONTRACTS_COORDINATOR: 'Subcontracts Coordinator',
+  SUBCONTRACTS_COORDINATOR: 'Subcontractor Coordinator',
 };
 
 export const PROJECT_STATUS_LABELS: Record<string, string> = {

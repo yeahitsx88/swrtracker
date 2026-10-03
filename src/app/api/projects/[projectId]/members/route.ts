@@ -24,6 +24,7 @@ export const dynamic = 'force-dynamic';
 const VALID_ROLES: ProjectRole[] = [
   'REQUESTER', 'SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT',
   'PARTY_CHIEF', 'INSTRUMENT_MAN', 'CAD_TECHNICIAN', 'CAD_LEAD', 'VIEWER',
+  'AREA_VIEWER', 'DEPARTMENT_MANAGER', 'SUBCONTRACTS_COORDINATOR',
 ];
 
 export async function GET(

@@ -53,3 +53,14 @@ After the current Roles & Permissions reference, Custom Roles exposes Create Cus
 Saved roles appear in internal existing-member and new-member enrollment. Display the custom label with its inherited profile; persist custom_role_id separately from the base role used by authorization. Invitation acceptance copies the bound definition from the invite, never recipient-supplied role metadata. Same-tenant/profile matching is checked in application and database. A guarded change to the base operational role clears the prior custom label. Apply migration036 before this runtime. Tenant IT creation is freshly authorized before replay; creation and audit are atomic. Unknown outcomes retain exact body/key, and conflicts require deliberate reload/renewed review.
 
 Live evidence: one saved synthetic Requester definition, refreshed inventory and both member selectors; desktop/mobile wizard review. Actual member enrollment/selected-role acceptance, alternate-role isolation and fault/concurrency/replay matrices were not executed. No automated tests run.
+
+
+## Account Provisioning and Tenant Home (Decision57)
+
+This correction supersedes the home-designation and in-project template instructions above. Home Organization is read-only in account/general settings; Axiom acquisition supplies the internal company at bootstrap. Tenant IT PATCH is refused before replay. Legacy bindings require an explicit Axiom operator case, never affiliation inference. Tenant Company remains auto-selected and disabled in internal invitations. Account rebrands/changes direct the tenant to Axiom customer support.
+
+Tenant General Settings lives on /projects for current Tenant IT: Project Templates, Roles & Permissions and Account Organization. Template inventory/create belongs here; new project creation consumes saved templates. No template selector/create or home-organization control remains in Project Settings. General creation tasks share CommandOwner with project creation; unknown responses keep siblings blocked.
+
+Create New Role steps are Role Name, Role Type, Description (Optional), Confirmation. Role types are Viewer, Area Viewer, Department Manager and Subcontractor Coordinator. Type help describes permissions; review retains name/type/scope/visibility/responsibilities and consent. Creation does not assign people. Area Viewer/Department Manager selection and invitation review disclose their separately required project scope. Existing historical role names remain readable/selectable, while new definitions use only the four approved types.
+
+Move administrative authority, operational-role reference and separate grants into Roles & Permissions FAQ. Native details inside the foreground sheet disclose each topic. Prose reference cells wrap; personnel identities/actions retain existing intact-text tables. Apply037_custom_role_types.sql and038_axiom_account_binding_evidence.sql before this increment.

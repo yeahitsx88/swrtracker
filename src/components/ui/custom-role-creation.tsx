@@ -11,12 +11,13 @@ import {Button,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {Field} from '@/components/forms';
 import {AdministrationDialog} from './administration-dialog';
 import {AdministrationRecords} from './administration-records';
-import {OperationalRolePicker} from './operational-role-picker';
+import {CUSTOM_ROLE_TYPES} from '@/modules/tenancy/domain/member-invitation';
+import {ContextHelp} from './context-help';
 
 export function CustomRoleCreation({directory,owner,disabled,onCreated,onReload}:{directory?:CustomRoleDirectory;owner:CommandOwner;disabled?:boolean;onCreated:(role:CustomRole)=>void;onReload:()=>void}) {
  const token='custom-role-creation';useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const gate=useRef(new FrozenCommand<CreateCustomRole>()).current;
- const [open,setOpen]=useState(false),[step,setStep]=useState(0),[name,setName]=useState(''),[description,setDescription]=useState(''),[baseRole,setBaseRole]=useState<CreateCustomRole['baseRole']>('REQUESTER');
+ const [open,setOpen]=useState(false),[step,setStep]=useState(0),[name,setName]=useState(''),[description,setDescription]=useState(''),[baseRole,setBaseRole]=useState<CreateCustomRole['baseRole']>('VIEWER');
  const [consent,setConsent]=useState(false),[error,setError]=useState<string>(),[result,setResult]=useState<CustomRole>(),[,render]=useState(0);
  const blocked=!!disabled||owner.blocked(token),locked=blocked||gate.locked,canDismiss=!blocked&&!gate.pending&&(!gate.command||gate.stale);
  const profile=OPERATIONAL_ROLE_PROFILES[result?.baseRole??baseRole];
@@ -34,31 +35,31 @@ export function CustomRoleCreation({directory,owner,disabled,onCreated,onReload}
   finally{render(n=>n+1);}
  }
  return <div className="stack">
-  <div className="row">{directory?.canCreate&&<Button disabled={blocked||owner.snapshot()!==null||open} onClick={()=>{if(!owner.claim(token))return;setOpen(true);setStep(0);setName('');setDescription('');setBaseRole('REQUESTER');setConsent(false);setError(undefined);setResult(undefined);}}>Create Custom Role</Button>}
+  <div className="row">{directory?.canCreate&&<Button disabled={blocked||owner.snapshot()!==null||open} onClick={()=>{if(!owner.claim(token))return;setOpen(true);setStep(0);setName('');setDescription('');setBaseRole('VIEWER');setConsent(false);setError(undefined);setResult(undefined);}}>Create New Role</Button>}
    <Button variant="secondary" disabled={blocked||owner.snapshot()!==null||open} onClick={onReload}>Refresh Custom Roles</Button></div>
   {!directory?<p role="status">Custom roles are unavailable. Refresh roles to try again.</p>:<>
    {!directory.canCreate&&<p className="muted">Tenant IT manages tenant-wide custom role definitions.</p>}
    <AdministrationRecords label="custom roles" rows={directory.roles} id={r=>r.id} disabled={blocked||open} columns={[
-    {key:'name',label:'Custom Role',text:r=>r.name},{key:'profile',label:'Permission Profile',text:r=>roleLabel(r.baseRole)},{key:'description',label:'Description',text:r=>r.description||'No description'},
+    {key:'name',label:'Custom Role',text:r=>r.name},{key:'profile',label:'Role Type',text:r=>roleLabel(r.baseRole)},{key:'description',label:'Description',text:r=>r.description||'No description'},
    ]}/>
   </>}
-  {open&&<AdministrationDialog title={result?'Custom Role Created':'Create Custom Role'} step={{current:step+1,total:4,label:['Role Details','Permission Profile','Review','Complete'][step]??'Role Details'}} help="Custom roles belong to this tenant and inherit one existing operational permission profile. Tenant IT creates definitions; Project Admins can select them during internal member enrollment. Administrative authority and responsibility grants are assigned separately." onClose={close} closeDisabled={!canDismiss}
+  {open&&<AdministrationDialog title={result?'Custom Role Created':'Create New Role'} step={{current:step+1,total:4,label:result?'Complete':['Role Name','Role Type','Description','Confirmation'][step]??'Role Name'}} help="Custom roles belong to this tenant and inherit one existing operational permission profile. Tenant IT creates definitions; Project Admins can select them during internal member enrollment. Administrative authority and responsibility grants are assigned separately." onClose={close} closeDisabled={!canDismiss}
    footer={result?<Button onClick={close}>Close</Button>:<><Button variant="secondary" disabled={!canDismiss} onClick={gate.stale?reload:close}>{gate.stale?'Reload Roles':'Cancel'}</Button><div className="row">
     {step>0&&<Button variant="secondary" disabled={locked} onClick={()=>{setStep(s=>s-1);setConsent(false);}}>Back</Button>}
-    {step<2?<Button disabled={locked||!nameValid||!directory?.canCreate} onClick={()=>setStep(s=>s+1)}>{step===1?'Review Role':'Next'}</Button>:<Button disabled={blocked||!consent||gate.pending||gate.stale||!directory?.canCreate} onClick={()=>void save()}>{gate.pending?'Creating…':gate.command?'Retry Same Creation':'Create Role'}</Button>}
+    {step<3?<Button disabled={locked||!nameValid||!directory?.canCreate} onClick={()=>setStep(s=>s+1)}>{step===2?'Review Role':'Next'}</Button>:<Button disabled={blocked||!consent||gate.pending||gate.stale||!directory?.canCreate} onClick={()=>void save()}>{gate.pending?'Creating…':gate.command?'Retry Same Creation':'Create Role'}</Button>}
    </div></>}>
    {error&&<ErrorBanner message={error}/>}
    {step===0&&<>
-    <Field label="Custom Role Name"><Input value={name} maxLength={80} disabled={locked} placeholder="For example, Site Requester" onChange={e=>setName(e.target.value)}/></Field>
+    <Field label="Custom Role Name"><Input value={name} maxLength={80} disabled={locked} placeholder="For example, Construction Manager" onChange={e=>setName(e.target.value)}/></Field>
     {duplicate&&<p role="alert">A custom role with this name already exists. Choose another name.</p>}
-    <Field label="Description (Optional)"><Input value={description} maxLength={500} disabled={locked} onChange={e=>setDescription(e.target.value)}/></Field>
    </>}
-   {step===1&&<><OperationalRolePicker label="Inherited Permission Profile" value={baseRole} onChange={setBaseRole} disabled={locked}/><p><strong>{roleLabel(baseRole)}</strong> supplies this custom role’s permissions.</p></>}
-   {step>=1&&<dl className="administration-dialog-summary">
-    {step>=2&&<><div><dt>Custom Role</dt><dd>{result?.name??name.trim()}</dd></div><div><dt>Permission Profile</dt><dd>{roleLabel(result?.baseRole??baseRole)}</dd></div>{(result?.description??description.trim())&&<div><dt>Description</dt><dd>{result?.description??description.trim()}</dd></div>}<div><dt>Scope</dt><dd>Every project in this tenant</dd></div></>}
+   {step===1&&<><div className="heading-with-help"><h3 className="panel-title">Role Type</h3><ContextHelp label="Role Type"><dl className="administration-dialog-summary">{CUSTOM_ROLE_TYPES.map(role=><div key={role}><dt>{roleLabel(role)}</dt><dd>{OPERATIONAL_ROLE_PROFILES[role].visibility} {OPERATIONAL_ROLE_PROFILES[role].responsibilities}</dd></div>)}</dl></ContextHelp></div><Field label="Inherited Role Type"><select className="select operational-role-list" size={4} value={baseRole} disabled={locked} onChange={e=>setBaseRole(e.target.value as CreateCustomRole['baseRole'])}>{CUSTOM_ROLE_TYPES.map(role=><option key={role} value={role}>{roleLabel(role)}</option>)}</select></Field></>}
+   {step===2&&<Field label="Description (Optional)"><Input value={description} maxLength={500} disabled={locked} placeholder="What does this role mean in your organization?" onChange={e=>setDescription(e.target.value)}/></Field>}
+   {step===3&&<dl className="administration-dialog-summary">
+    {step===3&&<><div><dt>Custom Role</dt><dd>{result?.name??name.trim()}</dd></div><div><dt>Role Type</dt><dd>{roleLabel(result?.baseRole??baseRole)}</dd></div>{(result?.description??description.trim())&&<div><dt>Description</dt><dd>{result?.description??description.trim()}</dd></div>}<div><dt>Scope</dt><dd>Every project in this tenant</dd></div></>}
     <div><dt>Visibility</dt><dd>{profile.visibility}</dd></div><div><dt>Responsibilities</dt><dd>{profile.responsibilities}</dd></div>
    </dl>}
-   {step===2&&<><p>Creating this definition does not assign it to anyone. Project Admin authority, Survey Reviewer grants, staffing links and current workflow checks remain separate.</p><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this tenant-wide name and inherited permission profile.</span></label></>}
+   {step===3&&!result&&<><p>Creating this definition does not assign it to anyone. Project Admin authority, Survey Reviewer grants, staffing links and current workflow checks remain separate.</p><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this tenant-wide name and inherited permission profile.</span></label></>}
    {result&&<><SuccessBanner message={`${result.name} is available for internal project member enrollment.`}/><p>No member access has changed. Select this role when adding an existing member or inviting a new member.</p><details><summary>Role Reference</summary><span className="administration-company-id">{result.id}</span></details></>}
    {gate.stale&&<p role="alert">Reload roles and review the details before creating another role.</p>}
   </AdministrationDialog>}

@@ -1,0 +1,3 @@
+.roles-permissions-table {width:100%;min-width:700px;table-layout:fixed;}
+.roles-permissions-table th,.roles-permissions-table td {white-space:normal;overflow-wrap:break-word;min-width:0;}
+.roles-permissions-table th:first-child {width:22%;}

@@ -323,3 +323,10 @@ Operational role choice uses the shared native five-row scrollable single-select
 ## Custom Role Creation
 
 Use the same foreground administration wizard for tenant-wide named operational profiles. Show Role Details, Permission Profile, Review and Complete, with optional procedures in heading help. The current inherited visibility/responsibilities and definition's scope/impact remain visible during review. Only Tenant IT sees Create Custom Role; other administrators see the catalogue and can choose saved roles when enrolling internal members. Names use ordinary text, built-in profiles use readable labels, and custom choices show name plus inherited profile. Current roles remain a reference rather than editable permission switches.
+
+
+### Account-Bound Organization and Tenant General Settings (Decision57)
+
+Tenant-wide configuration belongs on the Tenant IT home screen. Project Templates, Roles & Permissions and Account Organization use the existing workspace tabs and panels. Projects consume a saved template at creation; project settings expose their current operational controls. Organization details are read-only, with Axiom customer-support guidance. Internal Tenant Company selection is fixed to the account binding.
+
+Create New Role follows Name, Type, optional Description and Confirmation; show exactly four inherited types with permission help. Review shows effective scope and consequences. Put authority/operational/grant reference into an on-demand FAQ sheet. Wrap explanatory table prose without wrapping personnel identities/actions. Preserve native foreground dialogs, shared uncertain-command ownership, Axiom/Roboto tokens and existing layout. This supersedes the earlier home designation and eight-profile wizard guidance.

@@ -4,13 +4,13 @@ import type {DbClient,UUID} from '@/shared/types';
 import {ConflictError,ForbiddenError,NotFoundError,ValidationError} from '@/shared/errors';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
 import {findCustomRole,insertCustomRole} from '../infrastructure/custom-role.repository';
-import {MEMBER_INVITATION_ROLES} from '../domain/member-invitation';
+import {MEMBER_INVITATION_ROLES,CUSTOM_ROLE_TYPES} from '../domain/member-invitation';
 import type {CreateCustomRole} from '../domain/custom-role';
 
 export function validateCustomRole(input:CreateCustomRole):void {
  if(!input.name||input.name.length>80||input.description.length>500||/[\u0000-\u001f\u007f]/.test(input.name+input.description))throw new ValidationError('Enter a role name (up to 80 characters) and an optional description (up to 500 characters).');
- if(!MEMBER_INVITATION_ROLES.includes(input.baseRole))throw new ValidationError('Choose a supported operational permission profile');
- const reserved=['TENANT IT','CENTRAL IT','TENANT ADMIN','PROJECT ADMIN','BILLING VIEWER','AREA VIEWER','DEPARTMENT MANAGER','DEPARTMENT LEAD','SUBCONTRACTS COORDINATOR',...MEMBER_INVITATION_ROLES.map(r=>r.replaceAll('_',' '))];
+ if(!CUSTOM_ROLE_TYPES.includes(input.baseRole))throw new ValidationError('Choose Viewer, Area Viewer, Department Manager or Subcontractor Coordinator');
+ const reserved=['TENANT IT','CENTRAL IT','TENANT ADMIN','PROJECT ADMIN','BILLING VIEWER','AREA VIEWER','DEPARTMENT MANAGER','DEPARTMENT LEAD','SUBCONTRACTS COORDINATOR','SUBCONTRACTOR COORDINATOR',...MEMBER_INVITATION_ROLES.map(r=>r.replaceAll('_',' '))];
  if(reserved.includes(input.name.toUpperCase().replace(/[_\s]+/g,' ')))throw new ValidationError('Use a custom name distinct from the built-in roles and administrative authorities');
 }
 export async function authorizeCustomRoleCreation(db:DbClient,auth:AuthContext):Promise<void> {
@@ -25,7 +25,7 @@ export async function createCustomRole(db:DbClient,auth:AuthContext,input:Create
  return {role};
 }
 export async function resolveCustomRole(db:DbClient,tenantId:UUID,id:UUID|undefined,baseRole:string) {
- if(!id)return undefined;
+ if(!id){if(['AREA_VIEWER','DEPARTMENT_MANAGER','SUBCONTRACTS_COORDINATOR'].includes(baseRole))throw new ValidationError('Select a saved tenant custom role for this permission profile');return undefined;}
  const role=await findCustomRole(db,tenantId,id);
  if(!role)throw new NotFoundError('Custom role not found in this tenant');
  if(role.baseRole!==baseRole)throw new ConflictError('The custom role does not match the reviewed permission profile. Reload and choose the role again.');

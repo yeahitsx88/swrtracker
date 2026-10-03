@@ -31,3 +31,8 @@ Evidence: two strict type/production builds; one bounded desktop/mobile inspecti
 Preserve the Operate-mode Axiom surface. Extend Roles & Permissions with tenant-wide custom-role inventory and Tenant IT creation wizard: name/description, existing operational profile with current summary, reviewed scope/impact and consent, saved outcome. Optional instructions use heading help. Member selectors label each custom role with its inherited permission profile; permission checks keep the existing base role. Definitions do not assign people or confer administrative authority.
 
 Evidence: strict/unused type checks and pinned production build pass. One bounded desktop/mobile inspection covered profile-summary selection, visible review, consent gating, real synthetic creation/result, inventory refresh and unsent enrollment selection/review. Narrow dialog374px within390px viewport, document scrollWidth390. No visual defect required a further polish round. Shared typography, controls, footer, focus and scrolling retained. No automated tests run; actual member acceptance, fault/concurrency and alternate-role matrices remain unverified.
+
+
+## Decision57 Refinement
+
+Preserve Operate-mode Axiom surfaces. Tenant home offers general settings for reusable templates, tenant-wide custom-role definitions and read-only acquired account organization. Project settings no longer contain home designation or template configuration. New role wizard: Name -> Type (four inherited types plus help) -> optional Description -> Confirmation; terminal saved state stays within step4. Required Area/department scope remains visible at enrollment/review; no implicit access grant. Permission reference is an on-demand FAQ sheet with prose wrapping and contained table scrolling.
