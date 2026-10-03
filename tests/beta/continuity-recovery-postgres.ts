@@ -1,7 +1,7 @@
 // Reuse the disposable lifecycle schema; no retained rehearsal/production writes.
 import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import bcrypt from 'bcrypt';
 import {NextRequest} from 'next/server';
@@ -110,7 +110,7 @@ await runLifecycleSchemaAcceptance(async(db,f)=>{
   const sole=new NextRequest('http://localhost/api/offboard',{headers:{cookie:'swr_session='+signToken(central as UUID,f.tenant as UUID,1)}});await expect(await handleOffboarding(sole,scope,central),403);check('Remaining Tenant Admin cannot self-disable');
  }finally{await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));app.query=oldQuery;app.connect=oldConnect;for(const [key,value]of Object.entries(oldEnv)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
 });
-await mkdir('audits/customer-lifecycle-rehearsal/continuity',{recursive:true});await writeFile('audits/customer-lifecycle-rehearsal/continuity/acceptance.json',JSON.stringify({at:new Date().toISOString(),scope:'Disposable PostgreSQL lifecycle fixture; retained Northbank untouched',checks:evidence},null,2)+'\n');
+await writeFile('.local-continuity-acceptance.json',JSON.stringify({at:new Date().toISOString(),scope:'Disposable PostgreSQL lifecycle fixture; retained Northbank untouched',checks:evidence},null,2)+'\n');
 console.log(`Continuity/recovery checks passed: ${evidence.length}`);
 
 }

@@ -171,6 +171,11 @@ export async function runLifecycleSchemaAcceptance(
       const stored=(await db.query('SELECT scope,project_id,event_type,actor_id,authority_evidence FROM account_lifecycle_events WHERE id=$1',[emitted])).rows[0];
       assert.deepEqual(stored,{scope:'TENANT_ACCOUNT',project_id:null,event_type:'user.deactivated',actor_id:actor,authority_evidence:{branch:'CENTRAL_IT'}});
     });
+    // Current application reads require additive migrations after the legacy031 assertions.
+    // Callers own032 (not idempotent); apply033 and later before their callback.
+    for (const file of migrations.filter(name => name >= '033_')) {
+      await db.query(await readFile(resolve('db/migrations', file), 'utf8'));
+    }
     if (typeof acceptance === 'function') await acceptance(db,{tenant,project,actor,subject,foreignProject});
     console.log(`Scoped lifecycle PostgreSQL schema checks passed: ${checks}`);
   } finally {

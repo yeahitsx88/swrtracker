@@ -56,6 +56,6 @@ test('account SQL applies tenant, project and self scope and omits credentials',
 });
 test('account navigation retains the project for Home and account destinations', () => {
   assert.equal(accountNavigation(projectId)[0]?.href, '/projects/project');
-  assert.equal(accountNavigation(projectId)[1]?.href, '/profile?projectId=project');
+  assert.equal(accountNavigation(projectId).find(item => item.label === 'Profile')?.href, '/profile?projectId=project');
   assert.equal(accountNavigation()[0]?.href, '/projects');
 });

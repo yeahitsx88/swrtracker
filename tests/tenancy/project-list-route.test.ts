@@ -47,7 +47,7 @@ test('GET /api/projects returns active tenant-scoped memberships for the signed-
   assert.deepEqual(queries[0]?.params, [tenantId, userId]);
   assert.match(queries[0]?.text ?? '', /p\.tenant_id = \$1/);
   assert.match(queries[0]?.text ?? '', /pm\.user_id = \$2/);
-  assert.match(queries[0]?.text ?? '', /p\.status IN \('ACTIVE', 'ARCHIVED'\)/);
+  assert.match(queries[0]?.text ?? '', /p\.status IN \('ACTIVE',\s*'ARCHIVED'\)/);
   assert.match(queries[0]?.text ?? '', /c\.type <> 'SUBCONTRACTOR' OR pm\.role = 'REQUESTER'/);
 });
 

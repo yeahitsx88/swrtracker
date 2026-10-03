@@ -101,7 +101,7 @@ async function main() {
     await db.query(`CREATE TEMP TABLE tickets (
       id uuid PRIMARY KEY,tenant_id uuid NOT NULL,project_id uuid NOT NULL,aor_node_id uuid,
       department_id uuid,company_id uuid,requester_id uuid,assigned_party_chief_id uuid,assigned_instrument_man_id uuid,
-      status text,requested_date date,completed_at timestamptz,first_submitted_at timestamptz,submitted_at timestamptz,ticket_type text
+      status text,requested_date date,completed_at timestamptz,first_submitted_at timestamptz,submitted_at timestamptz,ticket_type text,draft_deleted_at timestamptz
     ) ON COMMIT DROP;
       CREATE TEMP TABLE aor_nodes (id uuid,tenant_id uuid,project_id uuid,name text) ON COMMIT DROP;
       CREATE TEMP TABLE users (id uuid,tenant_id uuid,name text) ON COMMIT DROP;
@@ -112,7 +112,7 @@ async function main() {
         CASE WHEN n<=84 THEN $3::uuid ELSE $4::uuid END,NULL,$5,
         CASE WHEN n%2=0 THEN $6::uuid ELSE $7::uuid END,
         CASE WHEN n<=42 THEN $8::uuid ELSE $9::uuid END,$10,'COMPLETED',
-        '2026-01-02','2026-01-03','2026-01-01','2026-01-01','LAYOUT' FROM generate_series(1,50000) n`,
+        '2026-01-02','2026-01-03','2026-01-01','2026-01-01','LAYOUT',NULL FROM generate_series(1,50000) n`,
     [id(1),id(2),id(5),id(6),id(7),id(8),id(9),id(10),id(11),id(12)]);
     await db.query(`INSERT INTO pg_temp.aor_nodes VALUES ($1,$3,$4,'Area A'),($2,$3,$4,'Area B')`,
       [id(5),id(6),id(1),id(2)]);
