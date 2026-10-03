@@ -6,9 +6,10 @@ import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import type {OffboardingPreview,OffboardingResult,OffboardingScope} from '@/lib/contracts/account-offboarding';
+import {AdministrationDialog} from './administration-dialog';
 import {Button,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 type Body={subjectUserId:string;scope:OffboardingScope;reason:string;snapshot:string;confirmed:true};
-export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onLockChange,commandOwner,onCancel}:{subjectUserId:string;subjectName:string;scope:OffboardingScope;commandOwner?:CommandOwner;onCancel?:()=>void;onResult?:(result:OffboardingResult)=>void;onLockChange?:(locked:boolean)=>void}){
+export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onLockChange,commandOwner,onCancel,onNext}:{subjectUserId:string;subjectName:string;scope:OffboardingScope;commandOwner?:CommandOwner;onCancel?:()=>void;onNext?:()=>void;onResult?:(result:OffboardingResult)=>void;onLockChange?:(locked:boolean)=>void}){
  const fallback=useRef(new CommandOwner());const owner=commandOwner??fallback.current;const token=useId();useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);const blocked=owner.blocked(token);
  const [replayed,setReplayed]=useState(false);
  const url=scope.kind==='TENANT_ACCOUNT'?`/api/accounts/${subjectUserId}/offboarding`:`/api/projects/${scope.projectId}/members/${subjectUserId}/offboarding`;
@@ -30,8 +31,8 @@ export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onL
   finally{if(!gate.current.locked)owner.release(token);onLockChange?.(gate.current.locked);setRevision(n=>n+1);}
  }
  void revision;
- return <section className="stack" aria-label={`${action}: ${subjectName}`}>
- <h3 ref={heading} tabIndex={-1} className="panel-title">{action}: {subjectName}</h3>
+ return <AdministrationDialog title={`${action}: ${subjectName}`} onClose={()=>{if(!blocked&&gate.current.reload()){owner.release(token);onLockChange?.(false);onCancel?.();}}} closeDisabled={!onCancel||blocked||gate.current.pending||!!gate.current.command&&!gate.current.stale}>
+ <h3 ref={heading} tabIndex={-1} className="panel-title">Review current access</h3>
  {onCancel&&<div className="row"><Button variant="secondary" disabled={blocked||gate.current.pending||!!gate.current.command&&!gate.current.stale} onClick={()=>{if(owner.blocked(token)||!gate.current.reload())return;owner.release(token);onLockChange?.(false);onCancel();}}>{result?'Close access review':'Cancel access removal'}</Button></div>}
  <p>{scope.kind==='TENANT_ACCOUNT'?'This disables access across this tenant.':'This removes access to this project. The account and access to other projects remain.'} Historical requests, drafts, files and audit evidence are retained.</p>
  {error&&<ErrorBanner message={error}/>}
@@ -50,5 +51,6 @@ export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onL
  </>}
  <Button variant="secondary" disabled={blocked||loading||gate.current.pending||!!gate.current.command&&!gate.current.stale} onClick={()=>{if(!owner.blocked(token)&&gate.current.reload()){owner.release(token);onLockChange?.(false);setResult(undefined);void load();}}}>Reload evidence</Button>
  {result&&<><SuccessBanner message={`${replayed?'Original confirmed operation replayed: ':''}${result.outcome==='DISABLED'?'Access disabled':'Access was already disabled'}. History was retained.`}/><p>{result.centralReview==='QUEUED'?'Central IT review queued. This does not disable the tenant account.':result.centralReview==='NOT_QUEUED_NO_CENTRAL_IT'?'No Central IT review was queued because there was no eligible recipient.':'No project review applies to this tenant action.'}</p><p>This is the recorded outcome of this operation. Reload evidence to check current access.</p><p>Lifecycle evidence: {result.eventId??'No new transition'} · {result.disabledAt}</p></>}
- </section>;
+ {result&&onNext&&<Button variant="secondary" disabled={blocked||gate.current.locked} onClick={onNext}>Review next selected person</Button>}
+ </AdministrationDialog>;
 }

@@ -1,15 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient, apiRequest } from '@/lib/apiClient';
-import { getErrorMessage } from '@/lib/errors';
+import { ApiClientError, getErrorMessage } from '@/lib/errors';
+import {FrozenCommand} from '@/lib/frozen-command';
+import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
+import type {ProjectRequestConfig} from '@/modules/tenancy/domain/types';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
 import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
 import {ProjectAdministration} from '@/components/ui/project-administration';
+import {AdministrationDialog} from '@/components/ui/administration-dialog';
 
 export default function AdminProjectPage() {
   const params = useParams<{ projectId: string }>();
@@ -23,6 +27,12 @@ export default function AdminProjectPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [configOpen,setConfigOpen]=useState(false);
+  const [revision,setRevision]=useState(0);
+  const command=useRef(new FrozenCommand<ProjectRequestConfig>());
+  const locked=command.current.locked,uncertain=!!command.current.command&&!command.current.stale;
+  useUnsavedProgress(locked);
+  function closeConfig(){if(command.current.reload()){setConfigOpen(false);setRevision(n=>n+1);}}
 
   useEffect(() => {
     let active = true;
@@ -50,24 +60,23 @@ export default function AdminProjectPage() {
     return () => {
       active = false;
     };
-  }, [projectId]);
+  }, [projectId,revision]);
 
   async function saveConfig() {
     if(loading||saving||archived)return;
+    const attempt=command.current.begin({leadTimeEnforcementEnabled,leadTimeDays,maxAttachmentsPerTicket},crypto.randomUUID());if(!attempt)return;
     setSaving(true);
     setError(null);
     setSuccess(null);
     try {
-      const response = await apiClient.updateProjectRequestConfig(projectId, {
-        leadTimeEnforcementEnabled,
-        leadTimeDays,
-        maxAttachmentsPerTicket,
-      });
+      const response = await apiRequest<{config:ProjectRequestConfig}>(`/api/projects/${projectId}/request-config`,{method:'PATCH',body:attempt.body,headers:{'Idempotency-Key':attempt.key}});
+      command.current.success();
       setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);
       setLeadTimeDays(response.config.leadTimeDays);
-      setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
+      setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket ?? null);
       setSuccess('Project request configuration updated.');
     } catch (err) {
+      command.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err, 'Unable to update project request configuration.'));
     } finally {
       setSaving(false);
@@ -77,11 +86,13 @@ export default function AdminProjectPage() {
   return (
     <div className="stack">
       <ProjectAdministration key={projectId} projectId={projectId}/>
-      {!loading&&!archived&&<Card
+      {!archived&&<Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."
       >
         <div className="stack">
+          <Button disabled={loading||archived} onClick={()=>{setConfigOpen(true);setSuccess(null);}}>Edit request configuration</Button>
+          {configOpen&&<AdministrationDialog title="Project request configuration" closeDisabled={saving||uncertain} onClose={closeConfig}>
           {error ? <ErrorBanner message={error} /> : null}
           {success ? <SuccessBanner message={success} /> : null}
           {loading ? <p className="muted">Loading project configuration...</p> : null}
@@ -92,14 +103,14 @@ export default function AdminProjectPage() {
                 <input
                   type="checkbox"
                   checked={leadTimeEnforcementEnabled}
-                  disabled={saving||archived}
+                  disabled={locked||archived}
                   onChange={(event) => setLeadTimeEnforcementEnabled(event.target.checked)}
                 />
                 <span>Enable lead-time enforcement for requester submit</span>
               </label>
               <Field label="Lead-Time Days">
                 <Input
-                  disabled={saving||archived}
+                  disabled={locked||archived}
                   type="number"
                   min={1}
                   max={30}
@@ -110,7 +121,7 @@ export default function AdminProjectPage() {
               </Field>
               <Field label="Maximum Files per SWR (blank for no count cap)">
                 <Input
-                  disabled={saving||archived}
+                  disabled={locked||archived}
                   type="number"
                   min={1}
                   max={100}
@@ -118,15 +129,17 @@ export default function AdminProjectPage() {
                   onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
                 />
               </Field>
-              <Button disabled={saving||archived} onClick={() => void saveConfig()}>
-                {saving ? 'Saving...' : 'Save Configuration'}
+              <Button disabled={saving||archived||command.current.stale} onClick={() => void saveConfig()}>
+                {saving ? 'Saving…' : uncertain?'Retry unchanged configuration':'Save configuration'}
               </Button>
+              {command.current.stale&&<><p role="alert">State changed. Reload current configuration before editing again.</p><Button variant="secondary" onClick={()=>{if(command.current.reload()){setSuccess(null);setRevision(n=>n+1);}}}>Reload configuration</Button></>}
             </>
           ) : null}
+          </AdministrationDialog>}
         </div>
       </Card>}
       {archived&&error?<ErrorBanner message={error}/>:null}
-      <Card title="Survey Reviewer handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
+      <Card title="Survey Reviewer handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId} foreground/></Card>
       <SubcontractorAccess projectId={projectId} />
       <DraftRecovery projectId={projectId} />
     </div>

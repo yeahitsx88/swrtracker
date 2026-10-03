@@ -1,5 +1,6 @@
 'use client';
 
+import {AdministrationDialog} from './administration-dialog';
 import {RecordCollection} from '@/components/ui/record-collection';
 import {useEffect,useReducer,useRef,useState,type FormEvent} from 'react';
 import type {UUID,Page} from '@/shared/types';
@@ -13,7 +14,7 @@ import {roleLabel} from '@/lib/display-labels';
 import {PaginationControls} from '@/components/forms';
 import './team-management.css';
 
-export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockChange,disabled=false,isBlocked,invalidateVersion=0}:{projectId:string;userId?:UUID;onResolved?:(result:ResolveReviewerResult)=>void;onLockChange?:(locked:boolean)=>void;disabled?:boolean;isBlocked?:()=>boolean;invalidateVersion?:number}){
+export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockChange,disabled=false,isBlocked,invalidateVersion=0,foreground=false}:{projectId:string;userId?:UUID;onResolved?:(result:ResolveReviewerResult)=>void;onLockChange?:(locked:boolean)=>void;disabled?:boolean;isBlocked?:()=>boolean;invalidateVersion?:number;foreground?:boolean}){
  const [state,dispatch]=useReducer(reduceProtectedEditor,undefined,initialProtectedEditor);
  const [open,setOpen]=useState(!!userId),[people,setPeople]=useState<Page<ProtectedPerson>|null>(null);
  const [personType,setPersonType]=useState('');
@@ -59,11 +60,7 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
  const page=state.userId?(state.grant?state.candidates?.candidates:state.detail?.obligations):people;
  const label=state.userId?(state.grant?'Search replacement Superintendents':'Search obligations by Area or responsibility'):'Search project personnel';
  const preview=state.candidate?coveragePreview(state.candidate):null;
- return <section className="tm-section stack tm-workspace" aria-label="Protected Survey Reviewer obligations">
-  <AdministrationSection title="Protected Survey Reviewer obligations" open={!!userId} locked={frozen}>
-  <h4 tabIndex={-1} ref={heading}>Survey Reviewer coverage</h4>
-  <p className="muted">Hand over one live Area review grant to another current Superintendent. Role changes and remaining staffing are separate.</p>
-  {!open?<Button type="button" variant="secondary" onClick={()=>setOpen(true)}>Inspect protected obligations</Button>:<>
+ const content=<>
    {success?<SuccessBanner message={success}/>:null}
    {state.stale?<ErrorBanner message="Protected obligations changed. Reload current obligations before confirming; cancelling does not clear this warning."/>:null}
    {state.error?<ErrorBanner message={state.error}/>:null}
@@ -96,7 +93,12 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
    </>}
    {state.userId&&page&&page.total>0?<div className="tm-footer"><span className="muted" role="status">{page.total} results</span>{!frozen?<PaginationControls total={page.total} limit={limit} offset={offset} onChange={next=>{if(!frozen)setOffset(next);}}/>:null}</div>:null}
    <div className="row"><Button type="button" variant="secondary" disabled={frozen} onClick={reload}>Reload current obligations</Button>{!userId&&state.userId?<Button type="button" variant="secondary" disabled={frozen} onClick={()=>{dispatch({type:'reload'});dispatch({type:'person',userId:null});resetQuery();setSuccess(null);}}>Back to project personnel</Button>:null}</div>
-  </>}
+ </>;
+ return <section className="tm-section stack tm-workspace" aria-label="Protected Survey Reviewer obligations">
+  <AdministrationSection title="Protected Survey Reviewer obligations" open={!!userId} locked={frozen}>
+   <h4 tabIndex={-1} ref={heading}>Survey Reviewer coverage</h4>
+   <p className="muted">Hand over one live Area review grant to another current Superintendent. Role changes and remaining staffing are separate.</p>
+   {foreground?<><Button type="button" variant="secondary" disabled={open||frozen} onClick={()=>setOpen(true)}>Inspect protected obligations</Button>{open&&<AdministrationDialog title="Survey Reviewer handover" closeDisabled={frozen} onClose={()=>{if(!frozen&&!isBlocked?.()){dispatch({type:'cancel'});dispatch({type:'person',userId:null});resetQuery();setOpen(false);}}}>{content}</AdministrationDialog>}</>:!open?<Button type="button" variant="secondary" onClick={()=>setOpen(true)}>Inspect protected obligations</Button>:content}
   </AdministrationSection>
  </section>;
 }

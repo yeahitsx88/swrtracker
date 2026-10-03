@@ -18,6 +18,7 @@ colors:
   success: "#0f7b52"
   warn: "#b06a11"
   danger: "#b23833"
+  dialog-backdrop: "rgb(10 20 30 / 45%)"
   dark-bg: "#111820"
   dark-bg-elevated: "#19242e"
   dark-ink: "#e7edf2"
@@ -292,3 +293,12 @@ Dark mode gives the mark and icon frames a white backing, preserving the supplie
 - Don't treat generated tonal previews as approved application colors.
 - Don't introduce marketing claims or change task flows through visual refinement.
 - Don't describe loaded-page filtering as a full-dataset search or let selection grant a new mutation permission.
+
+
+## Foreground administration tasks
+
+Owner-approved creation and review flows use the shared native AdministrationDialog. Keep the Axiom/Roboto palette, square actions, 12px panel radius and existing semantic inventories. The neutral dialog backdrop uses the documented dialog-backdrop color at 45% opacity in both modes.
+
+Creation progresses through short named steps, explicit review and a saved result in the same dialog. Keep Back, Cancel and Next/Confirm in the visible footer. Native modal focus contains keyboard navigation; closing returns focus to the entry button. Long content scrolls inside the dialog. Use tenant-scoped searchable pickers instead of requiring UUID entry.
+
+Validation stays beside the active step; mutation errors and results stay in the task. Close, backdrop dismissal, Escape and field edits are unavailable during pending or uncertain mutations. Retry preserves the exact body/key; a definitive conflict requires deliberate reload and renewed review. Normal filtering, sorting, pagination, export, copying and navigation keep their direct behavior. Do not turn every control into a dialog.

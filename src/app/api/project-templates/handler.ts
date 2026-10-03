@@ -7,7 +7,8 @@ import { withTransaction } from '@/lib/with-transaction';
  * Both require TENANT_ADMIN.
  */
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
@@ -61,6 +62,7 @@ export async function handlePostProjectTemplates(
   try {
     const auth = await deps.requireAuth(req);
     const body = await req.json() as Record<string, unknown>;
+    const key = req.headers.has('idempotency-key') ? requireIdempotencyKey(req) : null;
     if (
       !body ||
       typeof body !== 'object' ||
@@ -78,9 +80,11 @@ export async function handlePostProjectTemplates(
       );
     }
 
-    const template = await (deps.withTransaction ?? withTransaction)(async (client) => {
+    const result = await (deps.withTransaction ?? withTransaction)(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
       const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      if (actorRole !== 'TENANT_ADMIN') throw new ForbiddenError('Only TENANT_ADMIN can manage project templates');
+      const mutate = async () => {
       const repo = deps.createRepo();
       const template = await createProjectTemplate(repo, client, {
       tenantId: auth.tenantId,
@@ -98,9 +102,14 @@ export async function handlePostProjectTemplates(
         eventType: 'tenant.template_created', authorityEvidence: { actorRole },
         changes: { result: template },
       });
-      return template;
+      return { status: 201, body: { template } };
+      };
+      return key ? executeIdempotentHttpMutation(client, {
+        tenantId: auth.tenantId, actorId: auth.userId,
+        endpoint: 'POST /api/project-templates', idempotencyKey: key,
+      }, body, mutate) : mutate();
     });
-    return NextResponse.json({ template }, { status: 201 });
+    return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     return errorResponse(err);
   }

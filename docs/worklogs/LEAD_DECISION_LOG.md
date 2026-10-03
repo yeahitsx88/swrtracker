@@ -325,3 +325,14 @@
 - Record collections use tables with filtering, sorting, selection and useful authorized export or existing guarded bulk actions; secondary sections collapse where appropriate. Loaded-page scope is explicit. Native navigation/options and charts retain appropriate forms, with chart values available as tables.
 - All authenticated roles have personal LIGHT/DARK/SYSTEM preferences. Only current eligible TENANT_ADMIN may change tenant primary/accent colors; derived readable actions and safety status meanings are preserved. No custom per-person permission model is introduced.
 - Supersedes terminal-archive prohibition solely for the guarded approved workflow. Existing Project Admin setup capability remains approved; a Central-IT-only template restriction was not selected. Synthetic isolated implementation/verification is authorized; whole-release acceptance and beta gates remain separate.
+
+
+### Decision 51 - first Project Admin onboarding and tenant administration (2026-10-03)
+- Owner explicitly authorized implementation after the notes-only walkthrough stalled. Tenant IT access means all administration screens within the tenant, while survey data continues to require operational authority.
+- Establish a Project Admin by selecting an active internal tenant employee, or inviting a new GC/owner-representative employee who creates a profile first. Explicit company association and Requester membership may accompany an existing-employee admin grant; preserve existing operational roles and refuse disabled access restoration. Invitation acceptance grants Requester membership only; a separately reviewed grant establishes Project Admin.
+- Preserve the praised administered-project inventory and expose creation of existing supported tenant project-template fields. Saving an entire configured project as a template remains open.
+
+### Decision 52 - foreground administration creation and review (2026-10-03)
+- Owner requested a front-facing company popup and a standard across benefiting Tenant/Central IT and Project Admin creation workflows. Wireframes establish the step sequence; current Axiom design remains authoritative.
+- Shared native dialogs hold focused steps, review, validation, guarded confirmation and saved outcome. Company registration/association, project/template creation and employee/requester invitations use guided flows. Existing access, admin/company-view grants, handover, review, recommissioning and recovery present evidence/results in the foreground.
+- Keep inventory filtering, sorting, selection, export, copying, refresh and navigation direct. Preserve current permissions, explicit authority, exact unknown retries and deliberate conflict reload; no generic role or operational data access is approved.

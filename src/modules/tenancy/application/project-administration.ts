@@ -7,7 +7,7 @@ import {ConflictError,NotFoundError,ValidationError} from '@/shared/errors';
 import type {Company,CompanyType} from '../domain/types';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
 
-async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:UUID){
+export async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:UUID){
   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
   const authority=await assertProjectAdministrator(db,auth,projectId);
   const project=(await db.query<{status:string;activated_at:Date|null}>('SELECT status,activated_at FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE',[auth.tenantId,projectId])).rows[0];
