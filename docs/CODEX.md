@@ -3357,3 +3357,9 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Webhook delivery aborts after ten seconds and releases unused response bodies. Attachment removal tolerates missing files but reports other filesystem failures. Unexpected API failures emit safe classifications with the public correlation ID, without raw exception/SQL/body content.
 - Verification: strict types and actual stalled loopback webhook, owned filesystem failure, safe-log/error adapter regression tests pass. Existing outbox retry semantics remain; external delivery is still a beta gate.
 
+
+### 2026-10-03 - Batch 120 - Alpha 1 retained event integrity and PostgreSQL gate
+- Migration034 refuses inconsistent existing ticket-event ownership, adds composite tenant foreign keys, and enforces immutable event update/delete/truncate behavior without rewriting history. Privileged database owners remain trusted.
+- Added current actual-route PostgreSQL regressions for appearance/recommissioning authority before replay, audit rollback, same-key concurrency, stale readiness, preserved history, and login retention. Added guarded loopback runner for 27 suites, using owned schemas and explicit opt-in.
+- Verification: all 27 PostgreSQL suites pass; 22 Alpha1 checks include migration repeatability, legacy inconsistency refusal and unchanged retained public-ticket witness. HTTP/browser remains a separate gate.
+
