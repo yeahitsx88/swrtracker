@@ -86,14 +86,14 @@ export default function AdminProjectPage() {
   return (
       <ProjectAdministration key={projectId} projectId={projectId}
       companyContent={<SubcontractorAccess projectId={projectId}/>}
-      surveyContent={<Card title="Survey Reviewer handover" help={<><p>Use this when an Area reviewer is leaving or changing roles. Inspect their current review responsibilities, select a replacement Survey Superintendent, then review and confirm the handover.</p><p>It transfers one Area review grant and checks required coverage. It does not appoint the first Survey Manager or resolve every staffing obligation.</p></>}><ProtectedSurveyObligations key={projectId} projectId={projectId} foreground/></Card>}
+      surveyContent={<Card title="Survey Reviewer Handover" help={<><p>Use this when an Area reviewer is leaving or changing roles. Inspect their current review responsibilities, select a replacement Survey Superintendent, then review and confirm the handover.</p><p>It transfers one Area review grant and checks required coverage. It does not appoint the first Survey Manager or resolve every staffing obligation.</p></>}><ProtectedSurveyObligations key={projectId} projectId={projectId} foreground/></Card>}
       settingsContent={<>{!archived&&<Card
         title="Project Request Configuration"
         help="Manage the minimum lead time for submitting requests and the maximum attachment count per request."
       >
         <div className="stack">
           <Button disabled={archived} onClick={()=>{setConfigOpen(true);setSuccess(null);}}>Edit request configuration</Button>
-          {configOpen&&<AdministrationDialog title="Project request configuration" closeDisabled={saving||uncertain} onClose={closeConfig}>
+          {configOpen&&<AdministrationDialog title="Project Request Configuration" closeDisabled={saving||uncertain} onClose={closeConfig}>
           {error ? <ErrorBanner message={error} /> : null}
           {success ? <SuccessBanner message={success} /> : null}
           {loading ? <p className="muted">Loading project configuration...</p> : null}

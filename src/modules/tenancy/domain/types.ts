@@ -12,6 +12,8 @@ export type DepartmentTitleAssignmentLayer = 'MANAGER' | 'SUPERINTENDENT';
 export type CompanyType = 'GC' | 'SUBCONTRACTOR' | 'OWNER_REP';
 
 export interface Tenant {
+  /** Explicitly designated home organization; legacy tenants remain unset until reviewed. */
+  homeCompanyId?: UUID | null;
   id: UUID;
   name: string;
   createdAt: Date;

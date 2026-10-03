@@ -44,7 +44,7 @@ export function CompanyRegistration({projectId,owner,disabled,onDone,continuatio
   const reviewStep=mode==='new'?2:1;
   const nextEnabled=mode==='new'?step===0?!!name.trim():true:!!selected;
   return <>{!continuation&&<Button variant="secondary" disabled={blocked||owner.snapshot()!==null} onClick={start}>Register or associate a company</Button>}
-    {open&&<AdministrationDialog title={result?'Company ready':!mode?'Register or associate a company':mode==='new'?'New company registration':'Associate an existing company'}
+    {open&&<AdministrationDialog title={result?'Company Ready':!mode?'Register or Associate a Company':mode==='new'?'New Company Registration':'Associate an Existing Company'}
       step={mode?{current:result?reviewStep+2:step+1,total:reviewStep+2,label:result?'Complete':step===reviewStep?'Review':mode==='new'?step===0?'Company name':'Company type':'Find company'}:undefined}
       closeDisabled={blocked||gate.pending||!!gate.command&&!gate.stale} onClose={close}
       footer={result?<Button onClick={close}>{continuation?'Use company and return to invitation':'Close'}</Button>:mode?<><Button variant="secondary" disabled={blocked||gate.pending||!!gate.command&&!gate.stale} onClick={close}>{continuation?'Return to invitation':'Cancel'}</Button><div className="row">

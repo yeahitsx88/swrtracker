@@ -9,7 +9,7 @@ import type {MemberInvitationRole} from '../domain/member-invitation';
 
 export type AdminOnboardingCommand=
   | {action:'GRANT';userId:UUID;companyId:UUID;expectedRole:string|null;confirmed:true}
-  | {action:'INVITE';companyId:UUID;email:string;purpose?:'PROJECT_ADMIN'|'EMPLOYEE';role?:MemberInvitationRole;confirmed:true}
+  | {action:'INVITE';companyId:UUID;email:string;purpose?:'PROJECT_ADMIN'|'EMPLOYEE';expectedHomeCompanyId?:UUID;role?:MemberInvitationRole;confirmed:true}
   | {action:'CANCEL_INVITE';inviteId:UUID;confirmed:true};
 
 export async function authorizeAdminOnboarding(db:DbClient,auth:AuthContext,projectId:UUID) {
@@ -44,6 +44,7 @@ export async function executeAdminOnboarding(db:DbClient,auth:AuthContext,projec
       authorityEvidence:{centralIT:authority.centralIT},changes:{inviteId:command.inviteId,source:'ADMIN_ONBOARDING'}});
     return {action:'CANCEL_INVITE' as const};
   }
+  if(command.expectedHomeCompanyId){const home=(await db.query<{id:UUID}>('SELECT home_company_id AS id FROM tenants WHERE id=$1',[auth.tenantId])).rows[0];if(home?.id!==command.expectedHomeCompanyId||command.companyId!==home.id)throw new ConflictError('Tenant home organization changed. Reload the invitation and review its company.');}
   if(!await repo.eligibleCompany(db,auth.tenantId,projectId,command.companyId,authority.centralIT))throw new NotFoundError('Eligible employee company not found');
   if(await repo.existingAccount(db,auth.tenantId,command.email))throw new ConflictError('This person already has a tenant account. Select the existing employee instead. Disabled accounts require a separate review.');
   const pending=await repo.pendingInvitation(db,auth.tenantId,projectId,command.email);

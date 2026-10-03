@@ -60,17 +60,10 @@ export class AdminOnboardingRepository {
       WHERE i.tenant_id=$1 AND i.project_id=$2 AND c.type IN ('GC','OWNER_REP')
       ORDER BY i.created_at DESC,i.id LIMIT 50`,[tenantId,projectId])).rows;
   }
-  async tenantCompanies(db:DbClient,tenantId:UUID,projectId:UUID,centralIT:boolean) {
-    // The schema has no canonical tenant-company pointer. Use explicit current
-    // Tenant IT company affiliations, expose their names, and never guess by age.
+  async tenantCompanies(db:DbClient,tenantId:UUID) {
     return (await db.query<{id:UUID;name:string;type:string}>(`
-      SELECT DISTINCT c.id,c.name,c.type FROM companies c
-      JOIN users u ON u.tenant_id=c.tenant_id AND u.company_id=c.id AND u.deactivated_at IS NULL
-      JOIN tenant_memberships tm ON tm.tenant_id=u.tenant_id AND tm.user_id=u.id AND tm.role='TENANT_ADMIN'
-      WHERE c.tenant_id=$1 AND c.type IN ('GC','OWNER_REP')
-        AND ($3::boolean OR EXISTS(SELECT 1 FROM project_companies pc
-          WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id))
-      ORDER BY c.name,c.id LIMIT 100`,[tenantId,projectId,centralIT])).rows;
+      SELECT c.id,c.name,c.type FROM tenants t JOIN companies c ON c.tenant_id=t.id AND c.id=t.home_company_id
+      WHERE t.id=$1 AND c.type IN ('GC','OWNER_REP')`,[tenantId])).rows;
   }
   async administrators(db:DbClient,tenantId:UUID,projectId:UUID) {
     return (await db.query<{userId:UUID;name:string;companyName:string}>(`
@@ -92,7 +85,7 @@ export class AdminOnboardingRepository {
   }
   async eligibleCompany(db:DbClient,tenantId:UUID,projectId:UUID,companyId:UUID,centralIT:boolean) {
     return !!(await db.query(`SELECT c.id FROM companies c WHERE c.tenant_id=$1 AND c.id=$3
-      AND c.type IN ('GC','OWNER_REP') AND ($4::boolean OR EXISTS(SELECT 1 FROM project_companies pc
+      AND c.type IN ('GC','OWNER_REP') AND ($4::boolean OR EXISTS(SELECT 1 FROM tenants t WHERE t.id=$1 AND t.home_company_id=c.id) OR EXISTS(SELECT 1 FROM project_companies pc
         WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id))`,[tenantId,projectId,companyId,centralIT])).rows[0];
   }
   async addRequesterMembership(db:DbClient,projectId:UUID,userId:UUID) {

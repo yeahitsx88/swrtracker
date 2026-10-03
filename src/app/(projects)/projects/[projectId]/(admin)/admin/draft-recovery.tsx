@@ -53,7 +53,7 @@ export function DraftRecovery({ projectId }: { projectId:string }) {
         </article>)}</>}/>
         <PaginationControls offset={offset} limit={limit} total={page.total} onChange={next => { if (!locked) void load(next); }} />
       </> : null}
-      {selected ? <AdministrationDialog title={success?'Draft restored':`Restore ${selected.requesterName}’s draft?`} closeDisabled={locked} onClose={()=>{if(!locked){setSelected(null);setSuccess(null);setError(null);}}}>
+      {selected ? <AdministrationDialog title={success?'Draft Restored':`Restore ${selected.requesterName}’s draft?`} closeDisabled={locked} onClose={()=>{if(!locked){setSelected(null);setSuccess(null);setError(null);}}}>
         {error&&<ErrorBanner message={error}/>} {success?<><SuccessBanner message={success}/><Button onClick={()=>{setSelected(null);setSuccess(null);}}>Close</Button></>:<>
         <p>The requester must still be an active Requester on this project. This restores saved progress, not a submitted request. Archived projects remain read-only.</p>
         <Field label="Recovery reason (at least 10 characters)"><Textarea disabled={locked || stale} value={reason} onChange={event => setReason(event.target.value)} /></Field>

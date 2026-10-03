@@ -311,3 +311,10 @@ Optional procedures belong in a help control beside the relevant heading, availa
 Project administration uses the existing underline navigation for Admin & personnel, Companies, Survey and Project settings. Keep each workspace mounted while switching sections so a refresh does not discard command intent; native dialogs keep background navigation inert during active work. Wide personnel dialogs accommodate readable table columns. Names, emails, role labels and action buttons retain complete words; tables scroll horizontally when their content exceeds the available width instead of shrinking type. Request descriptions keep their deliberate wrapping treatment.
 
 Help uses the existing compact supporting-text size of 0.875rem; its trigger retains a 44px target.
+
+
+## Administration Headings and Choices
+
+Use Title Case for static administration headings, workspace labels and table headings; preserve real names and record values. Workspaces read Admin & Personnel, Companies, Survey and Project Settings. Project Admin Access follows Invitations and Next Steps inside Project Admin Setup.
+
+Operational role choice uses the shared native five-row scrollable single-selection list with readable names and a 44px row target. Keep keyboard arrow selection and visible scrolling. Tenant Company is a fixed designated home organization, so its company select is disabled; enable search/select/create under Previously Created Company. Home designation uses the foreground review contract and preserves the calling invitation. Roles & Permissions is a read-only reference.

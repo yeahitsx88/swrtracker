@@ -15,3 +15,12 @@ BOUNDARIES: Administration is independent of operational membership. No invitati
 EVIDENCE: Strict compilation and production build; bounded Tenant IT visual inspection. No new tests or test suites requested. Broader mutation, concurrency, fault and role gates are unverified for this patch.
 
 REFINEMENT (Decision54): Optional instructions sit beside headings in hover/focus/touch help. Admin & personnel, Companies, Survey and Project settings use established underline navigation. Internal member invitations select supported operational roles before review/acceptance; subcontractor invitations can register a prerequisite company and return. Show independent Project Admin authority alongside operational role. Dense table words stay intact in wider dialogs with contained horizontal scrolling.
+
+
+## Decision55 Refinement
+
+Operate mode and existing Axiom/Roboto identity preserved. Template creation is discoverable inside Project Setup; applying the saved configuration is a separate reviewed action. Project Admin Access now follows invitation next steps inside setup. Administration titles/table headings use Title Case, with record values preserved. Both member paths use the shared readable native scrollable role list.
+
+Tenant Company identifies the explicitly designated tenant home organization, not an inferred employee affiliation or a new company type. Tenant IT can designate it in a foreground picker or continue from an invitation without losing its state. The company selector is disabled for Tenant Company; other-company selection is enabled. Settings includes a read-only fixed-role reference.
+
+Evidence: two strict type/production builds; one bounded desktop/mobile inspection and one confirmation round. Role list has eight readable options, five visible rows and internal scrolling; narrow dialog measured374px within390px viewport, document scrollWidth390. A reusable synthetic template was actually saved and remains listed. Home-company preview and cancellation were observed; persisted designation and fault/concurrency/authority matrices are unverified. Existing compact help text/44px triggers retained. No automated tests run.

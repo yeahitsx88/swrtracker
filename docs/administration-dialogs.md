@@ -35,3 +35,12 @@ Coverage and walkthrough: [fresh startup](../audits/fresh-startup/NOTES.md). Cur
 - Subcontractor company registration can be launched inside its requester invitation with type restricted to SUBCONTRACTOR; the same ownership/frozen-command continuation returns to the preserved invitation with the company selected.
 - Personnel inventories show operational role and independent Project Admin administration in separate columns. Dense tables use wider dialogs and intact words with keyboard-reachable horizontal scrolling at narrow widths.
 - Reviewer handover transfers one live Area review grant to an eligible current Superintendent after replacement coverage review. It does not appoint the first Survey Manager and does not resolve every staffing obligation.
+
+
+## Home Organization and Fixed Roles (Decision55)
+
+- Tenant Company is a nullable explicit tenant home-company designation, retaining General Contractor / Owner Representative type. Tenant IT chooses an existing internal company in a guarded foreground picker, review and result. Available in Accounts, Project Settings and inside internal invitation company selection. No company is inferred from employee affiliations. Apply migration035 before the runtime.
+- The Tenant Company dropdown is disabled and shows the designated home organization. Choose Previously Created Company to enable the searchable company picker and company creation continuation. Subcontractor/company-type-specific flows keep their existing scope. Changing home designation preserves employee affiliations, existing invitations and grants. A tenant-selected fresh invitation captures the expected home company and refuses drift.
+- Project Admin Access follows Invitations and Next Steps in Project Admin Setup. Operational roles use readable labels and a native five-row scrollable single-selection list for existing enrollment and new-member invitations.
+- Project Setup exposes Create Template for current Tenant IT. Creation saves a reusable tenant configuration and refreshes/selects it in the selector; application still requires a separate review. Independent Project Admin authority does not confer tenant-template creation.
+- Roles & Permissions is a read-only summary of fixed roles, visibility, administrative authority and separate responsibility grants. Current server action rules remain authoritative; custom role/permission editing is pending.

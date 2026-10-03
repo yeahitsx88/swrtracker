@@ -352,3 +352,14 @@
 - Owner selected intended operational role before a new member invitation. Offer existing supported enrollment roles for GC/owner-representative employees and bind role/company/email in the invitation. Acceptance creates selected membership; no auto-admin grant. Subcontractors remain Requester-only through their dedicated flow.
 - Subcontractor invitations can create their prerequisite company and return with it selected. Keep table words and type readable using wider personnel dialogs and contained horizontal scrolling.
 - Reviewer handover help explains supported Area-review responsibility transfer and replacement coverage, distinct from first Survey Manager appointment.
+
+
+## Decision 55 - Explicit Home Organization and Administration Refinements (2026-10-03)
+
+Approved by owner: Tenant Company is the designated home organization, retaining its existing GC or OWNER_REP company type. It is not a new company type. Existing tenants remain unset until Tenant IT explicitly chooses a company; no affiliation/oldest-company backfill. Offer it in internal member/admin invitations, with a disabled company selector while Tenant Company is chosen. Subcontractor and company-type-specific enrollment retain their existing scopes. Tenant IT manages designation in tenant accounts, project settings, or a preserved invitation continuation. Designation does not reassign employees or alter grants.
+
+Move Project Admin Access immediately below Invitations and Next Steps in Project Admin Setup. Provide template creation in initial Project Setup under Tenant IT authority; creation and applying a template remain separate reviewed actions. Use Title Case for administration headings and readable scrollable operational role lists.
+
+Approved: read-only Roles & Permissions reference showing fixed roles, separate administrative authority and responsibility grants. Editable custom roles/permission configuration remain OPEN / PENDING; no generalized RBAC is authorized.
+
+Home designation is an EXCLUSIVE current-Tenant-IT, expected-state, keyed, atomic audited mutation. Tenant-selected invitations capture expected home company; changed designation requires reload. Project Admin may invite for the explicitly designated internal home company and associate it with this project through the existing reviewed invitation contract. Same-tenant and active account/project constraints remain. Migration035 must precede runtime.
