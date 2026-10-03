@@ -22,7 +22,7 @@ async function main(){
  try{
   const db=await setup.connect();
   try{await db.query('BEGIN');await db.query('CREATE SCHEMA "'+schema+'"');await db.query('SET LOCAL search_path TO "'+schema+'",public');
-   for(const file of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')&&name<'033_').sort())await db.query(await readFile('db/migrations/'+file,'utf8'));
+   for(const file of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')).sort())await db.query(await readFile('db/migrations/'+file,'utf8'));
    await db.query('COMMIT');created=true;
   }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
   pg=new Pool({connectionString:url.href,max:5,options:'-c search_path='+schema+',public'});

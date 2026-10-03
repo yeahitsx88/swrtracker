@@ -3368,3 +3368,8 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Team/staffing commands now freeze uncertain intent and require deliberate reload after409. Workforce reload cannot clear an uncertain reassignment. Project creation supplies a frozen optional key; the existing server ledger handles concurrent retries atomically after current Tenant Admin authorization, preserving unkeyed clients.
 - Verification: strict types,559/559 tests, four focused creation/frozen-command tests and25 current-route PostgreSQL checks pass. Browser lost-response verification remains a final gate.
 
+
+### 2026-10-03 - Batch 122 - preserve worker attribution while enforcing retained event integrity
+- Architecture review identified the established one-configured-service-actor worker contract across tenants. Before deployment, narrowed new034 ownership preflight/FK to the event's ticket tenant; retained the existing actor foreign key. Actor tenant attribution changes are deferred pending a worker contract decision. No retained database was migrated.
+- Updated two remaining runtime fixture migration ceilings to current schema. Added actual concurrent project-create replay, mismatch, current-authority and audit rollback checks. All27 PostgreSQL suites pass, including25 Alpha1 checks; legacy inconsistent ticket ownership is refused without rewriting history.
+

@@ -15,6 +15,7 @@ import {GET as appearance, PUT as saveAppearance} from '../../src/app/api/accoun
 import {GET as preview, POST as recommission} from '../../src/app/api/projects/[projectId]/recommission/route';
 import {POST as activate} from '../../src/app/api/projects/[projectId]/activate/route';
 import {POST as createTicket} from '../../src/app/api/tickets/route';
+import {handlePostProject} from '../../src/app/api/projects/post-handler';
 import type {UUID} from '../../src/shared/types';
 
 async function main() {
@@ -80,6 +81,18 @@ async function main() {
     const req=(path:string,body?:unknown,user:UUID=central,t:UUID=tenant,key=randomUUID(),sv=1,method=body===undefined?'GET':'POST')=>new NextRequest('http://localhost'+path,{method,headers:{cookie:'swr_session='+signToken(user,t,sv),'content-type':'application/json','idempotency-key':key},...(body===undefined?{}:{body:JSON.stringify(body)})});
     const expect=async(response:Response,status=200)=>{assert.equal(response.status,status,await response.clone().text());return response.json();};
     const appearancePath='/api/account/appearance';
+    const creation={name:'Alpha1 exact creation',crewBuild:'SLIM'}, creationKey=randomUUID();
+    const [createdA,createdB]=await Promise.all([handlePostProject(req('/api/projects',creation,central,tenant,creationKey)),handlePostProject(req('/api/projects',creation,central,tenant,creationKey))]);
+    const createdResponse=await expect(createdA,201);assert.deepEqual(await expect(createdB,201),createdResponse);
+    assert.equal((await pg.query("SELECT count(*)::int AS n FROM projects WHERE name=$1",[creation.name])).rows[0].n,1);
+    assert.equal((await pg.query("SELECT count(*)::int AS n FROM administrative_events WHERE event_type='project.created'")).rows[0].n,1);
+    await expect(await handlePostProject(req('/api/projects',{...creation,name:'Changed'},central,tenant,creationKey)),409);
+    await expect(await handlePostProject(req('/api/projects',creation,ordinary,tenant,creationKey)),403);check('project_creation_concurrent_exact_replay_and_payload_conflict');
+    failAudit=true;await expect(await handlePostProject(req('/api/projects',{...creation,name:'Must roll back'})),500);failAudit=false;
+    assert.equal((await pg.query("SELECT count(*)::int AS n FROM projects WHERE name='Must roll back'")).rows[0].n,0);check('project_creation_audit_failure_rolls_back');
+    await pg.query('DELETE FROM tenant_memberships WHERE tenant_id=$1 AND user_id=$2',[tenant,central]);
+    await expect(await handlePostProject(req('/api/projects',creation,central,tenant,creationKey)),403);
+    await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[tenant,central]);check('project_creation_current_authority_precedes_replay');
     const personal={scope:'PERSONAL',mode:'DARK'}, personalKey=randomUUID();
     await expect(await saveAppearance(req(appearancePath,personal,ordinary,tenant,personalKey,1,'PUT')));
     await expect(await saveAppearance(req(appearancePath,personal,ordinary,tenant,personalKey,1,'PUT')));
@@ -130,13 +143,12 @@ async function main() {
     const invalid=async(sql:string,values:unknown[],code:string)=>{const client=await pg.connect();try{await client.query('BEGIN');await assert.rejects(()=>client.query(sql,values),(e:unknown)=>{assert.equal((e as {code:string}).code,code);return true;});}finally{await client.query('ROLLBACK');client.release();}};
     for(const sql of ['UPDATE ticket_events SET payload=\'{}\' WHERE id=$1','DELETE FROM ticket_events WHERE id=$1'])await invalid(sql,[event],'55000');
     await invalid('TRUNCATE ticket_events',[],'55000');
-    await invalid("INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type) VALUES($1,$2,$3,'ticket.created')",[ticket,tenant,outsider],'23503');
     await invalid("INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type) VALUES($1,$2,$3,'ticket.created')",[ticket,otherTenant,outsider],'23503');
     const legacy=await pg.connect();
     try {
       await legacy.query('BEGIN');
-      await legacy.query('ALTER TABLE ticket_events DROP CONSTRAINT ticket_events_tenant_actor_fk');
-      await legacy.query("INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type) VALUES($1,$2,$3,'ticket.created')",[ticket,tenant,outsider]);
+      await legacy.query('ALTER TABLE ticket_events DROP CONSTRAINT ticket_events_tenant_ticket_fk');
+      await legacy.query("INSERT INTO ticket_events(ticket_id,tenant_id,actor_id,event_type) VALUES($1,$2,$3,'ticket.created')",[ticket,otherTenant,outsider]);
       const migration=await readFile('db/migrations/034_ticket_event_integrity.sql','utf8');
       await assert.rejects(()=>legacy.query(migration),(error:unknown)=>{assert.equal((error as {code:string}).code,'P0001');return true;});
     } finally {await legacy.query('ROLLBACK');legacy.release();}
