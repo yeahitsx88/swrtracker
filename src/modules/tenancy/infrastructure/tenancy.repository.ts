@@ -1036,7 +1036,7 @@ export class TenancyRepository implements ITenancyRepository {
 
   async saveMembership(
     db: DbClient,
-    membership: { id: UUID; tenantId: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
+    membership: { id: UUID; tenantId: UUID; projectId: UUID; userId: UUID; role: string; customRoleId?: UUID | null; createdAt: Date },
   ): Promise<void> {
     const { rows: projectRows } = await db.query<{ tenant_id: string }>(
       `SELECT tenant_id
@@ -1075,10 +1075,10 @@ export class TenancyRepository implements ITenancyRepository {
     await this.assertProjectNotArchived(db, membership.tenantId, membership.projectId);
 
     const { rows } = await db.query<{ id: UUID }>(
-      `INSERT INTO project_memberships (id, project_id, user_id, role, created_at)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO project_memberships (id, project_id, user_id, role, created_at, custom_role_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (project_id, user_id) DO NOTHING RETURNING id`,
-      [membership.id, membership.projectId, membership.userId, membership.role, membership.createdAt],
+      [membership.id, membership.projectId, membership.userId, membership.role, membership.createdAt, membership.customRoleId ?? null],
     );
     if (!rows[0]) throw new ConflictError('Membership already exists; use the guarded role-change flow');
   }

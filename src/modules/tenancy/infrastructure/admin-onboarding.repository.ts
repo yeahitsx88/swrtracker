@@ -2,14 +2,14 @@ import type {DbClient, UUID} from '@/shared/types';
 
 export interface AdminEmployee {
   userId: UUID; name: string; email: string; companyId: UUID; companyName: string;
-  role: string | null; canAdminister: boolean;
+  role: string | null; customRoleName?:string|null; canAdminister: boolean;
 }
 export interface EmployeeInvitation {
   id: UUID; email: string; companyId: UUID; companyName: string;
   status: 'Pending' | 'Accepted' | 'Canceled' | 'Expired'; expiresAt: string;
   token: string | null;
   purpose: 'PROJECT_ADMIN' | 'EMPLOYEE';
-  role:string;
+  role:string;customRoleId:UUID|null;customRoleName:string|null;
   employee: AdminEmployee | null;
 }
 
@@ -18,11 +18,12 @@ export class AdminOnboardingRepository {
   async employees(db:DbClient,tenantId:UUID,projectId:UUID,centralIT:boolean,search:string,offset:number) {
     const result=await db.query<AdminEmployee & {total:number}>(`
       SELECT u.id AS "userId",u.name,u.email,c.id AS "companyId",c.name AS "companyName",
-        pm.role,EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=$1
+        pm.role,cr.name AS "customRoleName",EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=$1
           AND g.project_id=$2 AND g.user_id=u.id AND g.revoked_at IS NULL) AS "canAdminister",
         count(*) OVER()::int AS total
       FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
       LEFT JOIN project_memberships pm ON pm.project_id=$2 AND pm.user_id=u.id
+      LEFT JOIN tenant_custom_roles cr ON cr.id=pm.custom_role_id AND cr.tenant_id=$1
       WHERE u.tenant_id=$1 AND u.deactivated_at IS NULL AND c.type IN ('GC','OWNER_REP')
         AND (pm.id IS NULL OR pm.access_disabled_at IS NULL)
         AND ($3::boolean OR EXISTS(SELECT 1 FROM project_companies pc
@@ -40,23 +41,25 @@ export class AdminOnboardingRepository {
   }
   async invitations(db:DbClient,tenantId:UUID,projectId:UUID):Promise<EmployeeInvitation[]> {
     return (await db.query<EmployeeInvitation>(`
-      SELECT i.id,i.email,i.role,i.company_id AS "companyId",c.name AS "companyName",i.expires_at::text AS "expiresAt",
+      SELECT i.id,i.email,i.role,i.custom_role_id AS "customRoleId",cr.name AS "customRoleName",i.company_id AS "companyId",c.name AS "companyName",i.expires_at::text AS "expiresAt",
         CASE WHEN i.accepted_at IS NOT NULL THEN 'Accepted' WHEN i.canceled_at IS NOT NULL THEN 'Canceled'
           WHEN i.expires_at<=NOW() THEN 'Expired' ELSE 'Pending' END AS status,
         CASE WHEN i.accepted_at IS NULL AND i.canceled_at IS NULL AND i.expires_at>NOW() THEN i.token::text ELSE NULL END AS token,
         COALESCE(e.changes->>'purpose','PROJECT_ADMIN') AS purpose,
         CASE WHEN u.id IS NOT NULL AND u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL
           THEN jsonb_build_object('userId',u.id,'name',u.name,'email',u.email,'companyId',c.id,
-            'companyName',c.name,'role',pm.role,'canAdminister',EXISTS(SELECT 1 FROM project_admin_grants g
+            'companyName',c.name,'role',pm.role,'customRoleName',member_role.name,'canAdminister',EXISTS(SELECT 1 FROM project_admin_grants g
               WHERE g.tenant_id=$1 AND g.project_id=$2 AND g.user_id=u.id AND g.revoked_at IS NULL))
           ELSE NULL END AS employee
       FROM invites i JOIN companies c ON c.id=i.company_id AND c.tenant_id=i.tenant_id
+      LEFT JOIN tenant_custom_roles cr ON cr.tenant_id=i.tenant_id AND cr.id=i.custom_role_id
       JOIN administrative_events e ON e.tenant_id=i.tenant_id AND e.project_id=i.project_id
         AND e.event_type='user.invited' AND e.changes->>'inviteId'=i.id::text
         AND e.changes->>'source'='ADMIN_ONBOARDING'
       LEFT JOIN users u ON i.accepted_at IS NOT NULL AND u.tenant_id=i.tenant_id
         AND lower(u.email)=lower(i.email) AND u.company_id=i.company_id
       LEFT JOIN project_memberships pm ON pm.project_id=i.project_id AND pm.user_id=u.id
+      LEFT JOIN tenant_custom_roles member_role ON member_role.tenant_id=i.tenant_id AND member_role.id=pm.custom_role_id
       WHERE i.tenant_id=$1 AND i.project_id=$2 AND c.type IN ('GC','OWNER_REP')
       ORDER BY i.created_at DESC,i.id LIMIT 50`,[tenantId,projectId])).rows;
   }
@@ -79,6 +82,7 @@ export class AdminOnboardingRepository {
       SELECT c.id AS "companyId",pm.role,pm.access_disabled_at AS "disabledAt"
       FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
       LEFT JOIN project_memberships pm ON pm.project_id=$2 AND pm.user_id=u.id
+      LEFT JOIN tenant_custom_roles cr ON cr.id=pm.custom_role_id AND cr.tenant_id=$1
       WHERE u.tenant_id=$1 AND u.id=$3 AND u.deactivated_at IS NULL AND c.type IN ('GC','OWNER_REP')
         AND ($4::boolean OR EXISTS(SELECT 1 FROM project_companies pc
           WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id)) FOR UPDATE OF u`,[tenantId,projectId,userId,centralIT])).rows[0];
@@ -96,17 +100,17 @@ export class AdminOnboardingRepository {
     return !!(await db.query('SELECT id FROM users WHERE tenant_id=$1 AND lower(email)=$2',[tenantId,email])).rows[0];
   }
   async pendingInvitation(db:DbClient,tenantId:UUID,projectId:UUID,email:string) {
-    return (await db.query<{id:UUID;companyId:UUID;token:string;purpose:string|null;role:string}>(`
-      SELECT i.id,i.role,i.company_id AS "companyId",i.token::text,
+    return (await db.query<{id:UUID;companyId:UUID;token:string;purpose:string|null;role:string;customRoleId:UUID|null}>(`
+      SELECT i.id,i.role,i.custom_role_id AS "customRoleId",i.company_id AS "companyId",i.token::text,
         (SELECT COALESCE(e.changes->>'purpose','PROJECT_ADMIN') FROM administrative_events e
           WHERE e.tenant_id=i.tenant_id AND e.project_id=i.project_id AND e.event_type='user.invited'
             AND e.changes->>'inviteId'=i.id::text AND e.changes->>'source'='ADMIN_ONBOARDING' LIMIT 1) AS purpose
       FROM invites i WHERE i.tenant_id=$1 AND i.project_id=$2 AND lower(i.email)=$3
       AND i.accepted_at IS NULL AND i.canceled_at IS NULL AND i.expires_at>NOW() FOR UPDATE OF i`,[tenantId,projectId,email])).rows[0];
   }
-  async createInvitation(db:DbClient,tenantId:UUID,projectId:UUID,companyId:UUID,email:string,actorId:UUID,role:string='REQUESTER') {
-    return (await db.query<{id:UUID;token:string}>(`INSERT INTO invites(tenant_id,project_id,company_id,email,role,invited_by,expires_at)
-      VALUES($1,$2,$3,$4,$6,$5,NOW()+INTERVAL '7 days') RETURNING id,token::text`,[tenantId,projectId,companyId,email,actorId,role])).rows[0];
+  async createInvitation(db:DbClient,tenantId:UUID,projectId:UUID,companyId:UUID,email:string,actorId:UUID,role:string='REQUESTER',customRoleId?:UUID) {
+    return (await db.query<{id:UUID;token:string}>(`INSERT INTO invites(tenant_id,project_id,company_id,email,role,invited_by,expires_at,custom_role_id)
+      VALUES($1,$2,$3,$4,$6,$5,NOW()+INTERVAL '7 days',$7) RETURNING id,token::text`,[tenantId,projectId,companyId,email,actorId,role,customRoleId??null])).rows[0];
   }
   async cancelInvitation(db:DbClient,tenantId:UUID,projectId:UUID,inviteId:UUID) {
     return (await db.query<{id:UUID}>(`UPDATE invites i SET canceled_at=NOW() FROM companies c

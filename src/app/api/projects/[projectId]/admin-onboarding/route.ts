@@ -12,6 +12,7 @@ import {AdminOnboardingRepository} from '@/modules/tenancy/infrastructure/admin-
 import {authorizeAdminOnboarding,executeAdminOnboarding,type AdminOnboardingCommand} from '@/modules/tenancy/application/admin-onboarding';
 import type {UUID} from '@/shared/types';
 import {MEMBER_INVITATION_ROLES,type MemberInvitationRole} from '@/modules/tenancy/domain/member-invitation';
+import {listCustomRoles} from '@/modules/tenancy/infrastructure/custom-role.repository';
 export const dynamic='force-dynamic';
 type Context={params:Promise<{projectId:string}>};
 
@@ -23,14 +24,15 @@ export async function GET(req:NextRequest,ctx:Context) {try {
   const offset=Number(req.nextUrl.searchParams.get('offset')??0);
   if(search.length>100||companySearch.length>100||!Number.isSafeInteger(offset)||offset<0)throw new ValidationError('Invalid employee search page');
   const repo=new AdminOnboardingRepository();
-  const [page,companies,invitations,tenantCompanies,administrators]=await Promise.all([
+  const [page,companies,invitations,tenantCompanies,administrators,customRoles]=await Promise.all([
     repo.employees(pool,auth.tenantId,projectId as UUID,authority.centralIT,search,offset),
     repo.companies(pool,auth.tenantId,projectId as UUID,authority.centralIT,companySearch),
     repo.invitations(pool,auth.tenantId,projectId as UUID),
     repo.tenantCompanies(pool,auth.tenantId),
     repo.administrators(pool,auth.tenantId,projectId as UUID),
+    listCustomRoles(pool,auth.tenantId),
   ]);
-  return NextResponse.json({...page,companies,tenantCompanies,canManageHomeOrganization:authority.centralIT,administrators,invitations:invitations.map(({token,...invite})=>({...invite,
+  return NextResponse.json({...page,companies,tenantCompanies,customRoles,canManageHomeOrganization:authority.centralIT,administrators,invitations:invitations.map(({token,...invite})=>({...invite,
     registrationPath:token?`/register?${new URLSearchParams({tenantId:auth.tenantId,email:invite.email,inviteToken:token})}`:null}))},
     {headers:{'Cache-Control':'private, no-store'}});
 }catch(error){return errorResponse(error);}}
@@ -38,7 +40,7 @@ export async function GET(req:NextRequest,ctx:Context) {try {
 function parseCommand(body:unknown):AdminOnboardingCommand {
   if(!body||typeof body!=='object'||Array.isArray(body))throw new ValidationError('Review and confirm this action');
   const b=body as Record<string,unknown>;
-  const keys=b.action==='GRANT'?['action','userId','companyId','expectedRole','confirmed']:b.action==='INVITE'?['action','companyId','email','purpose','role','expectedHomeCompanyId','confirmed']:['action','inviteId','confirmed'];
+  const keys=b.action==='GRANT'?['action','userId','companyId','expectedRole','confirmed']:b.action==='INVITE'?['action','companyId','email','purpose','role','customRoleId','expectedHomeCompanyId','confirmed']:['action','inviteId','confirmed'];
   if(b.confirmed!==true||Object.keys(b).some(key=>!keys.includes(key)))throw new ValidationError('Confirm the reviewed onboarding action');
   if(b.action==='GRANT'&&typeof b.userId==='string'&&typeof b.companyId==='string'&&(b.expectedRole===null||typeof b.expectedRole==='string'&&b.expectedRole.length<=80)) {
     requireResourceUuid(b.userId,'userId');requireResourceUuid(b.companyId,'companyId');
@@ -51,7 +53,8 @@ function parseCommand(body:unknown):AdminOnboardingCommand {
     if(b.purpose!==undefined&&b.purpose!=='PROJECT_ADMIN'&&b.purpose!=='EMPLOYEE')throw new ValidationError('Choose the invitation purpose');
     if(b.role!==undefined&&(typeof b.role!=='string'||!MEMBER_INVITATION_ROLES.includes(b.role as MemberInvitationRole)))throw new ValidationError('Choose a supported operational role');
     if(b.role!==undefined&&b.purpose!=='EMPLOYEE'&&b.role!=='REQUESTER')throw new ValidationError('Project Admin invitations start with Requester membership');
-    return {action:'INVITE',companyId:b.companyId as UUID,email,...(b.expectedHomeCompanyId?{expectedHomeCompanyId:b.expectedHomeCompanyId as UUID}:{}),...(b.purpose?{purpose:b.purpose}:{}),...(b.role?{role:b.role as MemberInvitationRole}:{}),confirmed:true};
+    if(b.customRoleId!==undefined){if(typeof b.customRoleId!=='string'||b.purpose!=='EMPLOYEE')throw new ValidationError('Custom roles apply to project member invitations');requireResourceUuid(b.customRoleId,'customRoleId');}
+    return {action:'INVITE',...(b.customRoleId?{customRoleId:b.customRoleId as UUID}:{}),companyId:b.companyId as UUID,email,...(b.expectedHomeCompanyId?{expectedHomeCompanyId:b.expectedHomeCompanyId as UUID}:{}),...(b.purpose?{purpose:b.purpose}:{}),...(b.role?{role:b.role as MemberInvitationRole}:{}),confirmed:true};
   }
   throw new ValidationError('Choose an employee or an employee invitation');
 }

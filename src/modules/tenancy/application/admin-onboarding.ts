@@ -5,11 +5,12 @@ import {ConflictError,NotFoundError} from '@/shared/errors';
 import {AdminOnboardingRepository} from '../infrastructure/admin-onboarding.repository';
 import {registerProjectCompany,setProjectAdministrator} from './project-administration';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
+import {resolveCustomRole} from './custom-roles';
 import type {MemberInvitationRole} from '../domain/member-invitation';
 
 export type AdminOnboardingCommand=
   | {action:'GRANT';userId:UUID;companyId:UUID;expectedRole:string|null;confirmed:true}
-  | {action:'INVITE';companyId:UUID;email:string;purpose?:'PROJECT_ADMIN'|'EMPLOYEE';expectedHomeCompanyId?:UUID;role?:MemberInvitationRole;confirmed:true}
+  | {action:'INVITE';companyId:UUID;email:string;purpose?:'PROJECT_ADMIN'|'EMPLOYEE';expectedHomeCompanyId?:UUID;role?:MemberInvitationRole;customRoleId?:UUID;confirmed:true}
   | {action:'CANCEL_INVITE';inviteId:UUID;confirmed:true};
 
 export async function authorizeAdminOnboarding(db:DbClient,auth:AuthContext,projectId:UUID) {
@@ -51,11 +52,13 @@ export async function executeAdminOnboarding(db:DbClient,auth:AuthContext,projec
   if(pending&&pending.companyId!==command.companyId)throw new ConflictError('A pending invitation uses another company. Cancel it before choosing a different company.');
   if(pending&&pending.purpose!==(command.purpose??'PROJECT_ADMIN'))throw new ConflictError('A pending invitation has another purpose. Review that invitation before creating a new one.');
   const role=command.purpose==='EMPLOYEE'?command.role??'REQUESTER':'REQUESTER';
+  const customRole=await resolveCustomRole(db,auth.tenantId,command.customRoleId,role);
+  if(pending&&(pending.customRoleId??undefined)!==command.customRoleId)throw new ConflictError('A pending invitation has another custom role. Cancel it before choosing a different role.');
   if(pending&&pending.role!==role)throw new ConflictError('A pending invitation has another operational role. Cancel it before selecting a different role.');
   await registerProjectCompany(db,auth,projectId,{companyId:command.companyId});
-  const invite=pending??await repo.createInvitation(db,auth.tenantId,projectId,command.companyId,command.email,auth.userId,role);
+  const invite=pending??await repo.createInvitation(db,auth.tenantId,projectId,command.companyId,command.email,auth.userId,role,command.customRoleId);
   if(!invite)throw new ConflictError('Unable to create invitation. Reload and review the employee details.');
   if(!pending)await appendAdministrativeEvent(db,{auth,projectId,subjectUserId:null,eventType:'user.invited',
-    authorityEvidence:{centralIT:authority.centralIT},changes:{inviteId:invite.id,companyId:command.companyId,email:command.email,role,purpose:command.purpose??'PROJECT_ADMIN',adminGranted:false,source:'ADMIN_ONBOARDING'}});
+    authorityEvidence:{centralIT:authority.centralIT},changes:{inviteId:invite.id,companyId:command.companyId,email:command.email,role,customRoleId:customRole?.id??null,customRoleName:customRole?.name??null,purpose:command.purpose??'PROJECT_ADMIN',adminGranted:false,source:'ADMIN_ONBOARDING'}});
   return {action:'INVITE' as const,inviteId:invite.id};
 }

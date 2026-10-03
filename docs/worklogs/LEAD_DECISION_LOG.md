@@ -363,3 +363,14 @@ Move Project Admin Access immediately below Invitations and Next Steps in Projec
 Approved: read-only Roles & Permissions reference showing fixed roles, separate administrative authority and responsibility grants. Editable custom roles/permission configuration remain OPEN / PENDING; no generalized RBAC is authorized.
 
 Home designation is an EXCLUSIVE current-Tenant-IT, expected-state, keyed, atomic audited mutation. Tenant-selected invitations capture expected home company; changed designation requires reload. Project Admin may invite for the explicitly designated internal home company and associate it with this project through the existing reviewed invitation contract. Same-tenant and active account/project constraints remain. Migration035 must precede runtime.
+
+
+## Decision 56 - Tenant-Wide Named Permission Profiles (2026-10-03)
+
+Owner explicitly requested Create Custom Role after the current Roles & Permissions reference. Clarifications: a custom name inherits one existing permission profile; definitions belong to the tenant and are managed only by Tenant IT. This supersedes Decision55's pending status solely for named existing operational profiles. Individual permission editing and a generalized authorization engine are not approved.
+
+Offer the eight existing operational enrollment profiles: Requester, Survey Manager, Survey Superintendent, Party Chief, Instrument Man, CAD Technician, CAD Lead and Viewer. Tenant IT reviews name, optional description, inherited profile and tenant-wide scope in a foreground wizard before saving. Built-in/admin names are reserved. Creation records an immutable definition and audit; it does not assign anyone or grant access. Definitions cannot be edited/deleted by this increment.
+
+Project Admins and Tenant IT can select saved definitions while adding or inviting internal project members. Persist the definition alongside the existing base role and bind it into invitation acceptance. Base-role authorization, separate Project Admin authority, responsibility grants, staffing links, company eligibility, disabled access and protected workflow guards remain authoritative. Subcontractor enrollment retains its dedicated Requester-only contract. A guarded change to the base operational role clears its old custom label.
+
+Catalogue creation uses EXCLUSIVE tenant lifecycle coordination, fresh Tenant IT authority before keyed replay, strict input and atomic audit. Enrollment validates same-tenant definition and reviewed base-profile match; pending custom-role drift refuses invitation reuse. Migration036 must precede the new runtime. No agent delegation or automated test execution authorized by this increment.

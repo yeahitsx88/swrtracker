@@ -146,11 +146,11 @@ export class UserRepository implements IUserRepository {
 
   async saveProjectMembership(
     db: DbClient,
-    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
+    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; customRoleId?: UUID | null; createdAt: Date },
   ): Promise<void> {
     const {rows} = await db.query(
-      `INSERT INTO project_memberships (id, project_id, user_id, role, created_at)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO project_memberships (id, project_id, user_id, role, created_at, custom_role_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (project_id, user_id) DO NOTHING RETURNING id`,
       [
         membership.id,
@@ -158,6 +158,7 @@ export class UserRepository implements IUserRepository {
         membership.userId,
         membership.role,
         membership.createdAt,
+        membership.customRoleId ?? null,
       ],
     );
     if(!rows.length) throw new ConflictError('Project membership already exists; use an explicit role change');
@@ -167,7 +168,7 @@ export class UserRepository implements IUserRepository {
     db: DbClient,
     token: string,
     tenantId?: UUID,
-  ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string } | null> {
+  ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string; customRoleId?: UUID | null } | null> {
     const { rows } = await db.query<{
       tenant_id: string;
       project_id: string;
@@ -175,8 +176,9 @@ export class UserRepository implements IUserRepository {
       company_type: string | null;
       email: string;
       role: string;
+      custom_role_id: UUID | null;
     }>(
-      `SELECT i.tenant_id, i.project_id, i.company_id, c.type AS company_type, i.email, i.role
+      `SELECT i.tenant_id, i.project_id, i.company_id, c.type AS company_type, i.email, i.role, i.custom_role_id
        FROM invites i
        JOIN projects p ON p.id = i.project_id AND p.tenant_id = i.tenant_id AND p.status <> 'ARCHIVED'
        LEFT JOIN companies c ON c.id = i.company_id AND c.tenant_id = i.tenant_id
@@ -198,6 +200,7 @@ export class UserRepository implements IUserRepository {
       companyType: rows[0].company_type,
       email: rows[0].email,
       role: rows[0].role,
+      customRoleId: rows[0].custom_role_id,
     };
   }
 

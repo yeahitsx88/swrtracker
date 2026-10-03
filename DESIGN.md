@@ -318,3 +318,8 @@ Help uses the existing compact supporting-text size of 0.875rem; its trigger ret
 Use Title Case for static administration headings, workspace labels and table headings; preserve real names and record values. Workspaces read Admin & Personnel, Companies, Survey and Project Settings. Project Admin Access follows Invitations and Next Steps inside Project Admin Setup.
 
 Operational role choice uses the shared native five-row scrollable single-selection list with readable names and a 44px row target. Keep keyboard arrow selection and visible scrolling. Tenant Company is a fixed designated home organization, so its company select is disabled; enable search/select/create under Previously Created Company. Home designation uses the foreground review contract and preserves the calling invitation. Roles & Permissions is a read-only reference.
+
+
+## Custom Role Creation
+
+Use the same foreground administration wizard for tenant-wide named operational profiles. Show Role Details, Permission Profile, Review and Complete, with optional procedures in heading help. The current inherited visibility/responsibilities and definition's scope/impact remain visible during review. Only Tenant IT sees Create Custom Role; other administrators see the catalogue and can choose saved roles when enrolling internal members. Names use ordinary text, built-in profiles use readable labels, and custom choices show name plus inherited profile. Current roles remain a reference rather than editable permission switches.

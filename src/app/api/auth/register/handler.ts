@@ -120,6 +120,7 @@ export async function handlePostRegister(
         projectId: invite.projectId,
         userId: createdUser.id,
         role: invite.role as ProjectRole,
+        customRoleId: invite.customRoleId ?? null,
         createdAt,
       });
       await repo.markInviteAccepted(client, normalizedInviteToken, createdAt);
@@ -127,7 +128,7 @@ export async function handlePostRegister(
       await appendAdministrativeEvent(client,{
         auth:{tenantId:createdUser.tenantId,userId:createdUser.id},projectId:invite.projectId,
         subjectUserId:createdUser.id,eventType:'user.registered',
-        authorityEvidence:{kind:'BOUND_INITIAL_INVITE',companyId:invite.companyId,role:invite.role},
+        authorityEvidence:{kind:'BOUND_INITIAL_INVITE',companyId:invite.companyId,role:invite.role,customRoleId:invite.customRoleId??null},
         changes:{accountCreated:true,membershipCreated:true,inviteAccepted:true},
       });
       return createdUser;

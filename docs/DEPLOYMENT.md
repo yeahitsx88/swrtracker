@@ -71,3 +71,8 @@ be inferred from volume retention. No destructive cleanup is implemented here.
 - Compose forces production cookie settings and binds the web port to loopback.
 - Reset links are never returned by the API or written to console logs. The queued bearer payload is AES-GCM encrypted and cleared after delivery or expiry. Configure the webhook and monitor worker errors before relying on self-service password reset.
 - Logout denies only the presented token; other logins for the same account remain valid. Expired revocation and rate-limit records are pruned by the worker.
+
+
+### Named Role Profiles (Migration036)
+
+Apply036_tenant_custom_roles.sql through the normal migration runner before starting a runtime that queries the custom-role catalogue. Additive columns default to NULL for historical invitations and memberships. Definitions are tenant-wide, immutable names for existing base profiles; role-changing workflows retain their existing authorization/guards and the database clears a stale custom label on base-role change. Do not reset or seed retained walkthrough data. The localhost3120 rehearsal uses its retained database/attachments/private environment and keeps its prior web container for recovery.

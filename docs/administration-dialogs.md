@@ -44,3 +44,12 @@ Coverage and walkthrough: [fresh startup](../audits/fresh-startup/NOTES.md). Cur
 - Project Admin Access follows Invitations and Next Steps in Project Admin Setup. Operational roles use readable labels and a native five-row scrollable single-selection list for existing enrollment and new-member invitations.
 - Project Setup exposes Create Template for current Tenant IT. Creation saves a reusable tenant configuration and refreshes/selects it in the selector; application still requires a separate review. Independent Project Admin authority does not confer tenant-template creation.
 - Roles & Permissions is a read-only summary of fixed roles, visibility, administrative authority and separate responsibility grants. Current server action rules remain authoritative; custom role/permission editing is pending.
+
+
+## Named Operational Profiles (Decision56)
+
+After the current Roles & Permissions reference, Custom Roles exposes Create Custom Role for current Tenant IT. Steps: custom name and optional description; one existing operational permission profile with its visibility/responsibilities; reviewed tenant-wide definition and consent; saved result. Use the existing native AdministrationDialog, readable role picker and CommandOwner/FrozenCommand contracts. Definitions are immutable; built-in permission profiles and independent administrative authorities are not edited.
+
+Saved roles appear in internal existing-member and new-member enrollment. Display the custom label with its inherited profile; persist custom_role_id separately from the base role used by authorization. Invitation acceptance copies the bound definition from the invite, never recipient-supplied role metadata. Same-tenant/profile matching is checked in application and database. A guarded change to the base operational role clears the prior custom label. Apply migration036 before this runtime. Tenant IT creation is freshly authorized before replay; creation and audit are atomic. Unknown outcomes retain exact body/key, and conflicts require deliberate reload/renewed review.
+
+Live evidence: one saved synthetic Requester definition, refreshed inventory and both member selectors; desktop/mobile wizard review. Actual member enrollment/selected-role acceptance, alternate-role isolation and fault/concurrency/replay matrices were not executed. No automated tests run.

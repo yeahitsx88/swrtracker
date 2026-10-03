@@ -24,3 +24,10 @@ Operate mode and existing Axiom/Roboto identity preserved. Template creation is 
 Tenant Company identifies the explicitly designated tenant home organization, not an inferred employee affiliation or a new company type. Tenant IT can designate it in a foreground picker or continue from an invitation without losing its state. The company selector is disabled for Tenant Company; other-company selection is enabled. Settings includes a read-only fixed-role reference.
 
 Evidence: two strict type/production builds; one bounded desktop/mobile inspection and one confirmation round. Role list has eight readable options, five visible rows and internal scrolling; narrow dialog measured374px within390px viewport, document scrollWidth390. A reusable synthetic template was actually saved and remains listed. Home-company preview and cancellation were observed; persisted designation and fault/concurrency/authority matrices are unverified. Existing compact help text/44px triggers retained. No automated tests run.
+
+
+## Decision56 Refinement
+
+Preserve the Operate-mode Axiom surface. Extend Roles & Permissions with tenant-wide custom-role inventory and Tenant IT creation wizard: name/description, existing operational profile with current summary, reviewed scope/impact and consent, saved outcome. Optional instructions use heading help. Member selectors label each custom role with its inherited permission profile; permission checks keep the existing base role. Definitions do not assign people or confer administrative authority.
+
+Evidence: strict/unused type checks and pinned production build pass. One bounded desktop/mobile inspection covered profile-summary selection, visible review, consent gating, real synthetic creation/result, inventory refresh and unsent enrollment selection/review. Narrow dialog374px within390px viewport, document scrollWidth390. No visual defect required a further polish round. Shared typography, controls, footer, focus and scrolling retained. No automated tests run; actual member acceptance, fault/concurrency and alternate-role matrices remain unverified.

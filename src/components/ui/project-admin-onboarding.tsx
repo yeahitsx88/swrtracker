@@ -16,13 +16,14 @@ import {AdministrationRecords,AdministrationSection} from './administration-reco
 import {AdministrationDialog} from './administration-dialog';
 import {CompanyRegistration,type RegisteredCompany} from './company-registration';
 import './project-admin-onboarding.css';
+import type {CustomRole} from '@/modules/tenancy/domain/custom-role';
 import {OperationalRolePicker} from './operational-role-picker';
 import {HomeOrganization} from './home-organization';
 
 type Purpose='PROJECT_ADMIN'|'EMPLOYEE';
 interface Invitation {
  id:string;email:string;companyName:string;status:string;expiresAt:string;
- purpose:Purpose;role:string;registrationPath:string|null;employee:AdminEmployee|null;
+ purpose:Purpose;role:string;customRoleName:string|null;registrationPath:string|null;employee:AdminEmployee|null;
 }
 interface Directory {
  employees:AdminEmployee[];total:number;companies:RegisteredCompany[];tenantCompanies:RegisteredCompany[];canManageHomeOrganization:boolean;
@@ -31,14 +32,16 @@ interface Directory {
 interface Review {command:AdminOnboardingCommand;title:string;detail:string}
 type Screen='choose'|'company'|'email'|'role'|'employee'|'review'|'result';
 
-export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessContent,variant='admin'}:{
- projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void;variant?:'admin'|'member';accessContent?:ReactNode;
+export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessContent,customRoles=[],variant='admin'}:{
+ projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void;variant?:'admin'|'member';accessContent?:ReactNode;customRoles?:CustomRole[];
 }) {
  const memberMode=variant==='member',endpoint=`/api/projects/${projectId}/admin-onboarding`,token=memberMode?'member-invitation':'project-admin-onboarding';
  useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const gate=useRef(new FrozenCommand<Review>()).current,generation=useRef(0);
  const [data,setData]=useState<Directory>(),[open,setOpen]=useState(false),[screen,setScreen]=useState<Screen>('choose');
  const [purpose,setPurpose]=useState<Purpose>('PROJECT_ADMIN'),[mode,setMode]=useState<'invite'|'existing'>('invite');
+ const [customRoleId,setCustomRoleId]=useState<string>();
+ const customRole=customRoles.find(r=>r.id===customRoleId);
  const [memberRole,setMemberRole]=useState<MemberInvitationRole>('REQUESTER');
  const [companyKind,setCompanyKind]=useState<'tenant'|'existing'>('tenant'),[company,setCompany]=useState<RegisteredCompany>();
  const [designatingHome,setDesignatingHome]=useState(false);
@@ -65,7 +68,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
  function start() {
   if(locked||!owner.claim(token))return;
   setOpen(true);setScreen(memberMode?'company':'choose');setMode('invite');setPurpose(memberMode?'EMPLOYEE':'PROJECT_ADMIN');setCompanyKind('tenant');
-  setMemberRole('REQUESTER');setCompany(memberMode&&data?.tenantCompanies.length===1?data.tenantCompanies[0]:undefined);setEmail('');setCompanySearch('');setSearch('');setOffset(0);
+  setCustomRoleId(undefined);setMemberRole('REQUESTER');setCompany(memberMode&&data?.tenantCompanies.length===1?data.tenantCompanies[0]:undefined);setEmail('');setCompanySearch('');setSearch('');setOffset(0);
   setReview(undefined);setConsent(false);setError(undefined);setSuccess(undefined);setRenewal(false);setResultInviteId(undefined);
  }
  function close(){
@@ -88,9 +91,9 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
  }
  function reviewInvite(){
   if(!company||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))return;
-  propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),purpose,...(companyKind==='tenant'?{expectedHomeCompanyId:company.id as UUID}:{}),...(memberMode?{role:memberRole}:{}),confirmed:true},
+  propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),purpose,...(companyKind==='tenant'?{expectedHomeCompanyId:company.id as UUID}:{}),...(memberMode?{role:memberRole,...(customRoleId?{customRoleId:customRoleId as UUID}:{})}:{}),confirmed:true},
    title:purpose==='PROJECT_ADMIN'?'Review Project Admin Invitation':'Review Project Member Invitation',
-   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${memberMode?`Acceptance grants ${roleLabel(memberRole)} membership on this project.`:'Acceptance adds Requester membership. Return here to assign Project Admin after acceptance.'} This invitation does not grant administration. The link expires in seven days.`});
+   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${memberMode?`Acceptance grants ${customRole?`${customRole.name} (${roleLabel(memberRole)} profile)`:roleLabel(memberRole)} membership on this project.`:'Acceptance adds Requester membership. Return here to assign Project Admin after acceptance.'} This invitation does not grant administration. The link expires in seven days.`});
  }
  async function submit() {
   if(!review||!consent||blocked||creatingCompany||designatingHome||!owner.claim(token))return;
@@ -132,7 +135,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
    <AdministrationSection title={memberMode?'Project Member Invitations':'Invitations and Next Steps'} open={!memberMode} help="Shows this invitation type within the latest 50 setup invitations. Filtering, selection and export apply to these loaded records. Accepted Project Admin candidates can be assigned from their invitation.">
     <AdministrationRecords label={memberMode?'project member invitations':'Project Admin setup invitations'} rows={data?.invitations.filter(i=>i.purpose===(memberMode?'EMPLOYEE':'PROJECT_ADMIN'))??[]} id={i=>i.id} disabled={locked||open||loading}
      columns={[{key:'email',label:'Employee',text:i=>i.employee?`${i.employee.name} · ${i.email}`:i.email},{key:'company',label:'Company',text:i=>i.companyName},
-      {key:'purpose',label:memberMode?'Invited role':'Purpose',text:i=>memberMode?roleLabel(i.role):'Project Admin'},
+      {key:'purpose',label:memberMode?'Invited role':'Purpose',text:i=>memberMode?i.customRoleName?`${i.customRoleName} (${roleLabel(i.role)} profile)`:roleLabel(i.role):'Project Admin'},
       {key:'status',label:'Next step',text:i=>memberMode?i.status==='Accepted'?i.employee?'Member active':'Profile unavailable · review access':i.status==='Pending'?'Awaiting profile acceptance':i.status:i.employee?.canAdminister?'Project Admin assigned':i.status==='Accepted'?i.employee?'Ready to assign Project Admin':'Profile unavailable · review access':i.status==='Pending'?'Awaiting profile acceptance':i.status},
       {key:'expiry',label:'Link expires',text:i=>new Date(i.expiresAt).toLocaleString()}]}
      actions={i=>!memberMode&&i.employee&&!i.employee.canAdminister?<Button disabled={locked||open||loading} onClick={()=>assign(i.employee!)}>Assign Project Admin</Button>:i.registrationPath?<>
@@ -184,7 +187,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
     <p>The employee will use their invitation link to create a profile and password.{!memberMode?' You will assign Project Admin after acceptance.':''}</p>
     <p className="muted">Local demo delivery: copy and share the link. No email is sent by this demo.</p>
    </>}
-   {screen==='role'&&<OperationalRolePicker label="Operational Role on This Project" value={memberRole} disabled={locked} onChange={setMemberRole}/>}
+   {screen==='role'&&<OperationalRolePicker label="Operational Role on This Project" value={memberRole} disabled={locked} onChange={setMemberRole} customRoles={customRoles} customRoleId={customRoleId} onCustomRoleChange={setCustomRoleId}/>}
    {screen==='employee'&&<>
     <Field label="Search employee name or email"><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);}}/></Field>
     <p className="muted">Choose an active general contractor or owner representative employee. Tenant IT can search across the tenant; Project Admins use this project's companies.</p>
@@ -203,9 +206,9 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,accessCo
     {success&&<SuccessBanner message={success}/>}
     {renewal&&<a className="app-link" href="/login">Sign in again</a>}
     {resultInviteId&&(resultInvite?<>
-     <dl className="administration-dialog-summary"><div><dt>Employee</dt><dd>{resultInvite.email}</dd></div><div><dt>Company</dt><dd>{resultInvite.companyName}</dd></div>{memberMode&&<div><dt>Invited role</dt><dd>{roleLabel(resultInvite.role)}</dd></div>}<div><dt>Progress</dt><dd>{!memberMode&&resultInvite.employee?.canAdminister?'Project Admin assigned':resultInvite.status==='Accepted'?'Profile accepted':resultInvite.status==='Pending'?'Awaiting profile acceptance':resultInvite.status}</dd></div></dl>
+     <dl className="administration-dialog-summary"><div><dt>Employee</dt><dd>{resultInvite.email}</dd></div><div><dt>Company</dt><dd>{resultInvite.companyName}</dd></div>{memberMode&&<div><dt>Invited role</dt><dd>{resultInvite.customRoleName?`${resultInvite.customRoleName} (${roleLabel(resultInvite.role)} profile)`:roleLabel(resultInvite.role)}</dd></div>}<div><dt>Progress</dt><dd>{!memberMode&&resultInvite.employee?.canAdminister?'Project Admin assigned':resultInvite.status==='Accepted'?'Profile accepted':resultInvite.status==='Pending'?'Awaiting profile acceptance':resultInvite.status}</dd></div></dl>
      {resultInvite.registrationPath&&<><Field label="Employee invitation link"><Input readOnly value={new URL(resultInvite.registrationPath,window.location.origin).href} onFocus={e=>e.currentTarget.select()}/></Field><Button variant="secondary" disabled={locked} onClick={()=>void copyLink(resultInvite.registrationPath!)}>Copy invitation link</Button><p className="muted">No email was sent. Share this link with {resultInvite.email}. For this walkthrough, open it in a separate browser session.</p></>}
-     {memberMode&&resultInvite.employee?<SuccessBanner message={`${resultInvite.employee.name} is a project member. Current role: ${roleLabel(resultInvite.employee.role??resultInvite.role)}.`}/>:!memberMode&&resultInvite.employee&&!resultInvite.employee.canAdminister?<><p>The employee has created their profile. Review their assignment to finish setup.</p><Button disabled={locked||loading} onClick={()=>assign(resultInvite.employee!)}>Assign Project Admin</Button></>:resultInvite.status==='Pending'?<><p>After they accept, check their profile here.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setRevision(n=>n+1);onDone();}}>Check acceptance and continue</Button></>:resultInvite.status==='Accepted'&&!resultInvite.employee?<p role="alert">This profile is not eligible for assignment. Review current account and project access before continuing.</p>:null}
+     {memberMode&&resultInvite.employee?<SuccessBanner message={`${resultInvite.employee.name} is a project member. Current role: ${resultInvite.employee.customRoleName?`${resultInvite.employee.customRoleName} (${roleLabel(resultInvite.employee.role??resultInvite.role)} profile)`:roleLabel(resultInvite.employee.role??resultInvite.role)}.`}/>:!memberMode&&resultInvite.employee&&!resultInvite.employee.canAdminister?<><p>The employee has created their profile. Review their assignment to finish setup.</p><Button disabled={locked||loading} onClick={()=>assign(resultInvite.employee!)}>Assign Project Admin</Button></>:resultInvite.status==='Pending'?<><p>After they accept, check their profile here.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setRevision(n=>n+1);onDone();}}>Check acceptance and continue</Button></>:resultInvite.status==='Accepted'&&!resultInvite.employee?<p role="alert">This profile is not eligible for assignment. Review current account and project access before continuing.</p>:null}
     </>:<><p role="status">{loading?'Loading invitation status…':'Invitation status could not be loaded.'}</p><Button variant="secondary" disabled={locked||loading} onClick={()=>setRevision(n=>n+1)}>Reload invitation status</Button></>)}
    </>}
    {designatingHome&&<HomeOrganization owner={owner} disabled={blocked} onDone={onDone} continuation={{token,onReturn:created=>{setDesignatingHome(false);if(created){setCompanyKind('tenant');setCompany(created);setData(current=>current?{...current,tenantCompanies:[created]}:current);setRevision(n=>n+1);}}}}/>}
