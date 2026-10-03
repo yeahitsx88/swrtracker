@@ -1,6 +1,7 @@
 'use client';
 import {RecordCollection} from '@/components/ui/record-collection';
 import {useEffect,useRef,useState} from 'react';
+import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import {apiClient} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {Button,ErrorBanner,SuccessBanner} from '@/components/ui';
@@ -20,17 +21,18 @@ export function AssignedWorkforce({projectId,role,archived}:{projectId:string;ro
  const [moving,setMoving]=useState<WorkforcePerson>(),[snapshot,setSnapshot]=useState<string>(),[target,setTarget]=useState<UUID>(),[chiefOffset,setChiefOffset]=useState(0);
  const [busy,setBusy]=useState(false),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>();
  const attempt=useRef<{input:WorkforceMove;key:string}|undefined>(undefined);
+ useUnsavedProgress(!!attempt.current);
  const page=useWorkforcePage(projectId,search,offset,limit,revision);
  const chiefs=useWorkforcePage(projectId,'PARTY CHIEF',chiefOffset,10,revision);
  const superintendent=role==='SURVEY_SUPERINTENDENT';
  function openMove(person:WorkforcePerson,expectedSnapshot:string){
  setMoving(person);setSnapshot(expectedSnapshot);setTarget(undefined);setError(undefined);setSuccess(undefined);attempt.current=undefined;
  }
- function reload(){setMoving(undefined);setError(undefined);attempt.current=undefined;setRevision(n=>n+1);}
+ function reload(){if(attempt.current)return;setMoving(undefined);setError(undefined);attempt.current=undefined;setRevision(n=>n+1);}
  async function save(){
  if(!moving||!snapshot||!target||busy)return;setBusy(true);setError(undefined);
  if(!attempt.current)attempt.current={input:{instrumentManId:moving.userId,partyChiefId:target,expectedSnapshot:snapshot},key:crypto.randomUUID()};
- try{await apiClient.moveWorkforceMember(projectId,attempt.current.input,attempt.current.key);setSuccess('Crew reassignment saved. Your assigned workforce and request history are retained.');reload();}
+ try{await apiClient.moveWorkforceMember(projectId,attempt.current.input,attempt.current.key);attempt.current=undefined;setSuccess('Crew reassignment saved. Your assigned workforce and request history are retained.');reload();}
  catch(cause){setError(getErrorMessage(cause,'Unable to save. Retry the unchanged reassignment or reload current staffing.'));if(cause instanceof ApiClientError&&cause.status<500){attempt.current=undefined;setSnapshot(undefined);}}
  finally{setBusy(false);}
  }
@@ -41,7 +43,7 @@ export function AssignedWorkforce({projectId,role,archived}:{projectId:string;ro
  {moving?<div className="stack tm-editor"><h3>Reassign {moving.name}</h3><p>Choose a Party Chief from your current assigned workforce.</p>
  {chiefs.error?<ErrorBanner message={chiefs.error}/>:!chiefs.data?<p role="status">Loading assigned Chiefs…</p>:<><RecordCollection label="replacement Party Chiefs" records={<>{chiefs.data.data.filter(p=>p.role==='PARTY_CHIEF').map(p=><li key={p.userId}><Button variant="secondary" aria-pressed={target===p.userId} disabled={busy||!!attempt.current||p.userId===moving.partyChiefId} onClick={()=>setTarget(p.userId)}>{p.name}{p.userId===moving.partyChiefId?' · Current Chief':''}</Button></li>)}</>}/><PaginationControls total={chiefs.data.total} limit={10} offset={chiefOffset} onChange={setChiefOffset}/></>}
  {error?<ErrorBanner message={error}/>:null}
- <div className="row"><Button disabled={busy||!target||!snapshot} onClick={()=>void save()}>{busy?'Saving…':'Save reassignment'}</Button><Button variant="secondary" disabled={busy} onClick={reload}>Reload workforce</Button></div></div>:<>
+ <div className="row"><Button disabled={busy||!target||!snapshot} onClick={()=>void save()}>{busy?'Saving…':'Save reassignment'}</Button><Button variant="secondary" disabled={busy||!!attempt.current} onClick={reload}>Reload workforce</Button></div></div>:<>
  <form className="tm-search" onSubmit={e=>{e.preventDefault();setSearch(draft.trim());setOffset(0);}}>
  <label className="field tm-search-text"><span className="field-label">Search assigned personnel</span><input className="input" value={draft} maxLength={120} onChange={e=>setDraft(e.target.value)}/></label>
  <label className="field"><span className="field-label">Items per page</span><select className="select" value={limit} onChange={e=>{setLimit(Number(e.target.value));setOffset(0);}}>{[10,25,50,100].map(n=><option key={n}>{n}</option>)}</select></label><Button type="submit" variant="secondary">Search</Button></form>

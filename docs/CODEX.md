@@ -3363,3 +3363,8 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Added current actual-route PostgreSQL regressions for appearance/recommissioning authority before replay, audit rollback, same-key concurrency, stale readiness, preserved history, and login retention. Added guarded loopback runner for 27 suites, using owned schemas and explicit opt-in.
 - Verification: all 27 PostgreSQL suites pass; 22 Alpha1 checks include migration repeatability, legacy inconsistency refusal and unchanged retained public-ticket witness. HTTP/browser remains a separate gate.
 
+
+### 2026-10-03 - Batch 121 - Alpha 1 exact administrative retry
+- Team/staffing commands now freeze uncertain intent and require deliberate reload after409. Workforce reload cannot clear an uncertain reassignment. Project creation supplies a frozen optional key; the existing server ledger handles concurrent retries atomically after current Tenant Admin authorization, preserving unkeyed clients.
+- Verification: strict types,559/559 tests, four focused creation/frozen-command tests and25 current-route PostgreSQL checks pass. Browser lost-response verification remains a final gate.
+

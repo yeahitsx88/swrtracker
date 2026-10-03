@@ -2,7 +2,9 @@ import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { withTransaction } from '@/lib/with-transaction';
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { readJsonBody } from '@/lib/read-json-body';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { errorResponse } from '@/lib/api-error';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
@@ -21,7 +23,9 @@ const VALID_CREW_BUILDS: CrewBuild[] = ['FULL', 'MEDIUM', 'SLIM'];
 export async function handlePostProject(req: NextRequest, deps:ProjectCreateDeps=defaults) {
   try {
     const auth = await deps.requireAuth(req);
-    const body = await req.json() as unknown;
+    const body = await readJsonBody(req);
+    // Optional for existing clients; the UI always supplies a retained command key.
+    const key = req.headers.has('idempotency-key') ? requireIdempotencyKey(req) : null;
 
     if (!body || typeof body !== 'object' ||
         typeof (body as Record<string, unknown>).name !== 'string' ||
@@ -45,10 +49,13 @@ export async function handlePostProject(req: NextRequest, deps:ProjectCreateDeps
       crewBuild,
       templateId,
     } = body as { name: string; crewBuild?: CrewBuild; templateId?: string | null };
-    const project = await deps.withTransaction(async (client) => {
+    const result = await deps.withTransaction(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
       const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      // Current authority is required even when returning a recorded result.
+      if (actorRole !== 'TENANT_ADMIN') throw new ForbiddenError('Only TENANT_ADMIN can create projects');
       const repo = deps.repo;
+      const mutation = async () => {
       const project = await createProject(repo, client, {
       tenantId: auth.tenantId,
       name,
@@ -61,9 +68,13 @@ export async function handlePostProject(req: NextRequest, deps:ProjectCreateDeps
         eventType: 'project.created', authorityEvidence: { actorRole },
         changes: { result: project },
       });
-      return project;
+      return {status:201,body:{project}};
+      };
+      return key ? executeIdempotentHttpMutation(client, {
+        tenantId:auth.tenantId,actorId:auth.userId,endpoint:'POST /api/projects',idempotencyKey:key,
+      }, body, mutation) : mutation();
     });
-    return NextResponse.json({ project }, { status: 201 });
+    return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     return errorResponse(err);
   }
