@@ -91,7 +91,7 @@ export default function AdminProjectPage() {
         description="Manage per-project requester submission and attachment policy."
       >
         <div className="stack">
-          <Button disabled={loading||archived} onClick={()=>{setConfigOpen(true);setSuccess(null);}}>Edit request configuration</Button>
+          <Button disabled={archived} onClick={()=>{setConfigOpen(true);setSuccess(null);}}>Edit request configuration</Button>
           {configOpen&&<AdministrationDialog title="Project request configuration" closeDisabled={saving||uncertain} onClose={closeConfig}>
           {error ? <ErrorBanner message={error} /> : null}
           {success ? <SuccessBanner message={success} /> : null}
