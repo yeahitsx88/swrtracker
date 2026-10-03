@@ -85,7 +85,7 @@ try{
     check((await db.query('SELECT session_version,deactivated_at FROM users WHERE id=$1',[f.subject])).rows[0],{session_version:2,deactivated_at:null},'Local disable only');
     check((await db.query("SELECT count(*)::int AS n FROM account_lifecycle_events WHERE subject_user_id=$1",[f.subject])).rows[0].n,1,'One transition');
     await expect(await request('/api/projects',undefined,cookie(f.subject)),401);
-    const renewed=await expect(await request('/api/projects',undefined,cookie(f.subject,f.tenant,2)));check(renewed.projects.map(p=>p.id),[f.otherProject],'Other project preserved');
+    const renewed=await expect(await request('/api/projects',undefined,cookie(f.subject,f.tenant,2)));check(renewed.projects.map(p=>p.id).sort(),[f.otherProject,f.archivedProject].sort(),'Other and archived project access preserved');
     await db.query('UPDATE project_admin_grants SET revoked_at=NOW(),revoked_by=$2 WHERE user_id=$1',[f.localAdmin,f.actor]);await expect(await request(local(),body,cookie(f.localAdmin),key),403);
     const gp=(await expect(await request(global()))).preview;const tenant=(await expect(await request(global(),command(gp,{kind:'TENANT_ACCOUNT'})))).result;
     await expect(await request('/api/projects',undefined,cookie(f.subject,f.tenant,2)),401);

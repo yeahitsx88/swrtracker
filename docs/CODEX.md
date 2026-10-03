@@ -3385,3 +3385,9 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Corrections to Batch123: incremental TypeScript cache was already untracked/ignored, so no tracked cache removal occurred. Full dependency metadata initially hid an advisory body: production is clear, but full audit identifies one Low tsx-to-esbuild Windows development-server advisory. This repository does not invoke esbuild serve; patch upgrade is deferred and documented, not claimed fixed.
 - Verification: documented typecheck/test/guarded PostgreSQL and pinned Docker commands run successfully. Remote CI execution is unobserved. No operational beta approval inferred.
 
+
+### 2026-10-03 - Batch 125 - current production browser acceptance
+- Updated existing acceptance selectors for current table/collapsible semantics; refreshed inventory after owned fixture insertion and asserted preserved archived access. Captures now write ignored audit output instead of overwriting historical review images.
+- Added real commit-then-lost-response browser tests for project creation, teams, staffing and workforce; exact body/key retries, frozen fields/reload, stale creation latch and single side effects are verified.
+- Verification:52 production HTTP checks,24 existing production browser checks,26 new Alpha1 browser checks and55/55 named matrix cases pass against current source digest f8c182fba02d9cdd886bfa616ca971ef64abd400c84ca737e788503827b34660. Retained customer runtimes/data untouched.
+
