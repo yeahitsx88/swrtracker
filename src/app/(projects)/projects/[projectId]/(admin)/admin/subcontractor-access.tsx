@@ -55,25 +55,6 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
     }
   }
 
-  async function setAuthority(userId: string, grantId: string | null) {
-    setBusy(userId);
-    setError(null);
-    setSuccess(null);
-    try {
-      if (grantId) {
-        await apiClient.revokeCompanyAuthority(projectId, grantId);
-        setSuccess('Company authority revoked.');
-      } else {
-        await apiClient.grantCompanyAuthority(projectId, userId);
-        setSuccess('Company authority granted.');
-      }
-      await load();
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to update company authority.'));
-    } finally {
-      setBusy(null);
-    }
-  }
 
   return (
     <Card

@@ -16,17 +16,17 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  const owner=useRef(new CommandOwner()).current;const token='project-administration';const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const base=`/api/projects/${projectId}`;
  const [members,setMembers]=useState<Member[]>([]),[admins,setAdmins]=useState<Member[]>([]),[companies,setCompanies]=useState<Companies>();
- const [selected,setSelected]=useState<Member>(),[promotion,setPromotion]=useState<Member>(),[search,setSearch]=useState(''),[offset,setOffset]=useState(0),[total,setTotal]=useState(0);
- const [name,setName]=useState(''),[type,setType]=useState('SUBCONTRACTOR'),[companyId,setCompanyId]=useState(''),[candidate,setCandidate]=useState(''),[role,setRole]=useState('REQUESTER'),[email,setEmail]=useState('');
+ const [selected,setSelected]=useState<Member>(),[promotion,setPromotion]=useState<Member>();
+ const [name,setName]=useState(''),[type,setType]=useState('SUBCONTRACTOR'),[companyId,setCompanyId]=useState(''),[role,setRole]=useState('REQUESTER'),[email,setEmail]=useState('');
  const [templateId,setTemplateId]=useState(''),[template,setTemplate]=useState<{templates:Array<{id:string;name:string}>;project:{status:string;templateId:string|null;hasBeenActivated?:boolean}}>();
  const [diagnostics,setDiagnostics]=useState<Record<string,string|number>>(),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[intent,setIntent]=useState<Intent>(),[consent,setConsent]=useState(false),[revision,setRevision]=useState(0),[loading,setLoading]=useState(false);
- const [childLocked,setChildLocked]=useState(false);const childLock=useRef(false);
+ const childLock=useRef(false);
  const gate=useRef(new FrozenCommand<Intent>()),generation=useRef(0);
  const [memberSelection,setMemberSelection]=useState<string[]>([]),[adminSelection,setAdminSelection]=useState<string[]>([]),[candidateSelection,setCandidateSelection]=useState<string[]>([]),[removalQueue,setRemovalQueue]=useState<Member[]>([]),[batch,setBatch]=useState<AdministrationAction[]>();
  async function readAll<T>(path:string,field:string):Promise<T[]>{const all:T[]=[];for(let page=0;page<1000;page++){const result=await apiRequest<Record<string,T[]>>(`${path}?includeDisabled=true&limit=100&offset=${page*100}`);const rows=result[field];if(!Array.isArray(rows))throw new Error("Invalid administrative page");all.push(...rows);if(rows.length<100)return all;}throw new Error('Too many records; narrow the administrative population.');}
  async function load(){const epoch=++generation.current;setLoading(true);setError(undefined);
   try{const results=await Promise.all([readAll<Member>(`${base}/members`,'members'),readAll<Member>(`${base}/administrators`,'administrators'),apiRequest<Companies>(`${base}/companies`),apiRequest<NonNullable<typeof template>>(`${base}/template`),readAll<Companies['candidates'][number]>(`${base}/companies`,'candidates')]);
-   if(epoch!==generation.current)return;setMembers(results[0]);setTotal(results[0].length);setAdmins(results[1]);setCompanies({...results[2],candidates:results[4]});setTemplate(results[3]);setTemplateId(results[3].project.templateId??'');
+   if(epoch!==generation.current)return;setMembers(results[0]);setAdmins(results[1]);setCompanies({...results[2],candidates:results[4]});setTemplate(results[3]);setTemplateId(results[3].project.templateId??'');
   }catch(cause){if(epoch===generation.current)setError(getErrorMessage(cause,'Unable to load project administration.'));}
   finally{if(epoch===generation.current)setLoading(false);}
  }
@@ -52,10 +52,10 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  </AdministrationSection>
  <AdministrationSection title="Project members and access" locked={locked}>
  {removalQueue.length>0&&<p>Reviewing {selected?.name}. Each person requires their own blocker evidence, reason and confirmation. {removalQueue.length} remaining in this review.</p>}
- {selected&&<AccountOffboarding key={selected.userId} subjectUserId={selected.userId} subjectName={selected.name} commandOwner={owner} scope={{kind:'PROJECT_ACCESS',projectId:projectId as UUID}} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()} onCancel={()=>{setSelected(undefined);setRemovalQueue([]);setMemberSelection([]);}}/>}
+ {selected&&<AccountOffboarding key={selected.userId} subjectUserId={selected.userId} subjectName={selected.name} commandOwner={owner} scope={{kind:'PROJECT_ACCESS',projectId:projectId as UUID}} onLockChange={value=>{childLock.current=value;}} onResult={()=>void load()} onCancel={()=>{setSelected(undefined);setRemovalQueue([]);setMemberSelection([]);}}/>}
  {selected&&<Button variant="secondary" disabled={locked} onClick={()=>{const remaining=removalQueue.filter(m=>m.userId!==selected.userId);setRemovalQueue(remaining);setSelected(remaining[0]);}}> {removalQueue.length>1?'Review next selected person':'Close access review'}</Button>}
  <AdministrationRecords label="project members" rows={members} id={m=>m.userId} columns={[{key:'name',label:'Name',text:m=>m.name},{key:'email',label:'Email',text:m=>m.email},{key:'role',label:'Operational role',text:m=>m.role.replaceAll('_',' ')},{key:'access',label:'Access',text:m=>m.accountDisabledAt?'Tenant disabled':m.accessDisabledAt?'Project disabled':'Enabled'}]} selected={memberSelection} onSelection={setMemberSelection} disabled={locked} selectionActions={<Button variant="secondary" disabled={!memberSelection.length||locked||!!batch} onClick={()=>{const queue=members.filter(m=>memberSelection.includes(m.userId));setPromotion(undefined);setRemovalQueue(queue);setSelected(queue[0]);}}>Review selected access removals</Button>} actions={m=><><Button variant="secondary" disabled={locked||!!batch} onClick={()=>{setPromotion(undefined);setRemovalQueue([]);setSelected(m);}}>Preview access removal</Button>{m.role==='SURVEY_SUPERINTENDENT'&&!m.accessDisabledAt&&!m.accountDisabledAt&&<Button variant="secondary" disabled={locked||closed||!!batch} onClick={()=>{setSelected(undefined);setRemovalQueue([]);setPromotion(m);}}>Appoint as Survey Manager</Button>}</>}/>
- {promotion&&<SurveyManagerHandover key={promotion.userId} projectId={projectId} incoming={promotion} owner={owner} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
+ {promotion&&<SurveyManagerHandover key={promotion.userId} projectId={projectId} incoming={promotion} owner={owner} onLockChange={value=>{childLock.current=value;}} onResult={()=>void load()}/>}
  </AdministrationSection>
  <AdministrationSection title="Independent Project Admin assignments" locked={locked}>
  <p>Granting administration preserves the person's operational role. Central IT can recover a project administration vacancy.</p>

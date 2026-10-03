@@ -3373,3 +3373,9 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Architecture review identified the established one-configured-service-actor worker contract across tenants. Before deployment, narrowed new034 ownership preflight/FK to the event's ticket tenant; retained the existing actor foreign key. Actor tenant attribution changes are deferred pending a worker contract decision. No retained database was migrated.
 - Updated two remaining runtime fixture migration ceilings to current schema. Added actual concurrent project-create replay, mismatch, current-authority and audit rollback checks. All27 PostgreSQL suites pass, including25 Alpha1 checks; legacy inconsistent ticket ownership is refused without rewriting history.
 
+
+### 2026-10-03 - Batch 123 - confirmed dead symbols and reproducible verification
+- Removed compiler-confirmed unused imports, obsolete authority handler/history helper and unused administrative state. Preserved synchronous command-owner/ref guards. Excluded ignored runtime/generated directories from TypeScript and removed tracked incremental cache.
+- Added typecheck with unused-symbol checks and test:postgres entry point; Docker/CI now enforce current types, unit tests and PostgreSQL gates. No dependencies upgraded or new lint tool installed.
+- Verification: unused-symbol/strict type check passes,559 unit tests and27 PostgreSQL suites pass. Production/development dependency audit reports zero advisories; CI execution remains unobserved until remote run.
+

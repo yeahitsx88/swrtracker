@@ -1,4 +1,4 @@
-import {administrationRetry} from '@/lib/administration-retry';
+import { administrationRetry } from '@/lib/administration-retry';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { withTransaction } from '@/lib/with-transaction';
@@ -11,11 +11,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
-import { getTenantRole } from '@/lib/get-tenant-role';
+
 import { addToWhitelist, removeFromWhitelist } from '@/modules/tenancy/application/whitelist';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { UUID } from '@/shared/types';
-import {assertProjectAdministrator} from '@/lib/project-capabilities';
+import { assertProjectAdministrator } from '@/lib/project-capabilities';
 
 export const dynamic = 'force-dynamic';
 

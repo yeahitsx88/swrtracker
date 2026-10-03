@@ -1,6 +1,6 @@
 import type { DbClient, UUID } from '@/shared/types';
 import type { AuthContext } from '@/lib/auth';
-import type { OffboardingCommand, OffboardingResult, OffboardingScope, OffboardingBlocker } from '@/lib/contracts/account-offboarding';
+import type { OffboardingCommand, OffboardingResult, OffboardingScope } from '@/lib/contracts/account-offboarding';
 import type { OffboardingRepository, OffboardingState } from '../application/account-offboarding';
 import { appendLifecycleEvent } from './account-lifecycle.repository';
 

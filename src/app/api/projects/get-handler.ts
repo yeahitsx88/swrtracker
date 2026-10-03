@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
-import { assertActiveSession, requireAuth, requireActiveAuth } from '@/lib/auth';
+import { assertActiveSession, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import type { AuthContext } from '@/lib/auth';
 import type { ProjectRole } from '@/modules/identity/domain/types';

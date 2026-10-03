@@ -310,7 +310,7 @@ test('POST /api/tickets/[ticketId]/assign replays duplicate assign requests', as
 
   let patchCalls = 0;
   let currentTicket = makeDirectAssignmentTicket();
-  pool.query = async (sql: string, params?: unknown[]) => {
+  pool.query = async (sql: string) => {
     if (sql.includes('FROM revoked_auth_sessions')) return { rows: [{ revoked: false }] };
     if (/FROM users/.test(sql)) {
       return { rows: [{ session_version: 1, deactivated_at: null }] };

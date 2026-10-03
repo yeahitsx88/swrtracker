@@ -14,7 +14,7 @@ import { POST as restore } from '../../src/app/api/projects/[projectId]/drafts/[
 import { GET as deleted } from '../../src/app/api/projects/[projectId]/deleted-drafts/route';
 import { GET as list } from '../../src/app/api/tickets/route';
 import { handlePostTicketAttachments } from '../../src/app/api/tickets/[ticketId]/attachments/handler';
-import { getTicketRouteContext, withTransaction, withTicketMutation } from '../../src/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '../../src/lib/ticket-route-helpers';
 import { TicketRepository } from '../../src/modules/ticket/infrastructure/ticket.repository';
 import { AttachmentRepository, validateAttachmentObjectMetadata } from '../../src/modules/attachment/infrastructure';
 import type { UUID } from '../../src/shared/types';

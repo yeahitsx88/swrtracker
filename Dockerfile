@@ -11,7 +11,7 @@ RUN pnpm audit --prod --audit-level=high
 
 FROM deps AS builder
 COPY . .
-RUN pnpm tsc --noEmit && pnpm test
+RUN pnpm typecheck && pnpm test
 RUN pnpm build
 
 FROM base AS runtime

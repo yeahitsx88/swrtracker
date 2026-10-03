@@ -1,7 +1,7 @@
 /**
  * POST /api/projects/[projectId]/areas/[areaId]/subareas
  */
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { ConflictError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 

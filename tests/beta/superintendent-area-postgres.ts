@@ -87,7 +87,7 @@ async function commands(pool:Pool){
   await db.query('INSERT INTO aor_assignments(id,tenant_id,project_id,department_id,aor_node_id) VALUES($1,$2,$3,$4,$5)',[sharedAssignment,id(1),project,department,area]);
   await db.query("INSERT INTO tickets(id,tenant_id,project_id,aor_node_id,company_id,ticket_number,requester_id,workflow_variant,status,craft,description,requested_date,ticket_type,submitted_at) VALUES($1,$2,$3,$4,$5,$6,$7,'STANDARD_APPROVAL','SUBMITTED','Survey','Disposable Area preservation','2026-10-10','LAYOUT',now())",[ticket,id(1),project,area,id(2),'AREA-'+ticket,id(10)]);
  });
- const auth={tenantId:id(1),userId:id(10),sessionVersion:1},scope={tenantId:id(1),projectId:project};
+ const scope={tenantId:id(1),projectId:project};
  const ctx={params:Promise.resolve({projectId:project})},bearer=signToken(id(10),id(1));
  const deps={repo,withTransaction:tx,executeIdempotent:executeIdempotentHttpMutation,requireAuth:(req:NextRequest,db:import('../../src/shared/types').DbClient=pool)=>requireActiveAuth(req,db)};
  const input=async()=>({action:'unlink-superintendent-area' as const,superintendentId:id(11),linkId:assignment,replacementUserId:id(12),replacementGrantId:review,replacementAssignmentId:witness,expectedSnapshot:await repo.snapshot(pool,scope,id(11)),confirmUnlink:true as const});

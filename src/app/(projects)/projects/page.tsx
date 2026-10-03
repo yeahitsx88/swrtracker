@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {AdministrationRecords} from '@/components/ui/administration-records';
+import { AdministrationRecords } from '@/components/ui/administration-records';
 import { ProjectCreation } from '@/components/ui/project-creation';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -11,7 +11,7 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 import { findProjectLandingHref, getMembershipLandingHref } from '@/components/ui/project-navigation';
-import { Icon } from '@/components/ui/icon';
+
 import { PROJECT_STATUS_LABELS, roleLabel } from '@/lib/display-labels';
 
 export default function ProjectsLauncherPage() {

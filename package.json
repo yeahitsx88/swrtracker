@@ -11,6 +11,8 @@
     "worker:notifications": "tsx src/workers/notification-worker-loop.ts",
     "worker:administrative-notifications:once": "tsx src/workers/administrative-notification-worker.ts",
     "test": "node --import tsx --test scripts/run-tests.ts",
+    "typecheck": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
+    "test:postgres": "node scripts/run-postgres-tests.mjs",
     "smoke:ticket": "node --import tsx tests/ticket/ticket-route-smoke.ts",
     "smoke:access": "node --import tsx tests/identity/company-access-smoke.ts",
     "smoke:workflow": "node --import tsx tests/ticket/amelia-workflow-smoke.ts",

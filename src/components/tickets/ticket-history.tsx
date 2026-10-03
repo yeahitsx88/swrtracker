@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import {AdministrationRecords,AdministrationSection} from '@/components/ui/administration-records';
+import { AdministrationRecords, AdministrationSection } from '@/components/ui/administration-records';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { TicketHistoryItem } from '@/lib/contracts';
 import { formatCalendarDate } from '@/lib/calendar-date';
-import { Icon } from '@/components/ui/icon';
 
 interface TicketHistoryProps {
   ticketId: string;
@@ -52,15 +51,6 @@ function humanize(value: string): string {
 function foldKey(type: string): string {
   const normalized = type.replace(/^(ticket|attachment)\./, '').toUpperCase();
   return normalized === 'ASSIGNMENT_RECORDED' ? 'ASSIGNED' : normalized;
-}
-
-function historyTone(type: string): 'success' | 'attention' | 'active' | 'danger' | 'neutral' {
-  const normalized = type.replace(/^(ticket|attachment)\./, '').toUpperCase();
-  if (normalized === 'COMPLETED') return 'success';
-  if (/CANCEL|REJECT|STOP_WORK/.test(normalized)) return 'danger';
-  if (/RETURN|DELAY|INABILITY|NEED_BY|URGENT/.test(normalized)) return 'attention';
-  if (/ASSIGN|IN_PROGRESS|APPROVED|START/.test(normalized)) return 'active';
-  return 'neutral';
 }
 
 function summary(item: TicketHistoryItem): string | null {

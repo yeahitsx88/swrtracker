@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { submitTicket } from '@/modules/ticket/application/submit-ticket';
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
-import type { Ticket, TicketPriority } from '@/modules/ticket/domain/types';
+import type { Ticket } from '@/modules/ticket/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
 
 const tenantId = 'tenant-1' as UUID;

@@ -1,4 +1,4 @@
-import {administrationRetry} from '@/lib/administration-retry';
+import { administrationRetry } from '@/lib/administration-retry';
 import { withTransaction } from '@/lib/with-transaction';
 import { requireResourceUuid } from '@/lib/resource-uuid';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
@@ -12,12 +12,12 @@ import { errorResponse } from '@/lib/api-error';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getTenantRole } from '@/lib/get-tenant-role';
-import { getProjectRole } from '@/lib/get-project-role';
+
 import { addProjectMember } from '@/modules/tenancy/application/add-project-member';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { UUID } from '@/shared/types';
-import { assertProjectAdministrator,resolveProjectCapabilities } from '@/lib/project-capabilities';
+import { assertProjectAdministrator, resolveProjectCapabilities } from '@/lib/project-capabilities';
 
 export const dynamic = 'force-dynamic';
 
