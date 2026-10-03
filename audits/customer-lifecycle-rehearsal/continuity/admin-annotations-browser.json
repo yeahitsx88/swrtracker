@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-03T03:24:08.927Z",
+  "checks": [
+    {
+      "name": "Setup controls absent outside Setup",
+      "pass": true
+    },
+    {
+      "name": "Archived request configuration hidden",
+      "pass": true
+    },
+    {
+      "name": "Diagnostics remain available",
+      "pass": true
+    },
+    {
+      "name": "Project companies presented as a table",
+      "pass": true
+    },
+    {
+      "name": "Reviewer person-type filter spans full personnel inventory",
+      "pass": true
+    },
+    {
+      "name": "Caption typography left aligned and weighted",
+      "pass": true
+    },
+    {
+      "name": "desktop: no horizontal document overflow",
+      "pass": true
+    },
+    {
+      "name": "mobile: no horizontal document overflow",
+      "pass": true
+    },
+    {
+      "name": "Selected removal action is beside selection count",
+      "pass": true
+    },
+    {
+      "name": "Preview provides explicit cancellation",
+      "pass": true
+    },
+    {
+      "name": "Cancellation closes review without mutation",
+      "pass": true
+    },
+    {
+      "name": "Cancellation clears queued selection",
+      "pass": true
+    }
+  ],
+  "scope": "Actual Casey login, archived project. Preview and cancel only, no disable/post command."
+}

@@ -18,3 +18,6 @@
 
 .manpower-movement-panel {margin:0;min-width:0;}
 .manpower-movement-panel > .administration-section {border-top:0;padding-top:0;}
+
+.administration-table-caption {text-align:left;font-size:1rem;font-weight:600;color:var(--ink);padding:0 0 12px;caption-side:top;}
+.administration-company-id {font-size:0.85rem;overflow-wrap:anywhere;}

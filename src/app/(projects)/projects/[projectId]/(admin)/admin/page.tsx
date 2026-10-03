@@ -77,7 +77,7 @@ export default function AdminProjectPage() {
   return (
     <div className="stack">
       <ProjectAdministration key={projectId} projectId={projectId}/>
-      <Card
+      {!loading&&!archived&&<Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."
       >
@@ -124,7 +124,8 @@ export default function AdminProjectPage() {
             </>
           ) : null}
         </div>
-      </Card>
+      </Card>}
+      {archived&&error?<ErrorBanner message={error}/>:null}
       <Card title="Survey Reviewer handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
       <SubcontractorAccess projectId={projectId} />
       <DraftRecovery projectId={projectId} />

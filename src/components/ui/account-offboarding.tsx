@@ -7,14 +7,14 @@ import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import type {OffboardingPreview,OffboardingResult,OffboardingScope} from '@/lib/contracts/account-offboarding';
 import {Button,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 type Body={subjectUserId:string;scope:OffboardingScope;reason:string;snapshot:string;confirmed:true};
-export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onLockChange,commandOwner}:{subjectUserId:string;subjectName:string;scope:OffboardingScope;commandOwner?:CommandOwner;onResult?:(result:OffboardingResult)=>void;onLockChange?:(locked:boolean)=>void}){
+export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onLockChange,commandOwner,onCancel}:{subjectUserId:string;subjectName:string;scope:OffboardingScope;commandOwner?:CommandOwner;onCancel?:()=>void;onResult?:(result:OffboardingResult)=>void;onLockChange?:(locked:boolean)=>void}){
  const fallback=useRef(new CommandOwner());const owner=commandOwner??fallback.current;const token=useId();useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);const blocked=owner.blocked(token);
  const [replayed,setReplayed]=useState(false);
  const url=scope.kind==='TENANT_ACCOUNT'?`/api/accounts/${subjectUserId}/offboarding`:`/api/projects/${scope.projectId}/members/${subjectUserId}/offboarding`;
  const [preview,setPreview]=useState<OffboardingPreview>(),[reason,setReason]=useState(''),[confirmed,setConfirmed]=useState(false);
  const [error,setError]=useState<string>(),[result,setResult]=useState<OffboardingResult>(),[loading,setLoading]=useState(false),[revision,setRevision]=useState(0);
  const gate=useRef(new FrozenCommand<Body>()),generation=useRef(0);
- const heading=useRef<HTMLHeadingElement>(null);useEffect(()=>{if(result)heading.current?.focus();},[result]);
+ const heading=useRef<HTMLHeadingElement>(null);useEffect(()=>{heading.current?.focus();},[result]);
  const action=scope.kind==='TENANT_ACCOUNT'?'Disable tenant account':'Remove from this project';
  async function load(offset=0,snapshot?:string){const epoch=++generation.current;setLoading(true);setError(undefined);setPreview(undefined);setConfirmed(false);
   try{const value=await apiRequest<{preview:OffboardingPreview}>(`${url}?offset=${offset}${snapshot?`&snapshot=${snapshot}`:''}`);if(epoch===generation.current)setPreview(value.preview);}
@@ -31,6 +31,7 @@ export function AccountOffboarding({subjectUserId,subjectName,scope,onResult,onL
  void revision;
  return <section className="stack" aria-label={`${action}: ${subjectName}`}>
  <h3 ref={heading} tabIndex={-1} className="panel-title">{action}: {subjectName}</h3>
+ {onCancel&&<div className="row"><Button variant="secondary" disabled={blocked||gate.current.pending||!!gate.current.command&&!gate.current.stale} onClick={()=>{if(owner.blocked(token)||!gate.current.reload())return;owner.release(token);onLockChange?.(false);onCancel();}}>{result?'Close access review':'Cancel access removal'}</Button></div>}
  <p>{scope.kind==='TENANT_ACCOUNT'?'This disables access across this tenant.':'This removes access to this project. The account and access to other projects remain.'} Historical requests, drafts, files and audit evidence are retained.</p>
  {error&&<ErrorBanner message={error}/>}
  {loading&&<p role="status">Loading current duties and continuity checks…</p>}
