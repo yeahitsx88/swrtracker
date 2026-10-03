@@ -1,0 +1,68 @@
+Skip to content
+Hello, Drew Quinn!
+Menu
+Northbank Pump Station
+Requester
+New Request
+Requests
+Drafts
+Requests
+
+Your SWRs and any additional company SWRs granted to your account.
+
+New request
+Request trends
+
+Explore counts, status and turnaround for requests in your access scope.
+
+Explore charts
+NUMBER
+REQUEST
+TYPE
+NEED-BY
+STATUS
+FSS-STRUCT-00429
+In Progress
+
+Shift 18: CHECK_OUT at Pump Building & Structures, grid 9. Drawing NB-120 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Check-out
+Civil
+Oct 24, 2026
+FSS-STRUCT-00333
+Completed
+
+Corrected NB-340: checked revision C, exact stake limits and Area readiness confirmed.
+
+Pump Building & Structures
+Topographic
+Civil
+Oct 20, 2026
+FSS-STRUCT-00234
+In Progress
+
+Shift 10: LAYOUT at Pump Building & Structures, grid 7. Drawing NB-100 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Layout
+Civil
+Oct 30, 2026
+FSS-STRUCT-00139
+Completed
+
+Shift 6: CHECK_OUT at Pump Building & Structures, grid 15. Drawing NB-120 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Check-out
+Civil
+Oct 12, 2026
+FSS-UTIL-00043
+Completed
+
+Corrected NB-46: checked revision C, exact stake limits and Area readiness confirmed.
+
+Intake & Utilities
+Topographic
+Civil
+Oct 9, 2026

@@ -179,3 +179,14 @@ Owner explicitly authorized simulation without personal involvement. Executed `s
 - Human dataset now retains Jordan as Northbank Project Admin. Previously seeded foreign-tenant control with the same display name remains separate and unchanged. Jordan credentials appended to ignored HUMAN-ACCESS.md for later role walkthroughs.
 
 Outcome: ASSISTED_STEP_COMPLETE, not end-to-end privileged invitation acceptance. Next stage is Jordan's project company/enrollment and Survey Manager setup. Previously agreed enrollment features remain proposed and unimplemented.
+
+
+## Sustained operational exercise completed (2026-10-02)
+
+See [operational report](operations/REPORT.md) for all11 requested finding categories, measurement limits and restart state.49 logical shifts;714 operational profiles created,713 currently active after Sam departure;650 requesters,15 crews.1598 Northbank records:1502 completed,44 canceled,7 active and45 drafts. One separate isolation-control draft excluded.
+
+Jordan replaced by Casey through Central IT; Sam fired after Taylor promotion. Owner explicitly authorized the narrow guarded Manager handover correction when the existing API blocked promotion. Actual UI appointment, separate project/tenant disables and historical/current-authority retry checks passed. Reorganization used existing APIs only:8 Structures/4 Utilities/3 Civil crews; the busiest-Chief share fell from48.1% of historical assigned records to8.1% of the new340-record cohort. This is the simulated dispatch policy, not product automation or real-user productivity evidence.
+
+Remaining observed issues:100-entry admin grant selector and Chief completion controls returning403. Recommendations are recorded without implementation. Account bootstrap for internal profiles remains assisted; actual mail and project-link/domain/bulk enrollment are not proved. Scripts/rehearsal/operational-simulation.mjs reuses the owned schema and authenticated production APIs; credentials and resumable operator state remain ignored. Duplicate setup/expansion/departure/reorganization are refused. Retained local app3116 uses the final handover image; prior runtime and attachment backups are retained.
+
+Verification:549 normal tests, strict TypeScript, final Linux production build;713 final visible-ID comparisons,160 attachment checks, eight zero integrity anomaly counts,53 matching shift snapshots and independent UTC activity comparison. New handover UI verdict SHIP at local acceptance scope. The original dirty checkout and production data remain untouched.

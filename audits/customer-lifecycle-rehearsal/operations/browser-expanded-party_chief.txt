@@ -1,0 +1,24 @@
+Skip to content
+Hello, Drew Rivera!
+Menu
+Northbank Pump Station
+Party Chief
+Crew Work
+PC Approvals
+Crew Work
+
+Requests assigned to your crew. Open a request for full details, files and history.
+
+Rows
+10
+25
+50
+100
+Refresh
+Crew work trends
+
+Explore counts, status and turnaround for requests in your access scope.
+
+Explore charts
+No actionable crew work
+Assigned, in-progress and delayed requests for your crew will appear here.

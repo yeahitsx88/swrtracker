@@ -1,0 +1,119 @@
+{
+  "at": "2026-10-03T00:59:44.569Z",
+  "former": {
+    "id": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+    "name": "Sam Rivera",
+    "email": "person001@rehearsal.example.test",
+    "role": "SURVEY_MANAGER",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 0
+  },
+  "incoming": {
+    "id": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+    "name": "Taylor Rivera",
+    "email": "person002@rehearsal.example.test",
+    "role": "SURVEY_MANAGER",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 1
+  },
+  "coverage": {
+    "id": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+    "name": "Morgan Rivera",
+    "email": "person003@rehearsal.example.test",
+    "role": "SURVEY_SUPERINTENDENT",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 2,
+    "coveredAreaIds": [
+      "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "00147da2-cc5b-426c-87fc-5fbe23bdee68"
+    ]
+  },
+  "checks": [
+    {
+      "name": "Promotion preserves tickets, events, attachments, rosters, teams and assignment history exactly",
+      "pass": true
+    },
+    {
+      "name": "Concurrent identical retries retain one appointment event",
+      "pass": true
+    },
+    {
+      "name": "A distinct command with the old preview cannot repeat promotion",
+      "pass": true
+    },
+    {
+      "name": "Historical success cannot be replayed after actor loses Project Admin authority",
+      "pass": true
+    },
+    {
+      "name": "Actual replacement resolves last-manager continuity blocker",
+      "pass": true
+    },
+    {
+      "name": "Fired manager prior session rejected immediately after project disable",
+      "pass": true
+    },
+    {
+      "name": "Fired manager cannot renew tenant login",
+      "pass": true
+    },
+    {
+      "name": "Promoted manager can read project-wide operational metrics",
+      "pass": true
+    },
+    {
+      "name": "Fifteen crew reporting links remain valid; coverage Superintendent now supervises ten crews",
+      "pass": true
+    }
+  ],
+  "historyBefore": {
+    "tickets": "dd14dc150a9e4c4c6bd8f3b377521c32eada99116e3a2604d16e8e1983d7a6b2",
+    "ticket_events": "01596a83ba1b224a483e507fba390c9cc97a2019a08cd051f7b2637dbed84027",
+    "attachments": "df12d2310ddf24bb7220b356ac1a37b5fb1c683da484fcc59f77c69a2b57f866",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_teams": "562ccd33416e6f36e17b681018654880f1b98e44ccd1cef0bc7beb334d151991",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "ticket_assignment_history": "0598647fd22de4f5df89d4a30bd9fd1316a7f2803711f999ff5eb7ef8bf3f56c"
+  },
+  "historyAfter": {
+    "tickets": "dd14dc150a9e4c4c6bd8f3b377521c32eada99116e3a2604d16e8e1983d7a6b2",
+    "ticket_events": "01596a83ba1b224a483e507fba390c9cc97a2019a08cd051f7b2637dbed84027",
+    "attachments": "df12d2310ddf24bb7220b356ac1a37b5fb1c683da484fcc59f77c69a2b57f866",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_teams": "562ccd33416e6f36e17b681018654880f1b98e44ccd1cef0bc7beb334d151991",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "ticket_assignment_history": "0598647fd22de4f5df89d4a30bd9fd1316a7f2803711f999ff5eb7ef8bf3f56c"
+  },
+  "localResult": {
+    "scope": {
+      "kind": "PROJECT_ACCESS",
+      "projectId": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b"
+    },
+    "subjectUserId": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+    "changed": true,
+    "eventId": "d490b3aa-2436-488b-af09-a7f555bd66b7",
+    "disabledAt": "2026-10-03 00:59:45.325039+00",
+    "sessionVersion": 3,
+    "reviewId": "8d6cadd2-8a1f-465e-af87-2de50eb8ae3c",
+    "centralReview": "QUEUED",
+    "outcome": "DISABLED"
+  },
+  "globalResult": {
+    "scope": {
+      "kind": "TENANT_ACCOUNT"
+    },
+    "subjectUserId": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+    "changed": true,
+    "eventId": "79b6a3c9-41d9-4452-a3c9-55b262685881",
+    "disabledAt": "2026-10-03 00:59:45.408592+00",
+    "sessionVersion": 4,
+    "reviewId": null,
+    "centralReview": "NOT_APPLICABLE",
+    "outcome": "DISABLED"
+  },
+  "appointment": {
+    "eventId": "ceb2d4c7-7ee7-46a1-ad82-acb51d649702",
+    "incomingUserId": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+    "coverageUserId": "71b4c537-2b2f-4c99-a7d7-f55d1da34048"
+  }
+}

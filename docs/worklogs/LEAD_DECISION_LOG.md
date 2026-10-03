@@ -284,3 +284,20 @@
 - Provenance: owner selected predefined roles and deferred individual permissions as more mature configuration.
 - Resolves Decision42: assign existing Project Admin capability and Survey Manager role to eligible people; do not create custom roles or per-person permission sets. Preserve independent administrative/operational authority and project scope.
 - Custom role definitions and individual permission configuration are deferred. Missing invitation/enrollment implementation remains subject to Decision37 review/authorization.
+
+
+### Decision 44 - sustained synthetic operation and personnel departures (2026-10-02)
+- Owner authorized Jordan-led synthetic operation with64 Survey personnel,100 requesters, sustained workflow/permission/KPI observations and a reconstructable ledger. Reuse isolated rehearsal infrastructure; account provisioning assistance must be labeled.
+- Owner added Jordan resignation with Central IT replacement, then500 additional internal tenant requesters and50 individual subcontractor requesters across companies. These are individual accounts, not50 companies.
+- Findings remain observations; only blocking defects permit the smallest correction. No production-data mutation, permission bypass, external mail, hosting or automatic recommendation implementation.
+
+### Decision 45 - guarded Survey Manager succession (2026-10-02)
+- Owner added firing of the Survey Manager and promotion of an existing Superintendent. After authenticated attempts revealed the unsupported existing-member transition and LAST_SURVEY_MANAGER continuity blocker, owner explicitly selected "Implement the guarded handover".
+- Approved bounded implementation: current project administration or Central IT appoints one current eligible Superintendent on an editable FULL project. An explicitly selected different Superintendent receives their individual Area coverage and reporting crews. Current preview, reason and confirmation bind the command; protected/acting/department/team/roster obligations require existing resolution.
+- Promotion retains outgoing access until separately confirmed offboarding. Actual new Manager continuity must exist first. Tenant disable remains a separate Central IT operation; no custom role, inferred manager, historical ticket reassignment or authority from a Project Manager title.
+- New mutation uses EXCLUSIVE lifecycle coordination, current authority before replay, immutable administrative evidence, session invalidation and atomic rollback.
+
+### Decision 46 - Manager-directed crew rebalance (2026-10-02)
+- Owner directs the promoted manager to inspect disproportionate allocation and reorganize teams fairly. Authorized normal synthetic operations through existing guarded staffing, reporting, Area cleanup, named-team and ticket assignment APIs.
+- Rehearsal choice: retain15 intact four-person crews; move3 to match observed demand with8 Structures/4 Utilities/3 Civil crews. Resolve active work before changing coverage. Dispatch new requests across eligible crews within each Area; measure the new cohort separately from retained history.
+- No automatic balancing feature, new organizational permission, historical rewrite or unrelated product improvement is authorized.

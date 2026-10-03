@@ -1,0 +1,380 @@
+Skip to content
+Hello, Drew Rivera!
+Menu
+Northbank Pump Station
+Party Chief
+Crew Work
+PC Approvals
+Crew Work
+
+Requests assigned to your crew. Open a request for full details, files and history.
+
+Rows
+10
+25
+50
+100
+Refresh
+Crew work trends
+
+Explore counts, status and turnaround for requests in your access scope.
+
+Explore charts
+NUMBER
+REQUEST
+TYPE
+NEED-BY
+STATUS
+FSS-STRUCT-00140
+In Progress
+
+Shift 6: LAYOUT at Pump Building & Structures, grid 1. Drawing NB-124 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Cameron Ellis
+High priority
+Layout
+Quality
+Oct 30, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00419
+In Progress
+
+Shift 17: LAYOUT at Pump Building & Structures, grid 1. Drawing NB-112 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Harper Ellis
+High priority
+Layout
+Utilities
+Oct 30, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00313
+In Progress
+
+Corrected NB-322: checked revision C, exact stake limits and Area readiness confirmed.
+
+Pump Building & Structures
+Casey Park
+Topographic
+Utilities
+Oct 20, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00354
+Delayed
+
+Shift 15: TOPO at Pump Building & Structures, grid 5. Drawing NB-104 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Cameron Park
+Topographic
+Quality
+Oct 21, 2026
+Restart Delay
+Flag Stop Work
+FSS-STRUCT-00379
+In Progress
+
+Corrected NB-391: checked revision C, exact stake limits and Area readiness confirmed.
+
+Pump Building & Structures
+Finley Ellis
+Layout
+Structural
+Oct 21, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00418
+In Progress
+
+Shift 17: PERMIT at Pump Building & Structures, grid 18. Drawing NB-111 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Finley Ellis
+Permit
+Structural
+Oct 23, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00414
+In Progress
+
+Shift 17: TOPO at Pump Building & Structures, grid 11. Drawing NB-104 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Cameron Ellis
+Topographic
+Quality
+Oct 23, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00447
+In Progress
+
+Shift 18: PERMIT at Pump Building & Structures, grid 12. Drawing NB-111 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Avery Ellis
+Permit
+Structural
+Oct 24, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00441
+In Progress
+
+Shift 18: TOPO at Pump Building & Structures, grid 5. Drawing NB-104 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Rowan Park
+Topographic
+Quality
+Oct 24, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00429
+In Progress
+
+Shift 18: CHECK_OUT at Pump Building & Structures, grid 9. Drawing NB-120 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Drew Quinn
+Check-out
+Civil
+Oct 24, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00448
+In Progress
+
+Shift 18: TOPO at Pump Building & Structures, grid 11. Drawing NB-110 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Drew Brooks
+Topographic
+Civil
+Oct 24, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00431
+In Progress
+
+Shift 18: PERMIT at Pump Building & Structures, grid 12. Drawing NB-123 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Riley Park
+Permit
+Mechanical
+Oct 24, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00438
+In Progress
+
+Shift 18: CHECK_OUT at Pump Building & Structures, grid 3. Drawing NB-102 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Harper Park
+Check-out
+Utilities
+Oct 24, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00457
+In Progress
+
+Shift 19: AS_BUILT at Pump Building & Structures, grid 4. Drawing NB-121 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Finley Ellis
+As-built
+Structural
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00468
+In Progress
+
+Shift 19: AS_BUILT at Pump Building & Structures, grid 16. Drawing NB-103 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Riley Park
+As-built
+Mechanical
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00451
+In Progress
+
+Shift 19: LAYOUT at Pump Building & Structures, grid 14. Drawing NB-113 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Riley Ellis
+Layout
+Mechanical
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00480
+In Progress
+
+Shift 19: CHECK_OUT at Pump Building & Structures, grid 9. Drawing NB-114 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Rowan Park
+Check-out
+Quality
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00479
+In Progress
+
+Shift 19: TOPO at Pump Building & Structures, grid 5. Drawing NB-110 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Emerson Chen
+Topographic
+Civil
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00460
+In Progress
+
+Shift 19: PERMIT at Pump Building & Structures, grid 6. Drawing NB-123 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Logan Ellis
+Permit
+Mechanical
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00459
+In Progress
+
+Shift 19: CHECK_OUT at Pump Building & Structures, grid 3. Drawing NB-120 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Emerson Brooks
+Check-out
+Civil
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00471
+In Progress
+
+Shift 19: CHECK_OUT at Pump Building & Structures, grid 15. Drawing NB-102 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Casey Park
+Check-out
+Utilities
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00449
+In Progress
+
+Shift 19: LAYOUT at Pump Building & Structures, grid 13. Drawing NB-112 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Casey Ellis
+Layout
+Utilities
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00476
+In Progress
+
+Shift 19: PERMIT at Pump Building & Structures, grid 6. Drawing NB-111 Rev 2, stakes/verification for next work package.
+
+Pump Building & Structures
+Finley Park
+Permit
+Structural
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00461
+In Progress
+
+Shift 19: LAYOUT at Pump Building & Structures, grid 7. Drawing NB-124 Rev 0, stakes/verification for next work package.
+
+Pump Building & Structures
+Rowan Ellis
+Layout
+Quality
+Oct 25, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+FSS-STRUCT-00390
+In Progress
+
+Shift 15: TOPO at Pump Building & Structures, grid 5. Drawing NB-110 Rev 1, stakes/verification for next work package.
+
+Pump Building & Structures
+Drew Park
+Topographic
+Civil
+Oct 30, 2026
+Complete Work
+Mark Delayed
+Report Unable to Perform
+Flag Stop Work
+Previous
+Page 1 of 2
+Next

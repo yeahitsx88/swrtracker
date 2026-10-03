@@ -1,0 +1,1053 @@
+{
+  "baseline": "6becd3bd541f58271e70cafd6a5da82162b44051",
+  "startedAt": "2026-10-03T00:20:27.053Z",
+  "finishedAt": "2026-10-03T00:28:37.299Z",
+  "period": {
+    "shifts": 20,
+    "clock": "Compressed logical shifts; application timestamps use unmodified actual clock."
+  },
+  "users": 164,
+  "survey": 64,
+  "requesters": 100,
+  "crews": 15,
+  "requests": 538,
+  "statusCounts": [
+    {
+      "status": "APPROVED",
+      "count": 37
+    },
+    {
+      "status": "COMPLETED",
+      "count": 377
+    },
+    {
+      "status": "DELAYED",
+      "count": 3
+    },
+    {
+      "status": "DRAFT",
+      "count": 16
+    },
+    {
+      "status": "IN_PROGRESS",
+      "count": 72
+    },
+    {
+      "status": "REQUESTER_CANCELED",
+      "count": 14
+    },
+    {
+      "status": "RETURNED_FOR_CORRECTION",
+      "count": 3
+    },
+    {
+      "status": "SUBMITTED",
+      "count": 16
+    }
+  ],
+  "events": [
+    {
+      "event_type": "attachment.downloaded",
+      "count": 54
+    },
+    {
+      "event_type": "attachment.uploaded",
+      "count": 106
+    },
+    {
+      "event_type": "ticket.approved",
+      "count": 520
+    },
+    {
+      "event_type": "ticket.assigned",
+      "count": 502
+    },
+    {
+      "event_type": "ticket.completed",
+      "count": 377
+    },
+    {
+      "event_type": "ticket.created",
+      "count": 538
+    },
+    {
+      "event_type": "ticket.delay_restarted",
+      "count": 26
+    },
+    {
+      "event_type": "ticket.delayed",
+      "count": 29
+    },
+    {
+      "event_type": "ticket.field_inability_reported",
+      "count": 17
+    },
+    {
+      "event_type": "ticket.in_progress",
+      "count": 483
+    },
+    {
+      "event_type": "ticket.need_by_revised",
+      "count": 30
+    },
+    {
+      "event_type": "ticket.party_chief_assigned",
+      "count": 490
+    },
+    {
+      "event_type": "ticket.priority_revised",
+      "count": 57
+    },
+    {
+      "event_type": "ticket.requester_canceled",
+      "count": 14
+    },
+    {
+      "event_type": "ticket.requester_fields_updated",
+      "count": 44
+    },
+    {
+      "event_type": "ticket.resubmitted",
+      "count": 44
+    },
+    {
+      "event_type": "ticket.returned_for_correction",
+      "count": 47
+    },
+    {
+      "event_type": "ticket.submitted",
+      "count": 522
+    },
+    {
+      "event_type": "ticket.urgent_request_submitted",
+      "count": 3
+    }
+  ],
+  "integrity": {
+    "missingEvents": 0,
+    "duplicateNumbers": 0,
+    "badDates": 0,
+    "invalidAssignees": 0,
+    "wrongCompany": 0,
+    "multipleCurrentAssignment": 0,
+    "duplicateCompletionEvents": 0,
+    "completedWithoutCompletionEvent": 0
+  },
+  "visibility": {
+    "checked": 164,
+    "failed": 0
+  },
+  "attachmentChecks": [
+    {
+      "ticketId": "3e56ddd5-e83a-4301-9685-7a907bb7e22d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "3e56ddd5-e83a-4301-9685-7a907bb7e22d",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "c6d5fa28-159a-4a12-818a-438b931ca0e3",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c6d5fa28-159a-4a12-818a-438b931ca0e3",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "1aed982d-7499-420e-a1d8-09fd45764a36",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "1aed982d-7499-420e-a1d8-09fd45764a36",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "e6a61636-5c6f-4275-aaf2-4bd2b19b33f1",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e6a61636-5c6f-4275-aaf2-4bd2b19b33f1",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "7b9f060f-1b8e-450a-9526-0cdbc28de748",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "7b9f060f-1b8e-450a-9526-0cdbc28de748",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "c8f19a1e-4df6-4111-a2df-16c1e8c1e55a",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c8f19a1e-4df6-4111-a2df-16c1e8c1e55a",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "b324b2e8-34e6-4831-b955-c8a3bf7cb691",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b324b2e8-34e6-4831-b955-c8a3bf7cb691",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "60fb9124-0926-4620-9e5b-e034265ad2b7",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "60fb9124-0926-4620-9e5b-e034265ad2b7",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "c53d6918-aa0e-4654-88e1-8430f593c112",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c53d6918-aa0e-4654-88e1-8430f593c112",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "16874571-6ab8-4baf-ae65-84487b119c07",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "16874571-6ab8-4baf-ae65-84487b119c07",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "e88da4b5-3465-47bb-ae06-c461e341ba53",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e88da4b5-3465-47bb-ae06-c461e341ba53",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "61bed0cb-cc03-456a-9b8a-33d35d1b34c9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "61bed0cb-cc03-456a-9b8a-33d35d1b34c9",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "ec883e5b-c450-48bc-802b-89ad394c69b9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "ec883e5b-c450-48bc-802b-89ad394c69b9",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "567e7da9-3454-4fb6-b41d-440756b5d6f0",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "567e7da9-3454-4fb6-b41d-440756b5d6f0",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "e2689279-c78a-4199-9202-7f31c8721f9c",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e2689279-c78a-4199-9202-7f31c8721f9c",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "1310650b-d019-4e3c-8143-383abf3b9664",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "1310650b-d019-4e3c-8143-383abf3b9664",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "e949db43-7925-4781-9a83-6e3050959512",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e949db43-7925-4781-9a83-6e3050959512",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "c7677980-6a0b-4b16-9aed-7e0cc510f423",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c7677980-6a0b-4b16-9aed-7e0cc510f423",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "2ca3b655-b7e3-47b8-9916-dc4274940bcb",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "2ca3b655-b7e3-47b8-9916-dc4274940bcb",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "be22de79-536a-4c4b-a407-e0433789705b",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "be22de79-536a-4c4b-a407-e0433789705b",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "f879f2d7-d8d1-496b-a7a4-58dd8a722392",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f879f2d7-d8d1-496b-a7a4-58dd8a722392",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "f31536d7-1076-4c8a-929f-c486bbd82125",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f31536d7-1076-4c8a-929f-c486bbd82125",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "5e712dcc-6df1-49e4-86a7-3bd4e1fde18d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "5e712dcc-6df1-49e4-86a7-3bd4e1fde18d",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "b4ff92cb-9d67-4286-a483-5ce6c99d99b6",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b4ff92cb-9d67-4286-a483-5ce6c99d99b6",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "79d08621-fce6-4203-ba3a-743112de3bda",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "79d08621-fce6-4203-ba3a-743112de3bda",
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "55c818d3-bfa8-4281-84d7-b0c4f32fd7e9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "55c818d3-bfa8-4281-84d7-b0c4f32fd7e9",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "ticketId": "fb3c2fe1-2fe8-425f-9829-3468cdb93745",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "fb3c2fe1-2fe8-425f-9829-3468cdb93745",
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "status": 404,
+      "denied": true
+    }
+  ],
+  "metricChecks": [
+    {
+      "actor": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "role": "SURVEY_MANAGER",
+      "expected": {
+        "total": 522,
+        "completed": 377,
+        "open": 131
+      },
+      "actual": {
+        "total": 522,
+        "completed": 377,
+        "open": 131
+      },
+      "countsMatch": true,
+      "expectedAverage": 0.011371228264073089,
+      "actualAverage": 0.011371228264073092,
+      "cycleAverageMatch": true
+    },
+    {
+      "actor": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "role": "SURVEY_SUPERINTENDENT",
+      "expected": {
+        "total": 262,
+        "completed": 187,
+        "open": 70
+      },
+      "actual": {
+        "total": 262,
+        "completed": 187,
+        "open": 70
+      },
+      "countsMatch": true,
+      "expectedAverage": 0.011192817884729653,
+      "actualAverage": 0.01119281788472965,
+      "cycleAverageMatch": true
+    },
+    {
+      "actor": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+      "role": "SURVEY_SUPERINTENDENT",
+      "expected": {
+        "total": 157,
+        "completed": 115,
+        "open": 37
+      },
+      "actual": {
+        "total": 157,
+        "completed": 115,
+        "open": 37
+      },
+      "countsMatch": true,
+      "expectedAverage": 0.011224509661835748,
+      "actualAverage": 0.011224509661835748,
+      "cycleAverageMatch": true
+    },
+    {
+      "actor": "ada53e6c-10cb-489c-9d2a-30ded3b04003",
+      "role": "SURVEY_SUPERINTENDENT",
+      "expected": {
+        "total": 103,
+        "completed": 75,
+        "open": 24
+      },
+      "actual": {
+        "total": 103,
+        "completed": 75,
+        "open": 24
+      },
+      "countsMatch": true,
+      "expectedAverage": 0.012041033333333331,
+      "actualAverage": 0.012041033333333333,
+      "cycleAverageMatch": true
+    }
+  ],
+  "distributions": {
+    "type": [
+      {
+        "key": "LAYOUT",
+        "count": 180
+      },
+      {
+        "key": "CHECK_OUT",
+        "count": 90
+      },
+      {
+        "key": "AS_BUILT",
+        "count": 90
+      },
+      {
+        "key": "PERMIT",
+        "count": 89
+      },
+      {
+        "key": "TOPO",
+        "count": 89
+      }
+    ],
+    "area": [
+      {
+        "key": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+        "count": 270
+      },
+      {
+        "key": "00147da2-cc5b-426c-87fc-5fbe23bdee68",
+        "count": 162
+      },
+      {
+        "key": "7bc358b2-ecb8-47b4-aec3-0941782bceaa",
+        "count": 106
+      }
+    ],
+    "priority": [
+      {
+        "key": "NORMAL",
+        "count": 481
+      },
+      {
+        "key": "HIGH",
+        "count": 57
+      }
+    ],
+    "company": [
+      {
+        "key": "5d736244-7994-4340-9737-eef1ec298bba",
+        "count": 430
+      },
+      {
+        "key": "895e504e-1eeb-48ea-a6f6-19c002bb1bbf",
+        "count": 36
+      },
+      {
+        "key": "ef56632e-edc5-4e61-89a6-cd10f5319fc0",
+        "count": 36
+      },
+      {
+        "key": "10ecedb0-3987-41d9-8cd9-7f7fb9475447",
+        "count": 27
+      },
+      {
+        "key": "37b1dd7f-40f6-4e73-bff9-0e6134610f35",
+        "count": 9
+      }
+    ],
+    "requester": [
+      {
+        "key": "a544f9be-1323-4b1e-9d6e-c4c9f7215ea9",
+        "count": 13
+      },
+      {
+        "key": "d082dd32-9cc3-4b7d-8293-01eeca5e427d",
+        "count": 13
+      },
+      {
+        "key": "8cb47c2b-808b-4712-aa88-5d9a3f8915f4",
+        "count": 13
+      },
+      {
+        "key": "f84fea02-7073-4ded-bcd8-3f23d58d5eb3",
+        "count": 13
+      },
+      {
+        "key": "38f5867e-98c9-4b91-b4a4-bbf061e8c582",
+        "count": 12
+      },
+      {
+        "key": "91f31472-56c2-41d4-b3a7-18a40534483a",
+        "count": 12
+      },
+      {
+        "key": "f2c7f6a6-6aed-4e51-b9fb-d0e6b88dbf23",
+        "count": 12
+      },
+      {
+        "key": "54995450-3fc6-4015-a8f3-9cebef3381cf",
+        "count": 12
+      },
+      {
+        "key": "9fc1448a-d754-430a-a0ab-b1847c173e8e",
+        "count": 12
+      },
+      {
+        "key": "323369ba-b413-4cdd-9728-69e2021e75d2",
+        "count": 12
+      },
+      {
+        "key": "f6a94dea-ae49-488b-8910-e7588d0850dd",
+        "count": 12
+      },
+      {
+        "key": "275ccb16-7780-4f25-bb00-244d1a15a374",
+        "count": 12
+      },
+      {
+        "key": "9a5dfd62-efcd-4451-8300-8e7fe2077a19",
+        "count": 12
+      },
+      {
+        "key": "502c034f-fe3a-4275-9612-cd564b2044fb",
+        "count": 12
+      },
+      {
+        "key": "c74962ee-85bd-4e3b-960a-fec58b641e5e",
+        "count": 12
+      },
+      {
+        "key": "b96daa7c-493e-4d3f-b683-62fead1a35ea",
+        "count": 12
+      },
+      {
+        "key": "02c17710-90ed-47f1-bf60-c77f0fa5029e",
+        "count": 12
+      },
+      {
+        "key": "0ba2e59f-3f4b-47c5-a708-ac990be05eb9",
+        "count": 12
+      },
+      {
+        "key": "5b592a59-243d-4b9c-abdf-76d3120812e8",
+        "count": 12
+      },
+      {
+        "key": "4b089371-d925-43fe-b8a8-132fb159b41b",
+        "count": 12
+      },
+      {
+        "key": "4f437805-0ef4-43a2-a5ad-1299fb5a7b23",
+        "count": 12
+      },
+      {
+        "key": "22569357-8e66-4dba-a690-892db0d5ca44",
+        "count": 12
+      },
+      {
+        "key": "3289f891-9979-414d-8934-836e4da1437a",
+        "count": 12
+      },
+      {
+        "key": "0627431d-906e-4169-a42c-4074fc0761e6",
+        "count": 12
+      },
+      {
+        "key": "5c3a6d11-5238-44c5-b0d9-7f79f07efe88",
+        "count": 12
+      },
+      {
+        "key": "e7c04733-012a-47b6-92ba-59aac7270028",
+        "count": 12
+      },
+      {
+        "key": "c60c2a3b-e0dc-4afb-957c-02866a7406fa",
+        "count": 11
+      },
+      {
+        "key": "4a925512-0117-47f3-913f-d8a325e46723",
+        "count": 11
+      },
+      {
+        "key": "b72097cf-3695-4b18-a506-fa74cb317320",
+        "count": 11
+      },
+      {
+        "key": "6ade3d02-c021-44b3-8e57-c16b6c964409",
+        "count": 11
+      },
+      {
+        "key": "0faf1d72-9b9d-44b7-9c73-753bed0e1f43",
+        "count": 11
+      },
+      {
+        "key": "2459312c-b602-4539-8626-1b5d574e2811",
+        "count": 11
+      },
+      {
+        "key": "8df6ca40-8478-44f4-a28d-30dad41e9ea2",
+        "count": 6
+      },
+      {
+        "key": "90f63717-006c-42c4-a6a5-11724a72ba2c",
+        "count": 6
+      },
+      {
+        "key": "234bb30d-e401-4505-a92a-97b118916ba4",
+        "count": 6
+      },
+      {
+        "key": "f5bfb637-e29f-4f99-9a01-4402619bb907",
+        "count": 6
+      },
+      {
+        "key": "57420cb2-1131-4eda-9872-563353b1f6e1",
+        "count": 6
+      },
+      {
+        "key": "26425a05-83f8-4d40-8298-ac3470090adf",
+        "count": 6
+      },
+      {
+        "key": "3d1be54a-7e0a-45ee-a9d1-fbf6412ce9e5",
+        "count": 6
+      },
+      {
+        "key": "506a1228-b90d-49a3-80c8-207fc74c6cdf",
+        "count": 6
+      },
+      {
+        "key": "227c6570-7f39-4a75-b7c0-e3ca99038ca6",
+        "count": 5
+      },
+      {
+        "key": "22a2ebc6-adc3-4f82-8403-f86d2651a347",
+        "count": 5
+      },
+      {
+        "key": "64912949-b409-4c99-9667-2e06f6972d9d",
+        "count": 5
+      },
+      {
+        "key": "94da868b-072e-427f-945e-74536e7318c0",
+        "count": 5
+      },
+      {
+        "key": "fc5cd06b-6c45-4600-a8f4-56c3fee0b900",
+        "count": 5
+      },
+      {
+        "key": "8da18302-4d4f-432f-948b-13d857b272e3",
+        "count": 5
+      },
+      {
+        "key": "c0c20304-d426-4c75-934d-06d57f17c012",
+        "count": 5
+      },
+      {
+        "key": "a081d3ba-4756-4897-90eb-4706fa66a34c",
+        "count": 5
+      },
+      {
+        "key": "14d09758-b624-47a9-911d-a2530e433e23",
+        "count": 5
+      },
+      {
+        "key": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+        "count": 5
+      },
+      {
+        "key": "f6239c79-810d-4fbf-9247-878ca7c30c28",
+        "count": 5
+      },
+      {
+        "key": "06b45061-3b07-40b0-b4e6-fa1268757e26",
+        "count": 5
+      },
+      {
+        "key": "ab2a1315-ea40-4566-a300-91190be484b6",
+        "count": 1
+      },
+      {
+        "key": "228875be-c123-45da-8185-aab134c62b2e",
+        "count": 1
+      },
+      {
+        "key": "45ae896c-910c-4f4c-ab20-efd7458a0680",
+        "count": 1
+      },
+      {
+        "key": "ccf0d0ae-625d-4416-abde-27c145faa05c",
+        "count": 1
+      },
+      {
+        "key": "f838d46a-dfcd-4eec-8076-e61435f9f99c",
+        "count": 1
+      },
+      {
+        "key": "4f86f118-52b9-4da8-a9bc-631e88da99c0",
+        "count": 1
+      },
+      {
+        "key": "d7f23b56-275f-4e70-8fef-f55342ad2368",
+        "count": 1
+      },
+      {
+        "key": "943a848e-a09f-45ed-b3ee-60e5fdc30776",
+        "count": 1
+      },
+      {
+        "key": "d4755a8e-1e71-4fa7-876e-ff9ff1d404d7",
+        "count": 1
+      },
+      {
+        "key": "630f92d6-c4e0-4550-9377-b41b354045ab",
+        "count": 1
+      },
+      {
+        "key": "5383e98c-73a8-4615-b868-2ace9c2c9e33",
+        "count": 1
+      },
+      {
+        "key": "5b222eee-7155-45ec-8c65-1a313956b204",
+        "count": 1
+      },
+      {
+        "key": "a88874e5-32ee-4a76-b894-c276662acc90",
+        "count": 1
+      },
+      {
+        "key": "9c432409-66dd-4d89-83c7-a52ce970ecf8",
+        "count": 1
+      },
+      {
+        "key": "d30bd762-e153-4931-b20a-244cf0c2b61b",
+        "count": 1
+      },
+      {
+        "key": "c2295848-a907-4881-8b57-c99483edcdc4",
+        "count": 1
+      },
+      {
+        "key": "e5966f0e-bbea-4e96-a326-f1385fb40b8f",
+        "count": 1
+      },
+      {
+        "key": "85470aca-db48-45ad-951c-0d03499f9420",
+        "count": 1
+      },
+      {
+        "key": "d3fcf5fa-8892-4319-bc6f-77533729660a",
+        "count": 1
+      },
+      {
+        "key": "80370cc3-f539-4d92-9d10-6a4e04f070be",
+        "count": 1
+      },
+      {
+        "key": "daf49e8f-a0a4-4ce4-980c-90c4b31645e1",
+        "count": 1
+      },
+      {
+        "key": "e6151f45-335d-4646-94d7-837154302e2e",
+        "count": 1
+      },
+      {
+        "key": "1895da77-65bf-4b3b-9521-a2dec71af6c2",
+        "count": 1
+      },
+      {
+        "key": "47f59c92-1e27-4de8-a850-fa5ebc2f78ff",
+        "count": 1
+      },
+      {
+        "key": "4598ecc0-1357-42c6-a179-1a09e4e50421",
+        "count": 1
+      },
+      {
+        "key": "12401d71-fbd3-48f5-9dfe-0513d208a384",
+        "count": 1
+      },
+      {
+        "key": "d3413e3b-a6cd-42b3-857e-674a6b9231c8",
+        "count": 1
+      },
+      {
+        "key": "407ba2ee-e95f-495d-b74b-b568945d5d36",
+        "count": 1
+      },
+      {
+        "key": "87348713-ef2a-4cd9-960b-60cf3c0e492f",
+        "count": 1
+      },
+      {
+        "key": "ab104f8a-5ed7-49e6-8b10-85522ca072a0",
+        "count": 1
+      },
+      {
+        "key": "ab3eab9d-98d2-4537-bdf0-3a9478332e3f",
+        "count": 1
+      },
+      {
+        "key": "e5b4c9d9-15bc-4d94-9ca4-3ce3973f1e08",
+        "count": 1
+      },
+      {
+        "key": "80f263f2-c12e-4694-bc99-f48a363b97e1",
+        "count": 1
+      },
+      {
+        "key": "54ed3283-a597-4c13-8732-dd288ffad40c",
+        "count": 1
+      },
+      {
+        "key": "5289e2cc-364c-4abb-9007-c9daa3d9a95f",
+        "count": 1
+      },
+      {
+        "key": "9ae01176-80a2-4ab3-b2fd-d9fb6dc6616e",
+        "count": 1
+      },
+      {
+        "key": "d0a58a40-be94-4749-8488-63be6dec7d44",
+        "count": 1
+      },
+      {
+        "key": "a3652940-e5d2-4e14-8453-90635f32c985",
+        "count": 1
+      },
+      {
+        "key": "42341974-fa30-47c4-9e6f-6dc9cad087c0",
+        "count": 1
+      },
+      {
+        "key": "82a58e9a-8a5c-443c-ae3a-9d619290a4c9",
+        "count": 1
+      },
+      {
+        "key": "4b78b275-dfc4-490a-aba5-6e1888b78ea5",
+        "count": 1
+      },
+      {
+        "key": "12344b50-7e4d-4a43-9375-1e0e5cebb0ca",
+        "count": 1
+      },
+      {
+        "key": "b5e98383-057b-4c22-9092-2f7a43620399",
+        "count": 1
+      },
+      {
+        "key": "a36e2bd8-51b6-49b4-aae1-ca599d69b475",
+        "count": 1
+      },
+      {
+        "key": "db38124f-fd62-491c-94a5-73f52ff839c3",
+        "count": 1
+      },
+      {
+        "key": "354c8253-b29e-4151-be90-42034b75bd2e",
+        "count": 1
+      },
+      {
+        "key": "6f3a9653-d8e2-4f2b-b01e-68b41306366b",
+        "count": 1
+      },
+      {
+        "key": "a6f3e9e2-4ad5-41a4-99ac-961e8058d20d",
+        "count": 1
+      }
+    ]
+  },
+  "workflowInterruptions": [],
+  "workload": [
+    {
+      "chief_id": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "requests": 237,
+      "outstanding": 58
+    },
+    {
+      "chief_id": "55d3c83d-6e44-45f5-986b-8512fb1bfa61",
+      "requests": 50,
+      "outstanding": 9
+    },
+    {
+      "chief_id": null,
+      "requests": 49,
+      "outstanding": 19
+    },
+    {
+      "chief_id": "fe09106f-6ef0-4704-ad81-02b867e0ae91",
+      "requests": 49,
+      "outstanding": 11
+    },
+    {
+      "chief_id": "04fdac3d-75c3-4238-9bae-47f6901eef68",
+      "requests": 27,
+      "outstanding": 4
+    },
+    {
+      "chief_id": "c0de9657-99f0-461a-9355-50be0c5ad333",
+      "requests": 26,
+      "outstanding": 6
+    },
+    {
+      "chief_id": "f0f83d88-c6a6-4737-ad40-0f678fd5ffdd",
+      "requests": 24,
+      "outstanding": 5
+    },
+    {
+      "chief_id": "b655f5d7-e004-47f5-a834-b4b009002a35",
+      "requests": 23,
+      "outstanding": 2
+    },
+    {
+      "chief_id": "014bf937-d419-4679-9c46-a94ea5e4b6c1",
+      "requests": 22,
+      "outstanding": 9
+    },
+    {
+      "chief_id": "0050922c-b739-4d97-9e4a-c24604ed6c93",
+      "requests": 20,
+      "outstanding": 8
+    },
+    {
+      "chief_id": "4b07cd7d-10c4-4ebb-8b41-55ab4c7abec1",
+      "requests": 8,
+      "outstanding": 0
+    },
+    {
+      "chief_id": "b1082911-59b6-47ad-9da4-60591104225e",
+      "requests": 2,
+      "outstanding": 0
+    },
+    {
+      "chief_id": "f3ee2e75-5f03-4ff5-94b9-5c9744173eac",
+      "requests": 1,
+      "outstanding": 0
+    }
+  ]
+}

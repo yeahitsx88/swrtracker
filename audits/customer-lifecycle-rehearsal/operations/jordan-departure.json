@@ -1,0 +1,148 @@
+{
+  "startedAt": "2026-10-03T00:31:16.930Z",
+  "subject": {
+    "id": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+    "name": "Jordan Lee",
+    "email": "jordan.lee@rehearsal.example.test",
+    "role": "PROJECT_ADMIN"
+  },
+  "operator": {
+    "id": "7c6f0645-4cad-4b7d-91f1-0e00098e669a",
+    "name": "Alex Morgan — client Tenant Admin",
+    "email": "admin@rehearsal.example.test",
+    "tenantId": "da772b3e-fc32-4e10-a80d-3c563d9fc1d4",
+    "role": "TENANT_ADMIN"
+  },
+  "checks": [
+    {
+      "name": "Successor administers Northbank without project creation",
+      "pass": true
+    },
+    {
+      "name": "Same confirmed local retry creates no second transition",
+      "pass": true
+    },
+    {
+      "name": "Jordan old session loses administration immediately",
+      "pass": true
+    },
+    {
+      "name": "Project removal does not automatically disable account",
+      "pass": true
+    },
+    {
+      "name": "Central IT review resolves against separate tenant disable event",
+      "pass": true
+    },
+    {
+      "name": "Jordan cannot renew login after tenant disable",
+      "pass": true
+    },
+    {
+      "name": "Requests, events, files and organizational relationships preserved exactly",
+      "pass": true
+    },
+    {
+      "name": "Successor can administer populated membership after Jordan departure",
+      "pass": true
+    },
+    {
+      "name": "Central IT authority retained",
+      "pass": true
+    }
+  ],
+  "assistance": "Successor GC account provisioned in isolated schema; membership and admin grant through Central IT application APIs.",
+  "localPreview": {
+    "scope": {
+      "kind": "PROJECT_ACCESS",
+      "projectId": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b"
+    },
+    "subjectUserId": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+    "snapshot": "29c122005eb0dbe86119e8827494b5e12dc9a2804f4481347b5867807e8aaf42",
+    "blockerTotal": 0,
+    "blockerOffset": 0,
+    "blockerLimit": 25,
+    "alreadyDisabled": false,
+    "blockers": [],
+    "centralITRecipientCount": 1,
+    "retainsCentralIT": false
+  },
+  "globalPreview": {
+    "scope": {
+      "kind": "TENANT_ACCOUNT"
+    },
+    "subjectUserId": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+    "snapshot": "fb0e6fc392e02647400b9696acfbf940b10fb8abc80ac4e7d57e8284760b2532",
+    "blockerTotal": 0,
+    "blockerOffset": 0,
+    "blockerLimit": 25,
+    "alreadyDisabled": false,
+    "blockers": [],
+    "centralITRecipientCount": 0,
+    "retainsCentralIT": false
+  },
+  "historyBefore": {
+    "tickets": "25776c11d56658d0a0eb1e06be1154609738bb57799ffa5605f3c7907895a91b",
+    "ticket_events": "38d3d4a4f18f85b8ac4969ef34615fca14544348a1d2ea71b5580e1b3de75a3c",
+    "attachments": "9bd8e5765c5c9532bb8548f25aa5e935eb9eb7aa9609606cdbf3f791d8be9761",
+    "companies": "d17aab2ce73180a3b2e9adccb6ed97f211010fc1de8c0d820f70f79ea3fe298f",
+    "aor_assignments": "5d74e42197d72cf800b4b23226305ea45ecbe8937f8aab24ae741c14570a371e",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_reporting_links": "f40701b2d95c020483d08a885fa80dc199db8a4cf8ad44fa49236335a4fc9790",
+    "survey_teams": "562ccd33416e6f36e17b681018654880f1b98e44ccd1cef0bc7beb334d151991",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "project_responsibility_grants": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "ticket_return_cycles": "6b0a7add75511d672793fc65c41bcf259621105a10f0a8c21b2e61a85a02a0b4",
+    "ticket_assignment_history": "e6fe6865f799c155f20b93901d5bd58b6ca7c8c10badd6545e954a5cafb9cc8d"
+  },
+  "historyAfter": {
+    "tickets": "25776c11d56658d0a0eb1e06be1154609738bb57799ffa5605f3c7907895a91b",
+    "ticket_events": "38d3d4a4f18f85b8ac4969ef34615fca14544348a1d2ea71b5580e1b3de75a3c",
+    "attachments": "9bd8e5765c5c9532bb8548f25aa5e935eb9eb7aa9609606cdbf3f791d8be9761",
+    "companies": "d17aab2ce73180a3b2e9adccb6ed97f211010fc1de8c0d820f70f79ea3fe298f",
+    "aor_assignments": "5d74e42197d72cf800b4b23226305ea45ecbe8937f8aab24ae741c14570a371e",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_reporting_links": "f40701b2d95c020483d08a885fa80dc199db8a4cf8ad44fa49236335a4fc9790",
+    "survey_teams": "562ccd33416e6f36e17b681018654880f1b98e44ccd1cef0bc7beb334d151991",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "project_responsibility_grants": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "ticket_return_cycles": "6b0a7add75511d672793fc65c41bcf259621105a10f0a8c21b2e61a85a02a0b4",
+    "ticket_assignment_history": "e6fe6865f799c155f20b93901d5bd58b6ca7c8c10badd6545e954a5cafb9cc8d"
+  },
+  "localResult": {
+    "scope": {
+      "kind": "PROJECT_ACCESS",
+      "projectId": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b"
+    },
+    "subjectUserId": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+    "changed": true,
+    "eventId": "6a69a917-52dd-4f00-a442-539799467491",
+    "disabledAt": "2026-10-03 00:31:17.470574+00",
+    "sessionVersion": 3,
+    "reviewId": "5f5c8a9d-9726-4170-8361-3be855c60244",
+    "centralReview": "QUEUED",
+    "outcome": "DISABLED"
+  },
+  "globalResult": {
+    "scope": {
+      "kind": "TENANT_ACCOUNT"
+    },
+    "subjectUserId": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+    "changed": true,
+    "eventId": "4345ba15-1fd9-4452-8059-0332465a7ff8",
+    "disabledAt": "2026-10-03 00:31:17.576021+00",
+    "sessionVersion": 4,
+    "reviewId": null,
+    "centralReview": "NOT_APPLICABLE",
+    "outcome": "DISABLED"
+  },
+  "successor": {
+    "id": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+    "name": "Casey Brooks",
+    "email": "casey.brooks@rehearsal.example.test",
+    "role": "PROJECT_ADMIN",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 180
+  },
+  "finishedAt": "2026-10-03T00:31:17.919Z"
+}

@@ -1,0 +1,67 @@
+Skip to content
+Hello, Taylor Rivera!
+Menu
+Northbank Pump Station
+Survey Superintendent
+All Requests
+Survey Operations
+Crew Work
+Survey Operations
+Refresh Operations
+Area-wide workload
+Select a measure to explore
+Open requests
+70
+View details
+Need assignment
+18
+View details
+Overdue Need-By
+0
+View details
+Completed
+187
+View details
+Average cycle
+< 0.1 h
+View details
+
+Work demand and flow, not employee productivity. Cycle averages exclude generated or invalid date pairs.
+
+Overview
+Need Assignment
+18
+Open Requests
+70
+Workload view
+Area-wide workload
+Linked-crew KPIs
+KPI
+All requests
+Open requests
+Need assignment
+Overdue Need-By
+Completed requests
+Average turnaround
+Visualization
+Heat map
+Bar chart
+Monthly trend
+Donut chart
+Population share gauge
+Group by
+Area
+Request type
+Status
+Filters and date range
+
+All requests · request count · Area-wide workload, including unassigned and unlinked crews · Need-By all dates (UTC for timestamps)
+
+Reset filters
+
+262 matching requests
+
+Pump Building & Structures
+262
+Data coverage and interpretation
+Show matching requests

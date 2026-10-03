@@ -1,0 +1,12 @@
+{
+  "image": "swrtracker:manager-handover-final-20261002",
+  "imageId": "sha256:7de9a13633dfe6f0bdef6b2fd080545a5e8e1127e890d6d16684861c9057bab9",
+  "createdAt": "2026-10-03T01:17:40.971523889Z",
+  "node": "22.23.3",
+  "next": "15.5.27",
+  "normalTests": 549,
+  "strictTypeScript": "PASS",
+  "productionBuild": "PASS",
+  "baseline": "6becd3bd541f58271e70cafd6a5da82162b44051",
+  "correction": "Owner-authorized guarded Survey Manager appointment; no migration."
+}

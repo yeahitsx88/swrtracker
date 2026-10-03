@@ -1,0 +1,185 @@
+{
+  "at": "2026-10-03T01:08:35.318Z",
+  "manager": {
+    "id": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+    "name": "Taylor Rivera",
+    "email": "person002@rehearsal.example.test",
+    "role": "SURVEY_MANAGER",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 1
+  },
+  "policy": "Keep crews intact; allocate eight Structures/four Utilities/three Civil crews for observed 50/30/20 demand. Resolve active assignments before explicit reporting/Area unlink and new staffing. Dispatch future work across all eligible crews.",
+  "moves": [
+    {
+      "teamId": "e9a77ea2-1726-4b97-886c-8a4951c8d3be",
+      "chief": {
+        "id": "55d3c83d-6e44-45f5-986b-8512fb1bfa61",
+        "name": "Parker Rivera",
+        "email": "person014@rehearsal.example.test",
+        "role": "PARTY_CHIEF",
+        "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+        "index": 13
+      },
+      "originalArea": "00147da2-cc5b-426c-87fc-5fbe23bdee68",
+      "newArea": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "originalSuperintendent": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+      "newSuperintendent": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+      "instrumentManIds": [
+        "f6e391b0-19c6-462a-b6c3-18350b3c7761",
+        "cac1640f-1385-4352-b91a-e903de3a78b0",
+        "e15598f6-fc6c-4297-8e1d-480dc886a2c5"
+      ]
+    },
+    {
+      "teamId": "36557090-93a6-4dfa-8811-5502bd4e7dab",
+      "chief": {
+        "id": "b655f5d7-e004-47f5-a834-b4b009002a35",
+        "name": "Logan Rivera",
+        "email": "person018@rehearsal.example.test",
+        "role": "PARTY_CHIEF",
+        "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+        "index": 17
+      },
+      "originalArea": "7bc358b2-ecb8-47b4-aec3-0941782bceaa",
+      "newArea": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "originalSuperintendent": "ada53e6c-10cb-489c-9d2a-30ded3b04003",
+      "newSuperintendent": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+      "instrumentManIds": [
+        "6e8bb4b3-0dfa-49f1-ad01-221fa1b8de63",
+        "59820483-8766-4fc8-bca0-b59f09bae17d",
+        "ea0331f3-3e0e-484f-8ad6-bb22a6030699"
+      ]
+    },
+    {
+      "teamId": "9f93dd30-6df5-4508-bfb6-0cc5da09b08e",
+      "chief": {
+        "id": "f0f83d88-c6a6-4737-ad40-0f678fd5ffdd",
+        "name": "Rowan Rivera",
+        "email": "person019@rehearsal.example.test",
+        "role": "PARTY_CHIEF",
+        "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+        "index": 18
+      },
+      "originalArea": "7bc358b2-ecb8-47b4-aec3-0941782bceaa",
+      "newArea": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "originalSuperintendent": "ada53e6c-10cb-489c-9d2a-30ded3b04003",
+      "newSuperintendent": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+      "instrumentManIds": [
+        "12daec24-f215-41d3-bbcb-7d36a085dd53",
+        "f689b429-56c5-4c9c-9400-cd28c8da8a10",
+        "128f64f4-97fc-4282-b8aa-b1874dd2d62d"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "Reorganization retains all requests/events/files and crew membership exactly after explicit open-work resolution",
+      "pass": true
+    },
+    {
+      "name": "Fifteen intact crews retain all fifteen Chiefs and forty-five Instrument Men",
+      "pass": true
+    },
+    {
+      "name": "Every active reporting link targets a current eligible Superintendent",
+      "pass": true
+    }
+  ],
+  "beforeWorkload": [
+    {
+      "assigned_party_chief_id": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "requests": 569,
+      "outstanding": 3
+    },
+    {
+      "assigned_party_chief_id": "55d3c83d-6e44-45f5-986b-8512fb1bfa61",
+      "requests": 116,
+      "outstanding": 1
+    },
+    {
+      "assigned_party_chief_id": "fe09106f-6ef0-4704-ad81-02b867e0ae91",
+      "requests": 116,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": null,
+      "requests": 74,
+      "outstanding": 4
+    },
+    {
+      "assigned_party_chief_id": "04fdac3d-75c3-4238-9bae-47f6901eef68",
+      "requests": 65,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": "c0de9657-99f0-461a-9355-50be0c5ad333",
+      "requests": 59,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": "f0f83d88-c6a6-4737-ad40-0f678fd5ffdd",
+      "requests": 58,
+      "outstanding": 1
+    },
+    {
+      "assigned_party_chief_id": "014bf937-d419-4679-9c46-a94ea5e4b6c1",
+      "requests": 57,
+      "outstanding": 1
+    },
+    {
+      "assigned_party_chief_id": "b655f5d7-e004-47f5-a834-b4b009002a35",
+      "requests": 56,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": "0050922c-b739-4d97-9e4a-c24604ed6c93",
+      "requests": 55,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": "4b07cd7d-10c4-4ebb-8b41-55ab4c7abec1",
+      "requests": 24,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": "f3ee2e75-5f03-4ff5-94b9-5c9744173eac",
+      "requests": 5,
+      "outstanding": 0
+    },
+    {
+      "assigned_party_chief_id": "b1082911-59b6-47ad-9da4-60591104225e",
+      "requests": 4,
+      "outstanding": 0
+    }
+  ],
+  "historyBefore": {
+    "tickets": "5fa66402c46fc73d92873d846b07ff23005779e071fe77202f651f90a6dc4332",
+    "ticket_events": "282b0f07155264bec2bbf05db67eb85eb15e1948e8cf2b0f1f78f222d83af13b",
+    "attachments": "25f251230a7eee04ea9153705bb72adee8ceb52fa748225c810830c92f99acc4",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "ticket_assignment_history": "62bc004cd1315789962b8e0f82c262d797439ff8c1280311b0fe5ac930158b84"
+  },
+  "historyAfter": {
+    "tickets": "5fa66402c46fc73d92873d846b07ff23005779e071fe77202f651f90a6dc4332",
+    "ticket_events": "282b0f07155264bec2bbf05db67eb85eb15e1948e8cf2b0f1f78f222d83af13b",
+    "attachments": "25f251230a7eee04ea9153705bb72adee8ceb52fa748225c810830c92f99acc4",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "ticket_assignment_history": "62bc004cd1315789962b8e0f82c262d797439ff8c1280311b0fe5ac930158b84"
+  },
+  "allocations": [
+    {
+      "area": "Pump Building & Structures",
+      "crews": 8
+    },
+    {
+      "area": "Intake & Utilities",
+      "crews": 4
+    },
+    {
+      "area": "Site Civil & Outfall",
+      "crews": 3
+    }
+  ]
+}

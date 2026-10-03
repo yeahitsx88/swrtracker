@@ -1,0 +1,109 @@
+Skip to content
+Hello, Sam Rivera!
+Menu
+Northbank Pump Station
+Survey Manager
+Survey Operations
+Team Management
+All Requests
+Survey Operations
+Refresh Operations
+Queue health
+Select a measure to explore
+Open requests
+131
+View details
+Need assignment
+37
+View details
+Overdue Need-By
+0
+View details
+Completed
+377
+View details
+Average cycle
+< 0.1 h
+View details
+
+Work demand and flow, not employee productivity. Cycle averages exclude generated or invalid date pairs.
+
+Overview
+Need Assignment
+37
+Open Requests
+131
+Local Messages
+—
+Survey command
+
+Current request state and recorded activity within your authorized project scope.
+
+Survey Manager view
+Area
+All authorized Areas
+Intake & Utilities
+Pump Building & Structures
+Site Civil & Outfall
+Request type
+All types
+Layout
+As-built
+Check-out
+Topographic
+Permit
+Party Chief
+All authorized crews
+Avery Rivera
+Blake Rivera
+Dakota Rivera
+Drew Rivera
+Emerson Rivera
+Finley Rivera
+Harper Rivera
+Logan Rivera
+Parker Rivera
+Quinn Rivera
+Reese Rivera
+Rowan Rivera
+More filters and activity dates
+Apply
+Reset
+Current status
+Review 522 requests
+
+All dates · current status, not event history
+
+522
+Completed: 377 (72.2%)
+In Progress: 72 (13.8%)
+Approved - Awaiting Assignment: 37 (7.1%)
+Pending Review: 16 (3.1%)
+Canceled by requester: 14 (2.7%)
+Other (2 categories): 6 (1.1%)
+Demand and recorded completion
+
+2026-09-04 through 2026-10-03 · first submissions vs. recorded completions · UTC
+
+Submitted
+Recorded completed
+522
+0
+2026-09-04
+2026-10-03
+Exact daily counts
+Request distribution
+
+Current requests · all dates · select a bar to review matching requests
+
+Area
+Type
+Party Chief
+Pump Building & Structures
+262
+Intake & Utilities
+157
+Site Civil & Outfall
+103
+
+Unassigned requests are included in current status but are not attributed to a Party Chief. Assignment timing and employee productivity are not inferred from these counts.

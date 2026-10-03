@@ -5,6 +5,7 @@ import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {AccountOffboarding} from './account-offboarding';
+import {SurveyManagerHandover} from './survey-manager-handover';
 import type {UUID} from '@/shared/types';
 interface Member {userId:string;name:string;email:string;role:string;accessDisabledAt:string|null;accountDisabledAt:string|null;canAdminister?:boolean}
 interface Companies {companies:Array<{id:string;name:string;type:string}>;candidates:Array<{userId:string;name:string;email:string;companyName:string}>}
@@ -13,7 +14,7 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  const owner=useRef(new CommandOwner()).current;const token='project-administration';const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const base=`/api/projects/${projectId}`;
  const [members,setMembers]=useState<Member[]>([]),[admins,setAdmins]=useState<Member[]>([]),[companies,setCompanies]=useState<Companies>();
- const [selected,setSelected]=useState<Member>(),[search,setSearch]=useState(''),[offset,setOffset]=useState(0),[total,setTotal]=useState(0);
+ const [selected,setSelected]=useState<Member>(),[promotion,setPromotion]=useState<Member>(),[search,setSearch]=useState(''),[offset,setOffset]=useState(0),[total,setTotal]=useState(0);
  const [name,setName]=useState(''),[type,setType]=useState('SUBCONTRACTOR'),[companyId,setCompanyId]=useState(''),[candidate,setCandidate]=useState(''),[role,setRole]=useState('REQUESTER'),[email,setEmail]=useState('');
  const [templateId,setTemplateId]=useState(''),[template,setTemplate]=useState<{templates:Array<{id:string;name:string}>;project:{status:string;templateId:string|null}}>();
  const [diagnostics,setDiagnostics]=useState<Record<string,string|number>>(),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[intent,setIntent]=useState<Intent>(),[consent,setConsent]=useState(false),[revision,setRevision]=useState(0),[loading,setLoading]=useState(false);
@@ -40,10 +41,11 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {loading&&<p role="status">Loading project administration…</p>}
  {closed&&<p>This archived project retains history. Access removal remains available; other administration is read-only.</p>}
  <label className="field"><span className="field-label">Find a project member</span><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);setSelected(undefined);}}/></label>
- <ul className="tm-list">{members.map(m=><li key={m.userId}><strong>{m.name}</strong> · {m.email} · {m.role.replaceAll('_',' ')}{m.accountDisabledAt?' · Tenant account disabled':m.accessDisabledAt?' · Project access disabled':''} <Button variant="secondary" disabled={locked} onClick={()=>setSelected(m)}>Preview access removal</Button></li>)}</ul>
+ <ul className="tm-list">{members.map(m=><li key={m.userId}><strong>{m.name}</strong> · {m.email} · {m.role.replaceAll('_',' ')}{m.accountDisabledAt?' · Tenant account disabled':m.accessDisabledAt?' · Project access disabled':''} <Button variant="secondary" disabled={locked} onClick={()=>{setPromotion(undefined);setSelected(m);}}>Preview access removal</Button>{m.role==='SURVEY_SUPERINTENDENT'&&!m.accessDisabledAt&&!m.accountDisabledAt&&<Button variant="secondary" disabled={locked||closed} onClick={()=>{setSelected(undefined);setPromotion(m);}}>Appoint as Survey Manager</Button>}</li>)}</ul>
  {!loading&&!members.length&&<p>No matching project members.</p>}
  <div className="row"><Button variant="secondary" disabled={locked||offset===0} onClick={()=>setOffset(n=>Math.max(0,n-25))}>Previous members</Button><span>{offset+1}–{Math.min(offset+members.length,total)} of {total}</span><Button variant="secondary" disabled={locked||offset+25>=total} onClick={()=>setOffset(n=>n+25)}>Next members</Button></div>
  {selected&&<AccountOffboarding key={selected.userId} subjectUserId={selected.userId} subjectName={selected.name} commandOwner={owner} scope={{kind:'PROJECT_ACCESS',projectId:projectId as UUID}} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
+ {promotion&&<SurveyManagerHandover key={promotion.userId} projectId={projectId} incoming={promotion} owner={owner} onLockChange={value=>{childLock.current=value;setChildLocked(value);}} onResult={()=>void load()}/>}
  <h3 className="panel-title">Independent Project Admin assignments</h3><p>Granting administration preserves the person's operational role.</p>
  <ul className="tm-list">{admins.map(m=><li key={m.userId}>{m.name} · {m.role.replaceAll('_',' ')} · {m.canAdminister?'Admin grant active':'No admin grant'} <Button variant="secondary" disabled={locked||closed||!!m.accessDisabledAt||!!m.accountDisabledAt} onClick={()=>propose({url:`${base}/administrators`,method:'POST',body:{userId:m.userId,enabled:!m.canAdminister,confirmed:true},label:`${m.canAdminister?'Revoke':'Grant'} Project Admin for ${m.name}`})}>{m.canAdminister?'Revoke Admin':'Grant Admin'}</Button></li>)}</ul>
  <h3 className="panel-title">Add a project member</h3><p>Associate the person's company with this project first. Up to 100 eligible candidates are shown.</p>

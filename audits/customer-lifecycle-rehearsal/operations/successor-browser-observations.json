@@ -1,0 +1,102 @@
+{
+  "at": "2026-10-03T00:32:17.548Z",
+  "syntheticAutomation": true,
+  "measurement": "Navigation through network idle includes a fixed quiet interval; not a Core Web Vitals or human usability measurement.",
+  "results": [
+    {
+      "actor": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+      "name": "Casey Brooks",
+      "role": "PROJECT_ADMIN",
+      "route": "admin",
+      "run": 0,
+      "loadToNetworkIdleMs": 645,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Project members and access",
+        "Independent Project Admin assignments",
+        "Add a project member",
+        "Project companies",
+        "Project configuration and diagnostics",
+        "Project Request Configuration",
+        "Survey Reviewer handover",
+        "Protected Survey Reviewer obligations",
+        "Subcontractor Access",
+        "Subcontractor Requesters",
+        "Pending Invitations",
+        "Deleted Draft Recovery",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+      "name": "Casey Brooks",
+      "role": "PROJECT_ADMIN",
+      "route": "admin",
+      "run": 1,
+      "loadToNetworkIdleMs": 603,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Project members and access",
+        "Independent Project Admin assignments",
+        "Add a project member",
+        "Project companies",
+        "Project configuration and diagnostics",
+        "Project Request Configuration",
+        "Survey Reviewer handover",
+        "Protected Survey Reviewer obligations",
+        "Subcontractor Access",
+        "Subcontractor Requesters",
+        "Pending Invitations",
+        "Deleted Draft Recovery",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+      "name": "Casey Brooks",
+      "role": "PROJECT_ADMIN",
+      "route": "admin",
+      "run": 2,
+      "loadToNetworkIdleMs": 607,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Project members and access",
+        "Independent Project Admin assignments",
+        "Add a project member",
+        "Project companies",
+        "Project configuration and diagnostics",
+        "Project Request Configuration",
+        "Survey Reviewer handover",
+        "Protected Survey Reviewer obligations",
+        "Subcontractor Access",
+        "Subcontractor Requesters",
+        "Pending Invitations",
+        "Deleted Draft Recovery",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+      "role": "PROJECT_ADMIN",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    }
+  ],
+  "errors": []
+}

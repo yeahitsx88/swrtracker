@@ -1,0 +1,76 @@
+{
+  "initial": {
+    "reads": {
+      "samples": 4707,
+      "p50Ms": 13.49,
+      "p95Ms": 18.24,
+      "maxMs": 46.64
+    },
+    "mutations": {
+      "samples": 3632,
+      "p50Ms": 45.87,
+      "p95Ms": 69.27,
+      "maxMs": 125.92
+    }
+  },
+  "expandedSurge": {
+    "reads": {
+      "samples": 11105,
+      "p50Ms": 12.99,
+      "p95Ms": 15.69,
+      "maxMs": 48.28
+    },
+    "mutations": {
+      "samples": 5356,
+      "p50Ms": 43.97,
+      "p95Ms": 62.22,
+      "maxMs": 116.17
+    }
+  },
+  "newManager": {
+    "reads": {
+      "samples": 7772,
+      "p50Ms": 14.03,
+      "p95Ms": 17.37,
+      "maxMs": 41.86
+    },
+    "mutations": {
+      "samples": 509,
+      "p50Ms": 47.38,
+      "p95Ms": 69.49,
+      "maxMs": 121.36
+    }
+  },
+  "rebalanced": {
+    "reads": {
+      "samples": 18752,
+      "p50Ms": 12.96,
+      "p95Ms": 15.14,
+      "maxMs": 48.36
+    },
+    "mutations": {
+      "samples": 2616,
+      "p50Ms": 44.15,
+      "p95Ms": 62.93,
+      "maxMs": 97.42
+    }
+  },
+  "authentication": {
+    "samples": 7228,
+    "p50Ms": 160.61,
+    "p95Ms": 168.02,
+    "maxMs": 740.29
+  },
+  "totalHttp": 66192,
+  "statuses": {
+    "200": 63622,
+    "201": 2445,
+    "400": 56,
+    "403": 46,
+    "409": 9,
+    "401": 7,
+    "404": 3,
+    "500": 4
+  },
+  "transportErrors": 0
+}

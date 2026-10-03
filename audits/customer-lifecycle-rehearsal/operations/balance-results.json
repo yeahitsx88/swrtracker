@@ -1,0 +1,151 @@
+{
+  "at": "2026-10-03T01:15:49.622Z",
+  "cohort": 340,
+  "crewCount": 15,
+  "beforeHistoricalCounts": [
+    569,
+    24,
+    0,
+    0,
+    0,
+    5,
+    55,
+    116,
+    65,
+    116,
+    4,
+    57,
+    59,
+    56,
+    58
+  ],
+  "crews": [
+    {
+      "index": 0,
+      "chief": "Drew Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 18,
+      "completed": 18,
+      "plannedHours": 382
+    },
+    {
+      "index": 1,
+      "chief": "Avery Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 23,
+      "completed": 23,
+      "plannedHours": 490
+    },
+    {
+      "index": 2,
+      "chief": "Casey Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 18,
+      "completed": 17,
+      "plannedHours": 416
+    },
+    {
+      "index": 3,
+      "chief": "Riley Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 19,
+      "completed": 19,
+      "plannedHours": 254
+    },
+    {
+      "index": 4,
+      "chief": "Cameron Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 20,
+      "completed": 20,
+      "plannedHours": 288
+    },
+    {
+      "index": 5,
+      "chief": "Quinn Rivera",
+      "areaId": "00147da2-cc5b-426c-87fc-5fbe23bdee68",
+      "requests": 23,
+      "completed": 23,
+      "plannedHours": 516
+    },
+    {
+      "index": 6,
+      "chief": "Reese Rivera",
+      "areaId": "00147da2-cc5b-426c-87fc-5fbe23bdee68",
+      "requests": 26,
+      "completed": 26,
+      "plannedHours": 548
+    },
+    {
+      "index": 7,
+      "chief": "Dakota Rivera",
+      "areaId": "00147da2-cc5b-426c-87fc-5fbe23bdee68",
+      "requests": 24,
+      "completed": 24,
+      "plannedHours": 506
+    },
+    {
+      "index": 8,
+      "chief": "Blake Rivera",
+      "areaId": "00147da2-cc5b-426c-87fc-5fbe23bdee68",
+      "requests": 21,
+      "completed": 21,
+      "plannedHours": 442
+    },
+    {
+      "index": 9,
+      "chief": "Parker Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 23,
+      "completed": 23,
+      "plannedHours": 366
+    },
+    {
+      "index": 10,
+      "chief": "Emerson Rivera",
+      "areaId": "7bc358b2-ecb8-47b4-aec3-0941782bceaa",
+      "requests": 23,
+      "completed": 23,
+      "plannedHours": 214
+    },
+    {
+      "index": 11,
+      "chief": "Finley Rivera",
+      "areaId": "7bc358b2-ecb8-47b4-aec3-0941782bceaa",
+      "requests": 20,
+      "completed": 20,
+      "plannedHours": 480
+    },
+    {
+      "index": 12,
+      "chief": "Harper Rivera",
+      "areaId": "7bc358b2-ecb8-47b4-aec3-0941782bceaa",
+      "requests": 23,
+      "completed": 23,
+      "plannedHours": 596
+    },
+    {
+      "index": 13,
+      "chief": "Logan Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 20,
+      "completed": 19,
+      "plannedHours": 378
+    },
+    {
+      "index": 14,
+      "chief": "Rowan Rivera",
+      "areaId": "bee5e1a8-e192-466a-bf56-a24d64bb4218",
+      "requests": 20,
+      "completed": 19,
+      "plannedHours": 370
+    }
+  ],
+  "beforeMaxShare": 0.48057432432432434,
+  "afterMaxShare": 0.08099688473520249,
+  "beforeCountCv": 1.7256814132214295,
+  "afterCountCv": 0.10628487295471639,
+  "afterPlannedHoursCv": 0.2547724776205606,
+  "unassigned": 19,
+  "plannedHoursCaveat": "Synthetic dispatcher estimates; not an application effort field, measured field time or production productivity. Historical baseline differs in period/volume from new cohort."
+}

@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-03T00:37:14.566Z",
+  "results": [
+    {
+      "id": "OPS-F01",
+      "role": "PROJECT_ADMIN",
+      "actor": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+      "expected": "Find and administer an eligible project member beyond the first100",
+      "observed": {
+        "listedAdministrators": 100,
+        "zoeInAdminList": false,
+        "memberSearchFindsZoe": true,
+        "grantButtons": 99
+      },
+      "evidence": "admin-truncated-eligible-members.png"
+    },
+    {
+      "id": "OPS-F02",
+      "role": "PARTY_CHIEF",
+      "actor": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "expected": "Only the assigned Instrument Man receives completion controls",
+      "observed": {
+        "completionButtonOffered": true,
+        "status": 403,
+        "body": {
+          "error": {
+            "type": "ForbiddenError",
+            "code": "AUTH_FORBIDDEN",
+            "message": "Current authority for this ticket action is required",
+            "correlationId": "fd57891a-dfa5-48d6-9b8c-79523c3faca2",
+            "status": 403
+          }
+        }
+      },
+      "evidence": "chief-offered-forbidden-completion.png"
+    }
+  ]
+}
