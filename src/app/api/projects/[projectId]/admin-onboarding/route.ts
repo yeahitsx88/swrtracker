@@ -22,12 +22,14 @@ export async function GET(req:NextRequest,ctx:Context) {try {
   const offset=Number(req.nextUrl.searchParams.get('offset')??0);
   if(search.length>100||companySearch.length>100||!Number.isSafeInteger(offset)||offset<0)throw new ValidationError('Invalid employee search page');
   const repo=new AdminOnboardingRepository();
-  const [page,companies,invitations]=await Promise.all([
+  const [page,companies,invitations,tenantCompanies,administrators]=await Promise.all([
     repo.employees(pool,auth.tenantId,projectId as UUID,authority.centralIT,search,offset),
     repo.companies(pool,auth.tenantId,projectId as UUID,authority.centralIT,companySearch),
     repo.invitations(pool,auth.tenantId,projectId as UUID),
+    repo.tenantCompanies(pool,auth.tenantId,projectId as UUID,authority.centralIT),
+    repo.administrators(pool,auth.tenantId,projectId as UUID),
   ]);
-  return NextResponse.json({...page,companies,invitations:invitations.map(({token,...invite})=>({...invite,
+  return NextResponse.json({...page,companies,tenantCompanies,administrators,invitations:invitations.map(({token,...invite})=>({...invite,
     registrationPath:token?`/register?${new URLSearchParams({tenantId:auth.tenantId,email:invite.email,inviteToken:token})}`:null}))},
     {headers:{'Cache-Control':'private, no-store'}});
 }catch(error){return errorResponse(error);}}
@@ -35,7 +37,7 @@ export async function GET(req:NextRequest,ctx:Context) {try {
 function parseCommand(body:unknown):AdminOnboardingCommand {
   if(!body||typeof body!=='object'||Array.isArray(body))throw new ValidationError('Review and confirm this action');
   const b=body as Record<string,unknown>;
-  const keys=b.action==='GRANT'?['action','userId','companyId','expectedRole','confirmed']:b.action==='INVITE'?['action','companyId','email','confirmed']:['action','inviteId','confirmed'];
+  const keys=b.action==='GRANT'?['action','userId','companyId','expectedRole','confirmed']:b.action==='INVITE'?['action','companyId','email','purpose','confirmed']:['action','inviteId','confirmed'];
   if(b.confirmed!==true||Object.keys(b).some(key=>!keys.includes(key)))throw new ValidationError('Confirm the reviewed onboarding action');
   if(b.action==='GRANT'&&typeof b.userId==='string'&&typeof b.companyId==='string'&&(b.expectedRole===null||typeof b.expectedRole==='string'&&b.expectedRole.length<=80)) {
     requireResourceUuid(b.userId,'userId');requireResourceUuid(b.companyId,'companyId');
@@ -45,7 +47,8 @@ function parseCommand(body:unknown):AdminOnboardingCommand {
   if(b.action==='INVITE'&&typeof b.companyId==='string'&&typeof b.email==='string') {
     requireResourceUuid(b.companyId,'companyId');const email=b.email.trim().toLowerCase();
     if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new ValidationError('Enter a valid employee email');
-    return {action:'INVITE',companyId:b.companyId as UUID,email,confirmed:true};
+    if(b.purpose!==undefined&&b.purpose!=='PROJECT_ADMIN'&&b.purpose!=='EMPLOYEE')throw new ValidationError('Choose the invitation purpose');
+    return {action:'INVITE',companyId:b.companyId as UUID,email,...(b.purpose?{purpose:b.purpose}:{}),confirmed:true};
   }
   throw new ValidationError('Choose an employee or an employee invitation');
 }

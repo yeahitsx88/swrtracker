@@ -11,6 +11,8 @@ Use AdministrationDialog for focused creation, edit or consequential review from
 - Native modal focus makes the background inert. Focus the heading on entry/step changes and restore the entry control on exit. Long evidence scrolls inside; table regions scroll horizontally at narrow widths.
 - Validate active input and show server errors in front. Show the saved result in the same dialog, including its reference or shareable invitation link where appropriate.
 - Use server-paged, tenant-scoped directories for named people/companies. Records picker mode removes duplicate controls; inventories keep complete controls.
+- A prerequisite company can be registered inside an invitation. The child shares the parent's CommandOwner token without releasing it; the parent stays mounted and guarded while the child has protected focus. Return with the created company selected, or return without creating anything. Preserve invitation values in either case.
+- Keep asynchronous onboarding resumable: invite -> awaiting acceptance -> accepted profile -> explicit reviewed assignment -> assigned result. The same invitation record identifies the profile; no separate employee search is needed after acceptance.
 - Freeze body/key after an uncertain response, disable editing/dismissal and retry the exact intent. Definitive409 requires deliberate reload and fresh confirmation. Shared CommandOwner protects sibling unresolved intent.
 
 ## Authority and data

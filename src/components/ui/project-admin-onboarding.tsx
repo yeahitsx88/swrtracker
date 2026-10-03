@@ -1,4 +1,5 @@
 'use client';
+
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
@@ -11,77 +12,194 @@ import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {Field} from '@/components/forms';
 import {AdministrationRecords,AdministrationSection} from './administration-records';
 import {AdministrationDialog} from './administration-dialog';
-interface Invitation {id:string;email:string;companyName:string;status:string;expiresAt:string;registrationPath:string|null}
-interface Directory {employees:AdminEmployee[];total:number;companies:Array<{id:string;name:string;type:string}>;invitations:Invitation[]}
+import {CompanyRegistration,type RegisteredCompany} from './company-registration';
+import './project-admin-onboarding.css';
+
+type Purpose='PROJECT_ADMIN'|'EMPLOYEE';
+interface Invitation {
+ id:string;email:string;companyName:string;status:string;expiresAt:string;
+ purpose:Purpose;registrationPath:string|null;employee:AdminEmployee|null;
+}
+interface Directory {
+ employees:AdminEmployee[];total:number;companies:RegisteredCompany[];tenantCompanies:RegisteredCompany[];
+ invitations:Invitation[];administrators:Array<{userId:string;name:string;companyName:string}>;
+}
 interface Review {command:AdminOnboardingCommand;title:string;detail:string}
-export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void}) {
+type Screen='choose'|'company'|'email'|'employee'|'review'|'result';
+
+export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
+ projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void;
+}) {
  const endpoint=`/api/projects/${projectId}/admin-onboarding`,token='project-admin-onboarding';
  useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const gate=useRef(new FrozenCommand<Review>()).current,generation=useRef(0);
- const [data,setData]=useState<Directory>(),[mode,setMode]=useState<'existing'|'invite'>('existing'),[open,setOpen]=useState(false),[step,setStep]=useState(0);
- const [search,setSearch]=useState(''),[companySearch,setCompanySearch]=useState(''),[offset,setOffset]=useState(0);
- const [email,setEmail]=useState(''),[companyId,setCompanyId]=useState('');
- const [loading,setLoading]=useState(true),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>();
+ const [data,setData]=useState<Directory>(),[open,setOpen]=useState(false),[screen,setScreen]=useState<Screen>('choose');
+ const [purpose,setPurpose]=useState<Purpose>('PROJECT_ADMIN'),[mode,setMode]=useState<'invite'|'existing'>('invite');
+ const [companyKind,setCompanyKind]=useState<'tenant'|'existing'>('tenant'),[company,setCompany]=useState<RegisteredCompany>();
+ const [creatingCompany,setCreatingCompany]=useState(false),[search,setSearch]=useState(''),[companySearch,setCompanySearch]=useState(''),[offset,setOffset]=useState(0);
+ const [email,setEmail]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>();
  const [review,setReview]=useState<Review>(),[consent,setConsent]=useState(false),[revision,setRevision]=useState(0),[,render]=useState(0);
- const [completed,setCompleted]=useState(false),[renewal,setRenewal]=useState(false),[resultInviteId,setResultInviteId]=useState<string>();
- const blocked=disabled||owner.blocked(token),locked=blocked||gate.locked,formLocked=locked||!!review||completed;
+ const [renewal,setRenewal]=useState(false),[resultInviteId,setResultInviteId]=useState<string>();
+ const blocked=disabled||owner.blocked(token),locked=blocked||gate.locked||creatingCompany;
+ const resultInvite=data?.invitations.find(i=>i.id===resultInviteId);
+ const ready=data?.invitations.filter(i=>i.status==='Accepted'&&i.employee&&!i.employee.canAdminister)??[];
  useUnsavedProgress(gate.locked);
+
  useEffect(()=>{
   const epoch=++generation.current;setLoading(true);
   const timer=setTimeout(()=>void apiRequest<Directory>(`${endpoint}?${new URLSearchParams({search,companySearch,offset:String(offset)})}`)
    .then(value=>{if(epoch===generation.current){setData(value);setError(undefined);}})
-   .catch(cause=>{if(epoch===generation.current)setError(getErrorMessage(cause,'Unable to load employees. Refresh the directory.'));})
+   .catch(cause=>{if(epoch===generation.current)setError(getErrorMessage(cause,'Unable to load Project Admin setup. Refresh to try again.'));})
    .finally(()=>{if(epoch===generation.current)setLoading(false);}),200);
   return()=>{clearTimeout(timer);generation.current++;};
  },[endpoint,search,companySearch,offset,revision]);
- function start(nextMode:'existing'|'invite') {
-  if(formLocked||!owner.claim(token))return;
-  setMode(nextMode);setOpen(true);setStep(0);setReview(undefined);setConsent(false);setError(undefined);setSuccess(undefined);setCompleted(false);setResultInviteId(undefined);
+
+ function start() {
+  if(locked||!owner.claim(token))return;
+  setOpen(true);setScreen('choose');setMode('invite');setPurpose('PROJECT_ADMIN');setCompanyKind('tenant');
+  setCompany(undefined);setEmail('');setCompanySearch('');setSearch('');setOffset(0);
+  setReview(undefined);setConsent(false);setError(undefined);setSuccess(undefined);setRenewal(false);setResultInviteId(undefined);
+ }
+ function close(){
+  if(blocked||creatingCompany||!gate.reload())return;
+  owner.release(token);setOpen(false);setReview(undefined);setConsent(false);setError(undefined);setRevision(n=>n+1);
+ }
+ function reload(){
+  if(blocked||creatingCompany||!gate.reload())return;
+  setReview(undefined);setConsent(false);setScreen('choose');setCompany(undefined);setResultInviteId(undefined);setError(undefined);setRevision(n=>n+1);render(n=>n+1);
  }
  function propose(value:Review) {
-  if(formLocked||!owner.claim(token))return;
-  setReview(value);setConsent(false);setSuccess(undefined);setError(undefined);setOpen(true);setStep(2);
+  if(locked||loading||!owner.claim(token))return;
+  setReview(value);setConsent(false);setSuccess(undefined);setError(undefined);setOpen(true);setScreen('review');
  }
- function close(){if(blocked||!gate.reload())return;owner.release(token);setOpen(false);setReview(undefined);setConsent(false);setCompleted(false);setError(undefined);setRevision(n=>n+1);}
- function reload(){if(blocked||!gate.reload())return;setReview(undefined);setConsent(false);setStep(0);setError(undefined);setRevision(n=>n+1);}
+ function assign(person:AdminEmployee) {
+  setMode('existing');setPurpose('PROJECT_ADMIN');
+  propose({command:{action:'GRANT',userId:person.userId,companyId:person.companyId,expectedRole:person.role,confirmed:true},
+   title:`Assign ${person.name} as Project Admin`,
+   detail:`${person.email} · ${person.companyName}. ${person.role?'Their operational role is preserved.':'Requester membership and company association will be added.'} They will administer this project. Other projects are unchanged.`});
+ }
+ function reviewInvite(){
+  if(!company||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))return;
+  propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),purpose,confirmed:true},
+   title:purpose==='PROJECT_ADMIN'?'Review Project Admin invitation':'Review employee invitation',
+   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${purpose==='PROJECT_ADMIN'?'Return to this invitation to assign Project Admin after acceptance.':'You can assign Project Admin after their profile is ready.'} Acceptance adds Requester membership; it does not grant administration. The link expires in seven days.`});
+ }
  async function submit() {
-  if(!review||!consent||blocked||!owner.claim(token))return;
+  if(!review||!consent||blocked||creatingCompany||!owner.claim(token))return;
   const frozen=gate.begin(review,crypto.randomUUID());if(!frozen)return;render(n=>n+1);setError(undefined);
   try {
    const result=await apiRequest<{action:string;signInRenewal?:boolean;inviteId?:string}>(endpoint,{method:'POST',body:frozen.body.command,headers:{'Idempotency-Key':frozen.key}});
-   gate.success();setCompleted(true);setReview(undefined);setConsent(false);setResultInviteId(result.inviteId);
-   setSuccess(result.action==='INVITE'?'Invitation created. Share its link with the employee. Once they create a profile, refresh employees and review their Project Admin grant.':result.action==='CANCEL_INVITE'?'Invitation canceled. Its link can no longer be accepted.':'Project Admin granted. The employee must sign in again to use the new authority.');
-   if(result.signInRenewal){setRenewal(true);setSuccess('Project Admin granted to your account. Sign in again to continue.');}
+   gate.success();setScreen('result');setReview(undefined);setConsent(false);setResultInviteId(result.inviteId);
+   setSuccess(result.action==='INVITE'?'Invitation ready. Share the link, then check acceptance here.':result.action==='CANCEL_INVITE'?'Invitation canceled. Its link can no longer be accepted.':'Project Admin assigned. They can sign in and open this project’s administration.');
+   setRenewal(!!result.signInRenewal);
+   if(result.signInRenewal)setSuccess('Project Admin assigned to your account. Sign in again to continue.');
    else {setRevision(n=>n+1);onDone();}
   } catch(cause){gate.fail(cause instanceof ApiClientError?cause.status:undefined);setError(getErrorMessage(cause,'The outcome is uncertain. Retry this same action.'));}
   finally {render(n=>n+1);}
  }
- async function copyLink(path:string){try{await navigator.clipboard.writeText(new URL(path,window.location.origin).href);setSuccess('Invitation link copied. Send it to the intended employee.');}catch{setError('Unable to copy the link. Open the invitation or copy its address.');}}
+ async function copyLink(path:string){
+  try{await navigator.clipboard.writeText(new URL(path,window.location.origin).href);setSuccess('Invitation link copied. Share it with the intended employee.');}
+  catch{setError('Unable to copy the link. Select and copy the invitation link below.');}
+ }
+ function chooseTenant(){setCompanyKind('tenant');setCompany(data?.tenantCompanies.length===1?data.tenantCompanies[0]:undefined);}
+ function returnCompany(created?:RegisteredCompany){
+  setCreatingCompany(false);
+  if(created){setCompanyKind('existing');setCompany(created);setCompanySearch('');setRevision(n=>n+1);}
+ }
+ const total=mode==='invite'?5:4;
+ const current=screen==='choose'?1:screen==='company'||screen==='employee'?2:screen==='email'?3:screen==='review'?total-1:total;
+ const labels:Record<Screen,string>={choose:'Choose how to start',company:'Employee company',email:'Employee email',employee:'Select employee',review:'Review',result:resultInviteId?'Await acceptance':'Complete'};
  const emailValid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
- const createdInvite=data?.invitations.find(i=>i.id===resultInviteId);
- function reviewInvite(){const company=data?.companies.find(c=>c.id===companyId);if(!company)return;propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),confirmed:true},title:`Invite ${email.trim()}`,detail:`Company: ${company.name}. Their company will be associated with this project. This link expires in seven days and grants Requester access on acceptance. Project Admin requires a later reviewed grant.`});}
- return <Card title="Establish a Project Admin" description="Select an existing employee, or invite someone to create a profile first."><div className="stack">
-  {!open&&error&&<ErrorBanner message={error}/>} {!open&&success&&<SuccessBanner message={success}/>}
-  <div className="row"><Button disabled={formLocked||open} onClick={()=>start('existing')}>Select existing employee</Button><Button variant="secondary" disabled={formLocked||open} onClick={()=>start('invite')}>Invite new employee</Button><Button variant="secondary" disabled={formLocked||open||loading} onClick={()=>setRevision(n=>n+1)}>Refresh employees and invitations</Button></div>
-  {open&&<AdministrationDialog title={completed?'Onboarding action completed':review?review.title:mode==='existing'?'Select a Project Admin':'Invite a new employee'}
-   step={{current:completed?mode==='invite'?4:3:review?mode==='invite'?3:2:mode==='invite'?step+1:1,total:mode==='invite'?4:3,label:completed?'Complete':review?'Review':mode==='invite'?step===0?'Employee email':'Employee company':'Choose employee'}}
-   onClose={close} closeDisabled={blocked||gate.pending||!!gate.command&&!gate.stale}
-   footer={completed?<Button onClick={close}>Close</Button>:review?<><Button variant="secondary" disabled={blocked||gate.pending||!!gate.command&&!gate.stale} onClick={gate.stale?reload:close}>{gate.stale?'Reload onboarding':'Cancel'}</Button><div className="row"><Button variant="secondary" disabled={locked} onClick={()=>{setReview(undefined);setConsent(false);setStep(mode==='invite'?1:0);}}>Back</Button><Button disabled={!consent||blocked||gate.pending||gate.stale} onClick={()=>void submit()}>{gate.pending?'Submitting…':gate.command?'Retry same action':'Confirm action'}</Button></div></>:<><Button variant="secondary" disabled={locked} onClick={close}>Cancel</Button>{mode==='invite'&&<div className="row">{step>0&&<Button variant="secondary" disabled={locked} onClick={()=>setStep(0)}>Back</Button>}<Button disabled={locked||loading||(step===0?!emailValid:!companyId)} onClick={()=>step===0?setStep(1):reviewInvite()}>Next</Button></div>}</>}>
-   {error&&<ErrorBanner message={error}/>} {loading&&!completed&&<p role="status">Loading employee directory…</p>}
-   {completed?<><SuccessBanner message={success??'Action completed.'}/>{renewal&&<a className="app-link" href="/login">Sign in again</a>}{resultInviteId&&(createdInvite?.registrationPath?<><Field label="Employee invitation link"><Input readOnly value={new URL(createdInvite.registrationPath,window.location.origin).href} onFocus={e=>e.currentTarget.select()}/></Field><div className="row"><Button variant="secondary" onClick={()=>void copyLink(createdInvite.registrationPath!)}>Copy invitation link</Button><a className="app-link" href={createdInvite.registrationPath} target="_blank" rel="noopener noreferrer">Open invitation</a></div><p>The invitation link creates a profile and Requester membership. Return to Select existing employee for the separate Project Admin grant.</p></>:<p role="status">Loading the invitation link. You can also refresh Employee invitations after closing.</p>)}</>:review?<><p>{review.detail}</p><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this action for this project.</span></label>{gate.stale&&<p role="alert">State changed. Reload onboarding and review the current employee or invitation again.</p>}</>:mode==='existing'?<>
-    <Field label="Search employee name or email"><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);}}/></Field><p className="muted">Tenant IT can choose active internal employees across the tenant. Project Admins choose employees from this project's companies.</p>
-    {!loading&&data?.employees.length===0&&<p>No eligible employees found. Invite a new employee or change your search. Disabled accounts and project access require a separate review.</p>}
-    <AdministrationRecords picker label="eligible employees on this page" rows={data?.employees??[]} id={p=>p.userId} disabled={locked||loading} columns={[{key:'name',label:'Name',text:p=>p.name},{key:'email',label:'Email',text:p=>p.email},{key:'company',label:'Company',text:p=>p.companyName},{key:'role',label:'Project role',text:p=>p.role?.replaceAll('_',' ')??'No membership'}]}
-     actions={p=>p.canAdminister?<span>Already Project Admin</span>:<Button variant="secondary" disabled={locked||loading} onClick={()=>propose({command:{action:'GRANT',userId:p.userId,companyId:p.companyId,expectedRole:p.role,confirmed:true},title:`Grant Project Admin to ${p.name}`,detail:`${p.email} · ${p.companyName}. ${p.role?'Their operational role is preserved.':'Their company will be associated and Requester membership added.'} Administration applies only to this project.`})}>Review admin grant</Button>}/>
-    <div className="row"><Button variant="secondary" disabled={locked||loading||offset===0} onClick={()=>setOffset(n=>Math.max(0,n-25))}>Previous employee page</Button><span role="status">{data?.employees.length?offset+1:0}–{offset+(data?.employees.length??0)} of {data?.total??0}</span><Button variant="secondary" disabled={locked||loading||(data?.employees.length??0)<25||offset+25>=(data?.total??0)} onClick={()=>setOffset(n=>n+25)}>Next employee page</Button></div>
-   </>:step===0?<><p>The employee creates their own profile and password using a project invitation. You grant Project Admin afterward.</p><Field label="Employee email"><Input type="email" value={email} maxLength={254} disabled={locked} onChange={e=>setEmail(e.target.value)}/></Field><p className="muted">This flow provides a link for you to send. It does not send email.</p></>:<>
-    <p>Select the employee's general contractor or owner representative company.</p><Field label="Search employee company"><Input value={companySearch} maxLength={100} disabled={locked} onChange={e=>{setCompanySearch(e.target.value);setCompanyId('');}}/></Field><Field label="Employee company"><select className="select" value={companyId} disabled={locked||loading} onChange={e=>setCompanyId(e.target.value)}><option value="">Choose a company</option>{data?.companies.map(c=><option key={c.id} value={c.id}>{c.name} · {c.type==='GC'?'General contractor':'Owner representative'}</option>)}</select></Field>
-    {!loading&&!data?.companies.length&&<p>No eligible companies match. Change the search, or register the company in Project companies after closing this flow.</p>}<p className="muted">Up to 100 matching companies. Narrow the search to find another company.</p>
+ const companyChoices=companyKind==='tenant'?data?.tenantCompanies??[]:data?.companies??[];
+ const visibleCompanies=company&&!companyChoices.some(c=>c.id===company.id)?[company,...companyChoices]:companyChoices;
+ const canDismiss=!blocked&&!creatingCompany&&!gate.pending&&(!gate.command||gate.stale);
+
+ return <Card title="Project Admin setup" description="Invite a person, wait for their profile, then assign them to administer this project.">
+  <div className="stack">
+   {!open&&error&&<ErrorBanner message={error}/>}
+   {!open&&success&&<SuccessBanner message={success}/>}
+   <ol className="admin-setup-sequence" aria-label="Project Admin setup sequence"><li>Choose company and invite</li><li>Employee accepts and creates profile</li><li>Assign Project Admin</li></ol>
+   {!!data?.administrators.length&&<p role="status"><strong>Project Admin assigned:</strong> {data.administrators.map(p=>`${p.name} (${p.companyName})`).join(', ')}.</p>}
+   {!loading&&!data?.administrators.length&&<p>No Project Admin is assigned yet.{ready.length?' An accepted invitation is ready for assignment.':''}</p>}
+   <div className="row"><Button disabled={locked||open} onClick={start}>{data?.administrators.length?'Set up another Project Admin':'Set up Project Admin'}</Button><Button variant="secondary" disabled={locked||open||loading} onClick={()=>setRevision(n=>n+1)}>Check invitation status</Button></div>
+   <AdministrationSection title="Invitations and next steps" open>
+    <p className="muted">Latest 50 invitations from this setup flow. Accepted profiles can be assigned directly below.</p>
+    <AdministrationRecords label="Project Admin setup invitations" rows={data?.invitations??[]} id={i=>i.id} disabled={locked||open||loading}
+     columns={[{key:'email',label:'Employee',text:i=>i.employee?`${i.employee.name} · ${i.email}`:i.email},{key:'company',label:'Company',text:i=>i.companyName},
+      {key:'purpose',label:'Purpose',text:i=>i.purpose==='EMPLOYEE'?'Employee profile':'Project Admin'},
+      {key:'status',label:'Next step',text:i=>i.employee?.canAdminister?'Project Admin assigned':i.status==='Accepted'?i.employee?'Ready to assign Project Admin':'Profile unavailable · review access':i.status==='Pending'?'Awaiting profile acceptance':i.status},
+      {key:'expiry',label:'Link expires',text:i=>new Date(i.expiresAt).toLocaleString()}]}
+     actions={i=>i.employee&&!i.employee.canAdminister?<Button disabled={locked||open||loading} onClick={()=>assign(i.employee!)}>Assign Project Admin</Button>:i.registrationPath?<>
+      <Button variant="secondary" disabled={locked||open} onClick={()=>void copyLink(i.registrationPath!)}>Copy invitation link</Button>
+      <Button variant="secondary" disabled={locked||open||loading} onClick={()=>{if(!owner.claim(token))return;setResultInviteId(i.id);setPurpose(i.purpose);setMode('invite');setScreen('result');setSuccess(undefined);setError(undefined);setOpen(true);}}>Continue invitation</Button>
+      <Button variant="secondary" disabled={locked||open||loading} onClick={()=>propose({command:{action:'CANCEL_INVITE',inviteId:i.id as UUID,confirmed:true},title:`Cancel invitation for ${i.email}`,detail:'The pending link will stop working. Existing accounts and project memberships are preserved.'})}>Cancel invitation</Button>
+     </>:null}/>
+   </AdministrationSection>
+  </div>
+  {open&&<AdministrationDialog title={screen==='review'?review?.title??'Review assignment':screen==='result'?resultInviteId?'Invitation and acceptance':'Project Admin setup completed':purpose==='EMPLOYEE'?'Create an employee profile':'Set up Project Admin'}
+   step={{current,total,label:labels[screen]}} onClose={close} closeDisabled={!canDismiss}
+   footer={screen==='result'?<Button disabled={!canDismiss} onClick={close}>Close</Button>:screen==='review'?<>
+    <Button variant="secondary" disabled={!canDismiss} onClick={gate.stale?reload:close}>{gate.stale?'Reload setup':'Cancel'}</Button>
+    <div className="row"><Button variant="secondary" disabled={locked} onClick={()=>{setReview(undefined);setConsent(false);setScreen(mode==='invite'?'email':'employee');}}>Back</Button>
+    <Button disabled={!consent||blocked||creatingCompany||gate.pending||gate.stale} onClick={()=>void submit()}>{gate.pending?'Submitting…':gate.command?'Retry same action':review?.command.action==='INVITE'?'Create invitation':review?.command.action==='GRANT'?'Assign Project Admin':'Cancel invitation'}</Button></div>
+   </>:<><Button variant="secondary" disabled={locked} onClick={close}>Cancel</Button><div className="row">
+    {screen!=='choose'&&<Button variant="secondary" disabled={locked} onClick={()=>setScreen(screen==='email'?'company':'choose')}>Back</Button>}
+    {screen==='company'&&<Button disabled={locked||loading||!company} onClick={()=>setScreen('email')}>Next</Button>}
+    {screen==='email'&&<Button disabled={locked||loading||!emailValid||!company} onClick={reviewInvite}>Review invitation</Button>}
+   </div></>}>
+   {error&&<ErrorBanner message={error}/>} {loading&&<p role="status">Refreshing setup status…</p>}
+   {screen==='choose'&&<>
+    <p>Choose who will administer this project. If they are new, invite them first; assign Project Admin when their profile is ready.</p>
+    <div className="admin-setup-options">
+     <div><h3>Invite your future Project Admin</h3><p>Choose their company and email. Track acceptance here, then assign them.</p><Button disabled={locked||loading} onClick={()=>{setPurpose('PROJECT_ADMIN');setMode('invite');chooseTenant();setScreen('company');}}>Invite a Project Admin candidate</Button></div>
+     <div><h3>Use an existing employee</h3><p>Select a person whose tenant profile already exists and review the assignment.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setMode('existing');setPurpose('PROJECT_ADMIN');setScreen('employee');}}>Choose an existing employee</Button></div>
+     <div><h3>Create the employee profile first</h3><p>Invite them as an employee now. Assign Project Admin from their accepted invitation later.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setPurpose('EMPLOYEE');setMode('invite');chooseTenant();setScreen('company');}}>Invite an employee first</Button></div>
+    </div>
    </>}
+   {screen==='company'&&<>
+    <p>Which company does this employee work for?</p>
+    <fieldset className="admin-company-choice"><legend>Employee company source</legend>
+     <label className="checkbox-row"><input type="radio" name="admin-company-source" checked={companyKind==='tenant'} disabled={locked} onChange={chooseTenant}/><span>Tenant company</span></label>
+     <label className="checkbox-row"><input type="radio" name="admin-company-source" checked={companyKind==='existing'} disabled={locked} onChange={()=>{setCompanyKind('existing');setCompany(undefined);}}/><span>Previously created company</span></label>
+    </fieldset>
+    {companyKind==='tenant'?<p className="muted">Companies with current Tenant IT employees. Confirm the named company below.</p>:<Field label="Search previously created companies"><Input value={companySearch} maxLength={100} disabled={locked} onChange={e=>{setCompanySearch(e.target.value);setCompany(undefined);}}/></Field>}
+    <Field label="Employee company"><select className="select" value={company?.id??''} disabled={locked||loading} onChange={e=>setCompany(visibleCompanies.find(c=>c.id===e.target.value))}>
+     <option value="">Choose a company</option>{visibleCompanies.map(c=><option key={c.id} value={c.id}>{c.name} · {c.type==='GC'?'General contractor':'Owner representative'}</option>)}
+    </select></Field>
+    {!loading&&!visibleCompanies.length&&<p>No eligible company found. Choose a previously created company or create one below.</p>}
+    <div><Button variant="secondary" disabled={locked||loading} onClick={()=>setCreatingCompany(true)}>Create new company</Button><p className="muted">Return here with the new company selected. Your invitation details are kept.</p></div>
+    {companyKind==='existing'&&<p className="muted">Up to 100 matching internal companies. Narrow your search to find another company.</p>}
+   </>}
+   {screen==='email'&&<>
+    <p><strong>Company:</strong> {company?.name}</p>
+    <Field label="Employee email"><Input type="email" value={email} maxLength={254} disabled={locked} onChange={e=>setEmail(e.target.value)}/></Field>
+    <p>The employee will use their invitation link to create a profile and password. You will assign Project Admin after acceptance.</p>
+    <p className="muted">Local demo delivery: copy and share the link. No email is sent by this demo.</p>
+   </>}
+   {screen==='employee'&&<>
+    <Field label="Search employee name or email"><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);}}/></Field>
+    <p className="muted">Choose an active general contractor or owner representative employee. Tenant IT can search across the tenant; Project Admins use this project's companies.</p>
+    {!loading&&data?.employees.length===0&&<><p>No eligible employees found. Disabled accounts and project access require a separate review.</p><Button variant="secondary" disabled={locked} onClick={()=>{setMode('invite');chooseTenant();setScreen('company');}}>Invite a new candidate</Button></>}
+    <AdministrationRecords picker label="eligible employees on this page" rows={data?.employees??[]} id={p=>p.userId} disabled={locked||loading}
+     columns={[{key:'name',label:'Name',text:p=>p.name},{key:'email',label:'Email',text:p=>p.email},{key:'company',label:'Company',text:p=>p.companyName},{key:'role',label:'Project role',text:p=>p.role?.replaceAll('_',' ')??'No membership'}]}
+     actions={p=>p.canAdminister?<span>Already Project Admin</span>:<Button variant="secondary" disabled={locked||loading} onClick={()=>assign(p)}>Select employee</Button>}/>
+    <div className="row"><Button variant="secondary" disabled={locked||loading||offset===0} onClick={()=>setOffset(n=>Math.max(0,n-25))}>Previous employee page</Button><span role="status">{data?.employees.length?offset+1:0}–{offset+(data?.employees.length??0)} of {data?.total??0}</span><Button variant="secondary" disabled={locked||loading||(data?.employees.length??0)<25||offset+25>=(data?.total??0)} onClick={()=>setOffset(n=>n+25)}>Next employee page</Button></div>
+   </>}
+   {screen==='review'&&<>
+    <p>{review?.detail}</p>
+    <label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this {review?.command.action==='GRANT'?'Project Admin assignment':'invitation action'} for this project.</span></label>
+    {gate.stale&&<p role="alert">State changed. Reload setup and review the current employee or invitation again.</p>}
+   </>}
+   {screen==='result'&&<>
+    {success&&<SuccessBanner message={success}/>}
+    {renewal&&<a className="app-link" href="/login">Sign in again</a>}
+    {resultInviteId&&(resultInvite?<>
+     <dl className="administration-dialog-summary"><div><dt>Employee</dt><dd>{resultInvite.email}</dd></div><div><dt>Company</dt><dd>{resultInvite.companyName}</dd></div><div><dt>Progress</dt><dd>{resultInvite.employee?.canAdminister?'Project Admin assigned':resultInvite.status==='Accepted'?'Profile accepted':resultInvite.status==='Pending'?'Awaiting profile acceptance':resultInvite.status}</dd></div></dl>
+     {resultInvite.registrationPath&&<><Field label="Employee invitation link"><Input readOnly value={new URL(resultInvite.registrationPath,window.location.origin).href} onFocus={e=>e.currentTarget.select()}/></Field><Button variant="secondary" disabled={locked} onClick={()=>void copyLink(resultInvite.registrationPath!)}>Copy invitation link</Button><p className="muted">No email was sent. Share this link with {resultInvite.email}. For this walkthrough, open it in a separate browser session.</p></>}
+     {resultInvite.employee&&!resultInvite.employee.canAdminister?<><p>The employee has created their profile. Review their assignment to finish setup.</p><Button disabled={locked||loading} onClick={()=>assign(resultInvite.employee!)}>Assign Project Admin</Button></>:resultInvite.status==='Pending'?<><p>After they accept, continue here or return to Invitations and next steps.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>setRevision(n=>n+1)}>Check acceptance and continue</Button></>:resultInvite.status==='Accepted'&&!resultInvite.employee?<p role="alert">This profile is not eligible for assignment. Review current account and project access before continuing.</p>:null}
+    </>:<><p role="status">{loading?'Loading invitation status…':'Invitation status could not be loaded.'}</p><Button variant="secondary" disabled={locked||loading} onClick={()=>setRevision(n=>n+1)}>Reload invitation status</Button></>)}
+   </>}
+   {creatingCompany&&<CompanyRegistration projectId={projectId} owner={owner} disabled={blocked} onDone={onDone} continuation={{token,onReturn:returnCompany}}/>}
   </AdministrationDialog>}
-  <AdministrationSection title="Employee invitations"><p className="muted">Latest 50 invitations. Refresh after acceptance to see the new profile in the employee picker.</p>
-   <AdministrationRecords label="employee invitations" rows={data?.invitations??[]} id={i=>i.id} disabled={formLocked||open||loading} columns={[{key:'email',label:'Email',text:i=>i.email},{key:'company',label:'Company',text:i=>i.companyName},{key:'status',label:'Status',text:i=>i.status},{key:'expiry',label:'Expires',text:i=>new Date(i.expiresAt).toLocaleString()}]}
-    actions={i=>i.registrationPath?<><Button variant="secondary" disabled={formLocked||open} onClick={()=>void copyLink(i.registrationPath!)}>Copy invitation link</Button><a className="app-link" href={i.registrationPath} target="_blank" rel="noopener noreferrer">Open invitation</a><Button variant="secondary" disabled={formLocked||open} onClick={()=>propose({command:{action:'CANCEL_INVITE',inviteId:i.id as UUID,confirmed:true},title:`Cancel invitation for ${i.email}`,detail:'The pending link will stop working. Existing accounts and project memberships are preserved.'})}>Review cancellation</Button></>:null}/>
-  </AdministrationSection>
- </div></Card>;
+ </Card>;
 }

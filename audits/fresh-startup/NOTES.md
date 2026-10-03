@@ -112,14 +112,14 @@ The owner authorized fixing first Project Admin onboarding, then extended the re
 
 Company registration: choose new/existing -> name/type or tenant company search -> explicit project association review -> saved company name/type/reference in the same dialog. New-company registration associates the company with this project. Cancellation before confirmation creates nothing.
 
-First Project Admin: use Select existing employee, or Invite new employee. New recipients create their own profile/password; refresh employees afterward and separately review an admin grant. This provides a seven-day link for the operator to share, without sending email. Existing operational roles are preserved. Disabled accounts/project access require separate supported reviews. Tenant IT's greeting no longer requires an artificial operational membership.
+First Project Admin (superseded by connected setup below): the initial implementation used Select existing employee, or Invite new employee. New recipients created their own profile/password; the operator refreshed employees afterward and separately reviewed an admin grant. Existing operational roles and disabled-access restrictions were preserved.
 
 | Administration action | Current interaction |
 | --- | --- |
-| Create project | Name -> template/crew configuration -> review -> Setup result and Configure project link |
+| Create project | Name -> template/crew configuration -> review -> Setup result and Set up Project Admin link |
 | Create project template | Name -> supported crew/Area hierarchy/discipline fields -> review -> result |
 | Register/associate company | Guided wizard with named tenant picker; no ordinary UUID entry |
-| Establish Project Admin | Search employee -> reviewed grant/result, or email -> internal company -> reviewed invitation/link/result |
+| Establish Project Admin | Candidate-first/employee-first/existing-profile -> tenant/existing/new company -> reviewed invitation -> acceptance on the same record -> reviewed assignment/result |
 | Add project members | Foreground eligible-account/role selection followed by guarded batch review/result |
 | Grant/revoke Project Admin or company view | Foreground single/batch review, preserving operational roles |
 | Invite subcontractor requester | Email -> associated company -> review -> saved registration link |
@@ -148,3 +148,15 @@ Runtime retains the private environment/database/attachment volume. Previous web
 - Employee invitation input inspected in desktop/mobile dark mode. The original light preference was restored. These two appearance saves are the only inspected setting writes; tenant branding is unchanged.
 - Project and template creation inputs opened/canceled. Add-members empty state and request-configuration editor opened/canceled. Escape dismissed company association and restored focus to its entry button. Configuration keeps its entry mounted during refresh; reviewer inspection retains its trigger for native focus restoration.
 - The browser remains at the current tenant's project administration for the user. Screenshots show an unsubmitted company review and employee invitation input, with no invitation tokens or credentials.
+
+## Connected setup correction - 2026-10-03
+
+The owner identified a disjointed invitation/grant flow and requested a live new-tenant walkthrough (Decision53). The project result now directs to Set up Project Admin. A single setup entry offers inviting the future administrator, inviting an employee profile first, or using an existing employee. The existing fixed independent Project Admin authority is assigned after acceptance; there is no custom role definition step.
+
+Company selection explicitly offers Tenant company, Previously created company and Create new company. Tenant choices are the named internal companies with active Tenant IT affiliations, restricted to current project company scope for local admins. There is no canonical tenant-company field in the schema, so multiple affiliations are shown rather than guessed. Company registration reuses the shared wizard, keeps the parent invitation mounted and its command ownership held, and returns with the new company selected. Canceling that child preserves prior invitation values.
+
+Invitation purpose is retained in the atomic administrative event. The setup inventory shows awaiting profile acceptance, ready to assign Project Admin, and assigned. Accepted invitations identify their bound current active employee and expose assignment directly. Acceptance creates Requester membership only. Disabled profiles/access are not offered for a new grant. Pending link creation still does not send email; the local demo makes that delivery status explicit.
+
+The owner also hit a Login/Projects redirect loop. Cookie presence was redirecting away from Login while the protected layout rejected that stale cookie. Authentication pages now remain reachable; protected layouts/APIs retain authoritative session checks.
+
+Current verification: strict/unused TypeScript and production build passed; two login-entry regression checks passed. Broader automated route checks were stopped after automatic approval review required explicit test authorization. The live tab is currently an error document blocked by the browser URL policy; the owner has been asked to reopen the corrected demo. Live acceptance and final grant are pending, not claimed complete.

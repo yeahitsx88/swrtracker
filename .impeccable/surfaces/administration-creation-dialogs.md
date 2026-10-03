@@ -4,7 +4,7 @@ THESIS: Keep the next setup task and its outcome directly in front of Tenant IT,
 
 OWN-WORLD: Extend approved Axiom/Roboto identity, light/dark colors, square buttons and 12px panels. Retain the praised administered-project inventory. Owner wireframes describe sequence and foreground placement, not literal red typography or large empty screens.
 
-STORY: Entry action -> one focused step -> configuration or scoped selection -> explicit review -> saved result -> close or continue. Company registration offers an existing-company branch. Employee invitation creates a profile and Requester membership first; Project Admin remains a separate reviewed grant.
+STORY: Project created -> Set up Project Admin -> choose candidate-first, employee-first or existing profile -> named tenant/existing/new company -> invitation -> tracked acceptance -> reviewed assignment. Company registration returns to the preserved invitation with its new company selected. Acceptance creates a profile and Requester membership first; Project Admin remains a separate reviewed grant directly from that invitation. Show awaiting acceptance, ready to assign and assigned states together.
 
 FIRST VIEWPORT: Named task, named current step and reachable Close; body fields/evidence; persistent wizard navigation. Native modal makes background inert and contains focus. Narrow viewports use internal scrolling and wrapping controls.
 

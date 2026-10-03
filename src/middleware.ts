@@ -25,16 +25,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (hasSession && isPublic && pathname !== '/invite') {
-    if (
-      pathname === '/login' ||
-      pathname === '/register' ||
-      pathname === '/forgot-password' ||
-      pathname === '/reset-password'
-    ) {
-      return NextResponse.redirect(new URL('/projects', req.url));
-    }
-  }
+  // Cookie presence does not establish a current session. Authentication pages
+  // must stay reachable after expiry/revocation, and for a bound invitation.
+  // Protected layouts and APIs perform the authoritative session checks.
 
   return NextResponse.next();
 }

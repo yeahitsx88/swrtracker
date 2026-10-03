@@ -8,7 +8,7 @@ import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administ
 
 export type AdminOnboardingCommand=
   | {action:'GRANT';userId:UUID;companyId:UUID;expectedRole:string|null;confirmed:true}
-  | {action:'INVITE';companyId:UUID;email:string;confirmed:true}
+  | {action:'INVITE';companyId:UUID;email:string;purpose?:'PROJECT_ADMIN'|'EMPLOYEE';confirmed:true}
   | {action:'CANCEL_INVITE';inviteId:UUID;confirmed:true};
 
 export async function authorizeAdminOnboarding(db:DbClient,auth:AuthContext,projectId:UUID) {
@@ -47,10 +47,11 @@ export async function executeAdminOnboarding(db:DbClient,auth:AuthContext,projec
   if(await repo.existingAccount(db,auth.tenantId,command.email))throw new ConflictError('This person already has a tenant account. Select the existing employee instead. Disabled accounts require a separate review.');
   const pending=await repo.pendingInvitation(db,auth.tenantId,projectId,command.email);
   if(pending&&pending.companyId!==command.companyId)throw new ConflictError('A pending invitation uses another company. Cancel it before choosing a different company.');
+  if(pending&&pending.purpose!==(command.purpose??'PROJECT_ADMIN'))throw new ConflictError('A pending invitation has another purpose. Review that invitation before creating a new one.');
   await registerProjectCompany(db,auth,projectId,{companyId:command.companyId});
   const invite=pending??await repo.createInvitation(db,auth.tenantId,projectId,command.companyId,command.email,auth.userId);
   if(!invite)throw new ConflictError('Unable to create invitation. Reload and review the employee details.');
   if(!pending)await appendAdministrativeEvent(db,{auth,projectId,subjectUserId:null,eventType:'user.invited',
-    authorityEvidence:{centralIT:authority.centralIT},changes:{inviteId:invite.id,companyId:command.companyId,email:command.email,role:'REQUESTER',adminGranted:false,source:'ADMIN_ONBOARDING'}});
+    authorityEvidence:{centralIT:authority.centralIT},changes:{inviteId:invite.id,companyId:command.companyId,email:command.email,role:'REQUESTER',purpose:command.purpose??'PROJECT_ADMIN',adminGranted:false,source:'ADMIN_ONBOARDING'}});
   return {action:'INVITE' as const,inviteId:invite.id};
 }
