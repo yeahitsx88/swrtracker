@@ -3391,3 +3391,8 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Added real commit-then-lost-response browser tests for project creation, teams, staffing and workforce; exact body/key retries, frozen fields/reload, stale creation latch and single side effects are verified.
 - Verification:52 production HTTP checks,24 existing production browser checks,26 new Alpha1 browser checks and55/55 named matrix cases pass against current source digest f8c182fba02d9cdd886bfa616ca971ef64abd400c84ca737e788503827b34660. Retained customer runtimes/data untouched.
 
+
+### 2026-10-03 - Batch 126 - cold-start PostgreSQL independence
+- Fresh Linux PostgreSQL exposed a draft migration-test assumption that public tickets already existed. Added one synthetic incumbent only in the verified temporary ticket clone, retaining the public-copy preservation check and avoiding any production change.
+- Verification: all migrations001–034 and27 PostgreSQL suites pass on an empty fresh PostgreSQL15 container under pinned Linux Node22.23.3; the container and its private environment files were removed. Existing retained-witness27-suite run also passes. Strict/unused types and559 tests pass.
+

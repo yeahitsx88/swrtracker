@@ -45,6 +45,11 @@ async function main() {
     for (const table of tables) check((await db.query('SELECT to_regclass($1)::oid=to_regclass($2)::oid AS safe', [table, `pg_temp.${table}`])).rows[0].safe, true);
     // Validate the migration against a temporary copy of every incumbent request.
     await db.query('INSERT INTO pg_temp.tickets SELECT * FROM public.tickets');
+    // ANALYZE need not create a column statistic for an empty relation. Supply
+    // one owned incumbent so the migration check does not depend on public data.
+    await db.query(`INSERT INTO pg_temp.tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description)
+      VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','DRAFT','Survey','Synthetic incumbent migration witness')`,
+      [randomUUID(),tenant,project,company,owner]);
     const legacyFingerprint = async () => (await db.query(`SELECT count(*)::text AS n,
       md5(string_agg((to_jsonb(t)-'draft_deleted_at'-'draft_deleted_reason'-'draft_last_saved_at')::text,',' ORDER BY id)) AS hash FROM pg_temp.tickets t`)).rows[0];
     const legacyBefore = await legacyFingerprint();
