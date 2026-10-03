@@ -42,6 +42,11 @@ try {
     }
     const nav=width===390?page.locator('dialog.project-navigation-drawer nav'):page.locator('.project-sidebar nav');
     const labels=await nav.locator('a').allTextContents();
+    check(await page.getByRole('button',{name:'Menu',exact:true}).count(),0,'No redundant project menu');
+    check(labels.includes('Profile')&&labels.includes('Assignment Details')&&labels.includes('Appearance'),true,'Account destinations in left navigation');
+    check(await nav.getByRole('button',{name:'Sign out',exact:true}).count(),1,'Sign out remains available');
+    check(new URL(await nav.getByRole('link',{name:'Profile',exact:true}).getAttribute('href'),origin).searchParams.get('projectId'),f.project,'Profile retains project context');
+    check(new URL(await nav.getByRole('link',{name:'Assignment Details',exact:true}).getAttribute('href'),origin).searchParams.get('projectId'),f.project,'Assignment retains project context');
     check(labels.includes('Project Administration'),label==='admin'||label.startsWith('combined-'),'Additive administration '+label);
     if(['requester','combined-requester'].includes(label)){
       check(labels.includes('Survey Operations'),false,'No Survey requester destination');
@@ -63,11 +68,6 @@ try {
     }
     if(label==='combined-superintendent')check(await page.getByText('Linked-crew reporting is separate below.',{exact:false}).count(),0,'Combined scope copy truthful');
     if(width===390)await page.locator('dialog.project-navigation-drawer').getByRole('button',{name:'Close',exact:true}).click();
-    if(theme==='LIGHT'&&width===390&&label==='requester'){
-      await page.getByRole('button',{name:'Menu',exact:true}).click();
-      check(await page.locator('.account-drawer').evaluate(node=>node.open),true,'Account overlay retained');
-      await page.keyboard.press('Escape');
-    }
     check(errors,[],'No browser runtime errors '+label);
     await page.screenshot({path:`${out}/${label}-${theme.toLowerCase()}-${width}.png`,fullPage:true});
     results.push({label,theme,width,labels});
@@ -153,6 +153,25 @@ try {
   const brandedPage=await branded.newPage();await brandedPage.goto(`${origin}/projects/${f.project}/home`);await brandedPage.locator('.home-stats').waitFor();
   check(await brandedPage.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()),'#6c4278','Tenant primary applied');
   await brandedPage.screenshot({path:`${out}/requester-tenant-colors.png`,fullPage:true});await branded.close();
+  // The consolidated project drawer keeps account actions usable, including recovery.
+  const accountContext=await browser.newContext({viewport:{width:390,height:844}});
+  await accountContext.addCookies([{name:'swr_session',value:cookie(f.homeRequester),url:origin,httpOnly:true,sameSite:'Lax'}]);
+  const accountPage=await accountContext.newPage();await accountPage.goto(`${origin}/projects/${f.project}/home`);await accountPage.locator('.home-stats').waitFor();
+  await accountPage.getByRole('button',{name:'Project navigation',exact:true}).click();
+  await accountPage.locator('dialog.project-navigation-drawer').getByRole('link',{name:'Profile',exact:true}).click();
+  await accountPage.getByRole('heading',{name:'Profile',exact:true}).waitFor();
+  check(new URL(accountPage.url()).searchParams.get('projectId'),f.project,'Profile navigation reaches contextual page');
+  check(await accountPage.getByRole('button',{name:'Menu',exact:true}).count(),1,'Account-only page retains navigation');
+  await accountPage.goto(`${origin}/projects/${f.project}/home`);await accountPage.locator('.home-stats').waitFor();
+  await accountPage.getByRole('button',{name:'Project navigation',exact:true}).click();
+  const accountDrawer=accountPage.locator('dialog.project-navigation-drawer');
+  await accountPage.route('**/api/auth/logout',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic logout failure'})}));
+  await accountDrawer.getByRole('button',{name:'Sign out',exact:true}).click();
+  await accountDrawer.getByRole('alert').waitFor();
+  check(await accountDrawer.getByRole('button',{name:'Sign out',exact:true}).isEnabled(),true,'Failed logout can retry');
+  await accountPage.unroute('**/api/auth/logout');
+  await accountDrawer.getByRole('button',{name:'Sign out',exact:true}).click();await accountPage.waitForURL('**/login');checks++;
+  await accountContext.close();
   await fs.writeFile(`${out}/browser-results.json`,JSON.stringify({checks,results},null,2));
   console.log(`UI redesign browser/HTTP checks passed: ${checks}; ${results.length} role/theme/viewport combinations.`);
 }finally{await browser.close();}

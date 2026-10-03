@@ -7,6 +7,8 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 import { Icon, type IconName } from './icon';
 import { getProjectNavigation } from './project-navigation';
+import { accountNavigation } from './account-navigation';
+import { AccountSignOut } from './account-sign-out';
 
 const ICONS: Record<string, IconName> = { Home: 'home', 'New Request': 'plus', Requests: 'list', Drafts: 'draft', 'All Requests': 'search', 'Crew Work': 'crew', 'Survey Operations': 'gauge', 'PC Approvals': 'check', 'Team Management': 'team', Admin: 'settings' };
 
@@ -44,7 +46,7 @@ export function ProjectNav({ projectId, role, canAdminister, status, projectName
         return <Link key={item.label} href={href} aria-current={active ? 'page' : undefined} onClick={() => { if (open) close(); }}><Icon name={ICONS[item.label] ?? 'list'} /><span>{item.label === 'Admin' ? 'Project Administration' : item.label}</span></Link>;
       })}</div> : null;
     })}
-    <div className="workspace-nav-account"><p className="workspace-nav-label">Account</p><Link href="/appearance" onClick={() => { if (open) close(); }}><Icon name="settings" />Appearance</Link><Link href="/projects" onClick={() => { if (open) close(); }}><Icon name="back" />Switch project</Link></div>
+    <div className="workspace-nav-account"><p className="workspace-nav-label">Account</p>{accountNavigation(projectId,role ?? undefined).filter(item => item.label !== 'Home' && item.label !== 'Team Management').map(item => <Link key={item.label} href={item.href} onClick={() => { if (open) close(); }}><Icon name={item.label === 'Projects' ? 'back' : 'settings'} />{item.label === 'Projects' ? 'Switch project' : item.label}</Link>)}<AccountSignOut /></div>
   </nav>;
   return <>
     <aside className="project-sidebar"><div className="workspace-sidebar-title">SWRTracker<span>Survey work requests</span></div>{navigation}</aside>

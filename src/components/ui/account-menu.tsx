@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { accountNavigation } from './account-navigation';
+import { AccountSignOut } from './account-sign-out';
 import { ProductBrand } from './product-brand';
 import './account-menu.css';
 import './popout.css';
@@ -17,8 +18,6 @@ export function AccountShell({ children,initialAppearance }: { children: ReactNo
   const pathname = usePathname();
   const [context, setContext] = useState<string>();
   const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
   const [name, setName] = useState<string>();
   const [role,setRole]=useState<import('@/modules/identity/domain/types').ProjectRole>();
   const [accountError, setAccountError] = useState<string>();
@@ -49,11 +48,6 @@ export function AccountShell({ children,initialAppearance }: { children: ReactNo
     document.body.style.overflow = 'hidden';
     return () => { drawer?.close(); document.body.style.overflow = overflow; document.body.style.paddingRight = paddingRight; };
   }, [open]);
-  async function signOut() {
-    setBusy(true); setError(undefined);
-    try { await apiClient.logout(); window.location.replace('/login'); }
-    catch (cause) { setError(getErrorMessage(cause, 'Unable to sign out. Please try again.')); setBusy(false); }
-  }
   const navigation = <>
     <div className="account-panel-heading popout-header"><h2 id="account-navigation-title" className="panel-title">Your account</h2>
       <button type="button" className="button button-secondary" onClick={close} aria-label="Close account menu">
@@ -63,8 +57,7 @@ export function AccountShell({ children,initialAppearance }: { children: ReactNo
       {accountNavigation(context,role).map(item => <Link key={item.label} href={item.href}
         aria-current={pathname === item.href.split('?')[0] && (item.label !== 'Home' || !!context) ? 'page' : undefined}
         onClick={close}>{item.label}</Link>)}
-      <button type="button" disabled={busy} onClick={() => void signOut()}>{busy ? 'Signing out…' : 'Sign out'}</button>
-      {error && <p role="alert" className="error-banner">{error}</p>}
+      <AccountSignOut />
     </nav></div>
   </>;
   return <div className="application-shell" data-mode={initialAppearance?.mode}><AppearanceTheme initial={initialAppearance}/>
@@ -74,17 +67,17 @@ export function AccountShell({ children,initialAppearance }: { children: ReactNo
         <div className="account-identity"><ProductBrand greeting={name?.trim() ? `Hello, ${name}!` : 'Welcome!'} />
           {accountError && <div className="account-greeting-error"><span role="alert">{accountError}</span><button type="button" className="app-link" onClick={() => setRevision(revision + 1)}>Retry greeting</button></div>}
         </div>
-      <button ref={trigger} type="button" className="button button-secondary account-menu-trigger"
+      {!params.projectId && <button ref={trigger} type="button" className="button button-secondary account-menu-trigger"
         aria-label="Menu" aria-expanded={open} aria-controls={open ? 'account-navigation' : undefined} onClick={() => open ? close() : setOpen(true)}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M4 6h16M4 12h16M4 18h16" />
         </svg><span>Menu</span>
-      </button>
+      </button>}
       </div>
     </header>
     <ScrollToTop />
     <div className="application-workspace"><main id="main-content" tabIndex={-1}><div className="page-shell">{children}</div></main></div>
-    <dialog ref={dialog} className="account-menu-panel account-drawer popout-dialog" aria-labelledby="account-navigation-title"
+    {!params.projectId && <dialog ref={dialog} className="account-menu-panel account-drawer popout-dialog" aria-labelledby="account-navigation-title"
       onCancel={event => { event.preventDefault(); close(); }}
       onPointerDown={event => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -96,6 +89,6 @@ export function AccountShell({ children,initialAppearance }: { children: ReactNo
         backdropPressed.current = false;
         const rect = event.currentTarget.getBoundingClientRect();
         if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close();
-      }}>{navigation}</dialog>
+      }}>{navigation}</dialog>}
   </div>;
 }
