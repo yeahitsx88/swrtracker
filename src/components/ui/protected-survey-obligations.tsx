@@ -13,6 +13,7 @@ import {AdministrationSection,AdministrationRecords} from './administration-reco
 import {roleLabel} from '@/lib/display-labels';
 import {PaginationControls} from '@/components/forms';
 import './team-management.css';
+import {ContextHelp} from './context-help';
 
 export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockChange,disabled=false,isBlocked,invalidateVersion=0,foreground=false}:{projectId:string;userId?:UUID;onResolved?:(result:ResolveReviewerResult)=>void;onLockChange?:(locked:boolean)=>void;disabled?:boolean;isBlocked?:()=>boolean;invalidateVersion?:number;foreground?:boolean}){
  const [state,dispatch]=useReducer(reduceProtectedEditor,undefined,initialProtectedEditor);
@@ -96,9 +97,8 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
  </>;
  return <section className="tm-section stack tm-workspace" aria-label="Protected Survey Reviewer obligations">
   <AdministrationSection title="Protected Survey Reviewer obligations" open={!!userId} locked={frozen}>
-   <h4 tabIndex={-1} ref={heading}>Survey Reviewer coverage</h4>
-   <p className="muted">Hand over one live Area review grant to another current Superintendent. Role changes and remaining staffing are separate.</p>
-   {foreground?<><Button type="button" variant="secondary" disabled={open||frozen} onClick={()=>setOpen(true)}>Inspect protected obligations</Button>{open&&<AdministrationDialog title="Survey Reviewer handover" closeDisabled={frozen} onClose={()=>{if(!frozen&&!isBlocked?.()){dispatch({type:'cancel'});dispatch({type:'person',userId:null});resetQuery();setOpen(false);}}}>{content}</AdministrationDialog>}</>:!open?<Button type="button" variant="secondary" onClick={()=>setOpen(true)}>Inspect protected obligations</Button>:content}
+   <div className="heading-with-help"><h4 tabIndex={-1} ref={heading}>Survey Reviewer coverage</h4><ContextHelp label="Survey Reviewer coverage">Hand over one live Area review grant to another current Survey Superintendent before a reviewer leaves or changes roles. Replacement coverage is checked and the confirmed transfer is recorded. Role changes and other staffing obligations are resolved separately.</ContextHelp></div>
+   {foreground?<><Button type="button" variant="secondary" disabled={open||frozen} onClick={()=>setOpen(true)}>Inspect reviewer responsibilities</Button>{open&&<AdministrationDialog size="wide" title="Survey Reviewer handover" help="Inspect a person's Area review grants, choose one grant, then select an eligible replacement Survey Superintendent. Review coverage and confirm the transfer. This does not appoint a Survey Manager; personnel with no responsibility grants have nothing to hand over here." closeDisabled={frozen} onClose={()=>{if(!frozen&&!isBlocked?.()){dispatch({type:'cancel'});dispatch({type:'person',userId:null});resetQuery();setOpen(false);}}}>{content}</AdministrationDialog>}</>:!open?<Button type="button" variant="secondary" onClick={()=>setOpen(true)}>Inspect protected obligations</Button>:content}
   </AdministrationSection>
  </section>;
 }

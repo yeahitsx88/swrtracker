@@ -343,3 +343,12 @@
 - Track invitation purpose and accepted profile in the same setup inventory. Pending invitations grant no administration; accepted profiles expose a direct reviewed assignment. Preserve operational roles, current authority before replay and disabled-access restrictions.
 - Actual email delivery needs a configured external service. The retained local demo continues to expose shareable links and explicit unsent delivery status pending the owner's delivery preference; no external messages or service setup inferred.
 - Owner also reported ERR_TOO_MANY_REDIRECTS. Correct the stale-cookie Login/Projects redirect cycle as part of restoring the requested walkthrough.
+
+
+### Decision 54 - administration guidance, sections and member invitations (2026-10-03)
+- Owner confirmed the first Project Admin assignment works and requested optional instructions beside headings on hover as a system-wide principle. Provide keyboard/touch equivalents; current statuses, required labels, errors and consequential review evidence remain visible.
+- Remove the redundant employee-profile-first Project Admin option. Retain future-admin invitation and existing employee selection; preserve prior invitation evidence.
+- Group project administration into Admin & personnel, Companies, Survey and Project settings. Show independent Project Admin authority beside the operational role; granting administration preserves that role. No role-request authority redesign was selected.
+- Owner selected intended operational role before a new member invitation. Offer existing supported enrollment roles for GC/owner-representative employees and bind role/company/email in the invitation. Acceptance creates selected membership; no auto-admin grant. Subcontractors remain Requester-only through their dedicated flow.
+- Subcontractor invitations can create their prerequisite company and return with it selected. Keep table words and type readable using wider personnel dialogs and contained horizontal scrolling.
+- Reviewer handover help explains supported Area-review responsibility transfer and replacement coverage, distinct from first Survey Manager appointment.

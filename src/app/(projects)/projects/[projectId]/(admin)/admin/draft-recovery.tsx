@@ -39,7 +39,7 @@ export function DraftRecovery({ projectId }: { projectId:string }) {
     finally { busy.current = false; setLoading(false); }
   }
   const locked = loading || Boolean(attempt.current.pending);
-  return <Card title="Deleted Draft Recovery" description="Project Admin only. Restore an unsubmitted draft within 30 days with a recorded reason. Records and files are retained; no permanent purge runs.">
+  return <Card title="Deleted Draft Recovery" help="An independent Project Admin grant is required. Restore an unsubmitted draft within 30 days with a recorded reason. Records and files are retained; no permanent purge runs.">
     <div className="stack">
       {error ? <ErrorBanner message={error} /> : null}{success ? <SuccessBanner message={success} /> : null}
       <Button variant="secondary" disabled={locked} onClick={() => void load()}>{loading ? 'Loading…' : page ? 'Refresh deleted drafts' : 'View deleted drafts'}</Button>

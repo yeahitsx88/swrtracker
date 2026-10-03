@@ -1,0 +1,3 @@
+.admin-workspace-section[hidden] {display:none;}
+.admin-workspace-navigation {flex-wrap:wrap;overflow:visible;}
+.admin-workspace-navigation > .button {flex:none;white-space:nowrap;}

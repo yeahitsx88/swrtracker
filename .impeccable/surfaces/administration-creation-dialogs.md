@@ -4,7 +4,7 @@ THESIS: Keep the next setup task and its outcome directly in front of Tenant IT,
 
 OWN-WORLD: Extend approved Axiom/Roboto identity, light/dark colors, square buttons and 12px panels. Retain the praised administered-project inventory. Owner wireframes describe sequence and foreground placement, not literal red typography or large empty screens.
 
-STORY: Project created -> Set up Project Admin -> choose candidate-first, employee-first or existing profile -> named tenant/existing/new company -> invitation -> tracked acceptance -> reviewed assignment. Company registration returns to the preserved invitation with its new company selected. Acceptance creates a profile and Requester membership first; Project Admin remains a separate reviewed grant directly from that invitation. Show awaiting acceptance, ready to assign and assigned states together.
+STORY: Project created -> Set up Project Admin -> choose future-admin invitation or existing profile -> named tenant/existing/new company -> invitation -> tracked acceptance -> reviewed assignment. Company registration returns to the preserved invitation with its new company selected. Acceptance creates a profile and Requester membership first; Project Admin remains a separate reviewed grant directly from that invitation. Show awaiting acceptance, ready to assign and assigned states together.
 
 FIRST VIEWPORT: Named task, named current step and reachable Close; body fields/evidence; persistent wizard navigation. Native modal makes background inert and contains focus. Narrow viewports use internal scrolling and wrapping controls.
 
@@ -13,3 +13,5 @@ STATES: Empty directories provide actionable prerequisites; loading and failure 
 BOUNDARIES: Administration is independent of operational membership. No invitation automatically grants administration; no disabled access restoration, generalized roles or cross-tenant scope. Filter/sort/page/export/copy and navigation remain direct. Shared operational team editors are not redesigned by this pass.
 
 EVIDENCE: Strict compilation and production build; bounded Tenant IT visual inspection. No new tests or test suites requested. Broader mutation, concurrency, fault and role gates are unverified for this patch.
+
+REFINEMENT (Decision54): Optional instructions sit beside headings in hover/focus/touch help. Admin & personnel, Companies, Survey and Project settings use established underline navigation. Internal member invitations select supported operational roles before review/acceptance; subcontractor invitations can register a prerequisite company and return. Show independent Project Admin authority alongside operational role. Dense table words stay intact in wider dialogs with contained horizontal scrolling.

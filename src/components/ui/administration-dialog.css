@@ -1,5 +1,6 @@
 .administration-dialog { --popout-inset: 1.25rem; width: min(48rem, calc(100vw - 2rem)); max-width: none; max-height: calc(100dvh - 2rem); padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--bg-elevated); }
 .administration-dialog::backdrop { background: rgb(10 20 30 / 45%); }
+.administration-dialog-wide {width:min(72rem,calc(100vw - 2rem));}
 .administration-dialog-title { gap: .35rem; min-width: 0; }
 .administration-dialog-title h2, .administration-dialog-title p { margin: 0; }
 .administration-dialog-title h2 { font-size: 1.25rem; }

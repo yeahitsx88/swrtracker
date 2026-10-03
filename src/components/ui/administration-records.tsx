@@ -2,10 +2,11 @@
 import {useState,type ReactNode} from 'react';
 import {Button,Input} from '@/components/ui';
 import './administration-records.css';
+import {ContextHelp} from './context-help';
 
-export function AdministrationSection({title,children,open=false,locked=false}:{title:string;children:ReactNode;open?:boolean;locked?:boolean}){
+export function AdministrationSection({title,children,help,open=false,locked=false}:{title:string;children:ReactNode;help?:ReactNode;open?:boolean;locked?:boolean}){
  const [expanded,setExpanded]=useState(open);
- return <section className="administration-section"><h3 className="panel-title"><button type="button" className="administration-disclosure" aria-expanded={expanded} disabled={locked} onClick={()=>setExpanded(v=>!v)}>{title}<span aria-hidden="true">{expanded?'−':'+'}</span></button></h3><div hidden={!expanded} className="stack administration-section-content">{children}</div></section>;
+ return <section className="administration-section"><div className="administration-section-heading"><h3 className="panel-title"><button type="button" className="administration-disclosure" aria-expanded={expanded} disabled={locked} onClick={()=>setExpanded(v=>!v)}>{title}<span aria-hidden="true">{expanded?'−':'+'}</span></button></h3>{help&&<ContextHelp label={title}>{help}</ContextHelp>}</div><div hidden={!expanded} className="stack administration-section-content">{children}</div></section>;
 }
 export interface RecordColumn<T>{key:string;label:string;className?:string;text:(row:T)=>string;render?:(row:T)=>ReactNode}
 export function AdministrationRecords<T>({label,rows,id,columns,actions,selectionActions,selected:externalSelected,onSelection:externalSelection,disabled=false,eligible=()=>true,picker=false}:{label:string;rows:T[];id:(row:T)=>string;columns:RecordColumn<T>[];actions?:(row:T)=>ReactNode;selectionActions?:ReactNode;selected?:string[];onSelection?:(ids:string[])=>void;disabled?:boolean;eligible?:(row:T)=>boolean;picker?:boolean}){

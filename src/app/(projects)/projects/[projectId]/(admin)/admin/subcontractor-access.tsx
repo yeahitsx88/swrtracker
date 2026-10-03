@@ -13,6 +13,7 @@ import {AdministrationDialog} from '@/components/ui/administration-dialog';
 import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import {apiRequest} from '@/lib/apiClient';
 import { Field } from '@/components/forms';
+import {CompanyRegistration,type RegisteredCompany} from '@/components/ui/company-registration';
 
 export function SubcontractorAccess({ projectId }: { projectId: string }) {
   const owner=useRef(new CommandOwner()).current,ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
@@ -25,10 +26,12 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [inviteOpen,setInviteOpen]=useState(false),[step,setStep]=useState(0),[confirmed,setConfirmed]=useState(false);
+  const [creatingCompany,setCreatingCompany]=useState(false);
   const command=useRef(new FrozenCommand<{companyId:string;email:string}>());
-  const locked=command.current.locked,uncertain=!!command.current.command&&!command.current.stale;
+  const locked=command.current.locked||creatingCompany,uncertain=!!command.current.command&&!command.current.stale;
   useUnsavedProgress(locked);
-  function closeInvite(){if(command.current.reload()){owner.release('invite');setInviteOpen(false);void load();}}
+  function closeInvite(){if(!creatingCompany&&command.current.reload()){owner.release('invite');setInviteOpen(false);void load();}}
+  function returnCompany(company?:RegisteredCompany){setCreatingCompany(false);if(company){setCompanyId(company.id);void load();}}
 
   const load = useCallback(async () => {
     setError(null);
@@ -68,7 +71,7 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
   return (
     <Card
       title="Subcontractor Access"
-      description="Invite subcontractor requesters and designate who may view all requests from their company on this project."
+      help="Invite subcontractor requesters and manage company-wide request viewing on this project. Invitations grant Requester membership; company-wide viewing is reviewed separately."
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
@@ -77,8 +80,8 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
         {overview ? (
           <>
             <Button disabled={busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>{if(owner.claim('invite')){setInviteOpen(true);setStep(0);setEmail('');setConfirmed(false);setInviteUrl(null);setSuccess(null);setError(null);}}}>Invite a subcontractor requester</Button>
-            {inviteOpen&&<AdministrationDialog title={inviteUrl?'Invitation created':'Invite a subcontractor requester'} step={{current:step+1,total:4,label:['Email','Company','Review','Complete'][step]!}} onClose={closeInvite} closeDisabled={busy!==null||uncertain}
-              footer={inviteUrl?<Button onClick={closeInvite}>Close</Button>:<><Button variant="secondary" disabled={busy!==null||uncertain} onClick={()=>{if(command.current.stale){command.current.reload();setStep(0);setConfirmed(false);void load();}else closeInvite();}}>{command.current.stale?'Reload current access':'Cancel'}</Button><div className="row">{step>0&&<Button variant="secondary" disabled={locked} onClick={()=>{setStep(step-1);setConfirmed(false);}}>Back</Button>}{step<2?<Button disabled={locked||(step===0?!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()):!overview.companies.some(c=>c.id===companyId))} onClick={()=>setStep(step+1)}>Next</Button>:<Button disabled={busy!==null||command.current.stale||!confirmed} onClick={()=>void invite()}>{busy?'Creating…':uncertain?'Retry unchanged invitation':'Create invitation'}</Button>}</div></>}>
+            {inviteOpen&&<AdministrationDialog title={inviteUrl?'Invitation created':'Invite a subcontractor requester'} step={{current:step+1,total:4,label:['Email','Company','Review','Complete'][step]!}} onClose={closeInvite} closeDisabled={busy!==null||uncertain||creatingCompany}
+              footer={inviteUrl?<Button onClick={closeInvite}>Close</Button>:<><Button variant="secondary" disabled={busy!==null||uncertain||creatingCompany} onClick={()=>{if(command.current.stale){command.current.reload();setStep(0);setConfirmed(false);void load();}else closeInvite();}}>{command.current.stale?'Reload current access':'Cancel'}</Button><div className="row">{step>0&&<Button variant="secondary" disabled={locked} onClick={()=>{setStep(step-1);setConfirmed(false);}}>Back</Button>}{step<2?<Button disabled={locked||(step===0?!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()):!overview.companies.some(c=>c.id===companyId))} onClick={()=>setStep(step+1)}>Next</Button>:<Button disabled={busy!==null||creatingCompany||command.current.stale||!confirmed} onClick={()=>void invite()}>{busy?'Creating…':uncertain?'Retry unchanged invitation':'Create invitation'}</Button>}</div></>}>
             {error&&<ErrorBanner message={error}/>} {command.current.stale&&<p role="alert">State changed. Reload and review again.</p>}
             {step===0&&<Field label="Requester email"><Input type="email" maxLength={254} value={email} disabled={locked} onChange={e=>setEmail(e.target.value)}/></Field>}
             {step===1&&<><Field label="Subcontractor company">
@@ -89,7 +92,8 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
                 ))}
               </Select>
             </Field>
-            {!overview.companies.length&&<p>No associated subcontractor companies. Close this flow and register or associate a company first.</p>}</>}
+            {!overview.companies.length&&<p>No subcontractor companies yet. Create one to continue.</p>}
+            <Button variant="secondary" disabled={locked||busy!==null||archived} onClick={()=>setCreatingCompany(true)}>Create new subcontractor company</Button></>}
             {step===2&&<><dl className="administration-dialog-summary"><div><dt>Email</dt><dd>{email.trim()}</dd></div><div><dt>Company</dt><dd>{overview.companies.find(c=>c.id===companyId)?.name}</dd></div></dl><p>The recipient creates their profile using a link valid for seven days. They receive Requester access on this project; company-wide view is granted separately.</p><label className="checkbox-row"><input type="checkbox" checked={confirmed} disabled={locked} onChange={e=>setConfirmed(e.target.checked)}/><span>I confirm this recipient and company.</span></label></>}
             {inviteUrl ? (
               <><SuccessBanner message="Invitation created. Share this link with the intended recipient."/>
@@ -98,6 +102,7 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
               </Field>
               <Button variant="secondary" onClick={()=>{void navigator.clipboard.writeText(inviteUrl).then(()=>setSuccess('Registration link copied.')).catch(()=>setError('Copy failed. Select and copy the displayed link.'));}}>Copy registration link</Button>{success&&<p role="status">{success}</p>}</>
             ) : null}
+            {creatingCompany&&<CompanyRegistration projectId={projectId} owner={owner} disabled={busy!==null||archived||owner.blocked('invite')} onDone={()=>void load()} continuation={{token:'invite',onReturn:returnCompany,allowedTypes:['SUBCONTRACTOR']}}/>}
             </AdministrationDialog>}
 
             <AdministrationSection title="Subcontractor Requesters" locked={ownerToken!==null}>

@@ -13,12 +13,13 @@ export type RegisteredCompany={id:string;name:string;type:string};
 type Company=RegisteredCompany;
 const typeNames:Record<string,string>={GC:'General contractor',SUBCONTRACTOR:'Subcontractor',OWNER_REP:'Owner representative'};
 export function CompanyRegistration({projectId,owner,disabled,onDone,continuation}:{projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void;
-  continuation?:{token:string;onReturn:(company?:RegisteredCompany)=>void}}) {
+  continuation?:{token:string;onReturn:(company?:RegisteredCompany)=>void;allowedTypes?:string[]}}) {
   const token=continuation?.token??'company-registration',endpoint=`/api/projects/${projectId}/companies`;
   useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const gate=useRef(new FrozenCommand<Record<string,unknown>>()).current;
   const [open,setOpen]=useState(!!continuation),[mode,setMode]=useState<'new'|'existing'|undefined>(continuation?'new':undefined),[step,setStep]=useState(0);
-  const [name,setName]=useState(''),[type,setType]=useState(continuation?'GC':'SUBCONTRACTOR'),[selected,setSelected]=useState<Company>();
+  const allowedTypes=continuation?.allowedTypes??(continuation?['GC','OWNER_REP']:Object.keys(typeNames));
+  const [name,setName]=useState(''),[type,setType]=useState(continuation?allowedTypes[0]??'GC':'SUBCONTRACTOR'),[selected,setSelected]=useState<Company>();
   const [search,setSearch]=useState(''),[offset,setOffset]=useState(0),[directory,setDirectory]=useState<{directory:Company[];total:number}>();
   const [loading,setLoading]=useState(false),[error,setError]=useState<string>(),[result,setResult]=useState<Company>(),[consent,setConsent]=useState(false),[,render]=useState(0);
   const blocked=disabled||owner.blocked(token),locked=blocked||gate.locked;
@@ -53,7 +54,7 @@ export function CompanyRegistration({projectId,owner,disabled,onDone,continuatio
       {error&&<ErrorBanner message={error}/>} {gate.stale&&<><p role="alert">State changed. Reload this flow and review the current company.</p><Button variant="secondary" onClick={()=>{if(gate.reload()){setStep(0);setConsent(false);setError(undefined);render(n=>n+1);}}}>Reload company flow</Button></>}
       {result?<><SuccessBanner message={`${result.name} ${mode==='new'?'created and associated':'associated'} with this project.`}/><dl className="administration-dialog-summary"><div><dt>Company name</dt><dd>{result.name}</dd></div><div><dt>Company type</dt><dd>{typeNames[result.type]}</dd></div><div><dt>Company reference</dt><dd>{result.id}</dd></div></dl><p>The company is ready for project enrollment. Creating a company does not create an employee account or grant another project’s access.</p></>:!mode?<><p>Register a new company, or choose a company already in this tenant. Both actions associate it with this project.</p><div className="row"><Button onClick={()=>setMode('new')}>Register new company</Button><Button variant="secondary" onClick={()=>setMode('existing')}>Choose existing company</Button></div></>:<>
         {mode==='new'&&step===0&&<Field label="Company name"><Input value={name} maxLength={200} disabled={locked} onChange={e=>setName(e.target.value)}/></Field>}
-        {mode==='new'&&step===1&&<><p>Choose how {name.trim()} participates in the project.</p>{continuation&&<p className="muted">Project Admin candidates must belong to a general contractor or owner representative company.</p>}<Field label="Company type"><select className="select" value={type} disabled={locked} onChange={e=>setType(e.target.value)}>{Object.entries(typeNames).filter(([value])=>!continuation||value!=='SUBCONTRACTOR').map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></Field></>}
+        {mode==='new'&&step===1&&<><p>Choose how {name.trim()} participates in the project.</p><Field label="Company type"><select className="select" value={type} disabled={locked} onChange={e=>setType(e.target.value)}>{Object.entries(typeNames).filter(([value])=>allowedTypes.includes(value)).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></Field></>}
         {mode==='existing'&&step===0&&<><Field label="Find a company by name"><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);setSelected(undefined);}}/></Field>{loading&&<p role="status">Finding companies…</p>}
           <AdministrationRecords picker label="companies on this page" rows={directory?.directory??[]} id={c=>c.id} disabled={locked||loading} columns={[{key:'name',label:'Company',text:c=>c.name},{key:'type',label:'Company type',text:c=>typeNames[c.type]??c.type}]}
             actions={c=><Button variant="secondary" disabled={locked||loading} aria-pressed={selected?.id===c.id} onClick={()=>setSelected(c)}>{selected?.id===c.id?'Selected':'Choose company'}</Button>}/>

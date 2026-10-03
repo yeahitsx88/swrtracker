@@ -47,9 +47,10 @@ export async function GET(
     const query=req.nextUrl.searchParams,limit=Number(query.get('limit')??100),offset=Number(query.get('offset')??0),search=query.get('search')??'';
     if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||search.length>100)throw new ValidationError('Invalid member page');
     const { rows } = await pool.query<{
-      user_id: string; name: string; email: string; role: ProjectRole; access_disabled_at: string|null; account_disabled_at:string|null; total:string;
+      user_id: string; name: string; email: string; role: ProjectRole; access_disabled_at: string|null; account_disabled_at:string|null; total:string;can_administer:boolean;
     }>(
-      `SELECT pm.user_id, u.name, u.email, pm.role,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total
+      `SELECT pm.user_id, u.name, u.email, pm.role,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total,
+       EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=$2 AND g.project_id=$1 AND g.user_id=u.id AND g.revoked_at IS NULL) AS can_administer
        FROM project_memberships pm JOIN users u ON u.id = pm.user_id
        WHERE pm.project_id = $1 AND u.tenant_id = $2 AND ($3::boolean OR (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL))
        AND (u.name ILIKE $4 OR u.email ILIKE $4) ORDER BY pm.role, u.name, u.email LIMIT $5 OFFSET $6`,
@@ -57,7 +58,7 @@ export async function GET(
     );
     return NextResponse.json({
       total:Number(rows[0]?.total??0),limit,offset,
-      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
+      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role,canAdminister:row.can_administer,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
     });
   } catch (err) {
     return errorResponse(err);

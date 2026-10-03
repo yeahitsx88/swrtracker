@@ -8,6 +8,8 @@ import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import type {AdminOnboardingCommand} from '@/modules/tenancy/application/admin-onboarding';
 import type {AdminEmployee} from '@/modules/tenancy/infrastructure/admin-onboarding.repository';
 import type {UUID} from '@/shared/types';
+import {MEMBER_INVITATION_ROLES,type MemberInvitationRole} from '@/modules/tenancy/domain/member-invitation';
+import {roleLabel} from '@/lib/display-labels';
 import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {Field} from '@/components/forms';
 import {AdministrationRecords,AdministrationSection} from './administration-records';
@@ -18,23 +20,24 @@ import './project-admin-onboarding.css';
 type Purpose='PROJECT_ADMIN'|'EMPLOYEE';
 interface Invitation {
  id:string;email:string;companyName:string;status:string;expiresAt:string;
- purpose:Purpose;registrationPath:string|null;employee:AdminEmployee|null;
+ purpose:Purpose;role:string;registrationPath:string|null;employee:AdminEmployee|null;
 }
 interface Directory {
  employees:AdminEmployee[];total:number;companies:RegisteredCompany[];tenantCompanies:RegisteredCompany[];
  invitations:Invitation[];administrators:Array<{userId:string;name:string;companyName:string}>;
 }
 interface Review {command:AdminOnboardingCommand;title:string;detail:string}
-type Screen='choose'|'company'|'email'|'employee'|'review'|'result';
+type Screen='choose'|'company'|'email'|'role'|'employee'|'review'|'result';
 
-export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
- projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void;
+export function ProjectAdminOnboarding({projectId,owner,disabled,onDone,variant='admin'}:{
+ projectId:string;owner:CommandOwner;disabled:boolean;onDone:()=>void;variant?:'admin'|'member';
 }) {
- const endpoint=`/api/projects/${projectId}/admin-onboarding`,token='project-admin-onboarding';
+ const memberMode=variant==='member',endpoint=`/api/projects/${projectId}/admin-onboarding`,token=memberMode?'member-invitation':'project-admin-onboarding';
  useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const gate=useRef(new FrozenCommand<Review>()).current,generation=useRef(0);
  const [data,setData]=useState<Directory>(),[open,setOpen]=useState(false),[screen,setScreen]=useState<Screen>('choose');
  const [purpose,setPurpose]=useState<Purpose>('PROJECT_ADMIN'),[mode,setMode]=useState<'invite'|'existing'>('invite');
+ const [memberRole,setMemberRole]=useState<MemberInvitationRole>('REQUESTER');
  const [companyKind,setCompanyKind]=useState<'tenant'|'existing'>('tenant'),[company,setCompany]=useState<RegisteredCompany>();
  const [creatingCompany,setCreatingCompany]=useState(false),[search,setSearch]=useState(''),[companySearch,setCompanySearch]=useState(''),[offset,setOffset]=useState(0);
  const [email,setEmail]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>();
@@ -56,8 +59,8 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
 
  function start() {
   if(locked||!owner.claim(token))return;
-  setOpen(true);setScreen('choose');setMode('invite');setPurpose('PROJECT_ADMIN');setCompanyKind('tenant');
-  setCompany(undefined);setEmail('');setCompanySearch('');setSearch('');setOffset(0);
+  setOpen(true);setScreen(memberMode?'company':'choose');setMode('invite');setPurpose(memberMode?'EMPLOYEE':'PROJECT_ADMIN');setCompanyKind('tenant');
+  setMemberRole('REQUESTER');setCompany(memberMode&&data?.tenantCompanies.length===1?data.tenantCompanies[0]:undefined);setEmail('');setCompanySearch('');setSearch('');setOffset(0);
   setReview(undefined);setConsent(false);setError(undefined);setSuccess(undefined);setRenewal(false);setResultInviteId(undefined);
  }
  function close(){
@@ -66,7 +69,7 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
  }
  function reload(){
   if(blocked||creatingCompany||!gate.reload())return;
-  setReview(undefined);setConsent(false);setScreen('choose');setCompany(undefined);setResultInviteId(undefined);setError(undefined);setRevision(n=>n+1);render(n=>n+1);
+  setReview(undefined);setConsent(false);setScreen(memberMode?'company':'choose');setCompany(undefined);setResultInviteId(undefined);setError(undefined);setRevision(n=>n+1);render(n=>n+1);
  }
  function propose(value:Review) {
   if(locked||loading||!owner.claim(token))return;
@@ -80,9 +83,9 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
  }
  function reviewInvite(){
   if(!company||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))return;
-  propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),purpose,confirmed:true},
-   title:purpose==='PROJECT_ADMIN'?'Review Project Admin invitation':'Review employee invitation',
-   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${purpose==='PROJECT_ADMIN'?'Return to this invitation to assign Project Admin after acceptance.':'You can assign Project Admin after their profile is ready.'} Acceptance adds Requester membership; it does not grant administration. The link expires in seven days.`});
+  propose({command:{action:'INVITE',companyId:company.id as UUID,email:email.trim().toLowerCase(),purpose,...(memberMode?{role:memberRole}:{}),confirmed:true},
+   title:purpose==='PROJECT_ADMIN'?'Review Project Admin invitation':'Review project member invitation',
+   detail:`${email.trim()} · ${company.name}. The employee must accept the link and create their profile. ${memberMode?`Acceptance grants ${roleLabel(memberRole)} membership on this project.`:'Acceptance adds Requester membership. Return here to assign Project Admin after acceptance.'} This invitation does not grant administration. The link expires in seven days.`});
  }
  async function submit() {
   if(!review||!consent||blocked||creatingCompany||!owner.claim(token))return;
@@ -107,45 +110,44 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
   if(created){setCompanyKind('existing');setCompany(created);setCompanySearch('');setRevision(n=>n+1);}
  }
  const total=mode==='invite'?5:4;
- const current=screen==='choose'?1:screen==='company'||screen==='employee'?2:screen==='email'?3:screen==='review'?total-1:total;
- const labels:Record<Screen,string>={choose:'Choose how to start',company:'Employee company',email:'Employee email',employee:'Select employee',review:'Review',result:resultInviteId?'Await acceptance':'Complete'};
+ const current=memberMode?screen==='company'?1:screen==='email'?2:screen==='role'?3:screen==='review'?4:5:screen==='choose'?1:screen==='company'||screen==='employee'?2:screen==='email'?3:screen==='review'?total-1:total;
+ const labels:Record<Screen,string>={choose:'Choose how to start',company:'Employee company',email:'Employee email',role:'Operational role',employee:'Select employee',review:'Review',result:resultInviteId?'Invitation status':'Complete'};
  const emailValid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
  const companyChoices=companyKind==='tenant'?data?.tenantCompanies??[]:data?.companies??[];
  const visibleCompanies=company&&!companyChoices.some(c=>c.id===company.id)?[company,...companyChoices]:companyChoices;
  const canDismiss=!blocked&&!creatingCompany&&!gate.pending&&(!gate.command||gate.stale);
 
- return <Card title="Project Admin setup" description="Invite a person, wait for their profile, then assign them to administer this project.">
+ const content=<>
   <div className="stack">
    {!open&&error&&<ErrorBanner message={error}/>}
    {!open&&success&&<SuccessBanner message={success}/>}
-   <ol className="admin-setup-sequence" aria-label="Project Admin setup sequence"><li>Choose company and invite</li><li>Employee accepts and creates profile</li><li>Assign Project Admin</li></ol>
-   {!!data?.administrators.length&&<p role="status"><strong>Project Admin assigned:</strong> {data.administrators.map(p=>`${p.name} (${p.companyName})`).join(', ')}.</p>}
-   {!loading&&!data?.administrators.length&&<p>No Project Admin is assigned yet.{ready.length?' An accepted invitation is ready for assignment.':''}</p>}
-   <div className="row"><Button disabled={locked||open} onClick={start}>{data?.administrators.length?'Set up another Project Admin':'Set up Project Admin'}</Button><Button variant="secondary" disabled={locked||open||loading} onClick={()=>setRevision(n=>n+1)}>Check invitation status</Button></div>
-   <AdministrationSection title="Invitations and next steps" open>
-    <p className="muted">Latest 50 invitations from this setup flow. Accepted profiles can be assigned directly below.</p>
-    <AdministrationRecords label="Project Admin setup invitations" rows={data?.invitations??[]} id={i=>i.id} disabled={locked||open||loading}
+   {!memberMode&&!!data?.administrators.length&&<p role="status"><strong>Project Admin assigned:</strong> {data.administrators.map(p=>`${p.name} (${p.companyName})`).join(', ')}.</p>}
+   {!memberMode&&!loading&&!data?.administrators.length&&<p>No Project Admin is assigned yet.{ready.length?' An accepted invitation is ready for assignment.':''}</p>}
+   <div className="row"><Button disabled={locked||open} onClick={start}>{memberMode?'Invite a new project member':data?.administrators.length?'Set up another Project Admin':'Set up Project Admin'}</Button><Button variant="secondary" disabled={locked||open||loading} onClick={()=>setRevision(n=>n+1)}>Check invitation status</Button></div>
+   <AdministrationSection title={memberMode?'Project member invitations':'Invitations and next steps'} open={!memberMode} help="Shows this invitation type within the latest 50 setup invitations. Filtering, selection and export apply to these loaded records. Accepted Project Admin candidates can be assigned from their invitation.">
+    <AdministrationRecords label={memberMode?'project member invitations':'Project Admin setup invitations'} rows={data?.invitations.filter(i=>i.purpose===(memberMode?'EMPLOYEE':'PROJECT_ADMIN'))??[]} id={i=>i.id} disabled={locked||open||loading}
      columns={[{key:'email',label:'Employee',text:i=>i.employee?`${i.employee.name} · ${i.email}`:i.email},{key:'company',label:'Company',text:i=>i.companyName},
-      {key:'purpose',label:'Purpose',text:i=>i.purpose==='EMPLOYEE'?'Employee profile':'Project Admin'},
-      {key:'status',label:'Next step',text:i=>i.employee?.canAdminister?'Project Admin assigned':i.status==='Accepted'?i.employee?'Ready to assign Project Admin':'Profile unavailable · review access':i.status==='Pending'?'Awaiting profile acceptance':i.status},
+      {key:'purpose',label:memberMode?'Invited role':'Purpose',text:i=>memberMode?roleLabel(i.role):'Project Admin'},
+      {key:'status',label:'Next step',text:i=>memberMode?i.status==='Accepted'?i.employee?'Member active':'Profile unavailable · review access':i.status==='Pending'?'Awaiting profile acceptance':i.status:i.employee?.canAdminister?'Project Admin assigned':i.status==='Accepted'?i.employee?'Ready to assign Project Admin':'Profile unavailable · review access':i.status==='Pending'?'Awaiting profile acceptance':i.status},
       {key:'expiry',label:'Link expires',text:i=>new Date(i.expiresAt).toLocaleString()}]}
-     actions={i=>i.employee&&!i.employee.canAdminister?<Button disabled={locked||open||loading} onClick={()=>assign(i.employee!)}>Assign Project Admin</Button>:i.registrationPath?<>
+     actions={i=>!memberMode&&i.employee&&!i.employee.canAdminister?<Button disabled={locked||open||loading} onClick={()=>assign(i.employee!)}>Assign Project Admin</Button>:i.registrationPath?<>
       <Button variant="secondary" disabled={locked||open} onClick={()=>void copyLink(i.registrationPath!)}>Copy invitation link</Button>
       <Button variant="secondary" disabled={locked||open||loading} onClick={()=>{if(!owner.claim(token))return;setResultInviteId(i.id);setPurpose(i.purpose);setMode('invite');setScreen('result');setSuccess(undefined);setError(undefined);setOpen(true);}}>Continue invitation</Button>
       <Button variant="secondary" disabled={locked||open||loading} onClick={()=>propose({command:{action:'CANCEL_INVITE',inviteId:i.id as UUID,confirmed:true},title:`Cancel invitation for ${i.email}`,detail:'The pending link will stop working. Existing accounts and project memberships are preserved.'})}>Cancel invitation</Button>
      </>:null}/>
    </AdministrationSection>
   </div>
-  {open&&<AdministrationDialog title={screen==='review'?review?.title??'Review assignment':screen==='result'?resultInviteId?'Invitation and acceptance':'Project Admin setup completed':purpose==='EMPLOYEE'?'Create an employee profile':'Set up Project Admin'}
-   step={{current,total,label:labels[screen]}} onClose={close} closeDisabled={!canDismiss}
+  {open&&<AdministrationDialog title={screen==='review'?review?.title??'Review assignment':screen==='result'?resultInviteId?'Invitation and acceptance':'Project Admin setup completed':memberMode?'Invite a project member':'Set up Project Admin'}
+   step={{current,total,label:labels[screen]}} size={screen==='employee'?'wide':'standard'} onClose={close} closeDisabled={!canDismiss}
    footer={screen==='result'?<Button disabled={!canDismiss} onClick={close}>Close</Button>:screen==='review'?<>
     <Button variant="secondary" disabled={!canDismiss} onClick={gate.stale?reload:close}>{gate.stale?'Reload setup':'Cancel'}</Button>
-    <div className="row"><Button variant="secondary" disabled={locked} onClick={()=>{setReview(undefined);setConsent(false);setScreen(mode==='invite'?'email':'employee');}}>Back</Button>
+    <div className="row"><Button variant="secondary" disabled={locked} onClick={()=>{setReview(undefined);setConsent(false);setScreen(memberMode?'role':mode==='invite'?'email':'employee');}}>Back</Button>
     <Button disabled={!consent||blocked||creatingCompany||gate.pending||gate.stale} onClick={()=>void submit()}>{gate.pending?'Submitting…':gate.command?'Retry same action':review?.command.action==='INVITE'?'Create invitation':review?.command.action==='GRANT'?'Assign Project Admin':'Cancel invitation'}</Button></div>
    </>:<><Button variant="secondary" disabled={locked} onClick={close}>Cancel</Button><div className="row">
-    {screen!=='choose'&&<Button variant="secondary" disabled={locked} onClick={()=>setScreen(screen==='email'?'company':'choose')}>Back</Button>}
+    {screen!=='choose'&&!(memberMode&&screen==='company')&&<Button variant="secondary" disabled={locked} onClick={()=>setScreen(screen==='role'?'email':screen==='email'?'company':'choose')}>Back</Button>}
     {screen==='company'&&<Button disabled={locked||loading||!company} onClick={()=>setScreen('email')}>Next</Button>}
-    {screen==='email'&&<Button disabled={locked||loading||!emailValid||!company} onClick={reviewInvite}>Review invitation</Button>}
+    {screen==='email'&&<Button disabled={locked||loading||!emailValid||!company} onClick={memberMode?()=>setScreen('role'):reviewInvite}>{memberMode?'Next':'Review invitation'}</Button>}
+    {screen==='role'&&<Button disabled={locked||loading||!emailValid||!company} onClick={reviewInvite}>Review invitation</Button>}
    </div></>}>
    {error&&<ErrorBanner message={error}/>} {loading&&<p role="status">Refreshing setup status…</p>}
    {screen==='choose'&&<>
@@ -153,7 +155,6 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
     <div className="admin-setup-options">
      <div><h3>Invite your future Project Admin</h3><p>Choose their company and email. Track acceptance here, then assign them.</p><Button disabled={locked||loading} onClick={()=>{setPurpose('PROJECT_ADMIN');setMode('invite');chooseTenant();setScreen('company');}}>Invite a Project Admin candidate</Button></div>
      <div><h3>Use an existing employee</h3><p>Select a person whose tenant profile already exists and review the assignment.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setMode('existing');setPurpose('PROJECT_ADMIN');setScreen('employee');}}>Choose an existing employee</Button></div>
-     <div><h3>Create the employee profile first</h3><p>Invite them as an employee now. Assign Project Admin from their accepted invitation later.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setPurpose('EMPLOYEE');setMode('invite');chooseTenant();setScreen('company');}}>Invite an employee first</Button></div>
     </div>
    </>}
    {screen==='company'&&<>
@@ -173,9 +174,10 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
    {screen==='email'&&<>
     <p><strong>Company:</strong> {company?.name}</p>
     <Field label="Employee email"><Input type="email" value={email} maxLength={254} disabled={locked} onChange={e=>setEmail(e.target.value)}/></Field>
-    <p>The employee will use their invitation link to create a profile and password. You will assign Project Admin after acceptance.</p>
+    <p>The employee will use their invitation link to create a profile and password.{!memberMode?' You will assign Project Admin after acceptance.':''}</p>
     <p className="muted">Local demo delivery: copy and share the link. No email is sent by this demo.</p>
    </>}
+   {screen==='role'&&<Field label="Operational role on this project"><select className="select" value={memberRole} disabled={locked} onChange={e=>setMemberRole(e.target.value as MemberInvitationRole)}>{MEMBER_INVITATION_ROLES.map(value=><option key={value} value={value}>{roleLabel(value)}</option>)}</select></Field>}
    {screen==='employee'&&<>
     <Field label="Search employee name or email"><Input value={search} maxLength={100} disabled={locked} onChange={e=>{setSearch(e.target.value);setOffset(0);}}/></Field>
     <p className="muted">Choose an active general contractor or owner representative employee. Tenant IT can search across the tenant; Project Admins use this project's companies.</p>
@@ -194,12 +196,13 @@ export function ProjectAdminOnboarding({projectId,owner,disabled,onDone}:{
     {success&&<SuccessBanner message={success}/>}
     {renewal&&<a className="app-link" href="/login">Sign in again</a>}
     {resultInviteId&&(resultInvite?<>
-     <dl className="administration-dialog-summary"><div><dt>Employee</dt><dd>{resultInvite.email}</dd></div><div><dt>Company</dt><dd>{resultInvite.companyName}</dd></div><div><dt>Progress</dt><dd>{resultInvite.employee?.canAdminister?'Project Admin assigned':resultInvite.status==='Accepted'?'Profile accepted':resultInvite.status==='Pending'?'Awaiting profile acceptance':resultInvite.status}</dd></div></dl>
+     <dl className="administration-dialog-summary"><div><dt>Employee</dt><dd>{resultInvite.email}</dd></div><div><dt>Company</dt><dd>{resultInvite.companyName}</dd></div>{memberMode&&<div><dt>Invited role</dt><dd>{roleLabel(resultInvite.role)}</dd></div>}<div><dt>Progress</dt><dd>{!memberMode&&resultInvite.employee?.canAdminister?'Project Admin assigned':resultInvite.status==='Accepted'?'Profile accepted':resultInvite.status==='Pending'?'Awaiting profile acceptance':resultInvite.status}</dd></div></dl>
      {resultInvite.registrationPath&&<><Field label="Employee invitation link"><Input readOnly value={new URL(resultInvite.registrationPath,window.location.origin).href} onFocus={e=>e.currentTarget.select()}/></Field><Button variant="secondary" disabled={locked} onClick={()=>void copyLink(resultInvite.registrationPath!)}>Copy invitation link</Button><p className="muted">No email was sent. Share this link with {resultInvite.email}. For this walkthrough, open it in a separate browser session.</p></>}
-     {resultInvite.employee&&!resultInvite.employee.canAdminister?<><p>The employee has created their profile. Review their assignment to finish setup.</p><Button disabled={locked||loading} onClick={()=>assign(resultInvite.employee!)}>Assign Project Admin</Button></>:resultInvite.status==='Pending'?<><p>After they accept, continue here or return to Invitations and next steps.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>setRevision(n=>n+1)}>Check acceptance and continue</Button></>:resultInvite.status==='Accepted'&&!resultInvite.employee?<p role="alert">This profile is not eligible for assignment. Review current account and project access before continuing.</p>:null}
+     {memberMode&&resultInvite.employee?<SuccessBanner message={`${resultInvite.employee.name} is a project member. Current role: ${roleLabel(resultInvite.employee.role??resultInvite.role)}.`}/>:!memberMode&&resultInvite.employee&&!resultInvite.employee.canAdminister?<><p>The employee has created their profile. Review their assignment to finish setup.</p><Button disabled={locked||loading} onClick={()=>assign(resultInvite.employee!)}>Assign Project Admin</Button></>:resultInvite.status==='Pending'?<><p>After they accept, check their profile here.</p><Button variant="secondary" disabled={locked||loading} onClick={()=>{setRevision(n=>n+1);onDone();}}>Check acceptance and continue</Button></>:resultInvite.status==='Accepted'&&!resultInvite.employee?<p role="alert">This profile is not eligible for assignment. Review current account and project access before continuing.</p>:null}
     </>:<><p role="status">{loading?'Loading invitation status…':'Invitation status could not be loaded.'}</p><Button variant="secondary" disabled={locked||loading} onClick={()=>setRevision(n=>n+1)}>Reload invitation status</Button></>)}
    </>}
    {creatingCompany&&<CompanyRegistration projectId={projectId} owner={owner} disabled={blocked} onDone={onDone} continuation={{token,onReturn:returnCompany}}/>}
   </AdministrationDialog>}
- </Card>;
+ </>;
+ return memberMode?<div className="stack">{content}</div>:<Card title="Project Admin setup" help={<><p>Invite a person, wait for their profile, then assign them to administer this project.</p><ol><li>Choose company and invite.</li><li>Employee accepts and creates their profile.</li><li>Review and assign Project Admin.</li></ol></>}>{content}</Card>;
 }

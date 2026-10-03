@@ -302,3 +302,12 @@ Owner-approved creation and review flows use the shared native AdministrationDia
 Creation progresses through short named steps, explicit review and a saved result in the same dialog. Keep Back, Cancel and Next/Confirm in the visible footer. Native modal focus contains keyboard navigation; closing returns focus to the entry button. Long content scrolls inside the dialog. Use tenant-scoped searchable pickers instead of requiring UUID entry.
 
 Validation stays beside the active step; mutation errors and results stay in the task. Close, backdrop dismissal, Escape and field edits are unavailable during pending or uncertain mutations. Retry preserves the exact body/key; a definitive conflict requires deliberate reload and renewed review. Normal filtering, sorting, pagination, export, copying and navigation keep their direct behavior. Do not turn every control into a dialog.
+
+
+## Guidance on demand
+
+Optional procedures belong in a help control beside the relevant heading, available on hover, keyboard focus and click/tap. Use the shared ContextHelp component, keep its popover within the viewport, and dismiss it with Escape. This is the system-wide principle for future work; this pass applies it to Tenant/Central IT and project administration. Keep required field labels, immediate validation, current status, permissions needed for a decision and consequential review evidence visible. Do not hide actionable errors or confirmation details as help.
+
+Project administration uses the existing underline navigation for Admin & personnel, Companies, Survey and Project settings. Keep each workspace mounted while switching sections so a refresh does not discard command intent; native dialogs keep background navigation inert during active work. Wide personnel dialogs accommodate readable table columns. Names, emails, role labels and action buttons retain complete words; tables scroll horizontally when their content exceeds the available width instead of shrinking type. Request descriptions keep their deliberate wrapping treatment.
+
+Help uses the existing compact supporting-text size of 0.875rem; its trigger retains a 44px target.

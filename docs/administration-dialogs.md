@@ -17,10 +17,21 @@ Use AdministrationDialog for focused creation, edit or consequential review from
 
 ## Authority and data
 
-Tenant/Central IT administration is independent of operational membership. Project Admin has current scoped administration. Internal invitation accepts a new profile with Requester membership only; administration is granted separately afterward. Preserve existing roles and refuse disabled access restoration. New writers retain lifecycle barriers, current authority before recorded replay and atomic administrative evidence. Optional keys for templates, subcontractor invitations and configuration preserve unkeyed clients.
+Tenant/Central IT administration is independent of operational membership. Project Admin has current scoped administration. Project Admin candidate invitations create Requester membership only; administration is granted separately afterward. Internal project member invitations bind the selected fixed operational role before acceptance. Existing invitation-bound Identity registration creates that membership; no new admin grant is inferred. Subcontractor invitations remain Requester-only. Preserve existing roles and refuse disabled access restoration. New writers retain lifecycle barriers, current authority before recorded replay and atomic administrative evidence. Optional keys for templates, subcontractor invitations and configuration preserve unkeyed clients.
 
 ## Delivery evidence
 
 Strict/unused TypeScript compilation and pinned production build passed. Visual inspection is bounded to the fresh Tenant IT demo and non-submitted task surfaces. No new tests/test suites requested or run. Mutation, concurrency, lost-response, alternate-role and fault rollback acceptance remain unverified for this patch. Alpha1 results are baseline evidence only.
 
 Coverage and walkthrough: [fresh startup](../audits/fresh-startup/NOTES.md). Current design: [DESIGN.md](../DESIGN.md).
+
+
+## Administration guidance and enrollment (Decision54)
+
+- Optional instructions use ContextHelp beside Card, section or dialog headings. Hover, focus, click/tap and Escape work; the help remains within viewport bounds. Keep necessary review evidence, statuses and field validation visible.
+- Project administration has Admin & personnel, Companies, Survey and Project settings workspaces. Personnel includes independent Project Admin grants, existing member enrollment and new-member invitations. Companies includes registration and subcontractor access; Survey contains reviewer responsibilities; settings contains templates, diagnostics, request configuration, access settings and draft recovery.
+- Project Admin setup offers future-admin invitation or an existing employee. The redundant employee-first admin option is removed; prior employee invitations remain accessible through member invitations.
+- A new internal member chooses tenant/existing/new company, email and one supported operational role before invitation review. Acceptance uses that bound role. No generalized RBAC, new role type or automatic Project Admin grant is introduced.
+- Subcontractor company registration can be launched inside its requester invitation with type restricted to SUBCONTRACTOR; the same ownership/frozen-command continuation returns to the preserved invitation with the company selected.
+- Personnel inventories show operational role and independent Project Admin administration in separate columns. Dense tables use wider dialogs and intact words with keyboard-reachable horizontal scrolling at narrow widths.
+- Reviewer handover transfers one live Area review grant to an eligible current Superintendent after replacement coverage review. It does not appoint the first Survey Manager and does not resolve every staffing obligation.
