@@ -1,6 +1,7 @@
 /**
  * Shared helpers for ticket transition route handlers.
  */
+import {assertRecommissioningMutation} from './recommissioning-gate';
 import { type NextRequest } from 'next/server';
 import { ForbiddenError, NotFoundError } from '@/shared/errors';
 import { requireActiveAuth as requireAuth } from './auth';
@@ -96,6 +97,7 @@ export async function withTicketMutation<T>(
     req, auth, mode: 'SHARED',
     authorize: async db => {
       current = await getTicketRouteContext(req, expected.ticketId, db);
+      await assertRecommissioningMutation(db,current.tenantId,current.projectId,req.nextUrl.pathname);
     },
   });
 }

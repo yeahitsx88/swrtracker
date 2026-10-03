@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import type {Appearance} from '@/modules/identity/application/appearance';
+import {AppearanceTheme} from './appearance-theme';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { apiClient } from '@/lib/apiClient';
@@ -10,7 +12,7 @@ import './account-menu.css';
 import './popout.css';
 import { ScrollToTop } from './scroll-to-top';
 
-export function AccountShell({ children }: { children: ReactNode }) {
+export function AccountShell({ children,initialAppearance }: { children: ReactNode;initialAppearance?:Appearance }) {
   const params = useParams<{ projectId?: string }>();
   const pathname = usePathname();
   const [context, setContext] = useState<string>();
@@ -65,7 +67,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
       {error && <p role="alert" className="error-banner">{error}</p>}
     </nav></div>
   </>;
-  return <div className="application-shell">
+  return <div className="application-shell" data-mode={initialAppearance?.mode}><AppearanceTheme initial={initialAppearance}/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="app-nav">
       <div className="app-nav-inner">

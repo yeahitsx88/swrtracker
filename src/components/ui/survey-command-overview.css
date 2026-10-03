@@ -4,10 +4,10 @@
 .ops-command h2 { font-size:1.25rem; }
 .ops-command h3 { font-size:1.05rem; }
 .ops-command-heading p,.ops-command-panel-heading p { margin:.3rem 0 0; color:var(--muted); font-size:.875rem; }
-.ops-command-heading > span { color:var(--action); background:#edf3f8; border-radius:6px; padding:.3rem .55rem; font-size:.76rem; font-weight:700; }
+.ops-command-heading > span { color:var(--action); background:var(--surface-hover); border-radius:6px; padding:.3rem .55rem; font-size:.76rem; font-weight:700; }
 .ops-command-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.7rem; align-items:end; margin:1rem 0; }
 .ops-command-filters label { display:grid; gap:.35rem; min-width:0; font-size:.8rem; font-weight:600; }
-.ops-command-filters select,.ops-command-filters input { width:100%; min-width:0; min-height:44px; border:1px solid #81909d; border-radius:10px; padding:.5rem .6rem; background:white; color:var(--ink); font:inherit; font-size:1rem; }
+.ops-command-filters select,.ops-command-filters input { width:100%; min-width:0; min-height:44px; border:1px solid #81909d; border-radius:10px; padding:.5rem .6rem; background:var(--bg-elevated); color:var(--ink); font:inherit; font-size:1rem; }
 .ops-command-more { grid-column:1 / -1; border-top:1px solid var(--line); }
 .ops-command-more summary { cursor:pointer; min-height:44px; padding:.65rem 0; font-size:.875rem; font-weight:600; }
 .ops-command-more > div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.7rem; }
@@ -29,9 +29,9 @@
 .ops-command-panel .kpi-values button { color:var(--ink); }
 .ops-command-distribution { min-width:0; padding-top:1rem; }
 .ops-command-switch { display:flex; flex-wrap:wrap; gap:.3rem; }
-.ops-command-switch button { min-height:44px; padding:.5rem .8rem; border:1px solid var(--line); border-radius:6px; background:white; color:var(--muted); font:inherit; font-size:.85rem; font-weight:600; cursor:pointer; }
-.ops-command-switch button:hover { background:#edf3f8; }
-.ops-command-switch button[aria-pressed="true"] { border-color:var(--brand); background:#e9f1f7; color:var(--action); }
+.ops-command-switch button { min-height:44px; padding:.5rem .8rem; border:1px solid var(--line); border-radius:6px; background:var(--bg-elevated); color:var(--muted); font:inherit; font-size:.85rem; font-weight:600; cursor:pointer; }
+.ops-command-switch button:hover { background:var(--surface-hover); }
+.ops-command-switch button[aria-pressed="true"] { border-color:var(--brand); background:var(--surface-selected); color:var(--action); }
 .ops-command-distribution .kpi-bars { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 1rem; max-height:250px; margin-top:.65rem; }
 .ops-command-distribution .kpi-bars li { min-width:0; border-top:1px solid var(--line); }
 .ops-command-distribution .kpi-bars button { min-height:64px; }

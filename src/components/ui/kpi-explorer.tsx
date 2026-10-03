@@ -1,4 +1,5 @@
 'use client';
+import {RecordCollection} from '@/components/ui/record-collection';
 import { TICKET_TYPE_LABELS } from '@/lib/display-labels';
 
 import Link from 'next/link';
@@ -89,7 +90,7 @@ export function KpiExplorer({projectId,initialMeasure,audience='operations',init
       {!memberId?<Button variant="secondary" onClick={()=>{setDetails(!details);setPage(1);}}>{details?'Hide matching requests':'Show matching requests'}</Button>:null}
       {details?<section aria-label="Matching KPI requests"><p className="kpi-scope">{cycle?'Completed population, including samples excluded from the average. ':''}Live records may change after this aggregate snapshot.</p>
         <div className="ops-pagination"><span>{request.data?.total??'…'} matching requests · page {page} of {pages}</span><label>Rows<select value={size} onChange={e=>{setSize(Number(e.target.value));setPage(1);}}>{[10,25,50,100].map(n=><option key={n}>{n}</option>)}</select></label><Button variant="secondary" disabled={page===1} onClick={()=>setPage(n=>n-1)}>Previous</Button><Button variant="secondary" disabled={page>=pages} onClick={()=>setPage(n=>n+1)}>Next</Button></div>
-        {request.loading?<p role="status">Loading matching requests…</p>:request.error?<p role="alert">{request.error} <Button onClick={()=>setRevision(n=>n+1)}>Retry</Button></p>:<ul className="ops-detail-list">{request.data?.data.map(ticket=><li key={ticket.id}><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber}</Link><span>{ticket.description}</span><small>{operationsStatusLabel(ticket.status)} · Need-By {ticket.requestedDate?.slice(0,10) ?? 'Not set'}</small></li>)}</ul>}
+        {request.loading?<p role="status">Loading matching requests…</p>:request.error?<p role="alert">{request.error} <Button onClick={()=>setRevision(n=>n+1)}>Retry</Button></p>:<RecordCollection label="supporting requests" records={<>{request.data?.data.map(ticket=><li key={ticket.id}><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber}</Link><span>{ticket.description}</span><small>{operationsStatusLabel(ticket.status)} · Need-By {ticket.requestedDate?.slice(0,10) ?? 'Not set'}</small></li>)}</>}/>}
       </section>:null}
     </>:null}
   </section>;

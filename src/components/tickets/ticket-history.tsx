@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import {AdministrationRecords,AdministrationSection} from '@/components/ui/administration-records';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { TicketHistoryItem } from '@/lib/contracts';
@@ -119,39 +120,11 @@ export function TicketHistory({ ticketId, refreshRevision = 0 }: TicketHistoryPr
     return false;
   });
 
-  return (
-    <ol className="ticket-history" aria-label="SWR history">
-      {shown.map((item) => {
-        const detail = summary(item);
-        const followUpTicketId = typeof item.details.followUpTicketId === 'string'
-          ? item.details.followUpTicketId
-          : null;
-        const projectId = typeof item.details.projectId === 'string' ? item.details.projectId : null;
-        const attached = notices.get(item) ?? [];
-        return (
-          <li key={`${item.source}:${item.id}`} className={`timeline-item tone-dot-${historyTone(item.type)}`}>
-            <span className="timeline-dot" aria-hidden="true" />
-            <div className="timeline-body">
-              <p className="timeline-title">{item.source === 'NOTIFICATION' ? `Notice: ${humanize(item.type)}` : humanize(item.type)}</p>
-              <p className="timeline-meta">
-                {new Date(item.occurredAt).toLocaleString()}
-                {item.actor ? ` · ${item.actor.name}` : ''}
-              </p>
-              {detail ? <p className="timeline-detail">{detail}</p> : null}
-              {attached.map((notice) => (
-                <span key={notice.id} className="timeline-notice">
-                  <Icon name="file" size={13} />Requester notice{typeof notice.details.deliveryState === 'string' ? ` · ${humanize(notice.details.deliveryState)}` : ''}
-                </span>
-              ))}
-              {followUpTicketId && projectId ? (
-                <Link className="text-link" href={`/projects/${projectId}/tickets/${followUpTicketId}`}>
-                  Open linked follow-up
-                </Link>
-              ) : null}
-            </div>
-          </li>
-        );
-      })}
-    </ol>
-  );
+  return <AdministrationSection title="Recorded request history" open><AdministrationRecords label="request history" rows={shown} id={item=>`${item.source}:${item.id}`} columns={[
+    {key:'occurred',label:'Time',text:item=>item.occurredAt,render:item=>new Date(item.occurredAt).toLocaleString()},
+    {key:'type',label:'Event',text:item=>humanize(item.type)},
+    {key:'actor',label:'Actor',text:item=>item.actor?.name??'System'},
+    {key:'detail',label:'Evidence',text:item=>summary(item)??''},
+    {key:'notices',label:'Related notices',text:item=>(notices.get(item)??[]).map(n=>`${humanize(n.type)} · ${typeof n.details.deliveryState==='string'?humanize(n.details.deliveryState):'Recorded'}`).join('; ')}
+  ]} actions={item=>typeof item.details.followUpTicketId==='string'&&typeof item.details.projectId==='string'?<Link className="app-link" href={`/projects/${item.details.projectId}/tickets/${item.details.followUpTicketId}`}>Open follow-up request</Link>:null}/></AdministrationSection>;
 }

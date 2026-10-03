@@ -1,3 +1,4 @@
+import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 
@@ -21,6 +22,7 @@ export async function lockDraftActor(db: DbClient, scope: {
     [scope.tenantId, scope.projectId, scope.actorId, role, scope.sessionVersion]);
   if (!rows[0]) throw new ForbiddenError('Current project authority is required');
   if (mutation && rows[0].status === 'ARCHIVED') throw new ConflictError('Archived projects are read-only');
+  if(mutation)await assertRecommissioningMutation(db,scope.tenantId,scope.projectId);
   return { companyId: rows[0].company_id };
 }
 

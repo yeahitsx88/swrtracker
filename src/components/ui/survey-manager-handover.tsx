@@ -1,4 +1,5 @@
 'use client';
+import {RecordCollection} from '@/components/ui/record-collection';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
@@ -19,7 +20,7 @@ export function SurveyManagerHandover({projectId,incoming,owner,onLockChange,onR
  {!success&&<><label className="field"><span className="field-label">Outgoing Survey Manager</span><select className="select" value={outgoing} disabled={blocked||loading||gate.locked} onChange={e=>{setOutgoing(e.target.value);setPreview(undefined);setConsent(false);}}><option value="">Choose the outgoing manager</option>{people.filter(p=>p.role==='SURVEY_MANAGER').map(p=><option key={p.userId} value={p.userId}>{p.name}</option>)}</select></label>
  <label className="field"><span className="field-label">Superintendent taking over coverage</span><select className="select" value={coverage} disabled={blocked||loading||gate.locked} onChange={e=>{setCoverage(e.target.value);setPreview(undefined);setConsent(false);}}><option value="">Choose the coverage Superintendent</option>{people.filter(p=>p.role==='SURVEY_SUPERINTENDENT').map(p=><option key={p.userId} value={p.userId}>{p.name}</option>)}</select></label>
  <Button variant="secondary" disabled={!outgoing||!coverage||blocked||loading||gate.locked} onClick={()=>void load()}>Preview manager handover</Button>
- {preview&&<><p>{preview.incoming.name} will become Survey Manager. {preview.coverage.name} will receive {preview.areaIds.length} Area assignment(s) and {preview.reportingLinkIds.length} reporting crew(s) from them. Both people must sign in again.</p>{preview.blockers.length>0&&<ul>{preview.blockers.map(b=><li key={b}>{b}</li>)}</ul>}
+ {preview&&<><p>{preview.incoming.name} will become Survey Manager. {preview.coverage.name} will receive {preview.areaIds.length} Area assignment(s) and {preview.reportingLinkIds.length} reporting crew(s) from them. Both people must sign in again.</p>{preview.blockers.length>0&&<RecordCollection label="manager handover blockers" records={<>{preview.blockers.map(b=><li key={b}>{b}</li>)}</>}/>}
  <label className="field"><span className="field-label">Reason for manager handover</span><Input value={reason} maxLength={1000} disabled={blocked||gate.locked} onChange={e=>setReason(e.target.value)}/></label><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={blocked||gate.locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm the displayed promotion and coverage transfer for this project.</span></label>
  <Button disabled={blocked||loading||gate.pending||gate.stale||!consent||!reason.trim()||preview.blockers.length>0} onClick={()=>void submit()}>{gate.pending?'Submitting…':gate.command?'Retry same handover':'Confirm manager appointment'}</Button></>}
  {gate.stale&&<p role="alert">State changed. Reload the handover and confirm again.</p>}

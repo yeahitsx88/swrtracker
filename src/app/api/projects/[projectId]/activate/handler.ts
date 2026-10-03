@@ -1,7 +1,7 @@
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ConflictError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { withTransaction } from '@/lib/with-transaction';
@@ -79,6 +79,7 @@ export async function handlePostProjectActivation(
         auth.userId,
         auth.sessionVersion,
       );
+      if((await client.query('SELECT id FROM project_recommissioning WHERE tenant_id=$1 AND project_id=$2 AND opened_at IS NULL',[auth.tenantId,projectId])).rows.length)throw new ConflictError('Use the guarded recommissioning review before reopening.');
       const changed = await activateProject(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,

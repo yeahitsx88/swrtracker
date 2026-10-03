@@ -1,5 +1,6 @@
 'use client';
 
+import {RecordCollection} from '@/components/ui/record-collection';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -157,18 +158,18 @@ export default function SurveyOperationsPage() {
       {tab === 'assignment' ? <Card className="ops-list" title="Need Assignment" description={superintendent ? 'Area-wide approved requests awaiting an Instrument Man. Expand a row to review the request.' : 'Approved requests awaiting an Instrument Man. Expand a row to assign crew.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          {ticketPage.items.map((ticket) => (
+          <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket} partyChiefs={partyChiefs} instrumentMen={instrumentMen}
               readOnly={superintendent} projectId={projectId}
               busy={busy === ticket.id || members.length === 0} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
-          ))}
+          ))}</>}/>
         </div>
       </Card> : null}
 
       {tab === 'open' ? <Card className="ops-list" title="Open Requests" description={superintendent ? 'Area-wide workload, high priority first, then earliest Need-By. Open a request for applicable actions.' : 'High priority first, then earliest Need-By. Expand a row for review actions.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          {ticketPage.items.map((ticket) => (
+          <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
             <details className="ops-queue-row" key={ticket.id}>
               <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
               <div className="stack ops-row-body">
@@ -203,7 +204,7 @@ export default function SurveyOperationsPage() {
                 </div> : null}
               </div>
             </details>
-          ))}
+          ))}</>}/>
         </div>
       </Card> : null}
 
@@ -214,7 +215,7 @@ export default function SurveyOperationsPage() {
             <Button variant="secondary" onClick={() => void run('retry', () => apiClient.operateLocalNotificationPreview(projectId, 'retry-failed'), 'Failed messages queued for retry.')}>Retry Failed</Button>
           </div>
           {messagePage.total === 0 ? <p className="muted">No messages match this view. Clear filters or capture queued notices.</p> : null}
-          {messagePage.items.map((message) => (
+          <RecordCollection label="local messages" records={<>{messagePage.items.map((message) => (
             <details className="ops-queue-row" key={message.id}>
               <summary>{message.subject}</summary><div className="stack ops-row-body">
               <p>{message.body}</p>
@@ -222,7 +223,7 @@ export default function SurveyOperationsPage() {
               <p className="muted">{humanizeCode(message.deliveryState)} · attempts {message.attemptCount} · {new Date(message.createdAt).toLocaleString()}</p>
               {message.lastError ? <p className="muted">Last error: {message.lastError}</p> : null}
             </div></details>
-          ))}
+          ))}</>}/>
         </div>
       </Card> : null}
       </div>}

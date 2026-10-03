@@ -98,7 +98,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export const apiClient = {
- projectAdministration():Promise<{canCreateProject:boolean;projects:Array<{id:string;name:string;status:'SETUP'|'ACTIVE'|'ARCHIVED';crewBuild:string}>;templates:Array<{id:string;name:string;crewBuild:string}>}>{return apiRequest('/api/projects/administration');},
+ projectAdministration():Promise<{canCreateProject:boolean;projects:Array<{id:string;name:string;status:'SETUP'|'ACTIVE'|'ARCHIVED';crewBuild:string;recommissioning?:boolean}>;templates:Array<{id:string;name:string;crewBuild:string}>}>{return apiRequest('/api/projects/administration');},
  createProject(input:{name:string;crewBuild?:import('@/modules/tenancy/domain/types').CrewBuild;templateId?:string}):Promise<{project:{id:string;name:string;status:'SETUP'}}> {return apiRequest('/api/projects',{method:'POST',body:input});},
  workforceContext(projectId:string):Promise<{project:import('@/modules/tenancy/application/survey-teams').TeamProjectContext;role:import('@/modules/identity/domain/types').ProjectRole;snapshotToken:string}>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{mode:'context'}));},
  workforce(projectId:string,query:import('@/modules/tenancy/application/survey-teams').TeamPageQuery):Promise<import('@/modules/tenancy/application/survey-workforce').WorkforcePage>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{...query}));},

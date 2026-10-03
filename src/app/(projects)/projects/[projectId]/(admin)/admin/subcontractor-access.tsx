@@ -1,5 +1,6 @@
 'use client';
 
+import {RecordCollection} from '@/components/ui/record-collection';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { ProjectCompanyAccessResponse } from '@/lib/contracts/projects';
@@ -105,21 +106,21 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
             ) : null}
 
             <AdministrationSection title="Subcontractor Requesters" locked={ownerToken!==null}>
-            <AdministrationRecords label="subcontractor requesters" rows={overview.requesters} id={r=>r.userId} columns={[{key:'name',label:'Name',text:r=>r.name},{key:'email',label:'Email',text:r=>r.email},{key:'company',label:'Company',text:r=>r.companyName},{key:'view',label:'Company view',text:r=>r.authorityGrantId?'Granted':'Own requests'}]} selected={selected} onSelection={setSelected} disabled={busy!==null||ownerToken!==null} eligible={()=>!archived} actions={r=><Button disabled={busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch([{url:r.authorityGrantId?`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`:`/api/projects/${projectId}/company-authority`,method:r.authorityGrantId?'DELETE':'POST',body:r.authorityGrantId?{}:{userId:r.userId},label:`${r.authorityGrantId?'Revoke':'Grant'} ${r.companyName} view for ${r.name} (${r.email})`}])}>{r.authorityGrantId?'Revoke Company View':'Grant Company View'}</Button>}/>
+            <AdministrationRecords label="subcontractor requesters" rows={overview.requesters} id={r=>r.userId} columns={[{key:'name',label:'Name',text:r=>r.name},{key:'email',label:'Email',text:r=>r.email},{key:'company',label:'Company',text:r=>r.companyName},{key:'view',label:'Company view',text:r=>r.authorityGrantId?'Granted':'Own requests'}]} selected={selected} onSelection={setSelected} disabled={busy!==null||ownerToken!==null} eligible={()=>true} actions={r=><Button disabled={busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch([{url:r.authorityGrantId?`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`:`/api/projects/${projectId}/company-authority`,method:r.authorityGrantId?'DELETE':'POST',body:r.authorityGrantId?{}:{userId:r.userId},label:`${r.authorityGrantId?'Revoke':'Grant'} ${r.companyName} view for ${r.name} (${r.email})`}])}>{r.authorityGrantId?'Revoke Company View':'Grant Company View'}</Button>}/>
             <div className="row">{[true,false].map(enabled=><Button key={String(enabled)} variant="secondary" disabled={!selected.length||busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch(overview.requesters.filter(r=>selected.includes(r.userId)&&!!r.authorityGrantId!==enabled).map(r=>({url:enabled?`/api/projects/${projectId}/company-authority`:`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`,method:enabled?'POST':'DELETE',body:enabled?{userId:r.userId}:{},label:`${enabled?'Grant':'Revoke'} ${r.companyName} view for ${r.name} (${r.email})`})))}>{enabled?'Review selected Company View grants':'Review selected Company View revocations'}</Button>)}</div>
             {batch&&<AdministrationBatch actions={batch} owner={owner} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setSelected([]);void load();}}/>}
             </AdministrationSection>
 
             <h3>Pending Invitations</h3>
             {overview.pendingInvites.length === 0 ? <p className="muted">No active invitations.</p> : null}
-            {overview.pendingInvites.map((inviteRecord) => (
+            <RecordCollection label="pending invitations" records={<>{overview.pendingInvites.map((inviteRecord) => (
               <div key={inviteRecord.id}>
                 <strong>{inviteRecord.email}</strong>
                 <div className="muted">
                   {inviteRecord.companyName} · expires {new Date(inviteRecord.expiresAt).toLocaleDateString()}
                 </div>
               </div>
-            ))}
+            ))}</>}/>
           </>
         ) : null}
       </div>

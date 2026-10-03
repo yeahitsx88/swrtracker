@@ -1,5 +1,6 @@
 'use client';
 
+import {RecordCollection} from '@/components/ui/record-collection';
 import { useRef, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { ApiClientError, getErrorMessage } from '@/lib/errors';
@@ -44,11 +45,11 @@ export function DraftRecovery({ projectId }: { projectId:string }) {
       {page ? <>
         <label className="field"><span className="field-label">Drafts per page</span><Select value={limit} disabled={locked} onChange={event => void load(0,Number(event.target.value))}>{[10,20,50,100].map(size => <option key={size}>{size}</option>)}</Select></label>
         {page.data.length===0 ? <p className="muted">No deleted drafts on this page. Submitted and completed requests are never part of this recovery list.</p> : null}
-        {page.data.map(draft => <article key={draft.id} className="ticket-card">
+        <RecordCollection label="deleted drafts" records={<>{page.data.map(draft => <article key={draft.id} className="ticket-card">
           <p className="ticket-headline">{draft.description ? draft.description.length > 160 ? `${draft.description.slice(0,160)}…` : draft.description : 'Untitled draft'}</p>
           <p className="muted">{draft.requesterName} · Deleted {new Date(draft.deletedAt).toLocaleString()}</p>
           {draft.recoverable ? <Button variant="secondary" disabled={locked || stale} onClick={() => { setSelected(draft); setReason(''); setSuccess(null); }}>Review recovery</Button> : <p className="muted">Recovery window ended. Record and files remain retained.</p>}
-        </article>)}
+        </article>)}</>}/>
         <PaginationControls offset={offset} limit={limit} total={page.total} onChange={next => { if (!locked) void load(next); }} />
       </> : null}
       {selected ? <section className="stack" aria-label="Confirm draft recovery">

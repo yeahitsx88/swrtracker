@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-02T03:44:26Z",
+  "generatedAt": "2026-10-03T04:57:23Z",
   "title": "Design System: SWRTracker",
   "extensions": {
     "colorMeta": {
@@ -129,6 +129,314 @@
           "oklch(84% 0.1590 26.59)",
           "oklch(95% 0.1590 26.59)"
         ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Divider",
+        "tonalRamp": [
+          "oklch(15% 0.0261 244.33)",
+          "oklch(26% 0.0261 244.33)",
+          "oklch(38% 0.0261 244.33)",
+          "oklch(49% 0.0261 244.33)",
+          "oklch(61% 0.0261 244.33)",
+          "oklch(72% 0.0261 244.33)",
+          "oklch(84% 0.0261 244.33)",
+          "oklch(95% 0.0261 244.33)"
+        ]
+      },
+      "brand-ink": {
+        "role": "neutral",
+        "displayName": "Action Label",
+        "tonalRamp": [
+          "oklch(15% 0.0000 0.00)",
+          "oklch(26% 0.0000 0.00)",
+          "oklch(38% 0.0000 0.00)",
+          "oklch(49% 0.0000 0.00)",
+          "oklch(61% 0.0000 0.00)",
+          "oklch(72% 0.0000 0.00)",
+          "oklch(84% 0.0000 0.00)",
+          "oklch(95% 0.0000 0.00)"
+        ]
+      },
+      "surface-hover": {
+        "role": "neutral",
+        "displayName": "Hover Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0093 242.84)",
+          "oklch(26% 0.0093 242.84)",
+          "oklch(38% 0.0093 242.84)",
+          "oklch(49% 0.0093 242.84)",
+          "oklch(61% 0.0093 242.84)",
+          "oklch(72% 0.0093 242.84)",
+          "oklch(84% 0.0093 242.84)",
+          "oklch(95% 0.0093 242.84)"
+        ]
+      },
+      "surface-selected": {
+        "role": "neutral",
+        "displayName": "Selected Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0118 239.91)",
+          "oklch(26% 0.0118 239.91)",
+          "oklch(38% 0.0118 239.91)",
+          "oklch(49% 0.0118 239.91)",
+          "oklch(61% 0.0118 239.91)",
+          "oklch(72% 0.0118 239.91)",
+          "oklch(84% 0.0118 239.91)",
+          "oklch(95% 0.0118 239.91)"
+        ]
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Recessed Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0051 247.88)",
+          "oklch(26% 0.0051 247.88)",
+          "oklch(38% 0.0051 247.88)",
+          "oklch(49% 0.0051 247.88)",
+          "oklch(61% 0.0051 247.88)",
+          "oklch(72% 0.0051 247.88)",
+          "oklch(84% 0.0051 247.88)",
+          "oklch(95% 0.0051 247.88)"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success",
+        "tonalRamp": [
+          "oklch(15% 0.1114 160.65)",
+          "oklch(26% 0.1114 160.65)",
+          "oklch(38% 0.1114 160.65)",
+          "oklch(49% 0.1114 160.65)",
+          "oklch(61% 0.1114 160.65)",
+          "oklch(72% 0.1114 160.65)",
+          "oklch(84% 0.1114 160.65)",
+          "oklch(95% 0.1114 160.65)"
+        ]
+      },
+      "warn": {
+        "role": "semantic",
+        "displayName": "Warning",
+        "tonalRamp": [
+          "oklch(15% 0.1275 64.41)",
+          "oklch(26% 0.1275 64.41)",
+          "oklch(38% 0.1275 64.41)",
+          "oklch(49% 0.1275 64.41)",
+          "oklch(61% 0.1275 64.41)",
+          "oklch(72% 0.1275 64.41)",
+          "oklch(84% 0.1275 64.41)",
+          "oklch(95% 0.1275 64.41)"
+        ]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Deep Slate Canvas",
+        "tonalRamp": [
+          "oklch(15% 0.0192 252.10)",
+          "oklch(26% 0.0192 252.10)",
+          "oklch(38% 0.0192 252.10)",
+          "oklch(49% 0.0192 252.10)",
+          "oklch(61% 0.0192 252.10)",
+          "oklch(72% 0.0192 252.10)",
+          "oklch(84% 0.0192 252.10)",
+          "oklch(95% 0.0192 252.10)"
+        ]
+      },
+      "dark-bg-elevated": {
+        "role": "neutral",
+        "displayName": "Deep Slate Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0245 246.37)",
+          "oklch(26% 0.0245 246.37)",
+          "oklch(38% 0.0245 246.37)",
+          "oklch(49% 0.0245 246.37)",
+          "oklch(61% 0.0245 246.37)",
+          "oklch(72% 0.0245 246.37)",
+          "oklch(84% 0.0245 246.37)",
+          "oklch(95% 0.0245 246.37)"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Light Slate Text",
+        "tonalRamp": [
+          "oklch(15% 0.0093 242.84)",
+          "oklch(26% 0.0093 242.84)",
+          "oklch(38% 0.0093 242.84)",
+          "oklch(49% 0.0093 242.84)",
+          "oklch(61% 0.0093 242.84)",
+          "oklch(72% 0.0093 242.84)",
+          "oklch(84% 0.0093 242.84)",
+          "oklch(95% 0.0093 242.84)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Muted Light Slate",
+        "tonalRamp": [
+          "oklch(15% 0.0229 243.87)",
+          "oklch(26% 0.0229 243.87)",
+          "oklch(38% 0.0229 243.87)",
+          "oklch(49% 0.0229 243.87)",
+          "oklch(61% 0.0229 243.87)",
+          "oklch(72% 0.0229 243.87)",
+          "oklch(84% 0.0229 243.87)",
+          "oklch(95% 0.0229 243.87)"
+        ]
+      },
+      "dark-line": {
+        "role": "neutral",
+        "displayName": "Dark Divider",
+        "tonalRamp": [
+          "oklch(15% 0.0350 245.59)",
+          "oklch(26% 0.0350 245.59)",
+          "oklch(38% 0.0350 245.59)",
+          "oklch(49% 0.0350 245.59)",
+          "oklch(61% 0.0350 245.59)",
+          "oklch(72% 0.0350 245.59)",
+          "oklch(84% 0.0350 245.59)",
+          "oklch(95% 0.0350 245.59)"
+        ]
+      },
+      "dark-line-strong": {
+        "role": "neutral",
+        "displayName": "Dark Strong Divider",
+        "tonalRamp": [
+          "oklch(15% 0.0341 243.94)",
+          "oklch(26% 0.0341 243.94)",
+          "oklch(38% 0.0341 243.94)",
+          "oklch(49% 0.0341 243.94)",
+          "oklch(61% 0.0341 243.94)",
+          "oklch(72% 0.0341 243.94)",
+          "oklch(84% 0.0341 243.94)",
+          "oklch(95% 0.0341 243.94)"
+        ]
+      },
+      "dark-action": {
+        "role": "primary",
+        "displayName": "Dark Action Fallback",
+        "tonalRamp": [
+          "oklch(15% 0.0575 241.27)",
+          "oklch(26% 0.0575 241.27)",
+          "oklch(38% 0.0575 241.27)",
+          "oklch(49% 0.0575 241.27)",
+          "oklch(61% 0.0575 241.27)",
+          "oklch(72% 0.0575 241.27)",
+          "oklch(84% 0.0575 241.27)",
+          "oklch(95% 0.0575 241.27)"
+        ]
+      },
+      "dark-action-hover": {
+        "role": "primary",
+        "displayName": "Dark Action Hover Fallback",
+        "tonalRamp": [
+          "oklch(15% 0.0423 239.46)",
+          "oklch(26% 0.0423 239.46)",
+          "oklch(38% 0.0423 239.46)",
+          "oklch(49% 0.0423 239.46)",
+          "oklch(61% 0.0423 239.46)",
+          "oklch(72% 0.0423 239.46)",
+          "oklch(84% 0.0423 239.46)",
+          "oklch(95% 0.0423 239.46)"
+        ]
+      },
+      "dark-brand-ink": {
+        "role": "neutral",
+        "displayName": "Dark Action Label Fallback",
+        "tonalRamp": [
+          "oklch(15% 0.0192 252.10)",
+          "oklch(26% 0.0192 252.10)",
+          "oklch(38% 0.0192 252.10)",
+          "oklch(49% 0.0192 252.10)",
+          "oklch(61% 0.0192 252.10)",
+          "oklch(72% 0.0192 252.10)",
+          "oklch(84% 0.0192 252.10)",
+          "oklch(95% 0.0192 252.10)"
+        ]
+      },
+      "dark-surface-hover": {
+        "role": "neutral",
+        "displayName": "Dark Hover Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0302 241.29)",
+          "oklch(26% 0.0302 241.29)",
+          "oklch(38% 0.0302 241.29)",
+          "oklch(49% 0.0302 241.29)",
+          "oklch(61% 0.0302 241.29)",
+          "oklch(72% 0.0302 241.29)",
+          "oklch(84% 0.0302 241.29)",
+          "oklch(95% 0.0302 241.29)"
+        ]
+      },
+      "dark-surface-selected": {
+        "role": "neutral",
+        "displayName": "Dark Selected Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0385 241.94)",
+          "oklch(26% 0.0385 241.94)",
+          "oklch(38% 0.0385 241.94)",
+          "oklch(49% 0.0385 241.94)",
+          "oklch(61% 0.0385 241.94)",
+          "oklch(72% 0.0385 241.94)",
+          "oklch(84% 0.0385 241.94)",
+          "oklch(95% 0.0385 241.94)"
+        ]
+      },
+      "dark-surface-sunken": {
+        "role": "neutral",
+        "displayName": "Dark Recessed Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0257 244.32)",
+          "oklch(26% 0.0257 244.32)",
+          "oklch(38% 0.0257 244.32)",
+          "oklch(49% 0.0257 244.32)",
+          "oklch(61% 0.0257 244.32)",
+          "oklch(72% 0.0257 244.32)",
+          "oklch(84% 0.0257 244.32)",
+          "oklch(95% 0.0257 244.32)"
+        ]
+      },
+      "dark-success": {
+        "role": "semantic",
+        "displayName": "Dark Success",
+        "tonalRamp": [
+          "oklch(15% 0.1052 163.31)",
+          "oklch(26% 0.1052 163.31)",
+          "oklch(38% 0.1052 163.31)",
+          "oklch(49% 0.1052 163.31)",
+          "oklch(61% 0.1052 163.31)",
+          "oklch(72% 0.1052 163.31)",
+          "oklch(84% 0.1052 163.31)",
+          "oklch(95% 0.1052 163.31)"
+        ]
+      },
+      "dark-warn": {
+        "role": "semantic",
+        "displayName": "Dark Warning",
+        "tonalRamp": [
+          "oklch(15% 0.1004 80.52)",
+          "oklch(26% 0.1004 80.52)",
+          "oklch(38% 0.1004 80.52)",
+          "oklch(49% 0.1004 80.52)",
+          "oklch(61% 0.1004 80.52)",
+          "oklch(72% 0.1004 80.52)",
+          "oklch(84% 0.1004 80.52)",
+          "oklch(95% 0.1004 80.52)"
+        ]
+      },
+      "dark-danger": {
+        "role": "semantic",
+        "displayName": "Dark Danger",
+        "tonalRamp": [
+          "oklch(15% 0.0898 24.20)",
+          "oklch(26% 0.0898 24.20)",
+          "oklch(38% 0.0898 24.20)",
+          "oklch(49% 0.0898 24.20)",
+          "oklch(61% 0.0898 24.20)",
+          "oklch(72% 0.0898 24.20)",
+          "oklch(84% 0.0898 24.20)",
+          "oklch(95% 0.0898 24.20)"
+        ]
       }
     },
     "typographyMeta": {
@@ -158,7 +466,7 @@
       {
         "name": "raised",
         "value": "0 6px 18px rgb(24 38 50 / 10%)",
-        "purpose": "Interactive request-card hover depth; desktop request table rows remain flat."
+        "purpose": "Existing interactive card hover depth; shared record tables remain flat with row dividers."
       }
     ],
     "motion": [
@@ -171,6 +479,16 @@
         "name": "card-and-field",
         "value": "150ms ease",
         "purpose": "Request-card border/background/shadow and field border/shadow transitions; disabled under prefers-reduced-motion: reduce."
+      },
+      {
+        "name": "account-drawer",
+        "value": "260ms open / 180ms close cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Approved right-side overlay slide and dimmed backdrop; reduced motion removes both transitions."
+      },
+      {
+        "name": "appearance-arrive",
+        "value": "180ms ease-out",
+        "purpose": "Appearance page translates from 4px below into position only when reduced motion is not requested."
       }
     ],
     "breakpoints": [
@@ -181,10 +499,6 @@
       {
         "name": "wide-min",
         "value": "760px"
-      },
-      {
-        "name": "request-table-min",
-        "value": "900px"
       },
       {
         "name": "detail-columns-min",
@@ -207,7 +521,7 @@
       "refersTo": "button-secondary",
       "description": "Existing shared button variant; preview labels are illustrative.",
       "html": "<button class=\"ds-control ds-button\" type=\"button\">Cancel</button>",
-      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: #ffffff; color: var(--ink, #2e2e2e); border-color: var(--line, #d8dfe5); } .ds-button:hover { background: var(--surface-hover, #edf3f8); border-color: var(--brand, #4682b4); } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: var(--bg-elevated, #ffffff); color: var(--ink, #2e2e2e); border-color: var(--line, #d8dfe5); } .ds-button:hover { background: var(--surface-hover, #edf3f8); border-color: var(--brand, #4682b4); } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
     },
     {
       "name": "Danger Button",
@@ -215,7 +529,7 @@
       "refersTo": "button-danger",
       "description": "Existing shared button variant; preview labels are illustrative.",
       "html": "<button class=\"ds-control ds-button\" type=\"button\">Delete</button>",
-      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: var(--danger, #b23833); color: #ffffff; border-color: transparent; } .ds-button:hover { background: #8f2b27; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } }"
+      "css": ".ds-button { font-family: var(--font-body, Roboto, sans-serif); border: 1px solid transparent; border-radius: var(--button-radius, 0px); font-size: 1rem; font-weight: 700; min-height: 44px; padding: .55rem .95rem; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; background: var(--danger, #b23833); color: #ffffff; border-color: transparent; } .ds-button:hover { background: #8f2b27; } .ds-button:disabled { cursor: not-allowed; opacity: .45; transform: none; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-button { transition: none; } } :host-context([data-theme=dark]) .ds-button { color:#111820; } :host-context([data-theme=dark]) .ds-button:hover { background:#ffc5bf; }"
     },
     {
       "name": "Text Field",
@@ -223,7 +537,7 @@
       "refersTo": "input",
       "description": "Label above a full-width field with persistent keyboard focus.",
       "html": "<label class=\"ds-field\"><span class=\"ds-label\">Description</span><input class=\"ds-control ds-input\" placeholder=\"Description\"></label>",
-      "css": ".ds-field { display:grid; gap:.35rem; font-family: var(--font-body, Roboto, sans-serif); } .ds-label { font-size:.82rem; color:var(--muted, #58636e); font-weight:600; } .ds-input { width:100%; border:1px solid var(--line-strong, #81909d); border-radius:var(--radius-control, 10px); font-family: var(--font-body, Roboto, sans-serif); font-size:16px; min-height:44px; transition:border-color 150ms ease, box-shadow 150ms ease; line-height:1.35; color:var(--ink, #2e2e2e); background:#fff; padding:.62rem .7rem; caret-color:var(--action, #315f85); } .ds-input::placeholder { color:var(--muted, #58636e); opacity:1; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 1px; border-color:var(--action, #315f85); } .ds-input:hover { border-color:var(--action, #315f85); } @media (prefers-reduced-motion: reduce) { .ds-input { transition:none; } }"
+      "css": ".ds-field { display:grid; gap:.35rem; font-family: var(--font-body, Roboto, sans-serif); } .ds-label { font-size:.82rem; color:var(--muted, #58636e); font-weight:600; } .ds-input { width:100%; border:1px solid var(--line-strong, #81909d); border-radius:var(--radius-control, 10px); font-family: var(--font-body, Roboto, sans-serif); font-size:16px; min-height:44px; transition:border-color 150ms ease, box-shadow 150ms ease; line-height:1.35; color:var(--ink, #2e2e2e); background:var(--bg-elevated, #ffffff); padding:.62rem .7rem; caret-color:var(--action, #315f85); } .ds-input::placeholder { color:var(--muted, #58636e); opacity:1; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 1px; border-color:var(--action, #315f85); } .ds-input:hover { border-color:var(--action, #315f85); } @media (prefers-reduced-motion: reduce) { .ds-input { transition:none; } }"
     },
     {
       "name": "Navigation Link",
@@ -239,21 +553,13 @@
       "refersTo": "status-badge",
       "description": "Non-interactive neutral status badge; readable text carries the meaning.",
       "html": "<span class=\"ds-badge\">Draft</span>",
-      "css": ".ds-badge { font-family:var(--font-body, Roboto, sans-serif); display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.22rem .6rem; font-size:.76rem; font-weight:700; line-height:1.3; white-space:nowrap; border:1px solid #c8d2dc; background:#edf2f6; color:#334155; } .ds-badge::before { content:\"\"; width:.5rem; height:.5rem; border-radius:50%; background:currentColor; flex-shrink:0; }"
-    },
-    {
-      "name": "Ticket Card",
-      "kind": "card",
-      "refersTo": "ticket-card",
-      "description": "Shared linked ticket container; request-card structure and desktop table behavior are documented in DESIGN.md.",
-      "html": "<a class=\"ds-control ds-card\" href=\"#preview\"><span class=\"ds-title\">Ticket</span><span class=\"ds-muted\">Description</span></a>",
-      "css": ".ds-card { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--line, #d8dfe5); border-radius:var(--radius-panel, 12px); background:#fff; padding:.85rem .95rem; display:grid; gap:.45rem; color:var(--ink, #2e2e2e); text-decoration:none; transition:border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease; } .ds-card:hover { background:var(--surface-hover, #edf3f8); border-color:var(--brand, #4682b4); } .ds-title { font-family:var(--font-display, Roboto, sans-serif); font-weight:700; } .ds-muted { color:var(--muted, #58636e); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-card { transition:none; } }"
+      "css": ".ds-badge { font-family:var(--font-body, Roboto, sans-serif); display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.22rem .6rem; font-size:.76rem; font-weight:700; line-height:1.3; white-space:nowrap; border:1px solid #c8d2dc; background:#edf2f6; color:#334155; } .ds-badge::before { content:\"\"; width:.5rem; height:.5rem; border-radius:50%; background:currentColor; flex-shrink:0; } :host-context([data-theme=dark]) .ds-badge { background:var(--surface-sunken, #14202a); color:var(--muted, #b4c2ce); border-color:var(--line, #3e5060); }"
     },
     {
       "name": "Panel",
       "kind": "card",
       "refersTo": "panel",
-      "description": "Shared white panel with quiet depth; responsive edge-to-edge exceptions are documented in DESIGN.md.",
+      "description": "Shared elevated panel with quiet depth; responsive edge-to-edge exceptions are documented in DESIGN.md.",
       "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Panel</h2><p class=\"ds-panel-muted\">Supporting context</p></section>",
       "css": ".ds-panel { font-family:var(--font-body, Roboto, sans-serif); color:var(--ink, #2e2e2e); background:var(--bg-elevated, #ffffff); border:1px solid var(--line, #d8dfe5); border-radius:var(--radius-panel, 12px); box-shadow:var(--shadow-panel, 0 1px 2px rgb(46 46 46 / 5%)); padding:1.25rem; min-width:0; display:grid; gap:1rem; } .ds-panel-title { margin:0; font-family:var(--font-display, Roboto, sans-serif); font-size:1.25rem; font-weight:700; letter-spacing:-.015em; line-height:1.25; text-wrap:balance; } .ds-panel-muted { color:var(--muted, #58636e); margin:0; } @media (min-width:760px) { .ds-panel { padding:1.5rem; } } @media (max-width:600px) { .ds-panel { padding:1rem; } }"
     },
@@ -264,36 +570,78 @@
       "description": "Icon-led project tab with a current-page underline; phone tab-bar composition is documented in DESIGN.md.",
       "html": "<nav class=\"ds-project-tabs\" aria-label=\"Project sections\"><a class=\"ds-project-tab\" href=\"#preview\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg>Operations</a></nav>",
       "css": ".ds-project-tabs { display:flex; gap:.25rem; overflow-x:auto; scrollbar-width:none; } .ds-project-tab { font-family:var(--font-body, Roboto, sans-serif); display:inline-flex; align-items:center; gap:.45rem; min-height:46px; padding:.5rem .9rem; border-bottom:3px solid transparent; border-radius:0; color:var(--muted, #58636e); font-size:.925rem; font-weight:600; white-space:nowrap; text-decoration:none; } .ds-project-tab:hover { color:var(--action, #315f85); background:var(--surface-hover, #edf3f8); } .ds-project-tab[aria-current=\"page\"] { color:var(--action, #315f85); border-bottom-color:var(--action, #315f85); font-weight:700; } .ds-project-tab:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; }"
+    },
+    {
+      "name": "Record Table",
+      "kind": "custom",
+      "refersTo": "record-table-cell",
+      "description": "Shared semantic record collection with sortable columns and eligible-row selection. The app supplies loaded-record filters, selection export and 25-row internal pagination. Preview labels are illustrative. Request description columns retain a readable 22rem minimum width and wrap long words; shared request type and priority labels carry into CSV exports. Request-type labels stay intact without wrapping.",
+      "html": "<div class=\"ds-record-region\" tabindex=\"0\" role=\"region\" aria-label=\"Records table\"><table class=\"ds-record-table\"><caption>Records</caption><thead><tr><th scope=\"col\"><input type=\"checkbox\" aria-label=\"Select this page of records\"></th><th scope=\"col\" aria-sort=\"ascending\"><button type=\"button\">Record <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M12 19V5m-6 6 6-6 6 6\"/></svg></button></th><th scope=\"col\" class=\"ds-request-description\">Description</th><th scope=\"col\" class=\"ds-request-type\">Type</th></tr></thead><tbody><tr><td><input type=\"checkbox\" aria-label=\"Select retained member\"></td><td>Retained member</td><td class=\"ds-request-description\">Review authorized request details without compressing the description into a narrow text column.</td><td class=\"ds-request-type\">Survey request</td></tr></tbody></table></div>",
+      "css": ".ds-record-region { max-width:100%; overflow:auto; color:var(--ink, #2e2e2e); font-family:var(--font-body, Roboto, sans-serif); } .ds-record-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; } .ds-record-table caption { text-align:left; font-size:1rem; font-weight:600; color:var(--ink, #2e2e2e); padding:0 0 12px; caption-side:top; } .ds-record-table th,.ds-record-table td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line, #d8dfe5); vertical-align:top; } .ds-record-table th { background:var(--surface-sunken, #f5f8fb); } .ds-record-table th button { padding:0; border:0; background:transparent; color:inherit; font:inherit; font-weight:600; cursor:pointer; white-space:nowrap; } .ds-record-table th button:hover { color:inherit; } .ds-record-table th button:focus-visible { outline:2px solid var(--action, #315f85); outline-offset:3px; } .ds-record-region:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-record-table td { overflow-wrap:anywhere; min-width:100px; } .ds-record-table th:first-child,.ds-record-table td:first-child { min-width:32px; width:32px; } .ds-record-table input { width:18px; height:18px; accent-color:var(--action, #315f85); } .ds-record-table input:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } @media(max-width:600px) { .ds-record-table { min-width:640px; } } .ds-record-table .ds-request-description { min-width:22rem; overflow-wrap:break-word; } .ds-record-table .ds-request-type { white-space:nowrap; overflow-wrap:normal; }"
+    },
+    {
+      "name": "Administration Disclosure",
+      "kind": "custom",
+      "refersTo": "administration-disclosure",
+      "description": "Secondary administration group with a full-width accessible disclosure and hidden content. Active command sections are locked by the app; the preview demonstrates native collapse.",
+      "html": "<details class=\"ds-administration-section\"><summary class=\"ds-administration-disclosure\">Retained company associations</summary><div class=\"ds-administration-content\">Review the currently loaded authorized records.</div></details>",
+      "css": ".ds-administration-section { border-top:1px solid var(--line, #d8dfe5); padding-top:16px; color:var(--ink, #2e2e2e); font-family:var(--font-body, Roboto, sans-serif); } .ds-administration-disclosure { width:100%; padding:12px 0; background:transparent; font-size:1.25rem; font-weight:700; line-height:1.25; text-align:left; cursor:pointer; } .ds-administration-disclosure:hover { color:inherit; } .ds-administration-disclosure:focus-visible { outline:2px solid var(--action, #315f85); outline-offset:3px; } .ds-administration-content { padding-top:8px; padding-bottom:16px; } @media(max-width:600px) { .ds-administration-disclosure { min-height:48px; } }"
     }
   ],
   "narrative": {
     "northStar": "Axiom Civil Services",
-    "overview": "The pinned visual authority is the Axiom Civil Services Brand Guide, version 1.0, September 2026, supplied at `D:/Programming/_references/Axiom Brand/Axiom_Civil_Services_2026_Brand_Guide.pdf`. Future UI work must follow that identity. This document records the implemented shared foundation; it does not create a replacement identity or introduce product claims.\n\nWhite dominates the interface, with slate text, steel blue structure, restrained orange attention, and Roboto throughout. Existing task flows retain their content and behavior. This is a scan of `src/app/globals.css`, `src/components/ui/product-brand.tsx`, and the authentication and projects layouts, not a claim that every screen has been visually audited.",
+    "overview": "The pinned visual authority is the Axiom Civil Services Brand Guide, version 1.0, September 2026, supplied at `D:/Programming/_references/Axiom Brand/Axiom_Civil_Services_2026_Brand_Guide.pdf`. Future UI work must follow that identity. This document records the implemented shared foundation; it does not create a replacement identity or introduce product claims.\n\nThe light interface uses white surfaces, slate text, steel blue structure, restrained orange attention, and Roboto throughout. The dark interface carries the same hierarchy through deep slate surfaces and lighter readable text. Personal display preferences and authorized tenant color customization extend that established world.\n\nRecord collections share semantic tables with filtering, sorting, selection and useful selection actions across authenticated roles. The recorded system follows the shared appearance, record, account-menu and recommissioning implementations alongside the incumbent global styles and layouts. Role-specific workflow controls and their existing evidence remain visible within that structure.",
     "keyCharacteristics": [
-      "White surfaces and slate text.",
-      "Steel blue structure and darker blue actions.",
+      "White or deep slate surfaces with readable text.",
+      "Axiom defaults, validated tenant accents and derived accessible actions.",
       "Supplied Axiom artwork and self-hosted Roboto.",
-      "Compact task controls with visible keyboard focus."
+      "Compact task controls with visible keyboard focus.",
+      "Filterable, sortable, selectable records with explicit scope and collapsible secondary sections."
     ],
     "rules": [
       {
         "name": "The Brand Authority Rule",
-        "body": "Preserve the pinned Axiom palette and artwork when extending the interface.",
+        "body": "Preserve the supplied Axiom artwork and Roboto; use Axiom color defaults unless an authorized Central/Tenant IT administrator changes the tenant primary and accent colors.",
         "section": "colors"
+      },
+      {
+        "name": "The Readable Action Rule",
+        "body": "Derive action and action-label colors from the saved tenant primary and current display mode; keep safety status meanings independent of tenant customization.",
+        "section": "colors"
+      },
+      {
+        "name": "The Personal Appearance Rule",
+        "body": "Every authenticated role can save LIGHT, DARK or SYSTEM for their own account. Only current TENANT_ADMIN authority can customize colors shared by the tenant.",
+        "section": "colors"
+      },
+      {
+        "name": "The Loaded Records Rule",
+        "body": "State the scope of local filtering, sorting, selection and export. A server-paged view operates on its loaded records and does not promise a search of the full dataset.",
+        "section": "components"
+      },
+      {
+        "name": "The Useful Selection Rule",
+        "body": "Give record selection a useful action, with selected-record CSV export as the shared default. Any mutation uses the existing guarded role controls and current authority.",
+        "section": "components"
       }
     ],
     "dos": [
       "Do follow the Axiom Civil Services Brand Guide v1.0, September 2026, for future UI work.",
-      "Do keep white dominant, slate readable, steel blue structural, and orange limited to attention.",
+      "Do keep light surfaces white, dark surfaces deep slate, text readable and attention colors restrained.",
       "Do preserve the supplied logo, its proportions, and at least A cap-height clear space.",
       "Do retain self-hosted Roboto and its OFL license.",
-      "Do retain visible keyboard focus, reduced-motion support, and readable state labels."
+      "Do retain visible keyboard focus, reduced-motion support, and readable state labels.",
+      "Do use semantic tables with labeled filters, sortable headers, selection and useful export for record collections across authenticated roles.",
+      "Do identify loaded-record scope and retain appropriate collapsible sections and chart data disclosures.",
+      "Do separate account display mode from shared tenant branding and preserve current role authority.",
+      "Do keep active commands visible, freeze uncertain attempts and require deliberate reload of stale evidence."
     ],
     "donts": [
-      "Don't substitute a new brand palette, font pairing, or invented logo.",
-      "Don't use Steel Blue in place of Action Blue for small white button labels.",
+      "Don't replace the supplied artwork or Roboto, or expose tenant color customization beyond Central/Tenant IT.",
+      "Don't use an unadjusted tenant primary in place of the readable action and action-label roles.",
       "Don't treat generated tonal previews as approved application colors.",
-      "Don't introduce marketing claims or change task flows through visual refinement."
+      "Don't introduce marketing claims or change task flows through visual refinement.",
+      "Don't describe loaded-page filtering as a full-dataset search or let selection grant a new mutation permission."
     ]
   }
 }

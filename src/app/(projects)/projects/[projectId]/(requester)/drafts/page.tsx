@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import {AdministrationRecords} from '@/components/ui/administration-records';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
@@ -68,19 +69,13 @@ export default function DraftsPage() {
         
         {loading ? <p className="muted">Loading drafts...</p> : null}
         {!loading && tickets.length === 0 && !error ? <div className="empty-state"><strong>No saved drafts</strong><span>Start a request and use Save Draft at any step.</span></div> : null}
-        {!loading ? tickets.map(ticket => <article className="ticket-card request-card" key={ticket.id}>
-          <div className="request-card-top"><span className="badge status-badge tone-neutral">Draft</span>
-            {ticket.draftLastSavedAt ? <span className="meta-item muted"><Icon name="clock" size={15} />Saved {new Date(ticket.draftLastSavedAt).toLocaleString()}</span> : null}</div>
-          <p className={`request-title${ticket.description ? '' : ' request-title-empty'}`}>{ticket.description ? ticket.description.length > 160 ? `${ticket.description.slice(0,160)}…` : ticket.description : 'Untitled draft'}</p>
-          <div className="meta-row">
-            {ticket.aorNodeId && areaNames.get(ticket.aorNodeId) ? <span className="meta-item"><Icon name="pin" size={15} />{areaNames.get(ticket.aorNodeId)!.path}</span> : null}
-            <span className="meta-item">{ticketTypeLabel(ticket.ticketType)}</span>
-            <span className="meta-item"><Icon name="calendar" size={15} />{ticket.requestedDate ? `Need-By ${formatCalendarDate(ticket.requestedDate)}` : 'No Need-By yet'}</span>
-          </div>
-          <div className="card-actions"><Link className="button" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link>
-            <Link className="button button-secondary" href={`/projects/${projectId}/tickets/${ticket.id}`}>Saved details and files</Link>
-            <Button variant="secondary" disabled={deleting || Boolean(attempt.current.pending && attempt.current.pending.input.ticketId !== ticket.id)} onClick={() => void remove(ticket)}>{attempt.current.pending?.input.ticketId === ticket.id ? 'Retry Delete Draft' : 'Delete Draft'}</Button></div>
-        </article>) : null}
+        {!loading?<AdministrationRecords label="saved drafts on this page" rows={tickets} id={t=>t.id} disabled={deleting||Boolean(attempt.current.pending)} columns={[
+          {key:'description',label:'Draft',text:t=>t.description||'Untitled draft'},
+          {key:'area',label:'Area',text:t=>t.aorNodeId?areaNames.get(t.aorNodeId)?.path??'Not specified':'Not specified'},
+          {key:'type',label:'Type',text:t=>ticketTypeLabel(t.ticketType)},
+          {key:'date',label:'Need-By',text:t=>t.requestedDate??'Not specified'},
+          {key:'saved',label:'Saved',text:t=>t.draftLastSavedAt??'',render:t=>t.draftLastSavedAt?new Date(t.draftLastSavedAt).toLocaleString():'Not recorded'}
+        ]} actions={ticket=><><Link className="button" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link><Link className="button button-secondary" href={`/projects/${projectId}/tickets/${ticket.id}`}>Saved details and files</Link><Button variant="secondary" disabled={deleting||Boolean(attempt.current.pending&&attempt.current.pending.input.ticketId!==ticket.id)} onClick={()=>void remove(ticket)}>{attempt.current.pending?.input.ticketId===ticket.id?'Retry Delete Draft':'Delete Draft'}</Button></>}/>:null}
         {error ? (
           <Button variant="secondary" disabled={deleting || Boolean(attempt.current.pending)} onClick={() => void loadDrafts()}>
             Retry

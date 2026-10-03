@@ -1,0 +1,45 @@
+{
+  "scope": "Final source for recorded isolated build and walkthrough",
+  "files": [
+    {
+      "path": "src/components/ui/administration-records.tsx",
+      "sha256": "22e76f213a88e34295644d719eb32e4fbc90c61cdbf88bc57c3f1e2c5d747831"
+    },
+    {
+      "path": "src/components/ui/administration-records.css",
+      "sha256": "0846421b0a45ad3aefe6709db0883c6dc0e06d3c63f030cd6d4dd3cfba88f4c3"
+    },
+    {
+      "path": "src/components/ui/record-collection.tsx",
+      "sha256": "4bcabc7e03e834c82825e25a191637b4428cf455410df032a89f9e3aa3e4127c"
+    },
+    {
+      "path": "src/components/ui/appearance-theme.tsx",
+      "sha256": "2ff15784268fbbcac8b99db7aae4101b9ed48770022f40d2adc7a2568bda914d"
+    },
+    {
+      "path": "src/components/ui/project-recommissioning.tsx",
+      "sha256": "681dbc28dc0a8f2ec8a3ca101f138954aa3305fa9d8cd7b44cf31999db7d5191"
+    },
+    {
+      "path": "src/app/appearance.css",
+      "sha256": "39a88da447ebd76971d9ee35a49f32fa826a20126fca2bca94cbbcd76395af6e"
+    },
+    {
+      "path": "src/app/(projects)/appearance/page.tsx",
+      "sha256": "73347e369f0bbf1b4f6f286d1335a8e9391bfbf961c5e61d28c341a85bc9cda9"
+    },
+    {
+      "path": "db/migrations/033_appearance_and_recommissioning.sql",
+      "sha256": "7c7dd147bc232efede026e617d69e0d53230d80c1a246f5708a26f70ae494362"
+    },
+    {
+      "path": "src/modules/tenancy/infrastructure/recommission-project.repository.ts",
+      "sha256": "99827b31387649d3742b13c116574973c791e3d3953e410ede7d095f1ef0bafa"
+    },
+    {
+      "path": "src/modules/tenancy/application/recommission-project.ts",
+      "sha256": "3c72d9952adf5f64c70cc14f4feb01f15c53327f038334ad02e5fa86edebd3d3"
+    }
+  ]
+}

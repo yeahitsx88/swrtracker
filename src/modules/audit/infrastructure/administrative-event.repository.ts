@@ -7,6 +7,7 @@ export type AdministrativeEventType =
   | 'project.configuration_changed' | 'tenant.membership_changed' | 'tenant.membership_removed'
   | 'user.invited' | 'user.registered' | 'password.reset_requested' | 'password.reset_completed'
   | 'session.logged_out' | 'tenant.company_created' | 'project.created'
+  | 'account.appearance_changed' | 'tenant.appearance_changed' | 'project.recommissioning_started' | 'project.recommissioned'
   | 'tenant.template_created' | 'tenant.template_updated' | 'tenant.template_deleted';
 /** Same held transaction as the administrative effect; never include passwords or bearer/reset tokens. */
 export async function appendAdministrativeEvent(db:DbClient,input:{

@@ -1,5 +1,6 @@
 'use client';
 
+import {AdministrationRecords,AdministrationSection} from './administration-records';
 import type { MetricBucket, MetricsCharts } from '@/modules/reporting/application/amelia-metrics';
 import { operationsStatusLabel } from '@/lib/operations-view';
 import { chartColor } from '@/lib/display-labels';
@@ -62,7 +63,7 @@ function Gauge(p: ChartProps) {
     <strong>{percent===null?'No matching population':`${percent.toFixed(1)}%`}</strong><p>{p.total.toLocaleString()} selected / {p.denominator.toLocaleString()} authorized requests matching the other filters. This is an operational share, not an SLA target or productivity score.</p></div>;
 }
 const renderers: Record<ChartKind,(props:ChartProps)=>React.ReactNode>={heat:Heat,bar:Bars,trend:Trend,donut:Donut,gauge:Gauge};
-export function KpiChart({kind,...props}:ChartProps&{kind:ChartKind}) { const Renderer=renderers[kind]; return <Renderer {...props}/>; }
+export function KpiChart({kind,...props}:ChartProps&{kind:ChartKind}) { const Renderer=renderers[kind]; return <><Renderer {...props}/><AdministrationSection title="Recorded chart values"><AdministrationRecords label={`${props.title} categories`} rows={props.rows} id={r=>r.key} columns={[{key:'label',label:'Category',text:r=>r.label},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]} actions={r=><button className="button button-secondary" disabled={r.key==='__unassigned__'} onClick={()=>props.select(r.key)}>Review requests</button>}/>{props.months.length>0?<AdministrationRecords label={`${props.title} monthly values`} rows={props.months} id={r=>r.key} columns={[{key:'month',label:'Month',text:r=>r.label},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]} actions={r=><button className="button button-secondary" onClick={()=>props.selectMonth(r.key)}>Review month</button>}/>:null}{props.cells.length>0?<AdministrationRecords label={`${props.title} Area and status values`} rows={props.cells} id={r=>`${r.key}:${r.status}`} columns={[{key:'area',label:'Area',text:r=>r.label},{key:'status',label:'Status',text:r=>operationsStatusLabel(r.status)},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]}/>:null}</AdministrationSection></>; }
 
 export interface ComparisonPoint { key: string; primary: number; secondary: number }
 
@@ -84,6 +85,6 @@ export function KpiComparisonTrend({ points, title, primaryLabel, secondaryLabel
       <polyline points={series('secondary')} fill="none" stroke="var(--muted)" strokeWidth="3" strokeLinejoin="round" />
     </svg>
     <div className="kpi-comparison-range"><time dateTime={points[0]!.key}>{points[0]!.key}</time><time dateTime={points.at(-1)!.key}>{points.at(-1)!.key}</time></div>
-    <details><summary>Exact daily counts</summary><div className="kpi-comparison-table"><table><thead><tr><th scope="col">Date · UTC</th><th scope="col">{primaryLabel}</th><th scope="col">{secondaryLabel}</th></tr></thead><tbody>{points.map(point => <tr key={point.key}><th scope="row">{point.key}</th><td>{point.primary.toLocaleString()}</td><td>{point.secondary.toLocaleString()}</td></tr>)}</tbody></table></div></details>
+    <AdministrationSection title="Exact daily counts"><AdministrationRecords label="daily activity counts" rows={points} id={p=>p.key} columns={[{key:'date',label:'Date · UTC',text:p=>p.key},{key:'primary',label:primaryLabel,text:p=>String(p.primary)},{key:'secondary',label:secondaryLabel,text:p=>String(p.secondary)}]}/></AdministrationSection>
   </div>;
 }

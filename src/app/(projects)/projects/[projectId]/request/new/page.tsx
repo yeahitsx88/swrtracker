@@ -1,5 +1,6 @@
 'use client';
 
+import {RecordCollection} from '@/components/ui/record-collection';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -275,13 +276,11 @@ export default function NewRequestPage() {
               }}
             />
             {attachments.length > 0 ? (
-              <ul className="stack" style={{ margin: 0, paddingLeft: '1.1rem' }}>
-                {stagedAttachmentsSummary.map((item, index) => (
+              <RecordCollection label="staged attachments" records={<>{stagedAttachmentsSummary.map((item, index) => (
                   <li key={`${item}-${index}`} className="muted">{item} — not yet saved{' '}
                     <Button variant="secondary" onClick={() => setAttachments(items => items.filter((_, i) => i !== index))}>Remove {attachments[index]?.file.name}</Button>
                   </li>
-                ))}
-              </ul>
+                ))}</>}/>
             ) : null}
           </div>
         );

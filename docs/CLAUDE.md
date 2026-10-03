@@ -889,6 +889,9 @@ All errors return a consistent JSON shape:
 
 ## 12. Audit Logging
 
+Owner-approved system extension (2026-10-02): `account.appearance_changed`, `tenant.appearance_changed`, `project.recommissioning_started`, and `project.recommissioned` are administrative events, written atomically with their effects. Personal display mode is available to every current account. Only eligible Central/Tenant IT may change tenant branding. Archived projects may enter guarded recommissioning preparation under Central IT, retaining the project ID and all historical evidence. Preparation uses SETUP; reopening requires a fresh access, invitation, company, staffing and unfinished-work review. Earlier terminal-archive wording is superseded only by this explicit workflow. Existing project-admin setup capabilities remain approved.
+
+
 Log at every meaningful state transition. Structured format only.
 
 ```json
@@ -1051,7 +1054,7 @@ Do not log attachment content, passwords, or tokens.
 - Dig permit dependency/sequencing model
 - Scheduling model beyond basic assignment
 - General-purpose crew roster management UI; exception: the owner-approved bounded fixed-role Survey Manager Team Management increment in Decision 13 (named organizational teams and existing-member Superintendent/Party Chief/Instrument Man staffing)
-- Admin configuration panels beyond AOR tree and department management
+- Admin configuration panels beyond approved project administration, Area/department management and owner-approved personal Appearance / Central IT tenant colors (Decision50)
 - Redis caching layer (add only if measurable cache pressure emerges)
 - Subcontracts Coordinator role subdivision (single role covers v1; divide if multiple coordinators needed in future)
 - Attachment deletion (deferred to Phase 4; TENANT_ADMIN-only action when implemented)
@@ -1246,9 +1249,9 @@ Projects have three states stored in `projects.status`:
 |---|---|
 | `SETUP` | Default on creation. Configuration in progress. Tickets cannot be submitted. |
 | `ACTIVE` | Operational. Tickets can be submitted, approved, and executed. |
-| `ARCHIVED` | Terminal in v1. Read-only for ticket operations. No new tickets, no role changes, no AOR or roster modifications. Reports remain generatable. All history, audit logs, and attachments remain accessible. No un-archive in v1. |
+| `ARCHIVED` | Read-only for ticket operations. No new tickets, role changes, Area or roster modifications. Reports and authorized history remain accessible. Owner-approved Decision50 permits Central IT to begin guarded recommissioning preparation; it retains the project identity and immutable prior-period evidence. |
 
-Transition `SETUP → ACTIVE` is triggered by TENANT_ADMIN or PROJECT_ADMIN. Transition `ACTIVE → ARCHIVED` is TENANT_ADMIN only.
+Ordinary transition `SETUP → ACTIVE` is triggered by TENANT_ADMIN or PROJECT_ADMIN; pending recommissioning must reopen through the separately confirmed Central IT readiness command. Transition `ACTIVE → ARCHIVED` follows the approved scoped administration capability. Guarded `ARCHIVED → SETUP → ACTIVE` recommissioning is Central IT only, with immutable preparation and reopening evidence. See audits/customer-lifecycle-rehearsal/system-appearance/REPORT.md and Decision50.
 
 ### SETUP → ACTIVE Readiness Gate
 

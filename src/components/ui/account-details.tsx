@@ -1,4 +1,5 @@
 'use client';
+import {AdministrationRecords,AdministrationSection} from '@/components/ui/administration-records';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
@@ -30,8 +31,8 @@ export function AccountDetails({ assignments = false }: { assignments?: boolean 
       </> : !assignment ? <p className="muted">Open a project, then choose Assignment Details to see your role, Areas and crew.</p> : <>
         <dl className="account-facts">
           <div><dt>Project role</dt><dd>{assignment.role.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())}</dd></div>
-          <div><dt>Assigned Areas</dt><dd>{assignment.areas.length ? assignment.areas.join(', ') : 'No explicit Area assignments recorded.'}</dd></div>
-          <div><dt>Crew relationships</dt><dd>{assignment.crew.length ? <ul>{assignment.crew.map((person, index) => <li key={index}>{person.name} — {person.role}</li>)}</ul> : 'No direct Party Chief / Instrument Man roster relationships recorded.'}</dd></div>
+          <div><dt>Assigned Areas</dt><dd>{assignment.areas.length ? <AdministrationRecords label="assigned Areas" rows={assignment.areas.map((name,id)=>({name,id:String(id)}))} id={a=>a.id} columns={[{key:'name',label:'Area',text:a=>a.name}]}/> : 'No explicit Area assignments recorded.'}</dd></div>
+          <div><dt>Crew relationships</dt><dd>{assignment.crew.length ? <AdministrationSection title="Recorded crew relationships" open><AdministrationRecords label="crew relationships" rows={assignment.crew.map((p,index)=>({...p,id:String(index)}))} id={p=>p.id} columns={[{key:'name',label:'Name',text:p=>p.name},{key:'role',label:'Role',text:p=>p.role}]}/></AdministrationSection> : 'No direct Party Chief / Instrument Man roster relationships recorded.'}</dd></div>
         </dl>
         <p className="muted">These are recorded assignments, not a complete permissions summary. Contact your Survey Manager for staffing changes.</p>
       </>}

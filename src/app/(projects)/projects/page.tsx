@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import {AdministrationRecords} from '@/components/ui/administration-records';
 import { ProjectCreation } from '@/components/ui/project-creation';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -60,22 +61,12 @@ export default function ProjectsLauncherPage() {
             <p className="muted">You do not have access to an active or archived project.</p>
           ) : null}
           {projects.length > 0 ? (
-            <div className="project-grid">
-              {projects.map((project) => (
-                <Link
-                  className="ticket-card request-card project-card"
-                  href={getMembershipLandingHref(project)}
-                  key={project.id}
-                >
-                  <div className="request-card-top">
-                    <h3 className="ticket-headline">{project.name}</h3>
-                    <span className={`badge status-badge ${project.status === 'ARCHIVED' ? 'tone-neutral' : 'tone-success'}`}>{PROJECT_STATUS_LABELS[project.status] ?? project.status}</span>
-                  </div>
-                  <p className="meta-row"><span className="meta-item"><Icon name="user" size={15} />{roleLabel(project.role)}{project.canAdminister&&project.role!=='PROJECT_ADMIN'?' · Project Admin':''}</span></p>
-                  <span className="project-card-open">{project.status === 'ARCHIVED' ? 'View project history' : 'Open project'} <Icon name="chevron" size={16} /></span>
-                </Link>
-              ))}
-            </div>
+            <AdministrationRecords label="accessible projects" rows={projects} id={p=>p.id} columns={[
+              {key:'name',label:'Project',text:p=>p.name},
+              {key:'status',label:'Status',text:p=>PROJECT_STATUS_LABELS[p.status]??p.status},
+              {key:'role',label:'Your role',text:p=>roleLabel(p.role)+(p.canAdminister&&p.role!=='PROJECT_ADMIN'?' · Project Admin':'')}
+            ]} actions={p=><Link className="app-link" href={getMembershipLandingHref(p)}>{p.status==='ARCHIVED'?'View project history':'Open project'}</Link>}/>
+
           ) : null}
         </div>
       </Card>

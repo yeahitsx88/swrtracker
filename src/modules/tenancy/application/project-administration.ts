@@ -10,7 +10,7 @@ import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administ
 async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:UUID){
   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
   const authority=await assertProjectAdministrator(db,auth,projectId);
-  const project=(await db.query<{status:string}>('SELECT status FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE',[auth.tenantId,projectId])).rows[0];
+  const project=(await db.query<{status:string;activated_at:Date|null}>('SELECT status,activated_at FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE',[auth.tenantId,projectId])).rows[0];
   if(!project)throw new NotFoundError('Project not found');
   if(project.status==='ARCHIVED')throw new ConflictError('Archived projects are read-only');
   return {authority,project};
@@ -49,7 +49,7 @@ export async function registerProjectCompany(db:DbClient,auth:AuthContext,projec
 }
 export async function selectProjectTemplate(db:DbClient,auth:AuthContext,projectId:UUID,templateId:UUID):Promise<void>{
   const {authority,project}=await authorizeWritable(db,auth,projectId);
-  if(project.status!=='SETUP')throw new ConflictError('Template selection is locked after activation');
+  if(project.status!=='SETUP'||project.activated_at!=null||(await db.query('SELECT id FROM project_recommissioning WHERE tenant_id=$1 AND project_id=$2 AND opened_at IS NULL',[auth.tenantId,projectId])).rows.length)throw new ConflictError('Template selection is locked after activation');
   const template=(await db.query<{id:UUID;crew_build:string}>('SELECT id,crew_build FROM project_templates WHERE tenant_id=$1 AND id=$2',[auth.tenantId,templateId])).rows[0];
   if(!template)throw new NotFoundError('Template not found');
   await db.query('UPDATE projects SET template_id=$3,crew_build=$4 WHERE tenant_id=$1 AND id=$2',[auth.tenantId,projectId,templateId,template.crew_build]);

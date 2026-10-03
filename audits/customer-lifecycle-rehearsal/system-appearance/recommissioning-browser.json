@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-03T04:56:04.768Z",
+  "checks": [
+    {
+      "name": "Disposable project archived before review",
+      "pass": true
+    },
+    {
+      "name": "begin desktop contained",
+      "pass": true
+    },
+    {
+      "name": "begin mobile contained",
+      "pass": true
+    },
+    {
+      "name": "Visible preparation completed",
+      "pass": true
+    },
+    {
+      "name": "Opening action enabled only after full review",
+      "pass": true
+    },
+    {
+      "name": "preparation desktop contained",
+      "pass": true
+    },
+    {
+      "name": "preparation mobile contained",
+      "pass": true
+    },
+    {
+      "name": "Recorded reopening result shown",
+      "pass": true
+    },
+    {
+      "name": "Old preparation command removed",
+      "pass": true
+    },
+    {
+      "name": "completed desktop contained",
+      "pass": true
+    },
+    {
+      "name": "completed mobile contained",
+      "pass": true
+    },
+    {
+      "name": "Completed review dismisses",
+      "pass": true
+    }
+  ],
+  "scope": "Disposable copy3117 only. Normal Central IT login, archive API, visible preparation and opening controls."
+}

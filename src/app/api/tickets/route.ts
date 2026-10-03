@@ -1,3 +1,4 @@
+import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { parseNeedBy } from '@/lib/requester-intake-input';
 /**
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
       auth.userId,
       auth.sessionVersion,
     );
+    await assertRecommissioningMutation(client,auth.tenantId,projectId as UUID);
     const projectStatus = await ticketRepo.findProjectStatus(client, auth.tenantId, projectId as UUID);
     if (!projectStatus) {
       throw new NotFoundError('Project not found');
@@ -188,6 +190,7 @@ export async function POST(req: NextRequest) {
       throw new ForbiddenError('Only REQUESTER may create tickets');
     }
 
+    await assertRecommissioningMutation(client,auth.tenantId,projectId as UUID);
     if (projectStatus === 'ARCHIVED') {
       throw new ConflictError('Archived projects are read-only');
     }
