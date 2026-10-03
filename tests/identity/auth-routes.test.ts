@@ -335,6 +335,15 @@ test('handlePostLogin returns 429 when login attempts are rate limited', async (
   assert.equal(json.error.code, 'AUTH_RATE_LIMITED');
 });
 
+test('login rejects malformed JSON, invalid tenant IDs and empty credentials before authentication',async()=>{
+ let called=false;const deps=makeLoginDeps({authenticateUser:async()=>{called=true;throw new Error('must not authenticate');}});
+ for(const body of ['{',JSON.stringify({tenantId:'not-a-uuid',email:'person@example.invalid',password:'x'}),JSON.stringify({tenantId,email:' ',password:'x'}),JSON.stringify({tenantId,email:'person@example.invalid',password:''})]) {
+  const response=await handlePostLogin(new NextRequest('http://localhost/api/auth/login',{method:'POST',body}),deps);
+  assert.equal(response.status,400);
+ }
+ assert.equal(called,false);
+});
+
 test('registration locks tenant before consuming an invite and audits the same transaction',async()=>{
  const operations:string[]=[];
  const client:DbClient={query:async<T extends object>(sql:string)=>{

@@ -98,6 +98,7 @@ export async function dispatchPasswordResetEmails(db: DbClient): Promise<number>
 export async function pruneExpiredAuthSecurityRecords(db: DbClient): Promise<void> {
   await db.query(`DELETE FROM revoked_auth_sessions WHERE expires_at <= NOW()`);
   await db.query(`DELETE FROM auth_password_reset_rate_limits WHERE updated_at < NOW() - interval '1 day'`);
+  await db.query(`DELETE FROM auth_login_rate_limits WHERE updated_at < NOW() - interval '1 day' AND (blocked_until IS NULL OR blocked_until <= NOW())`);
   await db.query(
     `DELETE FROM password_reset_email_outbox
      WHERE status IN ('SENT', 'EXPIRED') AND created_at < NOW() - interval '1 day'`,

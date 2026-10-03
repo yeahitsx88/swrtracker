@@ -3347,3 +3347,8 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Recorded pre-audit strict types pass,552/554 unit tests,18/23 PostgreSQL suites, normal Docker test-gate failure, separate successful Linux compilation, and zero production dependency advisories before correction.
 - Corrected navigation lookup/SQL whitespace assertions, current033 fixture dependencies, and missing soft-deleted-draft column in the synthetic query comparator. Historical031 migration assertions remain. Continuity verification writes ignored current evidence instead of overwriting the prior tracked report.
 - Verification:554/554 tests, strict types,23/23 disposable PostgreSQL suites, git diff --check pass. Four rollback-only synthetic50k query comparisons pass with content equality and one current event scan. HTTP/browser acceptance remains a separate final gate. No product behavior changed.
+
+### 2026-10-03 - Batch 118 - Alpha 1 authentication retention and JSON validation
+- Bounded durable login keys to existing local-password accounts, canonicalized UUID keys, and pruned inactive records after one day without removing live lockouts. Unknown account responses remain generic; known-account five-attempt policy is preserved.
+- Login validates malformed JSON, UUID and empty credentials; appearance/recommissioning share the narrow JSON error adapter. Verification: strict types, 15 focused auth/runtime tests and disposable PostgreSQL lockout/pruning/canonical-key cases pass.
+

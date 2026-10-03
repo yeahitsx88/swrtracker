@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { UnauthorizedError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
+import { readJsonBody } from '@/lib/read-json-body';
+import { requireResourceUuid } from '@/lib/resource-uuid';
 import { COOKIE_NAME, TOKEN_TTL_SECONDS } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { authenticateUser } from '@/modules/identity/application/authenticate';
@@ -32,7 +34,7 @@ export async function handlePostLogin(
   deps: LoginRouteDeps = defaultDeps,
 ) {
   try {
-    const body = await req.json() as unknown;
+    const body = await readJsonBody(req);
 
     if (
       !body ||
@@ -49,6 +51,8 @@ export async function handlePostLogin(
       tenantId: tenantId.trim() as UUID,
       email: email.trim().toLowerCase(),
     };
+    requireResourceUuid(scope.tenantId, 'tenantId');
+    if (!scope.email || !password) throw new ValidationError('email and password are required');
 
     const repo = deps.createRepo();
     const rateLimiter = deps.createRateLimiter();

@@ -23,7 +23,7 @@ export class LoginRateLimitRepository implements ILoginRateLimitRepository {
       `
         SELECT blocked_until
         FROM auth_login_rate_limits
-        WHERE tenant_id = $1
+        WHERE tenant_id = $1::text::uuid::text
           AND email = $2
           AND blocked_until IS NOT NULL
           AND blocked_until > NOW()
@@ -57,7 +57,14 @@ export class LoginRateLimitRepository implements ILoginRateLimitRepository {
           blocked_until,
           updated_at
         )
-        VALUES ($1, $2, 1, NOW(), NOW(), NULL, NOW())
+        -- Anonymous input must not create unbounded persistent bookkeeping.
+        -- Keep the established normalized-email key for known LOCAL accounts.
+        SELECT $1::text::uuid::text, $2::text, 1, NOW(), NOW(), NULL, NOW()
+        WHERE EXISTS (
+          SELECT 1 FROM users
+          WHERE tenant_id = $1::text::uuid AND LOWER(email) = $2::text
+            AND auth_method = 'LOCAL' AND password_hash IS NOT NULL
+        )
         ON CONFLICT (tenant_id, email) DO UPDATE SET
           failed_attempts = CASE
             WHEN auth_login_rate_limits.blocked_until IS NOT NULL
@@ -118,7 +125,7 @@ export class LoginRateLimitRepository implements ILoginRateLimitRepository {
     await db.query(
       `
         DELETE FROM auth_login_rate_limits
-        WHERE tenant_id = $1
+        WHERE tenant_id = $1::text::uuid::text
           AND email = $2
       `,
       [scope.tenantId, scope.email],
