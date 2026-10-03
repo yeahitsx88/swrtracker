@@ -1,0 +1,7 @@
+.admin-workspace-section[hidden] {display:none;}
+.admin-workspace-navigation {flex-wrap:wrap;overflow:visible;}
+.admin-workspace-navigation > .button {flex:none;white-space:nowrap;}
+
+.roles-permissions-table {width:100%;min-width:40rem;table-layout:auto;}
+.roles-permissions-table td {white-space:normal;min-width:15rem;max-width:48ch;overflow-wrap:normal;}
+.roles-permissions-table th {white-space:normal;text-align:left;}

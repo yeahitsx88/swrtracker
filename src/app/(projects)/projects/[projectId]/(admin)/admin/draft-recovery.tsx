@@ -8,6 +8,7 @@ import { RetryableMutation } from '@/lib/retryable-mutation';
 import type { DeletedDraftRecord, DeletedDraftsResponse } from '@/lib/contracts';
 import { Button, Card, ErrorBanner, Select, SuccessBanner, Textarea } from '@/components/ui';
 import { Field, PaginationControls } from '@/components/forms';
+import {AdministrationDialog} from '@/components/ui/administration-dialog';
 
 export function DraftRecovery({ projectId }: { projectId:string }) {
   const [page, setPage] = useState<DeletedDraftsResponse | null>(null);
@@ -33,12 +34,12 @@ export function DraftRecovery({ projectId }: { projectId:string }) {
       await attempt.current.run({ id:selected.id, expectedVersion:selected.rowVersion, reason:reason.trim() },
         (input,key) => apiClient.restoreDraft(projectId,input.id,input.expectedVersion,input.reason,key));
       setPage(current => current ? { ...current, data:current.data.filter(item => item.id!==selected.id), total:current.total-1 } : null);
-      setSelected(null); setReason(''); setSuccess('Draft restored to its requester with the same ID, files and history. No operational role or request approval was granted.');
-    } catch (err) { setError(getErrorMessage(err,'Unable to confirm recovery. Retry the same action.')); if (err instanceof ApiClientError && err.code==='WORKFLOW_STALE_STATE') setStale(true); }
+      setReason(''); setSuccess('Draft restored to its requester with the same ID, files and history. No operational role or request approval was granted.');
+    } catch (err) { setError(getErrorMessage(err,'Unable to confirm recovery. Retry the same action.')); if (err instanceof ApiClientError && err.status===409) setStale(true); }
     finally { busy.current = false; setLoading(false); }
   }
   const locked = loading || Boolean(attempt.current.pending);
-  return <Card title="Deleted Draft Recovery" description="Project Admin only. Restore an unsubmitted draft within 30 days with a recorded reason. Records and files are retained; no permanent purge runs.">
+  return <Card title="Deleted Draft Recovery" help="An independent Project Admin grant is required. Restore an unsubmitted draft within 30 days with a recorded reason. Records and files are retained; no permanent purge runs.">
     <div className="stack">
       {error ? <ErrorBanner message={error} /> : null}{success ? <SuccessBanner message={success} /> : null}
       <Button variant="secondary" disabled={locked} onClick={() => void load()}>{loading ? 'Loading…' : page ? 'Refresh deleted drafts' : 'View deleted drafts'}</Button>
@@ -52,14 +53,14 @@ export function DraftRecovery({ projectId }: { projectId:string }) {
         </article>)}</>}/>
         <PaginationControls offset={offset} limit={limit} total={page.total} onChange={next => { if (!locked) void load(next); }} />
       </> : null}
-      {selected ? <section className="stack" aria-label="Confirm draft recovery">
-        <h3>Restore {selected.requesterName}’s draft?</h3>
+      {selected ? <AdministrationDialog title={success?'Draft Restored':`Restore ${selected.requesterName}’s draft?`} closeDisabled={locked} onClose={()=>{if(!locked){setSelected(null);setSuccess(null);setError(null);}}}>
+        {error&&<ErrorBanner message={error}/>} {success?<><SuccessBanner message={success}/><Button onClick={()=>{setSelected(null);setSuccess(null);}}>Close</Button></>:<>
         <p>The requester must still be an active Requester on this project. This restores saved progress, not a submitted request. Archived projects remain read-only.</p>
         <Field label="Recovery reason (at least 10 characters)"><Textarea disabled={locked || stale} value={reason} onChange={event => setReason(event.target.value)} /></Field>
         {stale ? <p role="status">This record changed. Refresh the recovery list before proceeding.</p> : null}
         {attempt.current.pending ? <p role="status">Recovery is unconfirmed. Retry the same action before changing the reason or refreshing.</p> : null}
-        <div className="row"><Button disabled={loading || stale || reason.trim().length<10} onClick={() => void restore()}>{attempt.current.pending ? 'Retry Restore' : 'Confirm Restore Draft'}</Button><Button variant="secondary" disabled={locked} onClick={() => setSelected(null)}>Cancel</Button></div>
-      </section> : null}
+        <div className="row"><Button disabled={loading || stale || reason.trim().length<10} onClick={() => void restore()}>{attempt.current.pending ? 'Retry Restore' : 'Confirm Restore Draft'}</Button><Button variant="secondary" disabled={locked} onClick={() => {if(stale)void load();else setSelected(null);}}>{stale?'Reload recovery list':'Cancel'}</Button></div></>}
+      </AdministrationDialog> : null}
     </div>
   </Card>;
 }

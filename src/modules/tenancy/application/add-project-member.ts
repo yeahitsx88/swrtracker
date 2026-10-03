@@ -1,3 +1,4 @@
+import {resolveCustomRole} from './custom-roles';
 import { randomUUID } from 'crypto';
 import { ForbiddenError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
@@ -9,6 +10,7 @@ export interface AddProjectMemberParams {
   projectId:  UUID;
   userId:     UUID;
   role:       ProjectRole;
+  customRoleId?: UUID;
   actorRole:  ProjectRole | 'TENANT_ADMIN';
 }
 
@@ -29,12 +31,14 @@ export async function addProjectMember(
     );
   }
 
+  await resolveCustomRole(db,params.tenantId,params.customRoleId,params.role);
   await repo.saveMembership(db, {
     id:        randomUUID() as UUID,
     tenantId:  params.tenantId,
     projectId: params.projectId,
     userId:    params.userId,
     role:      params.role,
+    customRoleId: params.customRoleId,
     createdAt: new Date(),
   });
 

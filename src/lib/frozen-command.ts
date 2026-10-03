@@ -12,8 +12,8 @@ export class FrozenCommand<T> {
   fail(status?:number):void {
     this.pending=false;
     if(status===409){this.stale=true;return;}
-    // Unknown/5xx outcomes retain the original intent for exact retry.
-    if(status!==undefined&&status<500)this.command=null;
+    // Timeouts and unknown/5xx outcomes retain the original intent for exact retry.
+    if(status!==undefined&&status<500&&status!==408)this.command=null;
   }
   success():void {this.pending=false;this.command=null;}
   reload():boolean {

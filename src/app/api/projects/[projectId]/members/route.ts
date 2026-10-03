@@ -24,6 +24,7 @@ export const dynamic = 'force-dynamic';
 const VALID_ROLES: ProjectRole[] = [
   'REQUESTER', 'SURVEY_MANAGER', 'SURVEY_SUPERINTENDENT',
   'PARTY_CHIEF', 'INSTRUMENT_MAN', 'CAD_TECHNICIAN', 'CAD_LEAD', 'VIEWER',
+  'AREA_VIEWER', 'DEPARTMENT_MANAGER', 'SUBCONTRACTS_COORDINATOR',
 ];
 
 export async function GET(
@@ -47,17 +48,19 @@ export async function GET(
     const query=req.nextUrl.searchParams,limit=Number(query.get('limit')??100),offset=Number(query.get('offset')??0),search=query.get('search')??'';
     if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||search.length>100)throw new ValidationError('Invalid member page');
     const { rows } = await pool.query<{
-      user_id: string; name: string; email: string; role: ProjectRole; access_disabled_at: string|null; account_disabled_at:string|null; total:string;
+      user_id: string; name: string; email: string; role: ProjectRole; access_disabled_at: string|null; account_disabled_at:string|null; total:string;can_administer:boolean;custom_role_id:string|null;custom_role_name:string|null;
     }>(
-      `SELECT pm.user_id, u.name, u.email, pm.role,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total
+      `SELECT pm.user_id, u.name, u.email, pm.role,pm.custom_role_id,cr.name AS custom_role_name,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total,
+       EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=$2 AND g.project_id=$1 AND g.user_id=u.id AND g.revoked_at IS NULL) AS can_administer
        FROM project_memberships pm JOIN users u ON u.id = pm.user_id
+       LEFT JOIN tenant_custom_roles cr ON cr.id=pm.custom_role_id AND cr.tenant_id=$2
        WHERE pm.project_id = $1 AND u.tenant_id = $2 AND ($3::boolean OR (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL))
        AND (u.name ILIKE $4 OR u.email ILIKE $4) ORDER BY pm.role, u.name, u.email LIMIT $5 OFFSET $6`,
       [projectUuid, auth.tenantId,includeDisabled,'%'+search+'%',limit,offset],
     );
     return NextResponse.json({
       total:Number(rows[0]?.total??0),limit,offset,
-      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
+      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role,customRoleId:row.custom_role_id,customRoleName:row.custom_role_name,canAdminister:row.can_administer,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
     });
   } catch (err) {
     return errorResponse(err);
@@ -80,21 +83,22 @@ export async function POST(
       throw new ValidationError(`userId and role (${VALID_ROLES.join('|')}) are required`);
     }
 
-    const { userId, role } = body as { userId: string; role: ProjectRole };
+    const { userId, role, customRoleId } = body as { userId: string; role: ProjectRole; customRoleId?: string };
+    if(customRoleId!==undefined){if(typeof customRoleId!=='string')throw new ValidationError('Choose a valid custom role');requireResourceUuid(customRoleId,'customRoleId');}
     requireResourceUuid(projectId,'projectId');
     requireResourceUuid(userId,'userId');
     const repo = new TenancyRepository();
     let branch:'TENANT_ADMIN'|'PROJECT_ADMIN'='PROJECT_ADMIN';
-    await withTransaction(async db => administrationRetry(db,req,auth,`POST /api/projects/${projectId}/members`,{userId,role},201,async()=>{
+    await withTransaction(async db => administrationRetry(db,req,auth,`POST /api/projects/${projectId}/members`,{userId,role,...(customRoleId?{customRoleId}:{})},201,async()=>{
       if(branch==='PROJECT_ADMIN' && !(await db.query(`SELECT 1 FROM project_companies pc JOIN users u ON u.company_id=pc.company_id AND u.tenant_id=pc.tenant_id
         WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND u.id=$3`,[auth.tenantId,projectId,userId])).rows[0])throw new ForbiddenError('Associate the member company with this project first');
       await addProjectMember(repo, db, {
         tenantId: auth.tenantId, projectId: projectId as UUID, userId: userId as UUID,
-        role, actorRole: branch,
+        role, customRoleId:customRoleId as UUID|undefined, actorRole: branch,
       });
       await appendAdministrativeEvent(db,{
         auth,projectId:projectId as UUID,subjectUserId:userId as UUID,eventType:'project.member_added',
-        authorityEvidence:{branch},changes:{role},
+        authorityEvidence:{branch},changes:{role,customRoleId:customRoleId??null},
       });
     }), {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
       branch=(await assertProjectAdministrator(db,current,projectId as UUID)).centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';

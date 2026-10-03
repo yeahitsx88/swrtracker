@@ -137,6 +137,7 @@ export interface ITenancyRepository {
     projectId: UUID;
     userId: UUID;
     role: string;
+    customRoleId?: UUID | null;
     createdAt: Date;
   }): Promise<void>;
   bumpUserSessionVersion?(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;

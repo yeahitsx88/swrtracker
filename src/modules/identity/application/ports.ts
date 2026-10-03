@@ -18,13 +18,13 @@ export interface IUserRepository {
   listRegisterableProjectIds(db: DbClient, tenantId: UUID): Promise<UUID[]>;
   saveProjectMembership(
     db: DbClient,
-    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; createdAt: Date },
+    membership: { id: UUID; projectId: UUID; userId: UUID; role: string; customRoleId?: UUID | null; createdAt: Date },
   ): Promise<void>;
   findActiveInviteByToken(
     db: DbClient,
     token: string,
     tenantId?: UUID,
-  ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string } | null>;
+  ): Promise<{ tenantId: UUID; projectId: UUID; companyId: UUID | null; companyType: string | null; email: string; role: string; customRoleId?: UUID | null } | null>;
   markInviteAccepted(db: DbClient, token: string, acceptedAt: Date): Promise<void>;
   bumpSessionVersion(db: DbClient, tenantId: UUID, userId: UUID): Promise<void>;
   save(db: DbClient, user: UserWithCredentials): Promise<void>;

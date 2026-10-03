@@ -4,13 +4,16 @@ import {RecordCollection} from '@/components/ui/record-collection';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { ProjectCompanyAccessResponse } from '@/lib/contracts/projects';
-import { getErrorMessage } from '@/lib/errors';
+import { ApiClientError, getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, Select, SuccessBanner } from '@/components/ui';
 import {AdministrationSection,AdministrationRecords} from '@/components/ui/administration-records';
 import {AdministrationBatch,type AdministrationAction} from '@/components/ui/administration-batch';
-import {CommandOwner} from '@/lib/frozen-command';
+import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
+import {AdministrationDialog} from '@/components/ui/administration-dialog';
+import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import {apiRequest} from '@/lib/apiClient';
 import { Field } from '@/components/forms';
+import {CompanyRegistration,type RegisteredCompany} from '@/components/ui/company-registration';
 
 export function SubcontractorAccess({ projectId }: { projectId: string }) {
   const owner=useRef(new CommandOwner()).current,ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
@@ -22,6 +25,13 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [inviteOpen,setInviteOpen]=useState(false),[step,setStep]=useState(0),[confirmed,setConfirmed]=useState(false);
+  const [creatingCompany,setCreatingCompany]=useState(false);
+  const command=useRef(new FrozenCommand<{companyId:string;email:string}>());
+  const locked=command.current.locked||creatingCompany,uncertain=!!command.current.command&&!command.current.stale;
+  useUnsavedProgress(locked);
+  function closeInvite(){if(!creatingCompany&&command.current.reload()){owner.release('invite');setInviteOpen(false);void load();}}
+  function returnCompany(company?:RegisteredCompany){setCreatingCompany(false);if(company){setCompanyId(company.id);void load();}}
 
   const load = useCallback(async () => {
     setError(null);
@@ -38,17 +48,19 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
   useEffect(() => { void load(); }, [load]);
 
   async function invite() {
+    if(!confirmed||!owner.claim('invite'))return;
+    const attempt=command.current.begin({companyId,email:email.trim().toLowerCase()},crypto.randomUUID());if(!attempt)return;
     setBusy('invite');
     setError(null);
     setSuccess(null);
     setInviteUrl(null);
     try {
-      const response = await apiClient.createRequesterInvite(projectId, { companyId, email });
+      const response = await apiRequest<{inviteToken:string}>(`/api/projects/${projectId}/invites`,{method:'POST',body:attempt.body,headers:{'Idempotency-Key':attempt.key}});
+      command.current.success();setStep(3);
       setInviteUrl(`${window.location.origin}/invite/${response.inviteToken}`);
-      setEmail('');
       setSuccess('Requester invitation created. Share the registration link with the intended recipient.');
-      await load();
     } catch (err) {
+      command.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err, 'Unable to create requester invitation.'));
     } finally {
       setBusy(null);
@@ -59,7 +71,7 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
   return (
     <Card
       title="Subcontractor Access"
-      description="Invite subcontractor requesters and designate who may view all requests from their company on this project."
+      help="Invite subcontractor requesters and manage company-wide request viewing on this project. Invitations grant Requester membership; company-wide viewing is reviewed separately."
     >
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
@@ -67,24 +79,31 @@ export function SubcontractorAccess({ projectId }: { projectId: string }) {
         {!overview ? <p className="muted">Loading subcontractor access...</p> : null}
         {overview ? (
           <>
-            <Field label="Subcontractor Company">
-              <Select value={companyId} onChange={(event) => setCompanyId(event.target.value)}>
+            <Button disabled={busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>{if(owner.claim('invite')){setInviteOpen(true);setStep(0);setEmail('');setConfirmed(false);setInviteUrl(null);setSuccess(null);setError(null);}}}>Invite a subcontractor requester</Button>
+            {inviteOpen&&<AdministrationDialog title={inviteUrl?'Invitation Created':'Invite a Subcontractor Requester'} step={{current:step+1,total:4,label:['Email','Company','Review','Complete'][step]!}} onClose={closeInvite} closeDisabled={busy!==null||uncertain||creatingCompany}
+              footer={inviteUrl?<Button onClick={closeInvite}>Close</Button>:<><Button variant="secondary" disabled={busy!==null||uncertain||creatingCompany} onClick={()=>{if(command.current.stale){command.current.reload();setStep(0);setConfirmed(false);void load();}else closeInvite();}}>{command.current.stale?'Reload current access':'Cancel'}</Button><div className="row">{step>0&&<Button variant="secondary" disabled={locked} onClick={()=>{setStep(step-1);setConfirmed(false);}}>Back</Button>}{step<2?<Button disabled={locked||(step===0?!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()):!overview.companies.some(c=>c.id===companyId))} onClick={()=>setStep(step+1)}>Next</Button>:<Button disabled={busy!==null||creatingCompany||command.current.stale||!confirmed} onClick={()=>void invite()}>{busy?'Creating…':uncertain?'Retry unchanged invitation':'Create invitation'}</Button>}</div></>}>
+            {error&&<ErrorBanner message={error}/>} {command.current.stale&&<p role="alert">State changed. Reload and review again.</p>}
+            {step===0&&<Field label="Requester email"><Input type="email" maxLength={254} value={email} disabled={locked} onChange={e=>setEmail(e.target.value)}/></Field>}
+            {step===1&&<><Field label="Subcontractor company">
+              <Select value={companyId} disabled={locked} onChange={(event) => setCompanyId(event.target.value)}>
+                <option value="">Choose a company</option>
                 {overview.companies.map((company) => (
                   <option key={company.id} value={company.id}>{company.name}</option>
                 ))}
               </Select>
             </Field>
-            <Field label="Requester Email">
-              <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-            </Field>
-            <Button disabled={busy !== null || ownerToken!==null || archived || !companyId || !email.trim()} onClick={() => void invite()}>
-              {busy === 'invite' ? 'Creating...' : 'Create Invitation'}
-            </Button>
+            {!overview.companies.length&&<p>No subcontractor companies yet. Create one to continue.</p>}
+            <Button variant="secondary" disabled={locked||busy!==null||archived} onClick={()=>setCreatingCompany(true)}>Create new subcontractor company</Button></>}
+            {step===2&&<><dl className="administration-dialog-summary"><div><dt>Email</dt><dd>{email.trim()}</dd></div><div><dt>Company</dt><dd>{overview.companies.find(c=>c.id===companyId)?.name}</dd></div></dl><p>The recipient creates their profile using a link valid for seven days. They receive Requester access on this project; company-wide view is granted separately.</p><label className="checkbox-row"><input type="checkbox" checked={confirmed} disabled={locked} onChange={e=>setConfirmed(e.target.checked)}/><span>I confirm this recipient and company.</span></label></>}
             {inviteUrl ? (
+              <><SuccessBanner message="Invitation created. Share this link with the intended recipient."/>
               <Field label="Registration Link (shown for this new invitation)">
                 <Input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} />
               </Field>
+              <Button variant="secondary" onClick={()=>{void navigator.clipboard.writeText(inviteUrl).then(()=>setSuccess('Registration link copied.')).catch(()=>setError('Copy failed. Select and copy the displayed link.'));}}>Copy registration link</Button>{success&&<p role="status">{success}</p>}</>
             ) : null}
+            {creatingCompany&&<CompanyRegistration projectId={projectId} owner={owner} disabled={busy!==null||archived||owner.blocked('invite')} onDone={()=>void load()} continuation={{token:'invite',onReturn:returnCompany,allowedTypes:['SUBCONTRACTOR']}}/>}
+            </AdministrationDialog>}
 
             <AdministrationSection title="Subcontractor Requesters" locked={ownerToken!==null}>
             <AdministrationRecords label="subcontractor requesters" rows={overview.requesters} id={r=>r.userId} columns={[{key:'name',label:'Name',text:r=>r.name},{key:'email',label:'Email',text:r=>r.email},{key:'company',label:'Company',text:r=>r.companyName},{key:'view',label:'Company view',text:r=>r.authorityGrantId?'Granted':'Own requests'}]} selected={selected} onSelection={setSelected} disabled={busy!==null||ownerToken!==null} eligible={()=>true} actions={r=><Button disabled={busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch([{url:r.authorityGrantId?`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`:`/api/projects/${projectId}/company-authority`,method:r.authorityGrantId?'DELETE':'POST',body:r.authorityGrantId?{}:{userId:r.userId},label:`${r.authorityGrantId?'Revoke':'Grant'} ${r.companyName} view for ${r.name} (${r.email})`}])}>{r.authorityGrantId?'Revoke Company View':'Grant Company View'}</Button>}/>

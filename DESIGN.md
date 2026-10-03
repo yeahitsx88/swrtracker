@@ -18,6 +18,7 @@ colors:
   success: "#0f7b52"
   warn: "#b06a11"
   danger: "#b23833"
+  dialog-backdrop: "rgb(10 20 30 / 45%)"
   dark-bg: "#111820"
   dark-bg-elevated: "#19242e"
   dark-ink: "#e7edf2"
@@ -292,3 +293,44 @@ Dark mode gives the mark and icon frames a white backing, preserving the supplie
 - Don't treat generated tonal previews as approved application colors.
 - Don't introduce marketing claims or change task flows through visual refinement.
 - Don't describe loaded-page filtering as a full-dataset search or let selection grant a new mutation permission.
+
+
+## Foreground administration tasks
+
+Owner-approved creation and review flows use the shared native AdministrationDialog. Keep the Axiom/Roboto palette, square actions, 12px panel radius and existing semantic inventories. The neutral dialog backdrop uses the documented dialog-backdrop color at 45% opacity in both modes.
+
+Creation progresses through short named steps, explicit review and a saved result in the same dialog. Keep Back, Cancel and Next/Confirm in the visible footer. Native modal focus contains keyboard navigation; closing returns focus to the entry button. Long content scrolls inside the dialog. Use tenant-scoped searchable pickers instead of requiring UUID entry.
+
+Validation stays beside the active step; mutation errors and results stay in the task. Close, backdrop dismissal, Escape and field edits are unavailable during pending or uncertain mutations. Retry preserves the exact body/key; a definitive conflict requires deliberate reload and renewed review. Normal filtering, sorting, pagination, export, copying and navigation keep their direct behavior. Do not turn every control into a dialog.
+
+
+## Guidance on demand
+
+Optional procedures belong in a help control beside the relevant heading, available on hover, keyboard focus and click/tap. Use the shared ContextHelp component, keep its popover within the viewport, and dismiss it with Escape. This is the system-wide principle for future work; this pass applies it to Tenant/Central IT and project administration. Keep required field labels, immediate validation, current status, permissions needed for a decision and consequential review evidence visible. Do not hide actionable errors or confirmation details as help.
+
+Project administration uses the existing underline navigation for Admin & personnel, Companies, Survey and Project settings. Keep each workspace mounted while switching sections so a refresh does not discard command intent; native dialogs keep background navigation inert during active work. Wide personnel dialogs accommodate readable table columns. Names, emails, role labels and action buttons retain complete words; tables scroll horizontally when their content exceeds the available width instead of shrinking type. Request descriptions keep their deliberate wrapping treatment.
+
+Help uses the existing compact supporting-text size of 0.875rem; its trigger retains a 44px target.
+
+
+## Administration Headings and Choices
+
+Use Title Case for static administration headings, workspace labels and table headings; preserve real names and record values. Workspaces read Admin & Personnel, Companies, Survey and Project Settings. Project Admin Access follows Invitations and Next Steps inside Project Admin Setup.
+
+Operational role choice uses the shared native five-row scrollable single-selection list with readable names and a 44px row target. Keep keyboard arrow selection and visible scrolling. Tenant Company is a fixed designated home organization, so its company select is disabled; enable search/select/create under Previously Created Company. Home designation uses the foreground review contract and preserves the calling invitation. Roles & Permissions is a read-only reference.
+
+
+## Custom Role Creation
+
+Use the same foreground administration wizard for tenant-wide named operational profiles. Show Role Details, Permission Profile, Review and Complete, with optional procedures in heading help. The current inherited visibility/responsibilities and definition's scope/impact remain visible during review. Only Tenant IT sees Create Custom Role; other administrators see the catalogue and can choose saved roles when enrolling internal members. Names use ordinary text, built-in profiles use readable labels, and custom choices show name plus inherited profile. Current roles remain a reference rather than editable permission switches.
+
+
+### Account-Bound Organization and Tenant General Settings (Decision57)
+
+Tenant-wide configuration belongs on the Tenant IT home screen. Project Templates, Roles & Permissions and Account Organization use the existing workspace tabs and panels. Projects consume a saved template at creation; project settings expose their current operational controls. Organization details are read-only, with Axiom customer-support guidance. Internal Tenant Company selection is fixed to the account binding.
+
+Create New Role follows Name, Type, optional Description and Confirmation; show exactly four inherited types with permission help. Review shows effective scope and consequences. Put authority/operational/grant reference into an on-demand FAQ sheet. Wrap explanatory table prose without wrapping personnel identities/actions. Preserve native foreground dialogs, shared uncertain-command ownership, Axiom/Roboto tokens and existing layout. This supersedes the earlier home designation and eight-profile wizard guidance.
+
+### Tenant Home Workspace Segmentation
+
+Tenant IT home uses the existing underline navigation at the top: Projects and Settings. Projects is the default and groups project creation, administered inventory and operational launchers. Settings groups tenant-wide templates, roles, account organization and tenant account administration. Keep both workspaces mounted to preserve local progress; disable switching while the shared command owner protects a foreground task. Use the existing wrapping section navigation on narrow screens without shrinking labels or touch targets.

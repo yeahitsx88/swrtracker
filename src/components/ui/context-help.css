@@ -1,0 +1,10 @@
+.heading-with-help {display:flex;align-items:center;gap:.5rem;}
+.context-help {position:relative;display:inline-flex;flex:none;vertical-align:middle;font-size:.875rem;font-weight:400;line-height:1.5;}
+.context-help-trigger {display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--muted);cursor:pointer;}
+.context-help-trigger:hover {background:var(--surface-hover);color:var(--action);}
+.context-help-trigger:focus-visible {outline:3px solid var(--action);outline-offset:3px;}
+.context-help-content {display:none;position:fixed;width:min(26rem,calc(100vw - 2rem));padding:1rem;background:var(--bg-elevated);color:var(--ink);border:1px solid var(--line);border-radius:10px;z-index:20;white-space:normal;text-align:left;overflow-wrap:break-word;overflow:auto;}
+.context-help[data-open=true] .context-help-content {display:block;}
+.context-help-content p {margin:0 0 .75rem;}
+.context-help-content p:last-child {margin-bottom:0;}
+.context-help-content ol {margin:0;padding-left:1.25rem;display:grid;gap:.5rem;}

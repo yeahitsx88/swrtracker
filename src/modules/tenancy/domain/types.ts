@@ -12,6 +12,8 @@ export type DepartmentTitleAssignmentLayer = 'MANAGER' | 'SUPERINTENDENT';
 export type CompanyType = 'GC' | 'SUBCONTRACTOR' | 'OWNER_REP';
 
 export interface Tenant {
+  /** Account-bound organization established by Axiom acquisition; legacy tenants remain unset until explicitly provisioned. */
+  homeCompanyId?: UUID | null;
   id: UUID;
   name: string;
   createdAt: Date;

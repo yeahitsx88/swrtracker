@@ -71,3 +71,17 @@ be inferred from volume retention. No destructive cleanup is implemented here.
 - Compose forces production cookie settings and binds the web port to loopback.
 - Reset links are never returned by the API or written to console logs. The queued bearer payload is AES-GCM encrypted and cleared after delivery or expiry. Configure the webhook and monitor worker errors before relying on self-service password reset.
 - Logout denies only the presented token; other logins for the same account remain valid. Expired revocation and rate-limit records are pruned by the worker.
+
+
+### Named Role Profiles (Migration036)
+
+Apply036_tenant_custom_roles.sql through the normal migration runner before starting a runtime that queries the custom-role catalogue. Additive columns default to NULL for historical invitations and memberships. Definitions are tenant-wide, immutable names for existing base profiles; role-changing workflows retain their existing authorization/guards and the database clears a stale custom label on base-role change. Do not reset or seed retained walkthrough data. The localhost3120 rehearsal uses its retained database/attachments/private environment and keeps its prior web container for recovery.
+
+
+### Tenant General Settings and Acquired Organization (Migrations037/038)
+
+Apply037_custom_role_types.sql and038_axiom_account_binding_evidence.sql before the new runtime. Historical immutable definitions remain; new role creation is limited by the application to Viewer, Area Viewer, Department Manager and Subcontractor Coordinator. Tenant IT cannot change the account-bound home organization, including via its old PATCH route.
+
+Axiom acquisition bootstrap requires company details plus acquisition reference inside its caller-owned transaction. Controlled support correction uses scripts/axiom-home-organization.ts with private DATABASE_URL, AXIOM_ACCOUNT_SUPPORT=explicit, --tenant UUID --company UUID --expected none|UUID --case acquisition-or-support-reference --apply. Use normal repository TypeScript path configuration. Only database operators run this script; do not ship a customer web endpoint or provision a fake tenant actor. It takes EXCLUSIVE tenant coordination, checks expected binding and internal same-tenant company, then writes binding and append-only case evidence atomically. Migration038 narrowly permits actor-null Axiom binding evidence; all other ordinary event actor requirements and immutability remain.
+
+Do not backfill tenant home organizations from employee affiliations. Contact Axiom support for missing acquired bindings/rebrands. This increment does not send credentials or email; existing invitation delivery remains unchanged.

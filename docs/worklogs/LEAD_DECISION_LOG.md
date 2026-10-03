@@ -325,3 +325,61 @@
 - Record collections use tables with filtering, sorting, selection and useful authorized export or existing guarded bulk actions; secondary sections collapse where appropriate. Loaded-page scope is explicit. Native navigation/options and charts retain appropriate forms, with chart values available as tables.
 - All authenticated roles have personal LIGHT/DARK/SYSTEM preferences. Only current eligible TENANT_ADMIN may change tenant primary/accent colors; derived readable actions and safety status meanings are preserved. No custom per-person permission model is introduced.
 - Supersedes terminal-archive prohibition solely for the guarded approved workflow. Existing Project Admin setup capability remains approved; a Central-IT-only template restriction was not selected. Synthetic isolated implementation/verification is authorized; whole-release acceptance and beta gates remain separate.
+
+
+### Decision 51 - first Project Admin onboarding and tenant administration (2026-10-03)
+- Owner explicitly authorized implementation after the notes-only walkthrough stalled. Tenant IT access means all administration screens within the tenant, while survey data continues to require operational authority.
+- Establish a Project Admin by selecting an active internal tenant employee, or inviting a new GC/owner-representative employee who creates a profile first. Explicit company association and Requester membership may accompany an existing-employee admin grant; preserve existing operational roles and refuse disabled access restoration. Invitation acceptance grants Requester membership only; a separately reviewed grant establishes Project Admin.
+- Preserve the praised administered-project inventory and expose creation of existing supported tenant project-template fields. Saving an entire configured project as a template remains open.
+
+### Decision 52 - foreground administration creation and review (2026-10-03)
+- Owner requested a front-facing company popup and a standard across benefiting Tenant/Central IT and Project Admin creation workflows. Wireframes establish the step sequence; current Axiom design remains authoritative.
+- Shared native dialogs hold focused steps, review, validation, guarded confirmation and saved outcome. Company registration/association, project/template creation and employee/requester invitations use guided flows. Existing access, admin/company-view grants, handover, review, recommissioning and recovery present evidence/results in the foreground.
+- Keep inventory filtering, sorting, selection, export, copying, refresh and navigation direct. Preserve current permissions, explicit authority, exact unknown retries and deliberate conflict reload; no generic role or operational data access is approved.
+
+### Decision 53 - connected Project Admin setup (2026-10-03)
+- Owner requested a live fresh-tenant/project walkthrough and a logical company -> invitation -> acceptance -> Project Admin assignment sequence. Both candidate-first and employee-profile-first entry paths are authorized; the existing independent Project Admin authority is used, with an explicit reviewed grant after profile acceptance.
+- Company choice offers named Tenant IT affiliated companies, previously created internal companies, or company registration within the invitation. Registration returns to the preserved invitation with the new company selected. The schema has no canonical tenant-company pointer; do not infer one by creation time or silently designate ownership.
+- Track invitation purpose and accepted profile in the same setup inventory. Pending invitations grant no administration; accepted profiles expose a direct reviewed assignment. Preserve operational roles, current authority before replay and disabled-access restrictions.
+- Actual email delivery needs a configured external service. The retained local demo continues to expose shareable links and explicit unsent delivery status pending the owner's delivery preference; no external messages or service setup inferred.
+- Owner also reported ERR_TOO_MANY_REDIRECTS. Correct the stale-cookie Login/Projects redirect cycle as part of restoring the requested walkthrough.
+
+
+### Decision 54 - administration guidance, sections and member invitations (2026-10-03)
+- Owner confirmed the first Project Admin assignment works and requested optional instructions beside headings on hover as a system-wide principle. Provide keyboard/touch equivalents; current statuses, required labels, errors and consequential review evidence remain visible.
+- Remove the redundant employee-profile-first Project Admin option. Retain future-admin invitation and existing employee selection; preserve prior invitation evidence.
+- Group project administration into Admin & personnel, Companies, Survey and Project settings. Show independent Project Admin authority beside the operational role; granting administration preserves that role. No role-request authority redesign was selected.
+- Owner selected intended operational role before a new member invitation. Offer existing supported enrollment roles for GC/owner-representative employees and bind role/company/email in the invitation. Acceptance creates selected membership; no auto-admin grant. Subcontractors remain Requester-only through their dedicated flow.
+- Subcontractor invitations can create their prerequisite company and return with it selected. Keep table words and type readable using wider personnel dialogs and contained horizontal scrolling.
+- Reviewer handover help explains supported Area-review responsibility transfer and replacement coverage, distinct from first Survey Manager appointment.
+
+
+## Decision 55 - Explicit Home Organization and Administration Refinements (2026-10-03)
+
+Approved by owner: Tenant Company is the designated home organization, retaining its existing GC or OWNER_REP company type. It is not a new company type. Existing tenants remain unset until Tenant IT explicitly chooses a company; no affiliation/oldest-company backfill. Offer it in internal member/admin invitations, with a disabled company selector while Tenant Company is chosen. Subcontractor and company-type-specific enrollment retain their existing scopes. Tenant IT manages designation in tenant accounts, project settings, or a preserved invitation continuation. Designation does not reassign employees or alter grants.
+
+Move Project Admin Access immediately below Invitations and Next Steps in Project Admin Setup. Provide template creation in initial Project Setup under Tenant IT authority; creation and applying a template remain separate reviewed actions. Use Title Case for administration headings and readable scrollable operational role lists.
+
+Approved: read-only Roles & Permissions reference showing fixed roles, separate administrative authority and responsibility grants. Editable custom roles/permission configuration remain OPEN / PENDING; no generalized RBAC is authorized.
+
+Home designation is an EXCLUSIVE current-Tenant-IT, expected-state, keyed, atomic audited mutation. Tenant-selected invitations capture expected home company; changed designation requires reload. Project Admin may invite for the explicitly designated internal home company and associate it with this project through the existing reviewed invitation contract. Same-tenant and active account/project constraints remain. Migration035 must precede runtime.
+
+
+## Decision 56 - Tenant-Wide Named Permission Profiles (2026-10-03)
+
+Owner explicitly requested Create Custom Role after the current Roles & Permissions reference. Clarifications: a custom name inherits one existing permission profile; definitions belong to the tenant and are managed only by Tenant IT. This supersedes Decision55's pending status solely for named existing operational profiles. Individual permission editing and a generalized authorization engine are not approved.
+
+Offer the eight existing operational enrollment profiles: Requester, Survey Manager, Survey Superintendent, Party Chief, Instrument Man, CAD Technician, CAD Lead and Viewer. Tenant IT reviews name, optional description, inherited profile and tenant-wide scope in a foreground wizard before saving. Built-in/admin names are reserved. Creation records an immutable definition and audit; it does not assign anyone or grant access. Definitions cannot be edited/deleted by this increment.
+
+Project Admins and Tenant IT can select saved definitions while adding or inviting internal project members. Persist the definition alongside the existing base role and bind it into invitation acceptance. Base-role authorization, separate Project Admin authority, responsibility grants, staffing links, company eligibility, disabled access and protected workflow guards remain authoritative. Subcontractor enrollment retains its dedicated Requester-only contract. A guarded change to the base operational role clears its old custom label.
+
+Catalogue creation uses EXCLUSIVE tenant lifecycle coordination, fresh Tenant IT authority before keyed replay, strict input and atomic audit. Enrollment validates same-tenant definition and reviewed base-profile match; pending custom-role drift refuses invitation reuse. Migration036 must precede the new runtime. No agent delegation or automated test execution authorized by this increment.
+
+
+## Decision 57 - Acquired Account Organization and Tenant General Settings (2026-10-03)
+
+Owner clarified that Axiom establishes the tenant home organization during client acquisition and account provisioning. Tenant IT cannot designate/change it; account changes and rebrands go through Axiom customer support. This supersedes Decision55's Tenant IT designation authority. No inferred historical backfill. Owner explicitly confirmed Demo General Contractor as the retained walkthrough tenant's acquired organization. Controlled database operator tooling records a case reference and expected prior binding; no support web role or customer credential delivery is introduced.
+
+Custom role creation uses Name -> Role Type -> optional Description -> Confirmation. New definitions inherit exactly Viewer, Area Viewer, Department Manager or Subcontractor Coordinator. They remain tenant-wide and created only by Tenant IT, available to Project Admin and Tenant IT internal enrollment/invitations. This supersedes Decision56's eight-profile creation choices. Preserve historical immutable definitions and their assignments. Existing base-role authorization remains authoritative; Area Viewer and Department Manager require separate project scope assignments and have no request visibility without them. No generalized permission engine, automatic scope or administrative grant.
+
+Administrative Authority, Operational Roles and Separate Responsibility Grants belong in one on-demand FAQ sheet. Templates belong in Tenant IT General Settings on the home screen, not in a project's settings. New project creation still offers a starting template. Existing project configuration/history is preserved. Migrations037/038 precede runtime. No delegation or automated test execution authorized.

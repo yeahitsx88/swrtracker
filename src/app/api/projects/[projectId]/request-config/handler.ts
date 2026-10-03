@@ -1,7 +1,8 @@
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
@@ -93,6 +94,7 @@ export async function handlePatchProjectRequestConfig(
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
     const body = await req.json() as Record<string, unknown>;
+    const key = req.headers.has('idempotency-key') ? requireIdempotencyKey(req) : null;
 
     if (
       !body ||
@@ -105,7 +107,7 @@ export async function handlePatchProjectRequestConfig(
     }
 
     const repo = deps.createRepo();
-    const config = await deps.withTransaction(async (client) => {
+    const result = await deps.withTransaction(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
       const { tenantRole, projectRole } = await resolveActorRoles(
       deps,
@@ -115,7 +117,11 @@ export async function handlePatchProjectRequestConfig(
       auth.sessionVersion,
       client,
       );
-
+      if (tenantRole !== 'TENANT_ADMIN' && projectRole !== 'PROJECT_ADMIN') throw new ForbiddenError('Project administration is required');
+      const project = await repo.findProjectById(client, auth.tenantId, projectUuid);
+      if (!project) throw new NotFoundError('Project not found');
+      if (project.status === 'ARCHIVED') throw new ConflictError('Archived projects are read-only');
+      const mutate = async () => {
       const changed = await updateProjectRequestConfig(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectUuid,
@@ -130,10 +136,14 @@ export async function handlePatchProjectRequestConfig(
         eventType: 'project.configuration_changed', authorityEvidence: { tenantRole, projectRole },
         changes: { resource: 'REQUEST_CONFIG', result: changed },
       });
-      return changed;
+      return { status: 200, body: { config: changed } };
+      };
+      return key ? executeIdempotentHttpMutation(client, {
+        tenantId: auth.tenantId, actorId: auth.userId,
+        endpoint: `PATCH /api/projects/${projectId}/request-config`, idempotencyKey: key,
+      }, body, mutate) : mutate();
     });
-
-    return NextResponse.json({ config });
+    return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     return errorResponse(err);
   }

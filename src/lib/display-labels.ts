@@ -33,7 +33,7 @@ export const ROLE_LABELS: Record<ProjectRole, string> = {
   DEPARTMENT_LEAD: 'Department Lead',
   VIEWER: 'Viewer',
   AREA_VIEWER: 'Area Viewer',
-  SUBCONTRACTS_COORDINATOR: 'Subcontracts Coordinator',
+  SUBCONTRACTS_COORDINATOR: 'Subcontractor Coordinator',
 };
 
 export const PROJECT_STATUS_LABELS: Record<string, string> = {
@@ -131,4 +131,10 @@ export function initials(name: string | null | undefined): string {
   if (!name?.trim()) return '?';
   const parts = name.trim().split(/\s+/);
   return `${parts[0]![0] ?? ''}${parts.length > 1 ? parts.at(-1)![0] ?? '' : ''}`.toUpperCase();
+}
+
+/** Static UI headings only; never transform employee names or record values. */
+export function headingLabel(value:string):string {
+ const minor=new Set(['a','an','and','as','at','by','for','from','in','of','on','or','the','to','with']);
+ return value.split(' ').map((word,index)=>word===word.toUpperCase()?word:index>0&&minor.has(word.toLowerCase())?word.toLowerCase():word.charAt(0).toUpperCase()+word.slice(1)).join(' ');
 }
