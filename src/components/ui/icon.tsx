@@ -1,9 +1,10 @@
 /** Small stroke icons drawn for this interface. Decorative unless a label is supplied. */
 export type IconName =
-  | 'plus' | 'list' | 'draft' | 'gauge' | 'team' | 'search' | 'crew' | 'check' | 'settings'
+  | 'home' | 'plus' | 'list' | 'draft' | 'gauge' | 'team' | 'search' | 'crew' | 'check' | 'settings'
   | 'pin' | 'calendar' | 'alert' | 'user' | 'chevron' | 'back' | 'refresh' | 'flag' | 'file' | 'clock';
 
 const paths: Record<IconName, string> = {
+  home: 'M3 11l9-8 9 8M5 10v11h5v-7h4v7h5V10',
   plus: 'M12 5v14M5 12h14',
   list: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01',
   draft: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h4',

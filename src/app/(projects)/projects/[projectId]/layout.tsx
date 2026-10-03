@@ -13,9 +13,6 @@ export default async function ProjectLayout(
   const { projectId } = await params;
 
   return (
-    <div className="stack">
-      <ProjectShellHeader projectId={projectId} />
-      {children}
-    </div>
+    <ProjectShellHeader projectId={projectId}>{children}</ProjectShellHeader>
   );
 }

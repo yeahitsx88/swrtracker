@@ -39,3 +39,4 @@ tsconfig.tsbuildinfo
 coverage/
 tmp/
 .superpowers/
+.impeccable/review/alpha1-ui/

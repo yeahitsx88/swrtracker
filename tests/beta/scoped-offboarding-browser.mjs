@@ -28,7 +28,7 @@ try{
   console.log('Final desktop/mobile administration captures complete.');
  }else{
  await page.goto(`${origin}/projects/${f.project}/admin`);await page.getByRole('button',{name:'Project members and access',exact:true}).click();
- await page.getByRole('link',{name:'Survey Operations',exact:true}).waitFor();await page.getByRole('link',{name:'Admin',exact:true}).waitFor();check(await page.getByRole('link',{name:'Admin',exact:true}).count(),1,'Combined-role navigation');
+ await page.getByRole('link',{name:'Survey Operations',exact:true}).waitFor();await page.getByRole('link',{name:'Project Administration',exact:true}).waitFor();check(await page.getByRole('link',{name:'Project Administration',exact:true}).count(),1,'Combined-role navigation');
  await page.getByLabel('Filter project members',{exact:true}).fill('Browser departure');
  let initialFailed=false;await page.route(`**/api/projects/${f.project}/members/${f.browserSubject}/offboarding**`,async route=>{if(route.request().method()==='GET'&&!initialFailed){initialFailed=true;return route.fulfill({status:500,json:{error:{type:'InternalError',message:'Synthetic preview load failure'}}});}await route.continue();});
  await page.getByRole('row').filter({hasText:'Browser departure'}).getByRole('button',{name:'Preview access removal',exact:true}).click();

@@ -1,55 +1,35 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { ProjectRole } from '@/modules/identity/domain/types';
-import {
-  findProjectLandingHref,
-  getProjectLandingHref,
-  getProjectNavigation,
-} from '@/components/ui/project-navigation';
+import { findProjectLandingHref, getProjectLandingHref, getProjectNavigation, getMembershipLandingHref } from '@/components/ui/project-navigation';
 
-function labels(role: ProjectRole): string[] {
-  return getProjectNavigation(role).map((item) => item.label);
-}
-
-test('Amelia pilot roles receive only their relevant project navigation', () => {
-  assert.deepEqual(labels('REQUESTER'), ['New Request', 'Requests', 'Drafts']);
-  assert.deepEqual(labels('SURVEY_MANAGER'), ['Survey Operations', 'Team Management', 'All Requests']);
-  assert.deepEqual(labels('SURVEY_SUPERINTENDENT'), ['All Requests', 'Survey Operations', 'Crew Work']);
-  assert.deepEqual(labels('PARTY_CHIEF'), ['Crew Work', 'PC Approvals']);
-  assert.deepEqual(labels('INSTRUMENT_MAN'), ['Crew Work']);
-  assert.deepEqual(labels('PROJECT_ADMIN'), ['Admin']);
+test('Home navigation preserves role-specific work and authorized scoped team views', () => {
+  assert.deepEqual(getProjectNavigation('REQUESTER').map(i => i.label), ['Home','New Request','Requests','Drafts']);
+  assert.deepEqual(getProjectNavigation('SURVEY_MANAGER').map(i => i.label), ['Home','Survey Operations','Team Management','All Requests']);
+  assert.deepEqual(getProjectNavigation('PARTY_CHIEF').map(i => i.label), ['Home','Crew Work','PC Approvals','Team Management']);
+  assert.deepEqual(getProjectNavigation('INSTRUMENT_MAN').map(i => i.label), ['Home','Crew Work']);
+  assert.deepEqual(getProjectNavigation('SURVEY_SUPERINTENDENT').map(i => i.label), ['Home','All Requests','Survey Operations','Crew Work','Team Management']);
 });
-
-test('other supported project roles retain a read or operational entry point', () => {
-  const roles: ProjectRole[] = [
-    'SURVEY_SUPERINTENDENT',
-    'CAD_TECHNICIAN',
-    'CAD_LEAD',
-    'DEPARTMENT_MANAGER',
-    'DEPARTMENT_LEAD',
-    'VIEWER',
-    'AREA_VIEWER',
-    'SUBCONTRACTS_COORDINATOR',
-  ];
-
-  for (const role of roles) assert.ok(getProjectNavigation(role).length > 0, role);
+test('independent administration coexists with operations without granting them', () => {
+  assert.deepEqual(getProjectNavigation('REQUESTER',true).map(i => i.label), ['Home','New Request','Requests','Drafts','Admin']);
+  assert.deepEqual(getProjectNavigation('SURVEY_MANAGER',true).map(i => i.label), ['Home','Survey Operations','Team Management','All Requests','Admin']);
+  assert.deepEqual(getProjectNavigation(null,true).map(i => i.label), ['Home','Admin']);
+  assert.deepEqual(getProjectNavigation(null,false), []);
+  assert.deepEqual(getProjectNavigation('PROJECT_ADMIN',true).map(i => i.label), ['Home','Admin']);
+  assert.ok(!getProjectNavigation('PROJECT_ADMIN',false).some(i => i.label === 'Admin'));
+  assert.ok(!getProjectNavigation('SURVEY_SUPERINTENDENT',true).some(i => i.label === 'Survey Operations'));
 });
-
-test('project landing follows the first authorized navigation destination', () => {
-  assert.equal(getProjectLandingHref('amelia', 'REQUESTER'), '/projects/amelia/request/new');
-  assert.equal(getProjectLandingHref('amelia', 'SURVEY_MANAGER'), '/projects/amelia/survey/operations');
-  assert.equal(getProjectLandingHref('amelia', 'SURVEY_SUPERINTENDENT'), '/projects/amelia/requests');
-  assert.equal(getProjectLandingHref('amelia', 'PARTY_CHIEF'), '/projects/amelia/crew/work');
-  assert.equal(getProjectLandingHref('amelia', 'PROJECT_ADMIN'), '/projects/amelia/admin');
+test('non-active projects retain history destinations without advertising new requests', () => {
+  for (const status of ['SETUP','ARCHIVED'] as const) {
+    assert.deepEqual(getProjectNavigation('REQUESTER',false,status).map(i => i.label), ['Home','Requests','Drafts']);
+    assert.ok(getProjectNavigation('SURVEY_MANAGER',true,status).some(i => i.label === 'Admin'));
+  }
 });
-
-test('direct project entry resolves only an active listed membership', () => {
-  const projects = [
-    { id: 'amelia', name: 'Entergy Amelia', status: 'ACTIVE' as const, role: 'SURVEY_MANAGER' as const },
-    { id: 'other', name: 'Other Project', status: 'ACTIVE' as const, role: 'PROJECT_ADMIN' as const },
-  ];
-
-  assert.equal(findProjectLandingHref(projects, ' amelia '), '/projects/amelia/survey/operations');
-  assert.equal(findProjectLandingHref(projects, 'other'), '/projects/other/admin');
-  assert.equal(findProjectLandingHref(projects, 'unknown'), null);
+test('landing offers role Home, retains setup administration and refuses unlisted access', () => {
+  assert.equal(getProjectLandingHref('p','REQUESTER'), '/projects/p/home');
+  assert.equal(getProjectLandingHref('p','SURVEY_MANAGER'), '/projects/p/home');
+  assert.equal(getProjectLandingHref('p','PROJECT_ADMIN'), '/projects/p/admin');
+  assert.equal(getMembershipLandingHref({id:'p',name:'P',status:'ARCHIVED',role:'INSTRUMENT_MAN'}), '/projects/p/home');
+  assert.equal(getMembershipLandingHref({id:'p',name:'P',status:'SETUP',role:'REQUESTER',canAdminister:true}), '/projects/p/admin');
+  assert.equal(findProjectLandingHref([{id:'p',name:'P',status:'ACTIVE',role:'SURVEY_MANAGER'}],' p '), '/projects/p/home');
+  assert.equal(findProjectLandingHref([],'unknown'),null);
 });
