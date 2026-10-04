@@ -10,6 +10,8 @@ The branch includes presentation behavior, role-aware navigation, existing serve
 
 ## Reference map
 
+Current in-progress role/action and follow-up administration work: [Role Access Audit and Custom Roles](role-access-audit.md). This next increment adds migration035 and functional APIs; the pinned inventory below remains the previous completed restoration snapshot until the next verified refresh.
+
 | Reference | Purpose |
 | --- | --- |
 | [Complete file index](files.md) | Every added/modified file in the pinned design changeset, grouped with clickable source links |
