@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
 import {withTransaction} from '@/lib/with-transaction';
@@ -22,4 +23,7 @@ async function handle(req:NextRequest,ctx:Context){
   const response=NextResponse.json(result.body,{status:result.status});response.headers.set('Cache-Control','private, no-store');return response;
  }catch(error){return errorResponse(error);}
 }
-export const GET=handle;export const POST=handle;
+
+
+export const GET=observeProjectRoute(handle);
+export const POST=observeProjectRoute(handle);

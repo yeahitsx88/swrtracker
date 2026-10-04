@@ -39,4 +39,16 @@ The owner requested that these be addressed after the milestone checkpoint, with
 | 12 | Explain protected reviewer handover using concrete responsibility/unfinished work language and document its actual purpose. |
 | 13 | Diagnostics should present understandable measured health, scoped request/error context and observed timings; include meaningful donut proportions only where real values support them. Never substitute invented baselines or telemetry for measured data. |
 
+## Administration and Support Milestone
+
+Migration036 adds project-scoped help desk tickets, append-only replies and measured HTTP observations. All current project members can submit and reply to their own assistance requests. Project Admin handles the project queue; Tenant Admin handles all tenant projects and escalations. Neither workflow grants survey authority. Project Admin creation/grant/revocation now requires Tenant Admin independently in the API, including employee provisioning and replay checks.
+
+Personnel shows the actual member roster and current administrator grants. Removed-member restoration uses reviewed session/removal stamps, explicit consent and a reason; it renews sessions and preserves earlier history. It does not restore revoked independent administration or crew/reporting assignments. Subcontractor access is in Companies, request policy is in Project Settings, old tab links remain compatible, and area review handover explains unfinished review responsibilities.
+
+Diagnostics uses measured proportions and response timings from verified project/visible-request routes. It shows scoped error status, actor, route, correlation reference and prior request state, plus submission notification dispatch/capture timing. It excludes request bodies, credentials, raw exception messages and SQL. No history is backfilled and no sample baseline is invented. Notification dispatch is not a read receipt or a browser-click-to-survey-team latency measurement. Observation recording is best effort; missing observations are not evidence that errors did not occur.
+
+Milestone verification: strict/unused types and all 584 unit tests pass; owned PostgreSQL checks pass 39 support/restoration, 19 custom-role, 21 employee and 57 project-administration cases, with each helper also verifying 28 migration/lifecycle witnesses. The pinned Node 22.23.3 / pnpm 11.19.0 production builder passes. Full PostgreSQL, production HTTP/browser, telemetry failure/race and independent design finish remain ongoing. Retained demo data and runtime remain untouched.
+
+Source map: [migration036](../../../db/migrations/036_project_support.sql), [help desk rules](../../../src/modules/support/application/help-desk.ts), [member restoration](../../../src/modules/tenancy/application/restore-project-member.ts), [Help Desk UI](../../../src/components/ui/help-desk.tsx), [diagnostics UI](../../../src/components/ui/project-diagnostics.tsx), [HTTP observer](../../../src/lib/observe-project-route.ts), [PostgreSQL checks](../../../tests/beta/project-support-postgres.ts).
+
 A final 96-cell role/action matrix, core-workflow evidence, prioritized findings, wizard lifecycle receipt, open questions and independent finish/documentation will be linked here when complete. This checkpoint is not completion approval.

@@ -46,10 +46,13 @@ test('restore keeps identity/files and requires current requester, reason, windo
   }
   await assert.rejects(() => recoverDraft(h.db, { ...scope, reason: 'short' }), ValidationError);
 });
-test('draft authority locks current project membership and never derives recovery from tenant role', async () => {
-  const h = harness(); await assert.rejects(() => lockDraftActor(h.db, scope, 'PROJECT_ADMIN'), ForbiddenError);
-  assert.match(h.calls[0]!.sql, /u.session_version = \$5/);
-  assert.match(h.calls[0]!.sql, /FOR SHARE OF pm, p, u, c/); assert.equal(h.calls[0]!.values?.[3], 'PROJECT_ADMIN');
+test('draft authority requires a current independent grant when the actor is not Tenant Admin', async () => {
+  const calls: {sql:string;values?:unknown[]}[]=[];
+  const db={query:async(sql:string,values?:unknown[])=>{calls.push({sql,values});return {rows:sql.includes('COALESCE(session_version')?[{session_version:1,deactivated_at:null}]:[]};}} as DbClient;
+  await assert.rejects(() => lockDraftActor(db, scope, 'PROJECT_ADMIN'), ForbiddenError);
+  const membership=calls.find(c=>c.sql.includes('FROM project_memberships pm'))!;
+  assert.match(membership.sql, /u.session_version = \$5/);
+  assert.match(membership.sql, /FOR SHARE OF pm, p, u, c/); assert.equal(membership.values?.[3], 'PROJECT_ADMIN');
 });
 test('partial intake accepts omissions/nulls but rejects malformed supplied values and rollover dates', () => {
   assert.deepEqual(parseRequesterIntake({}).changes, {});

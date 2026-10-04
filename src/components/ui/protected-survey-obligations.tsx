@@ -65,9 +65,9 @@ export function ProtectedSurveyObligations({projectId,userId,onResolved,onLockCh
  const label=state.userId?(state.grant?'Search replacement Superintendents':'Search obligations by Area or responsibility'):'Search project personnel';
  const preview=state.candidate?coveragePreview(state.candidate):null;
  return <section className="tm-section stack tm-workspace" aria-label="Protected Survey Reviewer obligations">
-  <AdministrationSection title="Protected Survey Reviewer Obligations" open={!!userId} locked={frozen}>
+  <AdministrationSection title="Area Review Responsibilities" open={!!userId} locked={frozen}>
   <HeadingHelp label={"Survey Reviewer Coverage"} heading={<h4 tabIndex={-1} ref={heading}>Survey Reviewer Coverage</h4>} help={<span>Hand over one live Area review grant to another current Superintendent. Role changes and remaining staffing are separate.</span>}/>
-  {!open?<Button type="button" variant="secondary" disabled={frozen} onClick={()=>setOpen(true)}>Inspect protected obligations</Button>:<>
+  {!open?<Button type="button" variant="secondary" disabled={frozen} onClick={()=>setOpen(true)}>Inspect Area Review Responsibilities</Button>:<>
    {success?<SuccessBanner message={success}/>:null}
    {state.stale?<ErrorBanner message="Protected obligations changed. Reload current obligations before confirming; cancelling does not clear this warning."/>:null}
    {state.error?<ErrorBanner message={state.error}/>:null}

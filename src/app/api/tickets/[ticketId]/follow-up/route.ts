@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
 import { withRequestCorrelation } from '@/lib/correlation';
@@ -9,7 +10,7 @@ import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.reposit
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -48,3 +49,5 @@ export async function POST(
     }
   });
 }
+
+export const POST=observeProjectRoute(observedPOST);

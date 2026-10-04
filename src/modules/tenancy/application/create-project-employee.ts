@@ -1,7 +1,7 @@
 import type { AuthContext } from '@/lib/auth';
 import { assertProjectAdministrator } from '@/lib/project-capabilities';
 import { acquireTenantLifecycleLock } from '@/lib/tenant-lifecycle-lock';
-import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import { createUser } from '@/modules/identity/application/create-user';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
@@ -19,6 +19,7 @@ export interface EmployeeInput { companyId: UUID; name: string; email: string; p
 export async function createProjectEmployee(db: DbClient, auth: AuthContext, projectId: UUID, input: EmployeeInput) {
   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
   const authority = await assertProjectAdministrator(db,auth,projectId);
+  if(input.projectAdmin&&!authority.centralIT)throw new ForbiddenError('Only Tenant Admin can create Project Admin accounts.');
   const project = (await db.query<{status:string}>('SELECT status FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE',[auth.tenantId,projectId])).rows[0];
   if (!project) throw new NotFoundError('Project not found');
   if (project.status==='ARCHIVED') throw new ConflictError('Archived projects are read-only');

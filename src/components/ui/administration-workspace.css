@@ -26,6 +26,17 @@
 .administration-settings-grid, .administration-tenant-grid { display: grid; gap: 1rem; min-width: 0; align-items: start; }
 .administration-settings-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); }
 .administration-command-review { padding: 1rem; border: 1px solid var(--line-strong); background: var(--surface-sunken); border-radius: var(--radius-panel); }
+.help-desk-conversation { padding-left:1.25rem; display:grid; gap:1rem; }
+.help-desk-message { white-space:pre-wrap; overflow-wrap:anywhere; max-width:75ch; }
+.diagnostic-proportions {display:flex;flex-wrap:wrap;gap:2rem;padding-block:1rem;border-block:1px solid var(--line);}
+.diagnostic-proportion {display:flex;align-items:center;gap:1rem;margin:0;min-width:0;flex:1 1 20rem;}
+.diagnostic-proportion svg {width:7rem;height:7rem;flex:none;}
+.diagnostic-proportion figcaption {display:grid;gap:.375rem;}
+.diagnostic-proportion figcaption span {font-size:.875rem;}
+.diagnostic-measures {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1.25rem;}
+.diagnostic-measures dt {font-size:.875rem;}
+.diagnostic-measures dd {margin:.375rem 0 0;font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums;}
+.diagnostic-measures small {display:block;font-size:.8rem;font-weight:400;}
 @media (max-width: 599px) {
   .administration-workspace .panel, .administration-inventory.panel { padding: 1rem; }
   .administration-workspace .record-collection-tools .button, .administration-inventory .record-collection-tools .button { font-size: .8rem; padding-inline: .65rem; }

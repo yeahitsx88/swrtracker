@@ -26,7 +26,7 @@ export function DraftRecovery({ projectId,owner }: { projectId:string;owner:Comm
     if(!attempt.current.reload())return;owner.release(token);
     busy.current = true; setLoading(true); setError(null);
     try { setPage(await apiClient.listDeletedDrafts(projectId,nextLimit,nextOffset)); setOffset(nextOffset); setLimit(nextLimit); setSelected(null); setReason(''); setStale(false); }
-    catch (err) { setError(err instanceof ApiClientError && err.status===403 ? 'Recovery requires a current Project Admin role on this project. Tenant administration alone does not grant it.' : getErrorMessage(err,'Unable to load deleted drafts. Retry.')); }
+    catch (err) { setError(err instanceof ApiClientError && err.status===403 ? 'Draft recovery requires current Tenant Admin or Project Admin access.' : getErrorMessage(err,'Unable to load deleted drafts. Retry.')); }
     finally { busy.current = false; setLoading(false); }
   }
   async function restore() {
@@ -41,7 +41,7 @@ export function DraftRecovery({ projectId,owner }: { projectId:string;owner:Comm
     finally { busy.current = false; setLoading(false); }
   }
   const locked = loading || attempt.current.locked || blocked;
-  return <Card title="Deleted Draft Recovery" description="Project Admin only. Restore an unsubmitted draft within 30 days with a recorded reason. Records and files are retained; no permanent purge runs.">
+  return <Card title="Deleted Draft Recovery" description="Tenant Admin or Project Admin can restore an unsubmitted draft within 30 days with a recorded reason. Records and files are retained; no permanent purge runs.">
     <div className="stack">
       {error ? <ErrorBanner message={error} /> : null}{success ? <SuccessBanner message={success} /> : null}
       <Button variant="secondary" disabled={blocked||loading||attempt.current.pending||!!attempt.current.command&&!attempt.current.stale} onClick={() => void load()}>{loading ? 'Loading…' : page ? 'Refresh deleted drafts' : 'View deleted drafts'}</Button>

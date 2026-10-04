@@ -15,6 +15,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  await db.query('INSERT INTO project_companies(tenant_id,project_id,company_id,associated_by) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[f.tenant,f.project,company,f.actor]);
  const input=(overrides:Partial<EmployeeInput>={}):EmployeeInput=>({companyId:company,name:'Employee fixture',email:randomUUID()+'@example.test',password:'Synthetic-Employee-2026!',role:'REQUESTER',projectAdmin:false,confirmed:true,...overrides});
  const history=JSON.stringify((await db.query('SELECT row_to_json(t) FROM tickets t ORDER BY id')).rows);
+ await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.actor]);
  const payload=input({projectAdmin:true});
  const ledger={tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST /api/projects/${project}/employees`,idempotencyKey:randomUUID()};
  const create=()=>executeIdempotentHttpMutation(db,ledger,payload,async()=>({status:201,body:{employee:await createProjectEmployee(db,auth,project,payload)}}));
@@ -27,6 +28,8 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  assert.deepEqual(events.map(e=>e.event_type),['project.admin_granted','user.provisioned']);assert(!JSON.stringify(events).includes(payload.password));assert(!JSON.stringify(first.body).includes(payload.password));
  let checks=8;
  async function refuses(fn:()=>Promise<unknown>,type:string){await db.query('SAVEPOINT negative_employee');try{await assert.rejects(fn,{type});}finally{await db.query('ROLLBACK TO SAVEPOINT negative_employee');}checks++;}
+ await db.query('SAVEPOINT local_admin_provision');await db.query('DELETE FROM tenant_memberships WHERE user_id=$1',[f.actor]);
+ await refuses(()=>createProjectEmployee(db,auth,project,input({projectAdmin:true})),'ForbiddenError');await db.query('ROLLBACK TO SAVEPOINT local_admin_provision');
  await refuses(()=>createProjectEmployee(db,auth,project,payload),'ConflictError');
  await refuses(()=>createProjectEmployee(db,{...auth,userId:f.subject as UUID},project,input()),'ForbiddenError');
  await refuses(()=>createProjectEmployee(db,auth,f.foreignProject as UUID,input()),'NotFoundError');

@@ -2,6 +2,7 @@
 import {usePathname} from 'next/navigation';
 import {useAdministrationProgress} from '@/lib/use-administration-progress';
 import {TenantEmployeeCreation} from '@/components/ui/tenant-employee-creation';
+import {HelpDesk} from '@/components/ui/help-desk';
 import {CustomRoles} from '@/components/ui/custom-roles';
 import {ProjectTemplates} from '@/components/ui/project-templates';
 import {AdministrationArea,AdministrationWorkspace} from '@/components/ui/administration-workspace';
@@ -39,7 +40,7 @@ function ReviewEditor({review,onResolved,onLockChange,owner}:{owner:CommandOwner
 }
 export function TenantAccountsWorkspace(){
  const pathname=usePathname();
- const tabs=[{id:'tenant-accounts',label:'Tenant Accounts',href:'/accounts'},{id:'tenant-reviews',label:'Central IT Reviews',href:'/accounts/reviews'},{id:'tenant-templates',label:'Project Templates',href:'/accounts/templates'},{id:'tenant-roles',label:'Custom Roles',href:'/accounts/roles'}];
+ const tabs=[{id:'tenant-accounts',label:'Tenant Accounts',href:'/accounts'},{id:'tenant-reviews',label:'Central IT Reviews',href:'/accounts/reviews'},{id:'tenant-templates',label:'Project Templates',href:'/accounts/templates'},{id:'tenant-roles',label:'Custom Roles',href:'/accounts/roles'},{id:'tenant-help-desk',label:'Help Desk',href:'/accounts/help-desk'}];
  const activeId=tabs.find(tab=>tab.href===pathname)?.id??'tenant-accounts';
  const owner=useRef(new CommandOwner()).current;const locked=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot)!==null;const setLocked=()=>{};
  useAdministrationProgress(owner,'/accounts');
@@ -52,5 +53,6 @@ export function TenantAccountsWorkspace(){
  <AdministrationArea id="tenant-reviews"><Card title="Central IT Review Queue" description="This durable queue remains available independently of notification delivery."><div className="stack"><label className="field"><span className="field-label">Review status</span><select disabled={locked} className="select" value={status} onChange={e=>{setStatus(e.target.value);setReviewOffset(0);setReview(undefined);}}><option value="PENDING">Pending</option><option value="RESOLVED">Resolved</option></select></label><AdministrationSection title="Review Records" open locked={locked}><AdministrationRecords scrollable label="Central IT reviews on this page" rows={reviews?.data??[]} id={r=>r.id} columns={[{key:'name',label:'Person',text:r=>r.subjectName},{key:'email',label:'Email',text:r=>r.subjectEmail},{key:'project',label:'Project',text:r=>r.projectName},{key:'status',label:'Status',className:'administration-state-column',text:r=>r.status,render:r=><span className="badge badge-neutral">{r.status==='PENDING'?'Pending':'Resolved'}</span>},{key:'reason',label:'Reason',text:r=>r.reason}]} disabled={locked} actions={r=>r.status==='PENDING'?<Button variant="secondary" disabled={locked} onClick={()=>setReview(r)}>Open review</Button>:null}/></AdministrationSection>{reviews&&!reviews.total&&<p>No {status.toLowerCase()} reviews.</p>}<div className="row"><Button variant="secondary" disabled={locked||!reviewOffset} onClick={()=>setReviewOffset(n=>Math.max(0,n-25))}>Previous reviews</Button><Button variant="secondary" disabled={locked||!reviews||reviewOffset+25>=reviews.total} onClick={()=>setReviewOffset(n=>n+25)}>Next reviews</Button></div>{review&&<ReviewEditor owner={owner} key={review.id} review={review} onLockChange={setLocked} onResolved={()=>setRevision(n=>n+1)}/>}</div></Card></AdministrationArea></div>
  <AdministrationArea id="tenant-templates"><ProjectTemplates owner={owner}/></AdministrationArea>
  <AdministrationArea id="tenant-roles"><CustomRoles owner={owner}/></AdministrationArea>
+ <AdministrationArea id="tenant-help-desk"><HelpDesk owner={owner}/></AdministrationArea>
  </AdministrationWorkspace>;
 }

@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import {administrationRetry} from '@/lib/administration-retry';
 import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
@@ -13,7 +14,7 @@ import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -68,3 +69,5 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);

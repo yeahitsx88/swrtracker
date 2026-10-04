@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
@@ -12,7 +13,7 @@ import { deleteDraft } from '@/modules/ticket/application/delete-draft';
 import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ ticketId: string }> }) {
+async function observedDELETE(req: NextRequest, { params }: { params: Promise<{ ticketId: string }> }) {
   try {
     const auth = await requireActiveAuth(req);
     const { ticketId } = await params;
@@ -40,3 +41,5 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ t
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) { return errorResponse(error); }
 }
+
+export const DELETE=observeProjectRoute(observedDELETE);

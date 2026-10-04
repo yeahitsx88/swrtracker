@@ -12,7 +12,7 @@ type Employee={companyId:string;name:string;email:string;password:string;role:st
 type Attempt={url:string;body:Record<string,unknown>};
 
 /** Same wizard for Central IT and scoped Project Admin; all authority stays on the server. */
-export function ProjectMemberWizard({projectId,companies,owner,onCreated,initialAdmin=false}:{projectId:string;companies:Company[];owner:CommandOwner;onCreated:()=>void;initialAdmin?:boolean}) {
+export function ProjectMemberWizard({projectId,companies,owner,onCreated,initialAdmin=false,canGrantAdmin=false}:{projectId:string;companies:Company[];owner:CommandOwner;onCreated:()=>void;initialAdmin?:boolean;canGrantAdmin?:boolean}) {
   const token=`employee:${projectId}:${initialAdmin?'admin':'member'}`;
   useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const gate=useRef(new FrozenCommand<Attempt>());
@@ -63,7 +63,7 @@ export function ProjectMemberWizard({projectId,companies,owner,onCreated,initial
         {!companies.length&&mode==='new'&&<p>Register or associate a company on the Companies page first. Your entered details stay here when you switch tabs.</p>}
         {customRoles.error&&<ErrorBanner message={customRoles.error}/>}
         <label className="field"><span className="field-label">Operational role</span><select aria-label="Operational role" className="select" size={4} value={role} disabled={locked} onChange={e=>setRole(e.target.value)}><RoleOptions roles={customRoles.roles} requesterOnly={company?.type==='SUBCONTRACTOR'}/></select></label>
-        {mode==='new'&&<label className="checkbox-row"><input type="checkbox" checked={admin} disabled={locked||company?.type==='SUBCONTRACTOR'} onChange={e=>setAdmin(e.target.checked)}/><span>Grant independent Project Admin access for this project</span></label>}
+        {mode==='new'&&canGrantAdmin&&<label className="checkbox-row"><input type="checkbox" checked={admin} disabled={locked||company?.type==='SUBCONTRACTOR'} onChange={e=>setAdmin(e.target.checked)}/><span>Grant independent Project Admin access for this project</span></label>}
         {company?.type==='SUBCONTRACTOR'&&<p>Subcontractor accounts receive Requester access only.</p>}
       </>}
       {step===2&&<>

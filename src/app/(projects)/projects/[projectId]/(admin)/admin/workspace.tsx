@@ -14,6 +14,8 @@ import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
 import {useAdministrationProgress} from '@/lib/use-administration-progress';
 import type {ProjectRequestConfig,ProjectRequestConfigResponse} from '@/lib/contracts/projects';
 import {ProjectAdministration} from '@/components/ui/project-administration';
+import {HelpDesk} from '@/components/ui/help-desk';
+import {MemberAccessRecovery} from '@/components/ui/member-access-recovery';
 
 export function AdminProjectWorkspace() {
   const params = useParams<{ projectId: string }>();
@@ -27,8 +29,8 @@ export function AdminProjectWorkspace() {
   useAdministrationProgress(owner,base);
   const policyBlocked=owner.blocked(policyToken),policyLocked=policy.locked||policyBlocked;
   void ownerToken;
-  const tabs = [{id:'admin-personnel',label:'Personnel',href:base},{id:'admin-administrators',label:'Project Admins',href:base+'/administrators'},{id:'admin-companies',label:'Companies',href:base+'/companies'},{id:'admin-settings',label:'Settings',href:base+'/settings'},{id:'admin-request-policy',label:'Request Policy',href:base+'/request-policy'},{id:'admin-access-recovery',label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',label:'Diagnostics',href:base+'/diagnostics'}];
-  const activeId = tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
+  const tabs = [{id:'admin-personnel',label:'Personnel',href:base},{id:'admin-help-desk',label:'Help Desk',href:base+'/help-desk'},{id:'admin-companies',label:'Companies',href:base+'/companies'},{id:'admin-settings',label:'Project Settings',href:base+'/settings'},{id:'admin-access-recovery',label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',label:'Diagnostics',href:base+'/diagnostics'}];
+  const activeId = pathname===base+'/administrators'?'admin-help-desk':pathname===base+'/request-policy'?'admin-settings':tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
 
   const [leadTimeEnforcementEnabled, setLeadTimeEnforcementEnabled] = useState(true);
   const [leadTimeDays, setLeadTimeDays] = useState(2);
@@ -83,8 +85,9 @@ export function AdminProjectWorkspace() {
 
   return (
     <AdministrationWorkspace title="Project Administration" description="Manage this project's personnel, companies, settings and recovery. Operational roles and independent administration remain separate." sections={tabs} activeId={activeId}>
+      <AdministrationArea id="admin-help-desk"><HelpDesk projectId={projectId} owner={owner}/></AdministrationArea>
       <ProjectAdministration key={projectId} projectId={projectId} owner={owner}/>
-      {<AdministrationArea id="admin-request-policy"><Card
+      {<AdministrationArea id="admin-settings"><Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."
       >
@@ -134,9 +137,10 @@ export function AdminProjectWorkspace() {
         </div>
       </Card></AdministrationArea>}
       {archived&&error?<ErrorBanner message={error}/>:null}
-      <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Survey Reviewer Handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId} owner={owner}/></Card>
-      <SubcontractorAccess projectId={projectId} owner={owner} />
+      <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Transfer Area Review Responsibility" description="Before removing or changing a Superintendent, transfer their Area review responsibility to a replacement. This keeps unfinished requests covered; it does not transfer crew membership or remove access."><ProtectedSurveyObligations key={projectId} projectId={projectId} owner={owner}/></Card>
       <DraftRecovery projectId={projectId} owner={owner} /></AdministrationArea>
+      <AdministrationArea id="admin-access-recovery"><MemberAccessRecovery projectId={projectId} owner={owner}/></AdministrationArea>
+      <AdministrationArea id="admin-companies"><SubcontractorAccess projectId={projectId} owner={owner}/></AdministrationArea>
     </AdministrationWorkspace>
   );
 }

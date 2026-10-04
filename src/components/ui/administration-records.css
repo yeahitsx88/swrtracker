@@ -43,3 +43,6 @@
 .crew-work-actions { display:flex; align-items:center; gap:.5rem; width:max-content; }
 .crew-work-actions .button { white-space:nowrap; flex-shrink:0; }
 .record-caption-heading { display:inline-flex; align-items:center; gap:.25rem; }
+.record-collection-tools > .row { gap:.375rem; }
+.record-collection-tools > .row .button { padding:.35rem .55rem; font-size:.8rem; white-space:nowrap; }
+@media(pointer:coarse){.record-collection-tools > .row .button { min-height:44px; }}

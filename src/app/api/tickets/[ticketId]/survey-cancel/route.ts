@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -10,7 +11,7 @@ import { requestSurveyCancel } from '@/modules/ticket/application/request-survey
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -50,3 +51,5 @@ export async function POST(
     }
   });
 }
+
+export const POST=observeProjectRoute(observedPOST);

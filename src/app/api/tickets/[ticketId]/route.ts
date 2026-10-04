@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 /**
  * GET /api/tickets/[ticketId]
  *
@@ -21,7 +22,7 @@ import { lockDraftActor, lockRequesterTicket } from '@/modules/ticket/applicatio
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
+async function observedGET(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -49,7 +50,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+async function observedPATCH(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -78,3 +79,6 @@ export async function PATCH(
     return errorResponse(err);
   }
 }
+
+export const GET=observeProjectRoute(observedGET);
+export const PATCH=observeProjectRoute(observedPATCH);

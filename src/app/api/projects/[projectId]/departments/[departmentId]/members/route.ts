@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import type { NextRequest } from 'next/server';
 import {
   handlePatchDepartmentMembers,
@@ -6,16 +7,19 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   ctx: { params: Promise<{ projectId: string; departmentId: string }> },
 ) {
   return handlePostDepartmentMembers(req, ctx);
 }
 
-export async function PATCH(
+async function observedPATCH(
   req: NextRequest,
   ctx: { params: Promise<{ projectId: string; departmentId: string }> },
 ) {
   return handlePatchDepartmentMembers(req, ctx);
 }
+
+export const POST=observeProjectRoute(observedPOST);
+export const PATCH=observeProjectRoute(observedPATCH);

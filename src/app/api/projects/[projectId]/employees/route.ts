@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { assertProjectAdministrator } from '@/lib/project-capabilities';
@@ -6,11 +7,11 @@ import { withTransaction } from '@/lib/with-transaction';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { requireResourceUuid } from '@/lib/resource-uuid';
 import { errorResponse } from '@/lib/api-error';
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
 import { createProjectEmployee, EMPLOYEE_ROLES, type EmployeeInput } from '@/modules/tenancy/application/create-project-employee';
 import type { UUID } from '@/shared/types';
 export const dynamic='force-dynamic';
-export async function POST(req:NextRequest,{params}:{params:Promise<{projectId:string}>}) {
+async function observedPOST(req:NextRequest,{params}:{params:Promise<{projectId:string}>}) {
   try {
     const auth=await requireActiveAuth(req),{projectId}=await params;
     requireResourceUuid(projectId,'projectId');
@@ -28,7 +29,9 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{projectId:s
     const result=await withTransaction(db=>executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,
       endpoint:`POST /api/projects/${projectId}/employees`,idempotencyKey:key},body,async()=>({status:201,
       body:{employee:await createProjectEmployee(db,auth,projectId as UUID,body as unknown as EmployeeInput)}})),
-      {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{await assertProjectAdministrator(db,current,projectId as UUID);await assertRecommissioningMutation(db,current.tenantId,projectId as UUID);}});
+      {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{const authority=await assertProjectAdministrator(db,current,projectId as UUID);if(body.projectAdmin&&!authority.centralIT)throw new ForbiddenError('Only Tenant Admin can create Project Admin accounts.');await assertRecommissioningMutation(db,current.tenantId,projectId as UUID);}});
     return NextResponse.json(result.body,{status:result.status});
   } catch(error) {return errorResponse(error);}
 }
+
+export const POST=observeProjectRoute(observedPOST);

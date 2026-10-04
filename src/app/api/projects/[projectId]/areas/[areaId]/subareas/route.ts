@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 /**
  * POST /api/projects/[projectId]/areas/[areaId]/subareas
  */
@@ -7,7 +8,7 @@ import { errorResponse } from '@/lib/api-error';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   _req: NextRequest,
   _ctx: { params: Promise<{ projectId: string; areaId: string }> },
 ) {
@@ -17,3 +18,5 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);

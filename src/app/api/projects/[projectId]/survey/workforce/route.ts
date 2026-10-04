@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
@@ -23,7 +24,7 @@ async function run<T>(req:NextRequest,context:Context,fn:(db:import('@/shared/ty
  }
  const actor={tenantId:auth.tenantId,projectId,actorId:auth.userId,sessionVersion:auth.sessionVersion,actorRole:await getProjectRole(db,auth.tenantId,projectId,auth.userId,auth.sessionVersion)};assertWorkforceViewer(actor);return fn(db,actor);});
 }
-export async function GET(req:NextRequest,context:Context){
+async function observedGET(req:NextRequest,context:Context){
  try{
  const mode=req.nextUrl.searchParams.get('mode')??'personnel';if(!['personnel','context','person'].includes(mode))throw new ValidationError('Unknown workforce view');
  const query=parseTeamPage(req);
@@ -34,7 +35,7 @@ export async function GET(req:NextRequest,context:Context){
  });return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}});
  }catch(error){return errorResponse(error);}
 }
-export async function POST(req:NextRequest,context:Context){
+async function observedPOST(req:NextRequest,context:Context){
  try{
  const body=await req.json();const input={instrumentManId:uuid(body?.instrumentManId),partyChiefId:uuid(body?.partyChiefId),expectedSnapshot:body?.expectedSnapshot};
  if(typeof input.expectedSnapshot!=='string'||!/^[a-f0-9]{32}$/.test(input.expectedSnapshot))throw new ValidationError('Current staffing snapshot is required');
@@ -45,3 +46,6 @@ export async function POST(req:NextRequest,context:Context){
  });return NextResponse.json(result.body,{status:result.status});
  }catch(error){return errorResponse(error);}
 }
+
+export const GET=observeProjectRoute(observedGET);
+export const POST=observeProjectRoute(observedPOST);

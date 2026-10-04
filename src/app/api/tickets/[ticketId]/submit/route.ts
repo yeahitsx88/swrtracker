@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
 import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
@@ -11,7 +12,7 @@ import { lockDraftActor, lockRequesterTicket } from '@/modules/ticket/applicatio
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -62,3 +63,5 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);

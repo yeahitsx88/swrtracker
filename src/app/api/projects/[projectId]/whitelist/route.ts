@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { administrationRetry } from '@/lib/administration-retry';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
@@ -19,7 +20,7 @@ import { assertProjectAdministrator } from '@/lib/project-capabilities';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -61,7 +62,7 @@ export async function POST(
   }
 }
 
-export async function DELETE(
+async function observedDELETE(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -101,3 +102,6 @@ export async function DELETE(
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);
+export const DELETE=observeProjectRoute(observedDELETE);

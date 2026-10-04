@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { administrationRetry } from '@/lib/administration-retry';
 import { withTransaction } from '@/lib/with-transaction';
 import { requireResourceUuid } from '@/lib/resource-uuid';
@@ -27,7 +28,7 @@ const VALID_ROLES: ProjectRole[] = [
   'PARTY_CHIEF', 'INSTRUMENT_MAN', 'CAD_TECHNICIAN', 'CAD_LEAD', 'VIEWER',
 ];
 
-export async function GET(
+async function observedGET(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -48,10 +49,10 @@ export async function GET(
     const query=req.nextUrl.searchParams,limit=Number(query.get('limit')??100),offset=Number(query.get('offset')??0),search=query.get('search')??'';
     if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||search.length>100)throw new ValidationError('Invalid member page');
     const { rows } = await pool.query<{
-      user_id: string; name: string; email: string; role: ProjectRole; custom_role_id:string|null; custom_role_name:string|null; session_version:number; access_disabled_at: string|null; account_disabled_at:string|null; total:string;
+      company_type:string; user_id: string; name: string; email: string; role: ProjectRole; custom_role_id:string|null; custom_role_name:string|null; session_version:number; access_disabled_at: string|null; account_disabled_at:string|null; total:string;
     }>(
-      `SELECT pm.user_id, u.name, u.email, pm.role,pm.custom_role_id,cr.name AS custom_role_name,u.session_version,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total
-       FROM project_memberships pm JOIN users u ON u.id = pm.user_id
+      `SELECT c.type AS company_type,pm.user_id, u.name, u.email, pm.role,pm.custom_role_id,cr.name AS custom_role_name,u.session_version,pm.access_disabled_at::text,u.deactivated_at::text AS account_disabled_at,count(*) OVER()::text AS total
+       FROM project_memberships pm JOIN users u ON u.id = pm.user_id JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
        LEFT JOIN tenant_custom_roles cr ON cr.id=pm.custom_role_id AND cr.tenant_id=u.tenant_id
        WHERE pm.project_id = $1 AND u.tenant_id = $2 AND ($3::boolean OR (u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL))
        AND (u.name ILIKE $4 OR u.email ILIKE $4) ORDER BY pm.role, u.name, u.email LIMIT $5 OFFSET $6`,
@@ -59,14 +60,14 @@ export async function GET(
     );
     return NextResponse.json({
       total:Number(rows[0]?.total??0),limit,offset,
-      members: rows.map((row) => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role,customRoleId:row.custom_role_id,customRoleName:row.custom_role_name,sessionVersion:row.session_version,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
+      members: rows.map((row) => ({ userId: row.user_id,companyType:row.company_type, name: row.name, email: row.email, role: row.role,customRoleId:row.custom_role_id,customRoleName:row.custom_role_name,sessionVersion:row.session_version,accessDisabledAt:row.access_disabled_at,accountDisabledAt:row.account_disabled_at })),
     });
   } catch (err) {
     return errorResponse(err);
   }
 }
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -110,3 +111,6 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const GET=observeProjectRoute(observedGET);
+export const POST=observeProjectRoute(observedPOST);

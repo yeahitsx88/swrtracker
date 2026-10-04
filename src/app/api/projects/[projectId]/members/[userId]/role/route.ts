@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
 import {assertProjectAdministrator} from '@/lib/project-capabilities';
@@ -10,7 +11,7 @@ import {ValidationError} from '@/shared/errors';
 import type {UUID} from '@/shared/types';
 import {assignTemplateRole} from '@/modules/tenancy/application/assign-template-role';
 export const dynamic='force-dynamic';
-export async function PATCH(req:NextRequest,{params}:{params:Promise<{projectId:string;userId:string}>}){
+async function observedPATCH(req:NextRequest,{params}:{params:Promise<{projectId:string;userId:string}>}){
   try{
     const auth=await requireActiveAuth(req),{projectId,userId}=await params;
     requireResourceUuid(projectId,'projectId');requireResourceUuid(userId,'userId');
@@ -26,3 +27,5 @@ export async function PATCH(req:NextRequest,{params}:{params:Promise<{projectId:
     return NextResponse.json(result.body,{status:result.status});
   }catch(error){return errorResponse(error);}
 }
+
+export const PATCH=observeProjectRoute(observedPATCH);

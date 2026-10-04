@@ -28,7 +28,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  assert.equal((await db.query('SELECT custom_role_id FROM project_memberships WHERE user_id=$1',[employee.id])).rows[0].custom_role_id,role.id);checks++;
  const second=randomUUID();await db.query("INSERT INTO projects(id,tenant_id,name,status,crew_build) VALUES($1,$2,'Future project','ACTIVE','FULL')",[second,f.tenant]);
  await db.query("INSERT INTO project_memberships(project_id,user_id,role,custom_role_id) VALUES($1,$2,'REQUESTER',$3)",[second,employee.id,role.id]);
- assert.equal((await readCustomRoles(db,auth,second as UUID))[0].id,role.id);checks++;
+ assert.equal((await readCustomRoles(db,auth,second as UUID))[0]!.id,role.id);checks++;
  await refuses(()=>deleteCustomRole(db,auth,role.id,1),'ConflictError');
  const beforeVersion=(await db.query('SELECT session_version FROM users WHERE id=$1',[employee.id])).rows[0].session_version;
  const edited=await saveCustomRole(db,auth,{name:'Project Coordinator',baseRole:'VIEWER'},role.id,1);

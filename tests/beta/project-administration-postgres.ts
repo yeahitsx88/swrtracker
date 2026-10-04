@@ -42,7 +42,8 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   const memberBody={userId:person,role:'REQUESTER'},memberKey=randomUUID();await expect(await members(req(memberBody,memberKey),ctx()),201);
   const events=await count('administrative_events');await expect(await members(req(memberBody,memberKey),ctx()),201);assert.equal(await count('administrative_events'),events);checks++;
   await expect(await members(req({userId:person,role:'SURVEY_MANAGER'}),ctx()),409);
-  const grantBody={userId:person,enabled:true,confirmed:true},grantKey=randomUUID();await expect(await administrators(req(grantBody,grantKey),ctx()));
+  const grantBody={userId:person,enabled:true,confirmed:true},grantKey=randomUUID();await expect(await administrators(req(grantBody,grantKey),ctx()),403);
+  await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.actor]);await expect(await administrators(req(grantBody,grantKey),ctx()));
   assert.equal((await db.query('SELECT role FROM project_memberships WHERE user_id=$1',[person])).rows[0].role,'REQUESTER');checks++;
   assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[person])).rows[0].session_version,3);checks++;
   await expect(await administrators(req(grantBody,grantKey),ctx()));assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[person])).rows[0].session_version,3);checks++;
@@ -53,6 +54,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   assert.equal((await db.query('SELECT role FROM project_memberships WHERE user_id=$1',[person])).rows[0].role,'SURVEY_MANAGER');checks++;
   await expect(await administrators(req({userId:person,enabled:false,confirmed:true}),ctx()));
   assert.equal((await db.query('SELECT role FROM project_memberships WHERE user_id=$1',[person])).rows[0].role,'SURVEY_MANAGER');checks++;
+  await db.query('DELETE FROM tenant_memberships WHERE user_id=$1',[f.actor]);
   await db.query("UPDATE projects SET status='SETUP' WHERE id=$1",[f.project]);
   const department=randomUUID();await db.query("INSERT INTO departments(id,tenant_id,project_id,name,manager_title,created_by) VALUES($1,$2,$3,'Admin parity department','Manager',$4)",[department,f.tenant,f.project,f.actor]);
   await expect(await handlePostDepartmentMembers(req({userId:person}),{params:Promise.resolve({projectId:f.project,departmentId:department})}),201);
@@ -87,7 +89,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   const whitelistBody={email:'priority@example.test'},whitelistKey=randomUUID();await expect(await whitelist(req(whitelistBody,whitelistKey),ctx()),201);const wlEvents=await count('administrative_events');await expect(await whitelist(req(whitelistBody,whitelistKey),ctx()),201);assert.equal(await count('administrative_events'),wlEvents);checks++;
   const sub=await expect(await companies(req({name:'Subcontractor',type:'SUBCONTRACTOR',confirmed:true}),ctx()));
   const subUser=randomUUID();await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Sub person','fixture')",[subUser,f.tenant,sub.company.id,subUser+'@example.test']);
-  await expect(await members(req({userId:subUser,role:'SURVEY_MANAGER'}),ctx()),403);await expect(await members(req({userId:subUser,role:'REQUESTER'}),ctx()),201);await expect(await administrators(req({userId:subUser,enabled:true,confirmed:true}),ctx()),404);
+  await expect(await members(req({userId:subUser,role:'SURVEY_MANAGER'}),ctx()),403);await expect(await members(req({userId:subUser,role:'REQUESTER'}),ctx()),201);await expect(await administrators(req({userId:subUser,enabled:true,confirmed:true}),ctx()),403);
   const beforeCompanies=await count('companies'),beforeEvents=await count('administrative_events');failAudit=true;await expect(await companies(req({name:'Rollback company',type:'GC',confirmed:true}),ctx()),500);failAudit=false;assert.equal(await count('companies'),beforeCompanies);assert.equal(await count('administrative_events'),beforeEvents);checks+=2;
   await db.query("UPDATE projects SET status='SETUP' WHERE id=$1",[f.project]);const selected=randomUUID();await db.query("INSERT INTO project_templates(id,tenant_id,name,crew_build,aor_depth,aor_level_labels,discipline_groups) VALUES($1,$2,'Eligible','SLIM',1,'[\"Area\"]','[]')",[selected,f.tenant]);
   await expect(await template(req({templateId:selected,confirmed:true},randomUUID(),'PATCH'),ctx()));assert.equal((await db.query('SELECT crew_build FROM projects WHERE id=$1',[f.project])).rows[0].crew_build,'SLIM');checks++;

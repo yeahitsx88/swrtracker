@@ -69,6 +69,7 @@ export function getProjectNavigation(role: ProjectRole | null, canAdminister=fal
   if (canAdminister && !items.includes(admin)) items.push(admin);
   // The existing team page permits scoped read access for Superintendent and Chief.
   if (role === 'SURVEY_SUPERINTENDENT' || role === 'PARTY_CHIEF') items.push(teamManagement);
+  if(role||canAdminister)items.push({label:'Help Desk',href:id=>`/projects/${id}/help-desk`});
   return role || canAdminister ? [home, ...items.map(item => ({...item, group: item === admin ? 'Administration' as const : item === teamManagement ? 'People' as const : 'Work' as const}))] : [];
 }
 

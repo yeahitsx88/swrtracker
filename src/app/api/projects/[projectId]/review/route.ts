@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
@@ -11,7 +12,7 @@ import { ValidationError } from '@/shared/errors';
 import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
-export async function GET(req: NextRequest, context: { params: Promise<{ projectId: string }> }) {
+async function observedGET(req: NextRequest, context: { params: Promise<{ projectId: string }> }) {
   try {
     const auth = await requireAuth(req);
     const { projectId } = await context.params;
@@ -23,3 +24,5 @@ export async function GET(req: NextRequest, context: { params: Promise<{ project
     return NextResponse.json(result, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) { return errorResponse(error); }
 }
+
+export const GET=observeProjectRoute(observedGET);

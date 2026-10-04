@@ -3,7 +3,7 @@ import type {AuthContext} from '@/lib/auth';
 import {assertProjectAdministrator} from '@/lib/project-capabilities';
 import {acquireTenantLifecycleLock} from '@/lib/tenant-lifecycle-lock';
 import type {DbClient,UUID} from '@/shared/types';
-import {ConflictError,NotFoundError,ValidationError} from '@/shared/errors';
+import {ConflictError,ForbiddenError,NotFoundError,ValidationError} from '@/shared/errors';
 import type {Company,CompanyType} from '../domain/types';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
 
@@ -17,6 +17,7 @@ async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:UUID){
 }
 export async function setProjectAdministrator(db:DbClient,auth:AuthContext,projectId:UUID,subjectUserId:UUID,enabled:boolean):Promise<{changed:boolean}>{
   const {authority}=await authorizeWritable(db,auth,projectId);
+  if(!authority.centralIT)throw new ForbiddenError('Only Tenant Admin can assign or revoke Project Admin authority.');
   const member=(await db.query(`SELECT u.id FROM users u JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
     JOIN project_memberships pm ON pm.user_id=u.id AND pm.project_id=$2 WHERE u.tenant_id=$1 AND u.id=$3
     AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL AND c.type IN ('GC','OWNER_REP')`,[auth.tenantId,projectId,subjectUserId])).rows[0];

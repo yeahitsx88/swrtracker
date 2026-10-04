@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 /**
  * POST /api/tickets/[ticketId]/assign
  *
@@ -18,7 +19,7 @@ import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -81,3 +82,5 @@ export async function POST(
     }
   });
 }
+
+export const POST=observeProjectRoute(observedPOST);
