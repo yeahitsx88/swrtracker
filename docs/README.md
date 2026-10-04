@@ -54,9 +54,11 @@ For PostgreSQL acceptance, provision a **disposable** database named **swr_team_
 pnpm test:postgres
 ~~~
 
-The runner initializes only an entirely empty public schema, then runs 27 suites in owned schemas. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
+The runner initializes only an entirely empty public schema, then runs 28 suites in owned schemas, including authenticated project employee provisioning. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
 
 HTTP/browser acceptance requires a separate fixture and production runtime wired to its generated schema. tests/beta/scoped-offboarding-acceptance.mjs setup creates the schema and private .local-runtime.env; it requires .local-test.env. Supply SWR_ACCEPTANCE_ORIGIN as a loopback URL, that runtime's JWT_SECRET, and SWR_PLAYWRIGHT_MODULE pointing to an existing Playwright ESM module. Run scoped-offboarding-case-matrix.mjs external, then report: all 55 named cases require the same current source/migration digest. The acceptance cleanup mode removes only the fixture's owned schema. Keep credentials and runtime files ignored.
+
+The additional `tests/beta/admin-workflows-http.mjs` and `admin-workflows-browser.mjs` runners require the explicitly owned custom restoration fixture/runtime, `SWR_ADMIN_RESTORATION=1`, its fixture manifest and a local retained-demo manifest proving different schemas. Their recorded database guard is task-specific (`127.0.0.1:15493/swr_team_isolated`); generic acceptance setup alone does not provision the restoration fixture fields. Follow [restoration verification boundaries](design/alpha1/administration-restoration.md#verification-and-limitations) before running them. Use fresh owned mutation fixtures, matching runtime/JWT settings and the existing Playwright/Edge installation; these are not generic clean-clone commands or permission to reuse retained demo data.
 
 ## Repository map
 

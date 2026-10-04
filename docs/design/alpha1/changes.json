@@ -1,26 +1,27 @@
 {
   "schemaVersion": 1,
-  "preparedOn": "2026-10-03",
+  "preparedOn": "2026-10-04",
   "branch": "alpha1-ui-redesign",
   "hardeningBranch": "alpha1-audit-hardening",
   "base": "b8ff81494c6701bb7f84550b40c247f4588b28cb",
-  "designCheckpoint": "c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a",
-  "scope": "Net versioned design changes through the pinned implementation checkpoint; the current reference/evidence refresh is listed separately",
-  "fileCount": 85,
-  "commitCount": 14,
+  "designCheckpoint": "66b66ad0f57475e06cdb36b614e16e0d354612b2",
+  "scope": "Net versioned design and authorized administration restoration changes through the pinned implementation checkpoint; current documentation/evidence refresh listed separately",
+  "fileCount": 116,
+  "commitCount": 18,
   "areas": {
-    "Application pages and appearance": 15,
-    "Design contracts and implementation documentation": 12,
+    "Administrative application and audit coordination": 2,
+    "Application pages and appearance": 27,
+    "Authenticated administrative HTTP adapters": 4,
+    "Design contracts and implementation documentation": 14,
+    "Lifecycle writer inventory": 1,
     "Local evidence ignore rule": 1,
-    "Presentation data and filter helpers": 3,
+    "Presentation data and filter helpers": 4,
     "Request, crew and review components": 6,
-    "Sanitized verification evidence": 4,
-    "Shared workspace and UI components": 35,
-    "Verification runners and fixtures": 9
+    "Sanitized verification evidence": 5,
+    "Shared workspace and UI components": 38,
+    "Verification runners and fixtures": 14
   },
   "protectedPathsUnchanged": [
-    "src/modules/",
-    "src/app/api/",
     "src/lib/contracts/",
     "db/",
     "package.json",
@@ -28,15 +29,16 @@
     "pnpm-workspace.yaml",
     "Dockerfile"
   ],
+  "administrativeScope": "Authenticated employee provisioning reuses Identity creation and coordinates Tenancy memberships/independent grants and Audit evidence; invitations, request configuration and project templates add optional exact retry support. No migrations.",
   "referencePreparationFiles": [
     "docs/design/alpha1/README.md",
     "docs/design/alpha1/files.md",
     "docs/design/alpha1/changes.json",
+    "docs/design/alpha1/administration-restoration.md",
+    ".impeccable/surfaces/administration-refinement.md",
     "docs/README.md",
-    "docs/ALPHA1_UI_REDESIGN.md",
     "docs/CODEX.md",
-    "docs/design/alpha1/administration.md",
-    "audits/alpha1-ui-redesign/administration-evidence.json"
+    "audits/alpha1-ui-redesign/administration-restoration-evidence.json"
   ],
   "commits": [
     {
@@ -94,6 +96,22 @@
     {
       "sha": "c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a",
       "subject": "Verify responsive administrative spaces and align access badges"
+    },
+    {
+      "sha": "531007a90abad8b8926accd973d1b2e32bf581cc",
+      "subject": "Document reviewed admin design and refresh Alpha 1 integration inventory"
+    },
+    {
+      "sha": "eb84572680b7e11043b916651fb9a44d8c2d62b3",
+      "subject": "Restore route-backed administration and account creation workflows"
+    },
+    {
+      "sha": "645ebeb5f63492992e5a7ff2c56f5c74d9819956",
+      "subject": "Verify restored administration wizards and preserve route editor state"
+    },
+    {
+      "sha": "66b66ad0f57475e06cdb36b614e16e0d354612b2",
+      "subject": "Coordinate administration commands and show task recovery notices"
     }
   ],
   "files": [
@@ -116,7 +134,7 @@
       "change": "A",
       "area": "Design contracts and implementation documentation",
       "baseBlob": null,
-      "designBlob": "25aa73802474e1f8536d7f657684317cc64cf0fb"
+      "designBlob": "7f56b2f05c84acd4a96448ba9491bbde6fbbe6db"
     },
     {
       "path": ".impeccable/surfaces/alpha1-project-home.md",
@@ -147,6 +165,13 @@
       "designBlob": "4e12b5b7f9b205f94d7ba541cdd66db963b55e1e"
     },
     {
+      "path": "audits/alpha1-ui-redesign/administration-evidence.json",
+      "change": "A",
+      "area": "Sanitized verification evidence",
+      "baseBlob": null,
+      "designBlob": "db775791d6cec7986db4a978ba40ad716be39d65"
+    },
+    {
       "path": "audits/alpha1-ui-redesign/annotations-evidence.json",
       "change": "A",
       "area": "Sanitized verification evidence",
@@ -175,18 +200,25 @@
       "designBlob": "d85af0d868e283ed730c49330fd0768c96de638e"
     },
     {
+      "path": "audits/phase5-lifecycle-writers.json",
+      "change": "M",
+      "area": "Lifecycle writer inventory",
+      "baseBlob": "b93c481da7e6bf5648dc3d79b57258d46e92f088",
+      "designBlob": "b3a25cca14afeeaaab9b2136438832b7dccc5082"
+    },
+    {
       "path": "docs/ALPHA1_UI_REDESIGN.md",
       "change": "A",
       "area": "Design contracts and implementation documentation",
       "baseBlob": null,
-      "designBlob": "dad7743c6a754d90fa9d016d50c1ceb577d8659d"
+      "designBlob": "f7f34f6e2c9b1ec844f4822df3140618e060bdbf"
     },
     {
       "path": "docs/CODEX.md",
       "change": "M",
       "area": "Design contracts and implementation documentation",
       "baseBlob": "b7856c1c31f3d21ac25850ef921745bc9a40ee15",
-      "designBlob": "5493a5a93bbf7e38d9a64e3bdc06da9486daeee8"
+      "designBlob": "5c42e0b581dc0c3ed96b9c12f7f10482d9847a9d"
     },
     {
       "path": "docs/README.md",
@@ -200,21 +232,42 @@
       "change": "A",
       "area": "Design contracts and implementation documentation",
       "baseBlob": null,
-      "designBlob": "9c6c0182b303c5d30b643e025673dfcada051bdf"
+      "designBlob": "222b6a287f9fa6c9e439b419c9ec2ba16e18777f"
+    },
+    {
+      "path": "docs/design/alpha1/administration-restoration.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "c58533b85ec65a2018389ec347b7f33678703fd6"
+    },
+    {
+      "path": "docs/design/alpha1/administration.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "f8ed8dfd2b0194fcc0fe1d12990fbeb30c02adf1"
     },
     {
       "path": "docs/design/alpha1/changes.json",
       "change": "A",
       "area": "Design contracts and implementation documentation",
       "baseBlob": null,
-      "designBlob": "9eacb8de525c17ba998a728e6d35bdd58e97daa6"
+      "designBlob": "eeabca2e54823efb563250255bbc220faef7f0ef"
     },
     {
       "path": "docs/design/alpha1/files.md",
       "change": "A",
       "area": "Design contracts and implementation documentation",
       "baseBlob": null,
-      "designBlob": "019509fd6d411e3a2aab1cd3956f2ef91b9df806"
+      "designBlob": "a283b251b7b3437aa73b62f8ed9b3e1d8a8fd553"
+    },
+    {
+      "path": "scripts/run-postgres-tests.mjs",
+      "change": "M",
+      "area": "Verification runners and fixtures",
+      "baseBlob": "05a6c4b45700d6b0b343cdb673c6d0e6567dcff9",
+      "designBlob": "0d9db830057b158b268fb3ee45ce6b6a05e5e634"
     },
     {
       "path": "src/app/(auth)/login/page.tsx",
@@ -224,11 +277,39 @@
       "designBlob": "92eaa1129e25c98f3b6d2d99a21ac451a26cbb81"
     },
     {
+      "path": "src/app/(projects)/accounts/layout.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "d6f9750ef7209d6d08ec08c842b0e6e980a2c735"
+    },
+    {
       "path": "src/app/(projects)/accounts/page.tsx",
       "change": "M",
       "area": "Application pages and appearance",
       "baseBlob": "a88ac633f17fe4d6af4688e92f9b76cff54b7f01",
-      "designBlob": "d860000383be70eac7e83c48a51abb820f37e29b"
+      "designBlob": "d1bf6c48cd02f209036e2af93c880aebf67515af"
+    },
+    {
+      "path": "src/app/(projects)/accounts/reviews/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "e60fecbca61e76f3497b780bf769ffd235f7a4a8"
+    },
+    {
+      "path": "src/app/(projects)/accounts/templates/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "e60fecbca61e76f3497b780bf769ffd235f7a4a8"
+    },
+    {
+      "path": "src/app/(projects)/accounts/workspace.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "56b15718a29c5bd4048f99b948eb92e5b3ff23c7"
     },
     {
       "path": "src/app/(projects)/appearance/page.tsx",
@@ -238,25 +319,81 @@
       "designBlob": "3ccae0b3376e68fef681846aae64906a3ee0cc89"
     },
     {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/access-recovery/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ff1df373c556aeae98767ee327643fd70e3e5801"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/administrators/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ff1df373c556aeae98767ee327643fd70e3e5801"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/companies/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ff1df373c556aeae98767ee327643fd70e3e5801"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/diagnostics/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ff1df373c556aeae98767ee327643fd70e3e5801"
+    },
+    {
       "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/draft-recovery.tsx",
       "change": "M",
       "area": "Application pages and appearance",
       "baseBlob": "b3ae72c89277c5f6ca977b61777e465a52098e16",
-      "designBlob": "d055b85f40042ac3ebc3c7a781212bfd94c17e44"
+      "designBlob": "ea25353f7bb278dfa72cf73013e88af027efc32d"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/layout.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "6f87ae905c92facb149cb847e059a855f0be342b"
     },
     {
       "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx",
       "change": "M",
       "area": "Application pages and appearance",
       "baseBlob": "9e909b59cd1eae84dc334b78f87eebb8b78f64d3",
-      "designBlob": "5542364f51248f1c81927318d1ba53ded3e8c447"
+      "designBlob": "754e5118d05cafb80903d68786b17ea76716a6ee"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/request-policy/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ff1df373c556aeae98767ee327643fd70e3e5801"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/settings/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ff1df373c556aeae98767ee327643fd70e3e5801"
     },
     {
       "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/subcontractor-access.tsx",
       "change": "M",
       "area": "Application pages and appearance",
       "baseBlob": "d029cfb81daa5dac977da17ec24dc7cbbc05a725",
-      "designBlob": "aa011c569c773586d326533a24639af8b4e62db8"
+      "designBlob": "d0a5ef174a8763dee50787832fc438d36f150066"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/workspace.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "ad638ffb031227b6c919c87ebb4cb1f3bccbc1d5"
     },
     {
       "path": "src/app/(projects)/projects/[projectId]/(crew)/crew/work/page.tsx",
@@ -306,6 +443,34 @@
       "area": "Application pages and appearance",
       "baseBlob": "106db4af441d448bb7084be921649260b4eca5b4",
       "designBlob": "3947ad72c84db85b8866cef67c78881efefa9709"
+    },
+    {
+      "path": "src/app/api/project-templates/handler.ts",
+      "change": "M",
+      "area": "Authenticated administrative HTTP adapters",
+      "baseBlob": "54241f9d538c26795bd251d2c1697fcbaeeed08e",
+      "designBlob": "a3a64b6e4fc3fd08325334131162bf799ad3a314"
+    },
+    {
+      "path": "src/app/api/projects/[projectId]/employees/route.ts",
+      "change": "A",
+      "area": "Authenticated administrative HTTP adapters",
+      "baseBlob": null,
+      "designBlob": "2f02e46264f3f6c15a08052b99d3516f75ae6830"
+    },
+    {
+      "path": "src/app/api/projects/[projectId]/invites/route.ts",
+      "change": "M",
+      "area": "Authenticated administrative HTTP adapters",
+      "baseBlob": "3a703996affe2b560b7de017349f66ae563556b4",
+      "designBlob": "5462ee5e625b66150f4166d150c403c46f946209"
+    },
+    {
+      "path": "src/app/api/projects/[projectId]/request-config/handler.ts",
+      "change": "M",
+      "area": "Authenticated administrative HTTP adapters",
+      "baseBlob": "874e721f210ff05be3f0a2943ecaa50b2426e343",
+      "designBlob": "4285a9fe7950475be60ba67ebe1efed94f5ee1ce"
     },
     {
       "path": "src/app/appearance.css",
@@ -396,7 +561,7 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "2272058205bea76abbe6a378385e6597b2706b07",
-      "designBlob": "d5d5c134db52341955eb703b432eb567fdf700f3"
+      "designBlob": "2f8590d8207f744b945764589a833fd495914551"
     },
     {
       "path": "src/components/ui/administration-records.css",
@@ -417,14 +582,14 @@
       "change": "A",
       "area": "Shared workspace and UI components",
       "baseBlob": null,
-      "designBlob": "9d495e958486fd28107fc821746b1ad99a877e3f"
+      "designBlob": "e4bb736aa296702abd093d854c202a801952f71b"
     },
     {
       "path": "src/components/ui/administration-workspace.tsx",
       "change": "A",
       "area": "Shared workspace and UI components",
       "baseBlob": null,
-      "designBlob": "ac9f6a4d644e7b1155232e3bd02e866b979b3470"
+      "designBlob": "bf01c6c3fc96540ba23a57fe0df646e8f9c6264b"
     },
     {
       "path": "src/components/ui/assigned-workforce.tsx",
@@ -487,14 +652,14 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "2b5d704b34b7705313d3a27f1b4e1c9cb7b70036",
-      "designBlob": "e3b6a0cf47c88fc8aa1edfa1dadc18931cfcc179"
+      "designBlob": "b82dc1323054ff1133a8ef150743f29f125818d0"
     },
     {
       "path": "src/components/ui/project-creation.tsx",
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "e987ec5878a89c345d5eb5cfc801af732a09ebb9",
-      "designBlob": "c62dff64c7db7bc088f2c800a1f32f0852ec5d52"
+      "designBlob": "f9b0ae93d5994addc507c699353ecd7b79f1078a"
     },
     {
       "path": "src/components/ui/project-home.css",
@@ -511,11 +676,18 @@
       "designBlob": "fefa6bdf66e513d375b2c8ba4605ca6202efd8ae"
     },
     {
+      "path": "src/components/ui/project-member-wizard.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "7a1bce7ac8ff8df708503a724fa3538d2443ba0f"
+    },
+    {
       "path": "src/components/ui/project-nav.tsx",
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "e50dea0aa15db973328376dd34bfb92134e12683",
-      "designBlob": "a06db8f4e0703cf50c6336a5d7fa27604283d08c"
+      "designBlob": "0cc9831458e264cd7bf55a9f13fc3a3f66197bf3"
     },
     {
       "path": "src/components/ui/project-navigation.ts",
@@ -539,6 +711,13 @@
       "designBlob": "6169e40cf4eded5483c6c80456cb849a927563ec"
     },
     {
+      "path": "src/components/ui/project-templates.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "235161ac7cc6f4fbd1d489687bddfbb054340c9b"
+    },
+    {
       "path": "src/components/ui/project-workspace.css",
       "change": "A",
       "area": "Shared workspace and UI components",
@@ -550,7 +729,7 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "dafe98cba8ebb02c3169e16a2990c5d692f1a8ef",
-      "designBlob": "06e9feba10068b54c0479cf4d52ecfb56ccb281c"
+      "designBlob": "09e510b94c8702338702d5a390fb5454b422813a"
     },
     {
       "path": "src/components/ui/record-collection.tsx",
@@ -609,6 +788,13 @@
       "designBlob": "4a04900f5aacef7480978f6a6610c26c65cb0234"
     },
     {
+      "path": "src/components/ui/tenant-employee-creation.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "cff79216a29354b9a7e335eefacbfa0fcf645529"
+    },
+    {
       "path": "src/lib/heading-case.ts",
       "change": "A",
       "area": "Presentation data and filter helpers",
@@ -630,11 +816,46 @@
       "designBlob": "5a7df1886966ff292b4258bd38aec88d0cff94d4"
     },
     {
+      "path": "src/lib/use-administration-progress.ts",
+      "change": "A",
+      "area": "Presentation data and filter helpers",
+      "baseBlob": null,
+      "designBlob": "c04b39a20f7263d1d7c84d984dfa723337e6d92c"
+    },
+    {
+      "path": "src/modules/audit/infrastructure/administrative-event.repository.ts",
+      "change": "M",
+      "area": "Administrative application and audit coordination",
+      "baseBlob": "4ce412d8f20db6a56f3258422436b1446b5e76da",
+      "designBlob": "f3dd29959fe81ef2fdee5a15c6db24b3cad52491"
+    },
+    {
+      "path": "src/modules/tenancy/application/create-project-employee.ts",
+      "change": "A",
+      "area": "Administrative application and audit coordination",
+      "baseBlob": null,
+      "designBlob": "7b33d03c387cc360d7a355c752fb083174b971df"
+    },
+    {
       "path": "tests/beta/admin-spaces-browser.mjs",
       "change": "A",
       "area": "Verification runners and fixtures",
       "baseBlob": null,
       "designBlob": "0d6f67266e8d06b9a8b732b8cf555feecbd6ae2a"
+    },
+    {
+      "path": "tests/beta/admin-workflows-browser.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "dda2bef8e0db01b86d6eba456f3efabb96d3cbcb"
+    },
+    {
+      "path": "tests/beta/admin-workflows-http.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "2bcc94a58487e9af0f9f6192836991a11792b110"
     },
     {
       "path": "tests/beta/alpha1-heading-help-browser.mjs",
@@ -665,11 +886,25 @@
       "designBlob": "c1efc66934afde42341e06299a49b5e13b14fc62"
     },
     {
+      "path": "tests/beta/lifecycle-writer-handlers-postgres.ts",
+      "change": "M",
+      "area": "Verification runners and fixtures",
+      "baseBlob": "1c78123b5a3e46449c0b6b203c23c4048221c7f8",
+      "designBlob": "58684d60fe8baca3b7e8790688cdd8bf067ad810"
+    },
+    {
+      "path": "tests/beta/project-employee-postgres.ts",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "7461215c352548e7287c7535691ff87a682658a8"
+    },
+    {
       "path": "tests/beta/scoped-offboarding-browser.mjs",
       "change": "M",
       "area": "Verification runners and fixtures",
       "baseBlob": "ca43f55683b00d04c67edbf16848df8d3767322b",
-      "designBlob": "77cf501b347103af9768f2eabfae4a9b6a4018b4"
+      "designBlob": "296ea0e62655a99ccf3f3b762947081e0827f209"
     },
     {
       "path": "tests/beta/survey-viewer-spaces-browser.mjs",
