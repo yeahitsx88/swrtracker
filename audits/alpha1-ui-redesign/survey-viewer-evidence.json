@@ -1,0 +1,340 @@
+{
+  "implementation": "2ff3a0f9acea173dd1f16e07848128624b70813115ccccbc43f254363790d19a",
+  "at": "2026-10-04T02:32:31.179Z",
+  "scope": "Comparable Survey and Viewer UI refinement; local production verification, not release/security approval",
+  "gates": {
+    "types": "strict and unused",
+    "unitTests": 566,
+    "productionBuild": "Node 22.23.3; pnpm 11.19.0",
+    "postgresSuites": 27,
+    "http": 52,
+    "lifecycleBrowser": 24,
+    "lostResponseBrowser": 26,
+    "surveyViewerBrowser": 716,
+    "roles": [
+      "Survey Manager",
+      "Survey Superintendent",
+      "Party Chief",
+      "Viewer",
+      "Viewer with independent Project Admin grant"
+    ],
+    "themes": [
+      "LIGHT",
+      "DARK"
+    ],
+    "widths": [
+      1864,
+      390
+    ],
+    "namedAcceptanceCases": {
+      "passed": 55,
+      "total": 55
+    }
+  },
+  "captures": [
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-LIGHT-1864-operations.png",
+      "sha256": "e394912f08d26d24b7f70142319a73d1513436544ece800917c0ce50d0fcac64"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-LIGHT-1864-queue.png",
+      "sha256": "00505bb7db21805233474705e059a543c6c46f1b9a3ea16cd90d3b5bdc01d8b0"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-LIGHT-1864-teams.png",
+      "sha256": "af0335ccf937138e7feefaf7f9b9f60da75d6a1a4a7dfebf55da338374249b41"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-LIGHT-390-operations.png",
+      "sha256": "5eac3508e7e38eff28773aece4297c5ff6290e2abbe5eca15e891baf8c3b736a"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-LIGHT-390-queue.png",
+      "sha256": "a5ea23c676075e091c704a14fec2bab718c8342fddd5bc6ec723b1c0a844e22c"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-LIGHT-390-teams.png",
+      "sha256": "9ed8b3ae60d10cbeca82cb7f0db29ad2ba101a671588c3c50e7fbe1da1077141"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-DARK-1864-operations.png",
+      "sha256": "d4f6f6373d0d8e0af9d8b2bc857c7d191191c1c165acd63a3d8b238b478bf664"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-DARK-1864-queue.png",
+      "sha256": "f528572d7afe321e04448e18fec1f1913eb67b4c18da44af1777309db2215fa5"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-DARK-1864-teams.png",
+      "sha256": "d62e85ef6e392f37830f49ca387789f9cbc325e7c81231bd8704e0af78d6eba1"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-DARK-390-operations.png",
+      "sha256": "e542328808e724ccd1d4edd58056129796f0c2648756616f3709f11cecc3e1c5"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-DARK-390-queue.png",
+      "sha256": "d106b26b0c2ccd54f6b9b84da185c71d7be1cb2562a7a77e954106e40161c230"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/manager-DARK-390-teams.png",
+      "sha256": "976fe325b44457208522a7bc407e97e88f04c12cea3b8e80ace8c857a67a4b91"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-LIGHT-1864-operations.png",
+      "sha256": "605ef90751830a2a8ec0403a551524510ceee5d2c43db47447749fe8a539b2e6"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-LIGHT-1864-queue.png",
+      "sha256": "51f0b21c602ae711ee3801b122a66334c7f99441703de8a2004f2a792201c4e1"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-LIGHT-1864-teams.png",
+      "sha256": "1f274089d0183263e7a89c92add669f5f34c26d3e9c46be24500a80a9253c7c2"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-LIGHT-390-operations.png",
+      "sha256": "3d51066f8188848289837eb06ca6f1bb07cca2782a70d2e7115d58accd501a05"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-LIGHT-390-queue.png",
+      "sha256": "bbf7cf5cc6c66f6f8e147b38229489207bc6498fa7c77114873b131bfab5015b"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-LIGHT-390-teams.png",
+      "sha256": "58e96468254aed49344bb154ab50331bc422f440da0c9d07335defdd74cce095"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-DARK-1864-operations.png",
+      "sha256": "db7da67c20a7a472b092a14f340869553760bc6de418127a846954c497573c18"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-DARK-1864-queue.png",
+      "sha256": "9f53cadfc4f8f93bdf753d6207ba5a461758cfd798ad23991f0eabfe2c5121b1"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-DARK-1864-teams.png",
+      "sha256": "7e8400fc0f037cbdeb3a50d24d8b852c96ab50bd2273021ab848c9d28a3fb9be"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-DARK-390-operations.png",
+      "sha256": "047dbe3d31010f200762215ce80bf2c9338611f3d0b619cadbb6f2389d030d8a"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-DARK-390-queue.png",
+      "sha256": "1c87054020da2a2c93560ee61eff9ebb137a20b1d732369cb9f4fe4b7bc695df"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/superintendent-DARK-390-teams.png",
+      "sha256": "d2900c2a6dcf57c9f5be6118047508a0d98e1876e6dc7096b549aac914e12bf2"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-LIGHT-1864-crew.png",
+      "sha256": "1949d465a6af0be46b3e3d4f7891c6397afcc36992096712906577e3daa45ca4"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-LIGHT-1864-crew-actions.png",
+      "sha256": "5cdfd0baa3af5259decdfc7de5832c1e7d87f0c01f9f2422f93ba2e266d9a25e"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-LIGHT-1864-teams.png",
+      "sha256": "6ee1e7d619e9c09f9534963102449844c6edc6988c18f5c457b5fdab4a9e8298"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-LIGHT-390-crew.png",
+      "sha256": "60317c42d1bb765faecbaa3802d1e9286923241c46300a764003f9e236b555ff"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-LIGHT-390-crew-actions.png",
+      "sha256": "b6158402cd055d82d4ef88ac7ada8f7bba783690e5966e39b4b42fa7cdaf2f13"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-LIGHT-390-teams.png",
+      "sha256": "1052f97680a1b105d6d069f3572a00c0d9da9caf485c650c084c59b0d63fc37b"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-DARK-1864-crew.png",
+      "sha256": "1dab80dc65503b558ab9353a2bcb0081a562c62ae7c97e67afc474032bb37f98"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-DARK-1864-crew-actions.png",
+      "sha256": "1969d7d6d9d872084887bbd8f4500fe8a166a4ed073431b459fd8f3662ffd5aa"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-DARK-1864-teams.png",
+      "sha256": "9bbe0aca14bab805f4a782b3873b2319683be4ce19ea3b979d6aa2de10fe9e02"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-DARK-390-crew.png",
+      "sha256": "dec501050bf76f1e9a2357899aa43c9efaf96f33963bc68cf8ba1cf02dd11665"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-DARK-390-crew-actions.png",
+      "sha256": "0619701340179af7504a81c618c0200c2b926a3275d594a7a217228b9e1bab8c"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/chief-DARK-390-teams.png",
+      "sha256": "e820cd079438dcc3a669e6847711448a0407b30f41f893ea220d491970c667c5"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-1864-review.png",
+      "sha256": "0194c59bd0a7cbef2df03c464aec4e3a159d8a7a2a780d824ce026d3269357aa"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-1864-chart-table.png",
+      "sha256": "51f850955764dca7b7bed9314152b75cc07607d52813b1d596c3fda983f613c8"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-1864-requests.png",
+      "sha256": "5eabbb5bf29499f5286bf4011c4d0660bddafe31a06c7952588ed7f3418a55bf"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-1864-details.png",
+      "sha256": "ee3541635e75a6b1c5edcb6f0f44402ee14357b1de6de051c1aeac0b67bc66fa"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-390-review.png",
+      "sha256": "8941f76cd8fa881e9aad0d94fda3048fcefc21ed09ad8176eee8d6298e142e9f"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-390-chart-table.png",
+      "sha256": "5a5b9be2a0310b728916fc6ed7cac122c146bf90200b77842fabb6fe39377a7e"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-390-requests.png",
+      "sha256": "da0f86170e6de8293cb9a89e8e4ab63245901ce3780041cda9f0183bfc3de013"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-LIGHT-390-details.png",
+      "sha256": "02c7c6cb0aa010a6d06aa69503c33deb6e56df9a649dd10a7f05b64afa1f506b"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-1864-review.png",
+      "sha256": "1cedecf81d93af807d1a813855de738eec22e8184719668ad9a17f8975f6a67e"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-1864-chart-table.png",
+      "sha256": "e55bb58169e0e48c5f82751cbf755201074b1599e24391e4a55d03ea11fbba18"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-1864-requests.png",
+      "sha256": "82c90bccfb2968d263a5e8320153d73aafdb28822994b5135fba6d95091e9aa4"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-1864-details.png",
+      "sha256": "f4b8b7979a5241fdc8a3b35b29e2bdb02331b9e5489c058d5dd2256a757aaed5"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-390-review.png",
+      "sha256": "7afaec187fbe33760b452ea6d04f4594c688aea8faadfa79aa6a0a1b369ae10e"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-390-chart-table.png",
+      "sha256": "41b9b47d72161b7d0f18ea42d3338fac9ec5431486e63967cd441c6a7ccdc42d"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-390-requests.png",
+      "sha256": "31e2bbd0f214faca052cb11be9936e058ef631adfc2c16839d3c7b2af985ac3b"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/viewer-DARK-390-details.png",
+      "sha256": "1f11c61cd9137ce07a1e663bbb9fac2d6039afb7ed04a53a1e42ae56b522d85f"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-1864-review.png",
+      "sha256": "813e611fcad0cc3cbe313131e8e20c3632c2d3cabd18c74208b9db2301f1c58b"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-1864-chart-table.png",
+      "sha256": "46dca715bb5b00c82a1e4334155acab8365475e27ad2d50d1cfefd5a1f664adf"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-1864-requests.png",
+      "sha256": "46b1005b78da79e6cee62350414860dbeee60826635c22c173e597689e4b2cf6"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-1864-details.png",
+      "sha256": "e1bbdcb348bb81f8f9b2737acf1ce0e6b0bfda8e691ecdceda7fe9001d4ebd8e"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-390-review.png",
+      "sha256": "07b541aa18f483b88ed20b5d10992ef63ec12b1877a89d322a82253407056d17"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-390-chart-table.png",
+      "sha256": "c6f32c91b6fe3f268d914ef803f9c2af073c0c5932da88630045e0092a47d94d"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-390-requests.png",
+      "sha256": "0f5f5a9ed82854e5341389caa0cbeb033b3f4fdcff7ce68b4561139077194014"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-LIGHT-390-details.png",
+      "sha256": "5e8d5fadb0d22c1d1b6e19c8ec0cf0e6e776a163bb3a3f74df01ce3c91970896"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-1864-review.png",
+      "sha256": "e1366cf762721c47fda7e8ba49643f6f88160adcc0b4fa539f8152a9d80f075f"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-1864-chart-table.png",
+      "sha256": "df2c26991a276cbb6e08e7e6eed253e54c264e1feeb62d42877736dcd77ec991"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-1864-requests.png",
+      "sha256": "e95659c74c83d4220985b981768345747cf0546aeacd7bb97cf0b1b88eb6010c"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-1864-details.png",
+      "sha256": "aa91a2a18adf722f7aa73366582d92bd5b18da036ae9804bb57496d5ee941b94"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-390-review.png",
+      "sha256": "40c11ea39df246ef8c97e2d42cf53061959c044c0896c5d03139b6d9797859cc"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-390-chart-table.png",
+      "sha256": "aa199e946bac816768cb2600715aa8c2d4c61c64a87a81a91c30615e90e8eb98"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-390-requests.png",
+      "sha256": "96ef60df5d8ddd3a5b1ed05f92eeffb3ca0e12217199d9aec9c39cc8c9d6e719"
+    },
+    {
+      "path": ".impeccable/review/survey-viewer/final/localAdmin-DARK-390-details.png",
+      "sha256": "27b62389c273a5e30256123f41b0c1e7a5bc4d6fbac05bb12d998d7d73942c9e"
+    }
+  ],
+  "finishReview": {
+    "status": "ship",
+    "initialOriginalsOpened": 64,
+    "requiredCorrections": 3,
+    "confirmationOriginalsOpened": 18,
+    "correctionsResolved": 3,
+    "scope": "Named corrections and supplied confirmation packet; four additional action captures do not enlarge the independent verdict",
+    "corrections": [
+      "Viewer detail return navigation follows operational role and omits requester Drafts links",
+      "Mobile Crew Work action groups preserve compact rows and single-line labels",
+      "Planned status text uses existing primary ink in both themes"
+    ]
+  },
+  "documentation": {
+    "status": "complete",
+    "updated": [
+      "DESIGN.md",
+      ".impeccable/design.json",
+      ".impeccable/surfaces/survey-viewer-refinement.md",
+      "docs/ALPHA1_UI_REDESIGN.md"
+    ],
+    "preserved": [
+      "PRODUCT.md",
+      "design token values",
+      "sidecar component HTML and CSS"
+    ]
+  },
+  "demo": {
+    "refreshed": true,
+    "preservationCheck": "Passed: users, account preferences, requests, history, attachments, projects and teams",
+    "url": "http://127.0.0.1:3124/projects/e88c1dcf-e031-447b-9f23-417ff8f11129/home"
+  }
+}

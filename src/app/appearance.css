@@ -10,7 +10,7 @@
 :root[data-theme=dark] .detail-callout strong {color:#f3ca83;}
 :root[data-theme=dark] .badge-success,:root[data-theme=dark] .tone-success,:root[data-theme=dark] .success-banner {background:#17372b;color:#a1e5c4;border-color:#467f65;}
 :root[data-theme=dark] .badge-danger,:root[data-theme=dark] .tone-danger,:root[data-theme=dark] .chip-alert,:root[data-theme=dark] .error-banner,:root[data-theme=dark] .card-actions .button-danger:hover {background:#3c2527;color:#ffc5bf;border-color:#a36565;}
-:root[data-theme=dark] .tone-planned {background:var(--surface-selected);color:var(--action);border-color:var(--line);}
+:root[data-theme=dark] .tone-planned {background:var(--surface-selected);color:var(--ink);border-color:var(--line);}
 :root[data-theme=dark] .meta-overdue {color:#f3ca83;}
 :root[data-theme=dark] .step-chip-done .step-number {background:var(--surface-selected);}
 /* Keep the supplied artwork unchanged on its own light backing in dark mode. */

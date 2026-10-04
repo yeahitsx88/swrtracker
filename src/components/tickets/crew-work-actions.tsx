@@ -30,7 +30,7 @@ export function CrewWorkActions({
 
   if (ticket.status === 'IN_PROGRESS') {
     return (
-      <>
+      <div className="crew-work-actions">
         <Button disabled={busy} onClick={() => void onSubmitComplete(ticket.id)}>
           Complete Work
         </Button>
@@ -66,13 +66,13 @@ export function CrewWorkActions({
         >
           Flag Stop Work
         </Button>
-      </>
+      </div>
     );
   }
 
   if (ticket.status === 'DELAYED') {
     return (
-      <>
+      <div className="crew-work-actions">
         <Button disabled={busy} onClick={() => void onRestartDelay(ticket.id)}>Restart Delay</Button>
         <Button
           variant="danger"
@@ -84,7 +84,7 @@ export function CrewWorkActions({
         >
           Flag Stop Work
         </Button>
-      </>
+      </div>
     );
   }
 

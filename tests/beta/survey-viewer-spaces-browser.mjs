@@ -26,6 +26,7 @@ async function shell(page,width){
  if(width===1864)check(await page.locator('.project-sidebar').evaluate(n=>n.getBoundingClientRect().left),0,'Sidebar anchored to left frame');
  else{await page.getByRole('button',{name:'Project navigation',exact:true}).click();check(await page.locator('dialog.project-navigation-drawer').evaluate(n=>n.open),true,'Shared mobile drawer');await page.keyboard.press('Escape');}
 }
+async function plannedContrast(page){check(await page.locator('.tone-planned').evaluateAll(ns=>ns.every(n=>{const s=getComputedStyle(n),lum=c=>c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0),a=lum(s.color),b=lum(s.backgroundColor);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5;})),true,'Planned statuses meet small-text contrast');}
 async function help(page,title,text,width){
  const trigger=page.getByRole('button',{name:`About ${title}`,exact:true}).first();await trigger.scrollIntoViewIfNeeded();
  check(await trigger.evaluate(n=>n.getBoundingClientRect().width>=44&&n.getBoundingClientRect().height>=44),true,'44px help target');
@@ -63,16 +64,22 @@ try{
    const action=region.getByRole('button',{name:'Review requests',exact:true}).first();await action.click();await p.locator('section[aria-label="Filtered requests"] .status-badge').first().waitFor();
    check(new URL(p.url()).searchParams.get('view'),'requests','Chart drill-down');
    check(await p.locator('.status-badge').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).whiteSpace==='nowrap')),true,'Single-line status bubbles');
+   await plannedContrast(p);
    const table=p.getByRole('region',{name:'reviewed requests on this page table',exact:true});await table.scrollIntoViewIfNeeded();await table.evaluate(n=>n.scrollLeft=n.scrollWidth);await shot(p,name+'-requests',false);
    await table.getByRole('link',{name:'Open request details',exact:true}).first().click();await p.waitForURL(u=>/\/tickets\//.test(u.pathname));await p.locator('.detail-header').waitFor();await shell(p,width);await shot(p,name+'-details');
    check(await p.getByRole('button',{name:/Approve|Assign crew|Reject request|Begin work/,exact:true}).count(),0,'Viewer details remain read-only');
+   check(await p.getByRole('link',{name:'Drafts',exact:true}).count(),0,'No requester-only Drafts link');await plannedContrast(p);
+   await p.getByRole('link',{name:'Back to All Requests',exact:true}).click();await p.locator('.review-status-chart').waitFor();check(new URL(p.url()).pathname,`/projects/${f.project}/requests`,'Viewer return uses authorized review');
    if(role==='viewer'){
     check((await fetch(origin+`/api/projects/${f.project}/survey/teams`,{headers:{cookie}})).status,403,'Viewer team access denied');
     check((await fetch(origin+`/api/projects/${f.project}/metrics?view=activity`,{headers:{cookie}})).status,403,'Viewer command activity denied');
    }
   }else{
    if(role==='chief'){
-    await p.goto(base+'/crew/work');await p.getByRole('heading',{name:'Crew Work',exact:true}).waitFor();await help(p,'Crew Work','Requests assigned to your crew',width);await shell(p,width);await shot(p,name+'-crew');
+    await p.goto(base+'/crew/work');await p.getByRole('heading',{name:'Crew Work',exact:true}).waitFor();await p.locator('.administration-table tbody tr').first().waitFor();await help(p,'Crew Work','Requests assigned to your crew',width);await shell(p,width);await plannedContrast(p);
+    check(await p.locator('.administration-table tbody tr').evaluateAll(ns=>ns.every(n=>n.getBoundingClientRect().height<160)),true,'Compact Crew Work row height');
+    check(await p.locator('.crew-work-actions .button').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).whiteSpace==='nowrap'&&n.getBoundingClientRect().height>=44)),true,'Crew commands retain single-line targets');await shot(p,name+'-crew');
+    const crewTable=p.getByRole('region',{name:'requests table',exact:true});await crewTable.scrollIntoViewIfNeeded();await crewTable.evaluate(n=>n.scrollLeft=n.scrollWidth);await shot(p,name+'-crew-actions',false);
    }else{
     await p.goto(base+'/survey/operations');await p.getByRole('heading',{name:'Survey Operations',exact:true}).waitFor();await p.getByRole('tab',{name:'Overview',exact:true}).waitFor();
     await help(p,role==='manager'?'Queue Health':'Area-Wide Workload','Select a measure',width);

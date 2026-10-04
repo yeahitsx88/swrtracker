@@ -275,7 +275,7 @@ main {
 .tone-neutral { background: #edf2f6; color: #334155; border-color: #c8d2dc; }
 .tone-review { background: #f1f4f7; color: #3b4651; border-color: #b7c3ce; }
 .tone-attention { background: #fff6e9; color: #7f4e04; border-color: #efce97; }
-.tone-planned { background: var(--surface-hover); color: var(--action); border-color: #b9d0e4; }
+.tone-planned { background: var(--surface-hover); color: var(--ink); border-color: #b9d0e4; }
 .tone-active { background: var(--action); color: var(--brand-ink); border-color: var(--action); }
 .tone-success { background: #ecfbf3; color: #065c3b; border-color: #9fd4ba; }
 .tone-danger { background: #ffecec; color: #8a1f1f; border-color: #f0aaaa; }

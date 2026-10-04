@@ -16,6 +16,7 @@ import { TICKET_STATUS_LABELS } from '@/lib/contracts';
 import { Icon } from '@/components/ui/icon';
 import { ticketTypeLabel } from '@/lib/display-labels';
 import { buildAreaNames } from '@/lib/use-area-names';
+import { useProjectWorkspace } from '@/components/ui/project-shell-header';
 
 const NO_CAPABILITIES: TicketCapabilities = {
   canEditRequesterFields: false,
@@ -31,6 +32,7 @@ export default function TicketDetailPage() {
   const projectId = params.projectId;
   const ticketId = params.ticketId;
   const router = useRouter();
+  const role = useProjectWorkspace()?.capabilities.operationalRole;
 
   const [ticket, setTicket] = useState<TicketRecord | null>(null);
   const [capabilities, setCapabilities] = useState<TicketCapabilities>(NO_CAPABILITIES);
@@ -188,15 +190,20 @@ export default function TicketDetailPage() {
 
   const areaPath = ticket?.aorNodeId && areaTree ? buildAreaNames(areaTree.nodes).get(ticket.aorNodeId)?.path : undefined;
   const fromDraft = ticket?.status === 'DRAFT';
+  const requester = role === 'REQUESTER';
+  const fieldRole = role === 'PARTY_CHIEF' || role === 'INSTRUMENT_MAN';
+  const reviewRole = role && !requester && !fieldRole && role !== 'PROJECT_ADMIN';
+  const returnPath = requester ? fromDraft ? 'drafts' : 'my-requests' : fieldRole ? 'crew/work' : reviewRole ? 'requests' : 'home';
+  const returnLabel = requester ? fromDraft ? 'Back to Drafts' : 'Back to My Requests' : fieldRole ? 'Back to Crew Work' : reviewRole ? 'Back to All Requests' : 'Back to Home';
   const noActions = !capabilities.canSubmit && !capabilities.canCreateFollowUp && !capabilities.canRequesterCancel &&
     !(ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields);
 
   return (
     <div className="stack">
       <div className="toolbar">
-        <Link href={`/projects/${projectId}/${fromDraft ? 'drafts' : 'my-requests'}`} className="back-link"><Icon name="back" />{fromDraft ? 'Back to Drafts' : 'Back to My Requests'}</Link>
+        <Link href={`/projects/${projectId}/${returnPath}`} className="back-link"><Icon name="back" />{returnLabel}</Link>
         <div className="toolbar-group">
-          <Link href={`/projects/${projectId}/${fromDraft ? 'my-requests' : 'drafts'}`} className="text-link">{fromDraft ? 'My Requests' : 'Drafts'}</Link>
+          {requester && <Link href={`/projects/${projectId}/${fromDraft ? 'my-requests' : 'drafts'}`} className="text-link">{fromDraft ? 'My Requests' : 'Drafts'}</Link>}
           <Button variant="secondary" disabled={working || uncertain} onClick={() => { void loadAll(); void apiClient.listAorTree(projectId).then(setAreaTree).catch(err => setError(getErrorMessage(err,'Unable to reload Areas.'))); }}>
             <Icon name="refresh" />Refresh
           </Button>
