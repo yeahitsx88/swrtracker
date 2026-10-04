@@ -27,6 +27,7 @@
 .project-navigation-drawer::backdrop { background: rgb(15 25 35 / 55%); }
 .workspace-drawer-heading { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: .75rem; padding: 1rem; border-bottom: 1px solid var(--line); }
 .workspace-drawer-heading h2 { margin: 0; font-size: 1.1rem; }
+.workspace-drawer-close { flex: 0 0 44px; width: 44px; height: 44px; padding: 0; }
 .project-navigation-drawer .workspace-navigation { padding: 1rem; overflow-y: auto; min-height: 0; flex: 1; }
 @media (max-width: 999px) {
   .project-workspace { display: block; }

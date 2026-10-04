@@ -53,7 +53,7 @@ export function ProjectNav({ projectId, role, canAdminister, status, projectName
     <aside className="project-sidebar"><div className="workspace-sidebar-title">SWRTracker<span>Survey work requests</span></div>{navigation}</aside>
     <div className="project-mobile-navigation"><button ref={trigger} type="button" className="button button-secondary" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}><Icon name="list" />Project navigation</button><span>{items.find(item => item.href(projectId!) === pathname)?.label ?? accountNavigation(projectId).find(item => item.href.split('?')[0] === pathname)?.label ?? 'Workspace'}</span></div>
     <dialog ref={dialog} className="project-navigation-drawer" aria-labelledby="project-navigation-title" onCancel={event => { event.preventDefault(); close(); }} onPointerDown={event => { const r = event.currentTarget.getBoundingClientRect(); backdrop.current = event.target === event.currentTarget && (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom); }} onClick={() => { if (backdrop.current) { backdrop.current = false; close(); } }}>
-      <div className="workspace-drawer-heading"><h2 id="project-navigation-title">{projectName}</h2><button type="button" className="button button-secondary" onClick={close}>Close</button></div>{navigation}
+      <div className="workspace-drawer-heading"><h2 id="project-navigation-title">{projectName}</h2><button type="button" className="button button-secondary workspace-drawer-close" aria-label="Close navigation" onClick={close}><Icon name="close" size={20} /></button></div>{navigation}
     </dialog>
   </>;
 }
