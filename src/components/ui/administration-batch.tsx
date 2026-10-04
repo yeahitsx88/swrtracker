@@ -1,14 +1,14 @@
 'use client';
 import {HeadingHelp} from '@/components/ui/heading-help';
 import {RecordCollection} from '@/components/ui/record-collection';
-import {useRef,useState,useSyncExternalStore} from 'react';
+import {useId,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import {Button,ErrorBanner,SuccessBanner} from '@/components/ui';
 export interface AdministrationAction{url:string;method:'POST'|'DELETE'|'PATCH';body:Record<string,unknown>;label:string}
 export function AdministrationBatch({actions,owner,onDone,onCancel}:{actions:AdministrationAction[];owner:CommandOwner;onDone:()=>void;onCancel:()=>void}){
- const gate=useRef(new FrozenCommand<Array<AdministrationAction&{key:string}>>()).current,progress=useRef(0),token='administration-batch';
+ const gate=useRef(new FrozenCommand<Array<AdministrationAction&{key:string}>>()).current,progress=useRef(0),token='administration-batch:'+useId();
  const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const [consent,setConsent]=useState(false),[error,setError]=useState<string>(),[done,setDone]=useState(false),[reloadRequired,setReloadRequired]=useState(false),[,render]=useState(0);
  async function submit(){if(!consent||reloadRequired||!owner.claim(token))return;const frozen=gate.begin(actions.map(a=>({...a,key:crypto.randomUUID()})),crypto.randomUUID());if(!frozen)return;render(v=>v+1);setError(undefined);

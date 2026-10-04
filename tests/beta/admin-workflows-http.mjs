@@ -1,3 +1,5 @@
+import {Pool} from 'pg';
+import {isDeepStrictEqual} from 'node:util';
 // Explicitly owned synthetic fixture only; account credentials never enter receipts.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -7,9 +9,10 @@ const f=JSON.parse(await fs.readFile(process.env.SWR_ADMIN_FIXTURE_FILE??'.local
 assert.equal(process.env.SWR_ADMIN_RESTORATION,'1');assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);
 const retained=JSON.parse(await fs.readFile('.local-demo-fixture.json','utf8'));assert.notEqual(f.schema,retained.schema);
 const origin=process.env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
+const dbUrl=new URL(process.env.DATABASE_URL);assert.equal(dbUrl.hostname,'127.0.0.1');assert.equal(dbUrl.port,'15493');assert.equal(dbUrl.pathname,'/swr_team_isolated');dbUrl.searchParams.delete('options');const pg=new Pool({connectionString:dbUrl.href,options:'-c search_path='+f.schema+',public'});
 let checks=0;const receipt=[];
-const cookie=role=>'swr_session='+jwt.sign({sub:f[role],tenantId:role==='foreignAdmin'?f.foreignTenant:f.tenant,sv:1},process.env.JWT_SECRET,{expiresIn:'1h'});
-async function request(role,path,body,key=randomUUID()){const r=await fetch(origin+path,{method:body?'POST':'GET',headers:{cookie:cookie(role),'content-type':'application/json','Idempotency-Key':key},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,body:await r.json()};}
+const cookie=(role,version)=>'swr_session='+jwt.sign({sub:f[role],tenantId:role==='foreignAdmin'?f.foreignTenant:f.tenant,sv:version},process.env.JWT_SECRET,{expiresIn:'1h'});
+async function request(role,path,body,key=randomUUID(),method=body?'POST':'GET'){const tenantId=role==='foreignAdmin'?f.foreignTenant:f.tenant;const version=(await pg.query('SELECT session_version FROM users WHERE id=$1 AND tenant_id=$2',[f[role],tenantId])).rows[0].session_version;const r=await fetch(origin+path,{method,headers:{cookie:cookie(role,version),'content-type':'application/json','Idempotency-Key':key},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,body:await r.json()};}
 function check(condition,label){assert(condition,label);checks++;receipt.push(label);}
 const path=`/api/projects/${f.project}/employees`,body=()=>({companyId:f.company,name:'HTTP Employee',email:randomUUID()+'@example.test',password:'Synthetic-Only-2026!',role:'REQUESTER',projectAdmin:false,confirmed:true});
 const first=body(),key=randomUUID();const pair=await Promise.all([request('itOnly',path,first,key),request('itOnly',path,first,key)]);
@@ -32,5 +35,19 @@ const created=await request('itOnly','/api/project-templates',template,templateK
 check(created.status===201&&replay.status===201&&created.body.template.id===replay.body.template.id,'Template exact retry creates one template');
 check((await request('itOnly','/api/project-templates',{...template,name:'Changed'},templateKey)).status===409,'Template payload mismatch requires reload');
 check((await request('localAdmin','/api/project-templates',template)).status===403,'Shared template authority remains Central IT only');
+const policyPath=`/api/projects/${f.project}/request-config`,config={leadTimeEnforcementEnabled:true,leadTimeDays:3,maxAttachmentsPerTicket:null},policyKey=randomUUID();
+const policy=await request('localAdmin',policyPath,config,policyKey,'PATCH'),policyReplay=await request('localAdmin',policyPath,config,policyKey,'PATCH');
+check(policy.status===200&&policyReplay.status===200&&isDeepStrictEqual(policy.body,policyReplay.body),'Request Policy exact retry returns recorded configuration');
+check((await request('localAdmin',policyPath,{...config,leadTimeDays:4},policyKey,'PATCH')).status===409,'Request Policy mismatch requires reload');
+check((await request('manager',policyPath,config,randomUUID(),'PATCH')).status===403,'Request Policy replay requires current administration');
+check((await request('itOnly',`/api/projects/${f.archivedProject}/request-config`,config,randomUUID(),'PATCH')).status===403,'Request Policy archived replay denied');
+const invitePath=`/api/projects/${f.project}/invites`,inviteBody={companyId:company.body.company.id,email:randomUUID()+'@example.test'},inviteKey=randomUUID();
+const invite=await request('localAdmin',invitePath,inviteBody,inviteKey),inviteReplay=await request('localAdmin',invitePath,inviteBody,inviteKey);
+check(invite.status===201&&inviteReplay.status===201&&invite.body.inviteToken===inviteReplay.body.inviteToken,'Invitation exact retry returns the same pending invitation');
+check((await request('localAdmin',invitePath,{...inviteBody,email:randomUUID()+'@example.test'},inviteKey)).status===409,'Invitation mismatch requires reload');
+const ledger=(await pg.query('SELECT response_body FROM api_idempotency WHERE tenant_id=$1 AND actor_id=$2 AND idempotency_key=$3',[f.tenant,f.localAdmin,inviteKey])).rows[0];
+check(!!ledger&&!JSON.stringify(ledger).includes(invite.body.inviteToken),'Invitation ledger excludes bearer token');
+check((await request('foreignAdmin',invitePath,inviteBody)).status===404,'Foreign invitation authority denied');
+await pg.end();
 console.log('Administration workflow HTTP checks passed: '+checks);
 await fs.writeFile('.local-admin-workflows-http-results.json',JSON.stringify({checks,receipt},null,2));

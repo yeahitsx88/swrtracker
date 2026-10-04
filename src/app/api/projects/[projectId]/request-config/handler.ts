@@ -1,7 +1,9 @@
+import {administrationRetry} from '@/lib/administration-retry';
+import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError,NotFoundError,ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
@@ -116,6 +118,14 @@ export async function handlePatchProjectRequestConfig(
       client,
       );
 
+      // UI keys preserve exact results; legacy callers remain compatible. Authority and lifecycle precede replay.
+      if(req.headers.has('Idempotency-Key')){
+        if(tenantRole!=='TENANT_ADMIN'&&projectRole!=='PROJECT_ADMIN')throw new ForbiddenError('Only project administrators may manage request configuration');
+        const project=await repo.findProjectById(client,auth.tenantId,projectUuid);if(!project)throw new NotFoundError('Project not found');
+        if(project.status==='ARCHIVED')throw new ForbiddenError('Archived project configuration is read-only');
+        await assertRecommissioningMutation(client,auth.tenantId,projectUuid);
+      }
+      return administrationRetry(client,req,auth,`PATCH /api/projects/${projectId}/request-config`,body,200,async()=>{
       const changed = await updateProjectRequestConfig(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectUuid,
@@ -131,6 +141,7 @@ export async function handlePatchProjectRequestConfig(
         changes: { resource: 'REQUEST_CONFIG', result: changed },
       });
       return changed;
+      });
     });
 
     return NextResponse.json({ config });

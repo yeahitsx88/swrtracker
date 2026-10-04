@@ -1,22 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { apiClient, apiRequest } from '@/lib/apiClient';
-import { getErrorMessage } from '@/lib/errors';
+import { ApiClientError, getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
 import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
 import {AdministrationArea,AdministrationWorkspace} from '@/components/ui/administration-workspace';
+import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
+import {useAdministrationProgress} from '@/lib/use-administration-progress';
+import type {ProjectRequestConfig,ProjectRequestConfigResponse} from '@/lib/contracts/projects';
 import {ProjectAdministration} from '@/components/ui/project-administration';
 
 export function AdminProjectWorkspace() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
+  const owner=useRef(new CommandOwner()).current;
+  const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
+  const policyToken='request-policy',policy=useRef(new FrozenCommand<ProjectRequestConfig>()).current;
+  const [,renderPolicy]=useState(0);
   const pathname = usePathname();
   const base = `/projects/${projectId}/admin`;
+  useAdministrationProgress(owner,base);
+  const policyBlocked=owner.blocked(policyToken),policyLocked=policy.locked||policyBlocked;
+  void ownerToken;
   const tabs = [{id:'admin-personnel',label:'Personnel',href:base},{id:'admin-administrators',label:'Project Admins',href:base+'/administrators'},{id:'admin-companies',label:'Companies',href:base+'/companies'},{id:'admin-settings',label:'Settings',href:base+'/settings'},{id:'admin-request-policy',label:'Request Policy',href:base+'/request-policy'},{id:'admin-access-recovery',label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',label:'Diagnostics',href:base+'/diagnostics'}];
   const activeId = tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
 
@@ -58,30 +68,22 @@ export function AdminProjectWorkspace() {
   }, [projectId]);
 
   async function saveConfig() {
-    if(loading||saving||archived)return;
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
+    if(loading||saving||archived||!owner.claim(policyToken))return;
+    const command=policy.begin({leadTimeEnforcementEnabled,leadTimeDays,maxAttachmentsPerTicket},crypto.randomUUID());
+    if(!command){if(!policy.locked)owner.release(policyToken);return;}
+    setSaving(true);setError(null);setSuccess(null);renderPolicy(n=>n+1);
     try {
-      const response = await apiClient.updateProjectRequestConfig(projectId, {
-        leadTimeEnforcementEnabled,
-        leadTimeDays,
-        maxAttachmentsPerTicket,
-      });
-      setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);
-      setLeadTimeDays(response.config.leadTimeDays);
-      setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
+      const response=await apiRequest<ProjectRequestConfigResponse>(`/api/projects/${projectId}/request-config`,{method:'PATCH',body:command.body,headers:{'Idempotency-Key':command.key}});
+      policy.success();owner.release(policyToken);
+      setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);setLeadTimeDays(response.config.leadTimeDays);setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
       setSuccess('Project request configuration updated.');
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to update project request configuration.'));
-    } finally {
-      setSaving(false);
-    }
+    }catch(err){policy.fail(err instanceof ApiClientError?err.status:undefined);if(!policy.locked)owner.release(policyToken);setError(getErrorMessage(err,'Outcome uncertain. Retry the unchanged configuration.'));}
+    finally{setSaving(false);renderPolicy(n=>n+1);}
   }
 
   return (
     <AdministrationWorkspace title="Project Administration" description="Manage this project's personnel, companies, settings and recovery. Operational roles and independent administration remain separate." sections={tabs} activeId={activeId}>
-      <ProjectAdministration key={projectId} projectId={projectId}/>
+      <ProjectAdministration key={projectId} projectId={projectId} owner={owner}/>
       {<AdministrationArea id="admin-request-policy"><Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."
@@ -97,14 +99,14 @@ export function AdminProjectWorkspace() {
                 <input
                   type="checkbox"
                   checked={leadTimeEnforcementEnabled}
-                  disabled={saving||archived}
+                  disabled={policyLocked||saving||archived}
                   onChange={(event) => setLeadTimeEnforcementEnabled(event.target.checked)}
                 />
                 <span>Enable lead-time enforcement for requester submit</span>
               </label>
               <Field label="Lead-Time Days">
                 <Input
-                  disabled={saving||archived}
+                  disabled={policyLocked||saving||archived}
                   type="number"
                   min={1}
                   max={30}
@@ -115,7 +117,7 @@ export function AdminProjectWorkspace() {
               </Field>
               <Field label="Maximum Files per SWR (blank for no count cap)">
                 <Input
-                  disabled={saving||archived}
+                  disabled={policyLocked||saving||archived}
                   type="number"
                   min={1}
                   max={100}
@@ -123,17 +125,18 @@ export function AdminProjectWorkspace() {
                   onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
                 />
               </Field>
-              <Button disabled={saving||archived} onClick={() => void saveConfig()}>
-                {saving ? 'Saving...' : 'Save Configuration'}
+              <Button disabled={policyBlocked||saving||archived||policy.stale} onClick={() => void saveConfig()}>
+                {saving ? 'Saving...' : policy.command?'Retry Unchanged Configuration':'Save Configuration'}
               </Button>
+              {policy.stale&&<><p role="alert">Configuration changed. Reload before confirming again.</p><Button variant="secondary" disabled={policyBlocked||saving} onClick={()=>{if(policy.reload()){owner.release(policyToken);setError(null);setSuccess(null);void apiClient.getProjectRequestConfig(projectId).then(r=>{setLeadTimeEnforcementEnabled(r.config.leadTimeEnforcementEnabled);setLeadTimeDays(r.config.leadTimeDays);setMaxAttachmentsPerTicket(r.config.maxAttachmentsPerTicket);}).catch(e=>setError(getErrorMessage(e,'Unable to reload configuration.')));}}}>Reload Configuration</Button></>}
             </>
           ) : null}
         </div>
       </Card></AdministrationArea>}
       {archived&&error?<ErrorBanner message={error}/>:null}
-      <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Survey Reviewer Handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
-      <SubcontractorAccess projectId={projectId} />
-      <DraftRecovery projectId={projectId} /></AdministrationArea>
+      <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Survey Reviewer Handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId} owner={owner}/></Card>
+      <SubcontractorAccess projectId={projectId} owner={owner} />
+      <DraftRecovery projectId={projectId} owner={owner} /></AdministrationArea>
     </AdministrationWorkspace>
   );
 }

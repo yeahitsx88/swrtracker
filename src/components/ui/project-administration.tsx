@@ -1,7 +1,6 @@
 'use client';
 import {AdministrationArea} from './administration-workspace';
 import {ProjectMemberWizard,operationalRoleLabels} from './project-member-wizard';
-import {useAdministrationProgress} from '@/lib/use-administration-progress';
 import {headingCase} from '@/lib/heading-case';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
@@ -16,9 +15,8 @@ import type {UUID} from '@/shared/types';
 interface Member {userId:string;name:string;email:string;role:string;accessDisabledAt:string|null;accountDisabledAt:string|null;canAdminister?:boolean}
 interface Companies {companies:Array<{id:string;name:string;type:string}>;candidates:Array<{userId:string;name:string;email:string;companyName:string}>}
 type Intent={url:string;method:'POST'|'PATCH'|'DELETE';body:Record<string,unknown>;label:string};
-export function ProjectAdministration({projectId}:{projectId:string}){
- const owner=useRef(new CommandOwner()).current;const token='project-administration';const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
- useAdministrationProgress(owner,`/projects/${projectId}/admin`);
+export function ProjectAdministration({projectId,owner}:{projectId:string;owner:CommandOwner}){
+ const token='project-administration';const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const base=`/api/projects/${projectId}`;
  const [members,setMembers]=useState<Member[]>([]),[admins,setAdmins]=useState<Member[]>([]),[companies,setCompanies]=useState<Companies>();
  const [selected,setSelected]=useState<Member>(),[promotion,setPromotion]=useState<Member>();
@@ -46,8 +44,8 @@ export function ProjectAdministration({projectId}:{projectId:string}){
  }
  void revision;
  return <div className="stack">
- <AdministrationArea id="admin-personnel"><Card title="Project Personnel Administration" description="Membership, operational roles and independent Project Admin authority are separate."><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {loading&&<p role="status">Loading project administration…</p>}
+ <AdministrationArea id="admin-personnel"><Card title="Project Personnel Administration" description="Membership, operational roles and independent Project Admin authority are separate."><div className="stack">
  {closed&&<p>This archived project retains history. Access removal remains available; other administration is read-only.</p>}
  <AdministrationSection title="Add a Project Member" open locked={locked} description="Associate the person's company with this project first. Select eligible accounts, then review their project role.">
  {companies&&!closed&&<ProjectMemberWizard projectId={projectId} companies={companies.companies} owner={owner} onCreated={()=>void load()}/>}
