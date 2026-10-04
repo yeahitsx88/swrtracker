@@ -103,3 +103,7 @@ git log --reverse --oneline <common-ancestor>..<latest-design-ref>
 ```
 
 Refresh `changes.json` and `files.md` with the new exact design checkpoint if the branch advances. Git blob IDs in the current manifest can verify that the indexed files match the pinned commit independently of Windows checkout line endings.
+
+## Role Access and Support Checkpoints
+
+The current [role/action audit](role-access-audit.md) and [sanitized evidence](../../../audits/alpha1-ui-redesign/role-access-evidence.json) extend the completed restoration. Checkpoints `45a67e3` and `7288761` introduce migrations035/036, tenant-wide Requester/Viewer aliases, scoped support conversations, administrative membership restoration and measured HTTP metadata. The finish correction preserves visible sibling notices and scopes Project Admin catalog counts. These functional modules, migrations, audit guards and tests must travel with their UI during Alpha2 integration; do not cherry-pick CSS alone. High/Medium audit gaps remain explicit, so current passing regression counts are not full role-matrix readiness or Alpha2 approval. Earlier `changes.json`/`files.md` remain immutable manifests of their named completed checkpoint; use the new source/evidence map for this later functional increment.

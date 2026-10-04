@@ -76,3 +76,11 @@ The additional `tests/beta/admin-workflows-http.mjs` and `admin-workflows-browse
 JWT sessions revalidate account/session version and current membership. Independent Project Admin grants do not replace operational roles; Central/Tenant IT does not gain request visibility merely through TENANT_ADMIN. Domain reads apply tenant/project/company/actor scope. Lifecycle writers take the tenant barrier before domain/idempotency locks and revalidate authority before replay.
 
 Keep .env*, .local*, .data/, build caches, stores and new screenshots ignored. Prior reports are historical evidence; current verification writes ignored output or a newly named artifact.
+
+## Current Role Access and Support Audit
+
+[Role access audit and integration reference](design/alpha1/role-access-audit.md) covers the approved eight-role matrix, Tenant Admin custom-role wizard, new scoped Help Desk, member restoration and measured project diagnostics. Current source passes strict types, 584 units/pinned build, 30 PostgreSQL suites and the separately owned production role checks. Their sanitized receipts are in `audits/alpha1-ui-redesign/role-access-evidence.json`; counts do not replace the documented High/Medium findings.
+
+`tests/beta/role-access-http.mjs` is opt-in (`SWR_ROLE_ACCESS=1`) and requires an explicitly owned synthetic manifest, a different-schema retained-demo guard, loopback PostgreSQL `127.0.0.1:15493/swr_team_isolated`, an origin/runtime on that manifest's schema and its JWT secret. The manifest provides active GC membership/independent administration, a separate Tenant Admin without operational membership, Manager/Superintendent/Chief/Instrument Man/Requester/Viewer, associated company, foreign tenant and scoped assignments. It is not a generic clean-clone seed command or permission to reuse retained data. The fixture setup and browser capture helpers remain ignored/local. Source audit and API receipts do not claim execution of every core field transition.
+
+`tests/beta/role-access-conditions-browser.mjs` uses the same explicitly owned manifest/runtime guard and existing local Playwright/Edge installation to verify existing-account company eligibility and Archived restoration restrictions. It creates synthetic records only in that owned schema.

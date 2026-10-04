@@ -1,4 +1,5 @@
 'use client';
+import {useAdministrationNotice} from './administration-workspace';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
@@ -30,6 +31,7 @@ export function HelpDesk({projectId,owner:providedOwner}:{projectId?:string;owne
   catch(e){gate.current.fail(e instanceof ApiClientError?e.status:undefined);if(!gate.current.locked)owner.release(token);setError(getErrorMessage(e,'Outcome uncertain. Retry the unchanged help desk decision.'));}finally{render(n=>n+1);}
  }
  function close(){if(gate.current.reload()){owner.release(token);setCreating(false);setSelected(undefined);setDetail(undefined);setConsent(false);void load();}}
+ useAdministrationNotice(token,{source:projectId?'Project Help Desk':'Tenant Help Desk',href:projectId?`/projects/${projectId}/admin/help-desk`:'/accounts/help-desk',tone:error?'error':success?'success':'status',message:gate.current.pending?'Saving the reviewed decision…':gate.current.stale?'State changed. Return to this action, deliberately reload and review again.':gate.current.command?'Outcome uncertain. Return to this action and retry the unchanged decision.':error??(success)??''});
  return <Card title={projectId?'Project Help Desk':'Tenant Help Desk'} description={projectId?'Project members can ask for assistance. Project Admin and Tenant Admin handle the queue; escalation sends the ticket to the tenant queue. Ordinary members see only their own help desk tickets.':'Review help desk tickets across this tenant. Escalated tickets appear first. Each reply remains scoped to its originating project.'}><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {loading&&<p role="status">Loading help desk…</p>}
  <div className="row">{projectId&&authorized&&<Button disabled={locked||loading} onClick={()=>{setCreating(true);setSelected(undefined);setDetail(undefined);setConsent(false);setSuccess(undefined);}}>New Help Desk Ticket</Button>}<Button variant="secondary" disabled={locked||loading} onClick={()=>void load()}>Refresh Help Desk</Button></div>

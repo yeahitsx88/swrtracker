@@ -18,7 +18,7 @@ async function observedGET(req:NextRequest,ctx:Context){try{
   const limit=Number(req.nextUrl.searchParams.get('limit')??100),offset=Number(req.nextUrl.searchParams.get('offset')??0);
   if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ValidationError('Invalid candidate page');
   const companies=(await pool.query(`SELECT c.id,c.name,c.type FROM project_companies pc JOIN companies c ON c.tenant_id=pc.tenant_id AND c.id=pc.company_id WHERE pc.tenant_id=$1 AND pc.project_id=$2 ORDER BY lower(c.name),c.id`,[auth.tenantId,projectId])).rows;
-  const candidates=(await pool.query(`SELECT u.id AS "userId",u.name,u.email,u.company_id AS "companyId",c.name AS "companyName" FROM users u
+  const candidates=(await pool.query(`SELECT u.id AS "userId",u.name,u.email,u.company_id AS "companyId",c.name AS "companyName",c.type AS "companyType" FROM users u
     JOIN project_companies pc ON pc.tenant_id=u.tenant_id AND pc.company_id=u.company_id AND pc.project_id=$2 JOIN companies c ON c.tenant_id=u.tenant_id AND c.id=u.company_id
     WHERE u.tenant_id=$1 AND u.deactivated_at IS NULL AND NOT EXISTS(SELECT 1 FROM project_memberships pm WHERE pm.project_id=$2 AND pm.user_id=u.id)
     ORDER BY lower(u.name),u.id LIMIT $3 OFFSET $4`,[auth.tenantId,projectId,limit,offset])).rows;

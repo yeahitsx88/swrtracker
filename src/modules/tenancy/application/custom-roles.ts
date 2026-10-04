@@ -12,11 +12,16 @@ export async function authorizeCustomRoleManagement(db: DbClient, auth: AuthCont
   }
 }
 export async function readCustomRoles(db: DbClient, auth: AuthContext, projectId?: UUID): Promise<CustomRole[]> {
-  if (projectId) await assertProjectAdministrator(db,auth,projectId);
+  let countProjectId:UUID|null=null;
+  if (projectId) {
+    const capability=await assertProjectAdministrator(db,auth,projectId);
+    if(!capability.centralIT)countProjectId=projectId;
+  }
   else await authorizeCustomRoleManagement(db,auth);
   return (await db.query<CustomRole>(`SELECT r.id,r.name,r.base_role AS "baseRole",r.version,
-    (SELECT count(*)::int FROM project_memberships pm WHERE pm.custom_role_id=r.id) AS "assignmentCount"
-    FROM tenant_custom_roles r WHERE r.tenant_id=$1 ORDER BY lower(r.name),r.id`,[auth.tenantId])).rows;
+    (SELECT count(*)::int FROM project_memberships pm WHERE pm.custom_role_id=r.id
+      AND ($2::uuid IS NULL OR pm.project_id=$2)) AS "assignmentCount"
+    FROM tenant_custom_roles r WHERE r.tenant_id=$1 ORDER BY lower(r.name),r.id`,[auth.tenantId,countProjectId])).rows;
 }
 /** Caller holds the exclusive tenant lifecycle barrier, before any idempotent replay. */
 export async function saveCustomRole(db: DbClient, auth: AuthContext, input: {name: unknown;baseRole: unknown}, id?: UUID, expectedVersion?: number) {

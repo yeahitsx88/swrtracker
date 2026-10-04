@@ -48,6 +48,14 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[requester.userId])).rows[0].session_version,2);checks++;
  await refuses(()=>restoreProjectMember(db,admin,project,requester.userId,{sessionVersion:1,disabledAt:stamp,reason:'Duplicate distinct restoration.'}),'ConflictError');
  await refuses(()=>restoreProjectMember(db,actors.VIEWER!,project,requester.userId,{sessionVersion:2,disabledAt:stamp,reason:'Forbidden access restoration.'}),'ForbiddenError');
+ await db.query('UPDATE project_memberships SET access_disabled_at=now(),access_disabled_by=$3 WHERE project_id=$1 AND user_id=$2',[project,requester.userId,f.actor]);
+ const archivedStamp=(await db.query('SELECT access_disabled_at::text AS at FROM project_memberships WHERE project_id=$1 AND user_id=$2',[project,requester.userId])).rows[0].at;
+ await db.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1",[project]);
+ const beforeArchived=(await db.query('SELECT count(*)::int n FROM administrative_events')).rows[0].n;
+ await refuses(()=>restoreProjectMember(db,admin,project,requester.userId,{sessionVersion:2,disabledAt:archivedStamp,reason:'Archived restoration must remain prohibited.'}),'ConflictError');
+ assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[requester.userId])).rows[0].session_version,2);checks++;
+ assert.equal((await db.query('SELECT count(*)::int n FROM administrative_events')).rows[0].n,beforeArchived);checks++;
+ await db.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[project]);
  const central=randomUUID() as UUID;await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Central only','fixture')",[central,f.tenant,company,central+'@example.test']);await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,central]);
  await lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:central,sessionVersion:1},'PROJECT_ADMIN');checks++;
  await refuses(()=>lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:actors.SURVEY_MANAGER!.userId,sessionVersion:1},'PROJECT_ADMIN'),'ForbiddenError');

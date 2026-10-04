@@ -1,4 +1,5 @@
 'use client';
+import {useAdministrationNotice} from './administration-workspace';
 import {useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
@@ -16,6 +17,7 @@ export function MemberRoleAssignment({projectId,member,owner,onAssigned,onClose}
   try{await apiRequest(`/api/projects/${projectId}/members/${member.userId}/role`,{method:'PATCH',body:attempt.body,headers:{'Idempotency-Key':attempt.key}});gate.current.success();owner.release(token);setDone(true);onAssigned();}
   catch(e){gate.current.fail(e instanceof ApiClientError?e.status:undefined);if(!gate.current.locked)owner.release(token);setError(getErrorMessage(e,'Outcome uncertain. Retry the unchanged role assignment.'));}finally{render(n=>n+1);}
  }
+ useAdministrationNotice(token,{source:'Role Assignment',href:`/projects/${projectId}/admin`,tone:error?'error':done?'success':'status',message:gate.current.pending?'Saving the reviewed decision…':gate.current.stale?'State changed. Return to this action, deliberately reload and review again.':gate.current.command?'Outcome uncertain. Return to this action and retry the unchanged decision.':error??(done?'Role assigned. The member must sign in again.':undefined)??''});
  return <section className="administration-command-review stack" aria-label="Assign Project Role"><h3 className="panel-title">Assign Role for {member.name}</h3>
  {(error??custom.error)&&<ErrorBanner message={(error??custom.error)!}/>}
  {done?<SuccessBanner message="Project role assigned. This member must sign in again."/>:<>

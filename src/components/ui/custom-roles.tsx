@@ -1,4 +1,5 @@
 'use client';
+import {useAdministrationNotice} from './administration-workspace';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
@@ -23,6 +24,7 @@ export function CustomRoles({owner}:{owner:CommandOwner}){
   try{await apiRequest(attempt.body.url,{method:attempt.body.method,body:attempt.body.body,headers:{'Idempotency-Key':attempt.key}});gate.current.success();owner.release(token);setOpen(false);setConsent(false);setSuccess(deleting?'Custom role deleted.':editing?'Custom role updated across all projects. Affected members must sign in again if the template changed.':'Custom role deployed to every current and future project.');void load();}
   catch(e){gate.current.fail(e instanceof ApiClientError?e.status:undefined);if(!gate.current.locked)owner.release(token);setError(getErrorMessage(e,'Outcome uncertain. Retry the unchanged role decision.'));}finally{render(n=>n+1);}
  }
+ useAdministrationNotice(token,{source:'Custom Roles',href:'/accounts/roles',tone:error?'error':success?'success':'status',message:gate.current.pending?'Saving the reviewed decision…':gate.current.stale?'State changed. Return to this action, deliberately reload and review again.':gate.current.command?'Outcome uncertain. Return to this action and retry the unchanged decision.':error??(success)??''});
  return <Card title="Custom Roles" description="Tenant Admin creates tenant-wide role names with exactly Requester or Viewer permissions. Project Admin assigns them within their projects. System roles are fixed."><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {loading&&<p role="status">Loading custom roles…</p>}
  {authorized&&<>
