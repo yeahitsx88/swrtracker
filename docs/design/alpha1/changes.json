@@ -1,0 +1,619 @@
+{
+  "schemaVersion": 1,
+  "preparedOn": "2026-10-03",
+  "branch": "alpha1-ui-redesign",
+  "hardeningBranch": "alpha1-audit-hardening",
+  "base": "b8ff81494c6701bb7f84550b40c247f4588b28cb",
+  "designCheckpoint": "8efbc481198c0051ac0c3f4937cd89d0a4eb31ba",
+  "scope": "Net versioned changes from the historical hardening base to the pinned design implementation checkpoint; reference preparation files are listed separately",
+  "fileCount": 76,
+  "commitCount": 11,
+  "areas": {
+    "Application pages and appearance": 14,
+    "Design contracts and implementation documentation": 7,
+    "Local evidence ignore rule": 1,
+    "Presentation data and filter helpers": 3,
+    "Request, crew and review components": 6,
+    "Sanitized verification evidence": 4,
+    "Shared workspace and UI components": 33,
+    "Verification runners and fixtures": 8
+  },
+  "protectedPathsUnchanged": [
+    "src/modules/",
+    "src/app/api/",
+    "src/lib/contracts/",
+    "db/",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "Dockerfile"
+  ],
+  "referencePreparationFiles": [
+    "docs/design/alpha1/README.md",
+    "docs/design/alpha1/files.md",
+    "docs/design/alpha1/changes.json",
+    "docs/README.md",
+    "docs/ALPHA1_UI_REDESIGN.md",
+    "docs/CODEX.md"
+  ],
+  "commits": [
+    {
+      "sha": "285b6cec57fd94f681e670fdfb8676b3568b1008",
+      "subject": "Checkpoint role-aware workspace and scoped Home dashboards"
+    },
+    {
+      "sha": "dc770397acedc383874f99b5d1ca89296b195168",
+      "subject": "Consolidate project account actions into sidebar navigation"
+    },
+    {
+      "sha": "4fd9d23adca63ea7490de337e2999fd3f0b1fa5d",
+      "subject": "Document verified Alpha 1 workspace redesign and acceptance"
+    },
+    {
+      "sha": "0487dcc3a39b07be4e1e3dc40c9f445cd9d00275",
+      "subject": "Keep the left workspace across authenticated screens"
+    },
+    {
+      "sha": "a1be86210cf9d8670666a5c41fe1a0658d2822d3",
+      "subject": "Finish annotated sidebar and table corrections"
+    },
+    {
+      "sha": "13ada0e30c7180928be6db1a699e5ef7dbfc1338",
+      "subject": "Polish headings and move descriptions into accessible help"
+    },
+    {
+      "sha": "406054a757257d4c3a6fbadc8a8b39c154121b89",
+      "subject": "Confirm heading help refinement and preserve guidance"
+    },
+    {
+      "sha": "e0ba406955c5c9c3f27b8958b814c88bba8bd39b",
+      "subject": "Extend shared presentation to Survey and Viewer spaces"
+    },
+    {
+      "sha": "d77983d58a3f95440a58e7c67176164363729adb",
+      "subject": "Finish Survey and Viewer refinement with reviewed fixes"
+    },
+    {
+      "sha": "74d558aac8d3fd4adb3601a237f95404a1a89d52",
+      "subject": "Replace navigation drawer Close text with icon"
+    },
+    {
+      "sha": "8efbc481198c0051ac0c3f4937cd89d0a4eb31ba",
+      "subject": "Align drawer browser selector with accessible close label"
+    }
+  ],
+  "files": [
+    {
+      "path": ".gitignore",
+      "change": "M",
+      "area": "Local evidence ignore rule",
+      "baseBlob": "49fb16a3eea99fd3ddf4cbb8499845a790f00c00",
+      "designBlob": "21ddb769ff3f16662a67ab782a3ab687e292c479"
+    },
+    {
+      "path": ".impeccable/design.json",
+      "change": "M",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": "7a99000701bac4364ec9e929cb8eaab95d221d61",
+      "designBlob": "c67cca15358d28d38d0f203f7b234ab7b5f0a3e5"
+    },
+    {
+      "path": ".impeccable/surfaces/alpha1-project-home.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "82cf2c0b4bd2d8bef43bb6e570f6b2a915f919e4"
+    },
+    {
+      "path": ".impeccable/surfaces/survey-viewer-refinement.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "9645ee0c2fc9bc6d32021d8ba694eadac190ea66"
+    },
+    {
+      "path": "DESIGN.md",
+      "change": "M",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": "23555b16ac4fac6d8ecd6a0ab7131ef0ce91a9c2",
+      "designBlob": "4fc9672b659fbfdab3db4be168134e455606864a"
+    },
+    {
+      "path": "PRODUCT.md",
+      "change": "M",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": "f6675f7a06d6f346d5886035b7fe34677273d3e6",
+      "designBlob": "4e12b5b7f9b205f94d7ba541cdd66db963b55e1e"
+    },
+    {
+      "path": "audits/alpha1-ui-redesign/annotations-evidence.json",
+      "change": "A",
+      "area": "Sanitized verification evidence",
+      "baseBlob": null,
+      "designBlob": "e63b79eda32449d51522c949f915e809b8d855f3"
+    },
+    {
+      "path": "audits/alpha1-ui-redesign/evidence.json",
+      "change": "A",
+      "area": "Sanitized verification evidence",
+      "baseBlob": null,
+      "designBlob": "12bc73d752044ed3e05898533c324678c6f04f52"
+    },
+    {
+      "path": "audits/alpha1-ui-redesign/heading-help-evidence.json",
+      "change": "A",
+      "area": "Sanitized verification evidence",
+      "baseBlob": null,
+      "designBlob": "7439691e2d88feb0b4dc4c3a98dc6f42c060ec84"
+    },
+    {
+      "path": "audits/alpha1-ui-redesign/survey-viewer-evidence.json",
+      "change": "A",
+      "area": "Sanitized verification evidence",
+      "baseBlob": null,
+      "designBlob": "d85af0d868e283ed730c49330fd0768c96de638e"
+    },
+    {
+      "path": "docs/ALPHA1_UI_REDESIGN.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "bed3edf57fce0464bf9eb5a9e69027fd3b10daf2"
+    },
+    {
+      "path": "docs/CODEX.md",
+      "change": "M",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": "b7856c1c31f3d21ac25850ef921745bc9a40ee15",
+      "designBlob": "ad2c84d97fa2ae558e032cbb5d347b9170c56e16"
+    },
+    {
+      "path": "src/app/(auth)/login/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "da9c25602b18ff1ff3b543437237bbd9dd6bdbdf",
+      "designBlob": "92eaa1129e25c98f3b6d2d99a21ac451a26cbb81"
+    },
+    {
+      "path": "src/app/(projects)/accounts/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "a88ac633f17fe4d6af4688e92f9b76cff54b7f01",
+      "designBlob": "6c80aff4cea0d64eb2c67438c9e8b6d8eb328ea1"
+    },
+    {
+      "path": "src/app/(projects)/appearance/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "78c6461b3f622e2591645c80a5f5276d0e852a56",
+      "designBlob": "3ccae0b3376e68fef681846aae64906a3ee0cc89"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/draft-recovery.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "b3ae72c89277c5f6ca977b61777e465a52098e16",
+      "designBlob": "d055b85f40042ac3ebc3c7a781212bfd94c17e44"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "9e909b59cd1eae84dc334b78f87eebb8b78f64d3",
+      "designBlob": "05bfbf503baf9729c34bdafc99568df6d7eea443"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(crew)/crew/work/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "3456fd47f16dc98d079f3b484d14dad88031b3f9",
+      "designBlob": "fdc9d96dc0bec2cf51c067d4a87d8872febe8c5f"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(requester)/my-requests/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "caf4b4dde909d9a718944e66b24568798dc9de69",
+      "designBlob": "a4aae5db1ae6b610f79d764ce84d6e045b35f4bd"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "89e7d8043fb2adfd52e5693f3973f747437dbb73",
+      "designBlob": "4c19b3023a41618aae9729eddd60d01072d1a72a"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(survey)/survey/operations/operations.css",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "d2597babb40bef4f5563eaf0cf5b2ef60ed6d461",
+      "designBlob": "2ce2b6dd0d6b8e92849acf879198a24a0ac01459"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/home/page.tsx",
+      "change": "A",
+      "area": "Application pages and appearance",
+      "baseBlob": null,
+      "designBlob": "f302c55218ec61a6ed803fe2a3a48df42c2ae220"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/layout.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "d7cf2eea0ad352dea6153ce285ef62920c3cc458",
+      "designBlob": "1757431a30271cc01c908852380da6152fbd2675"
+    },
+    {
+      "path": "src/app/(projects)/projects/page.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "106db4af441d448bb7084be921649260b4eca5b4",
+      "designBlob": "3947ad72c84db85b8866cef67c78881efefa9709"
+    },
+    {
+      "path": "src/app/appearance.css",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "9cc31da5e44c5efb768908760714f3e02d4f3cfa",
+      "designBlob": "a6632d88f0a353b8a521cdc476ef178b92d7fbaa"
+    },
+    {
+      "path": "src/app/globals.css",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "ae1f00dcb416c91e7b85a6ce38ae53da9d9f526d",
+      "designBlob": "b0ed38535300fc71970fec5e9ca1e1916248dff4"
+    },
+    {
+      "path": "src/components/tickets/attachment-list.tsx",
+      "change": "M",
+      "area": "Request, crew and review components",
+      "baseBlob": "8be7a3641139aeba6e70ab593f84833a82239e7f",
+      "designBlob": "4d8ce5caf7b97d64c8dc190879fd764a8415d0a9"
+    },
+    {
+      "path": "src/components/tickets/crew-work-actions.tsx",
+      "change": "M",
+      "area": "Request, crew and review components",
+      "baseBlob": "ac7537e3534b55e2928a882147451fd03ae42c8e",
+      "designBlob": "939b61031d2ae54fe4569227741e3ad12cd35e15"
+    },
+    {
+      "path": "src/components/tickets/project-review.tsx",
+      "change": "M",
+      "area": "Request, crew and review components",
+      "baseBlob": "8f2c429a76d0abd4d4a115a386c2be4466d596dd",
+      "designBlob": "b4ce0ccfe77da3f850c449755687f22c576b9cee"
+    },
+    {
+      "path": "src/components/tickets/review-chart-lane.tsx",
+      "change": "M",
+      "area": "Request, crew and review components",
+      "baseBlob": "b8ff463d0a4aa61a3f26649a1eb3414058d827f0",
+      "designBlob": "234b3843ebcca2edced99a375d96410911c26cd3"
+    },
+    {
+      "path": "src/components/tickets/ticket-history.tsx",
+      "change": "M",
+      "area": "Request, crew and review components",
+      "baseBlob": "938ff759c418519eadadaf1b19a6922d60d78118",
+      "designBlob": "241a277333eeec5f5b28e3f7dfb76a493fadd367"
+    },
+    {
+      "path": "src/components/tickets/ticket-list.tsx",
+      "change": "M",
+      "area": "Request, crew and review components",
+      "baseBlob": "6dc04af377253083910041ccc0a691720d7c201f",
+      "designBlob": "8eb331c11048668bf2ae30fb19dbe0bf7f5a6347"
+    },
+    {
+      "path": "src/components/ui/account-details.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "81146f2297ba5504de7e7e01b956d5b4352cae6a",
+      "designBlob": "060386f20437dbc92b3796c7aa7359667fa7b029"
+    },
+    {
+      "path": "src/components/ui/account-menu.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "91e02d21d3830e9d2fea69e306d53215068feb01",
+      "designBlob": "b7f505f1676d1aa9df9d16f9521453ffb82dd80c"
+    },
+    {
+      "path": "src/components/ui/account-navigation.ts",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "793afb28616e7b5b0d2a6d20f2368d35003b222e",
+      "designBlob": "bb0180ea313c8539b68e85c592a856a2c4cbb391"
+    },
+    {
+      "path": "src/components/ui/account-sign-out.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "93b789e849bd1314d81b439a65047565998a4b3b"
+    },
+    {
+      "path": "src/components/ui/administration-batch.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "2272058205bea76abbe6a378385e6597b2706b07",
+      "designBlob": "d5d5c134db52341955eb703b432eb567fdf700f3"
+    },
+    {
+      "path": "src/components/ui/administration-records.css",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "3279108a70d3f1f2dfb02e79483aa253096176c2",
+      "designBlob": "ca7c7b51cf9d67b51818612a95c8f978af4d0076"
+    },
+    {
+      "path": "src/components/ui/administration-records.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "d752f10c63b4039225c6b5e1393fc6a14e937cdf",
+      "designBlob": "10934508fd4f1c07b19812ca44fd5e7afd7dcc08"
+    },
+    {
+      "path": "src/components/ui/assigned-workforce.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "55b04911eb493830d1c75d2b0e19a901cd4e2a89",
+      "designBlob": "ae2fabf640fdbc54901e10aef516f5a6fd98c937"
+    },
+    {
+      "path": "src/components/ui/card.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "edb683c9d21e0c597ef1b281ade54c0977781b0e",
+      "designBlob": "352a23ce5f2d724a05463c1c6d70399e1c1d1b9a"
+    },
+    {
+      "path": "src/components/ui/heading-help.css",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "a1c9c87ed8f550ece6ef32d394ab83df01ea3cae"
+    },
+    {
+      "path": "src/components/ui/heading-help.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "30bc9976197731254af4230fd7ae65bdc36bed36"
+    },
+    {
+      "path": "src/components/ui/icon.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "41c035f9414656c2925cb212e177a7b6df926430",
+      "designBlob": "36a8606d01e04130655d0969875ca1a7019051eb"
+    },
+    {
+      "path": "src/components/ui/kpi-charts.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "11d0b257679d8edee701e31e505f44a27df14ce1",
+      "designBlob": "63ace1b4863ce3c11542bae73abdc608b8ec1bd3"
+    },
+    {
+      "path": "src/components/ui/kpi-explorer.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "52b1577c67270562e1d1b23b387de25205629ca4",
+      "designBlob": "eb46fa4b25b32a2ee8cb3ed592e05b693acdb805"
+    },
+    {
+      "path": "src/components/ui/operations-health.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "28c57ac281a14928a7d6f6a6f54b0e2a6b0ccd51",
+      "designBlob": "fdd95f359d86837bd630752c3b1c548985c42f87"
+    },
+    {
+      "path": "src/components/ui/project-administration.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "2b5d704b34b7705313d3a27f1b4e1c9cb7b70036",
+      "designBlob": "4aa210833db3f8ea21defc7f9e92377f9b16d329"
+    },
+    {
+      "path": "src/components/ui/project-creation.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "e987ec5878a89c345d5eb5cfc801af732a09ebb9",
+      "designBlob": "7137248c53754779bc17147740730990bde6fc07"
+    },
+    {
+      "path": "src/components/ui/project-home.css",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "1f2a837735fae4aa45eb0f1b9b44df258b1b91b3"
+    },
+    {
+      "path": "src/components/ui/project-home.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "fefa6bdf66e513d375b2c8ba4605ca6202efd8ae"
+    },
+    {
+      "path": "src/components/ui/project-nav.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "e50dea0aa15db973328376dd34bfb92134e12683",
+      "designBlob": "dbda3dd9350c8d04e594b196593e39649365d7f3"
+    },
+    {
+      "path": "src/components/ui/project-navigation.ts",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "c731b7bb81e51c9455e86a5b9fd80210c5ea4bb0",
+      "designBlob": "12450838504d9be0fe82548c00fa27705b8aa9a1"
+    },
+    {
+      "path": "src/components/ui/project-recommissioning.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "abd2c889ddc205dad380ec6e66511c4c21385a50",
+      "designBlob": "a9d18634f421ad67e128a01d1d7bff4321ae4c98"
+    },
+    {
+      "path": "src/components/ui/project-shell-header.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "eaceefcb5a00be852d30113dd9d09416a2cb75eb",
+      "designBlob": "a3e345d53d064bb4c2a05be80baea2f5932f2c54"
+    },
+    {
+      "path": "src/components/ui/project-workspace.css",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "28aa32cea2a4a73e62effdce306d5e26987560b2"
+    },
+    {
+      "path": "src/components/ui/protected-survey-obligations.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "dafe98cba8ebb02c3169e16a2990c5d692f1a8ef",
+      "designBlob": "06e9feba10068b54c0479cf4d52ecfb56ccb281c"
+    },
+    {
+      "path": "src/components/ui/record-collection.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "b8d16d941fea99a7e0a91b2a6ca07161f2afb0ae",
+      "designBlob": "34a9ecfe7ec16715e69e0459eaeea5a5b790b71a"
+    },
+    {
+      "path": "src/components/ui/scoped-kpi-entry.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "4a5c4821b46f4d2c12deb18bfabcd89bc5b8bb07",
+      "designBlob": "f4671cf1c6c4adef50b7eac085b36e53f6eaafd1"
+    },
+    {
+      "path": "src/components/ui/superintendent-area-obligations.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "86d17a510cd3fcd9e995baa4012d6192c966708c",
+      "designBlob": "1146805e98b89c4efca9ef629cea17a14af0d14e"
+    },
+    {
+      "path": "src/components/ui/survey-command-overview.css",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "9937217f5d890b92dfeed42fe8efd02e03e54341",
+      "designBlob": "04610fde9405fa20935670569fe0486d8e2711ec"
+    },
+    {
+      "path": "src/components/ui/survey-command-overview.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "c38317a6bac09c4edb168ddeac3d0273c60e32ba",
+      "designBlob": "2cb34c7b1ca9023052b160abd9cd391163fc9bdc"
+    },
+    {
+      "path": "src/components/ui/survey-manager-handover.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "700cf15ec850d4c83a0694b731ce59fe03a7de20",
+      "designBlob": "5429f89723ca93e4b4bd0e02a4c2d6907c064778"
+    },
+    {
+      "path": "src/components/ui/survey-reorganization.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "9e9ea4602f52190cc0b2694fe4f31572ab0335c1",
+      "designBlob": "4773fcdb1897d1f6e588ca483c148706f1d9fbe7"
+    },
+    {
+      "path": "src/components/ui/team-management.tsx",
+      "change": "M",
+      "area": "Shared workspace and UI components",
+      "baseBlob": "f4c05d71a1311cb1bfc3d50f09ef03867490d7a9",
+      "designBlob": "4a04900f5aacef7480978f6a6610c26c65cb0234"
+    },
+    {
+      "path": "src/lib/heading-case.ts",
+      "change": "A",
+      "area": "Presentation data and filter helpers",
+      "baseBlob": null,
+      "designBlob": "a8a995f5fcb896874a4ebacb28d984002b6d9f7b"
+    },
+    {
+      "path": "src/lib/home-request-filters.ts",
+      "change": "A",
+      "area": "Presentation data and filter helpers",
+      "baseBlob": null,
+      "designBlob": "894245c71ef3e29e2ebd8d53502f740607dfc3c6"
+    },
+    {
+      "path": "src/lib/project-home-data.ts",
+      "change": "A",
+      "area": "Presentation data and filter helpers",
+      "baseBlob": null,
+      "designBlob": "5a7df1886966ff292b4258bd38aec88d0cff94d4"
+    },
+    {
+      "path": "tests/beta/alpha1-heading-help-browser.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "67109caf87b3638147ee6d440c65ef84fa287c2d"
+    },
+    {
+      "path": "tests/beta/alpha1-sidebar-annotations-browser.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "403522f0996daf5e144f73a292a4a7dd332f1faf"
+    },
+    {
+      "path": "tests/beta/alpha1-ui-redesign-browser.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "63128d010c2ec72df8b1d9cb69bc8934523e108f"
+    },
+    {
+      "path": "tests/beta/alpha1-ui-redesign-fixture.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "c1efc66934afde42341e06299a49b5e13b14fc62"
+    },
+    {
+      "path": "tests/beta/scoped-offboarding-browser.mjs",
+      "change": "M",
+      "area": "Verification runners and fixtures",
+      "baseBlob": "ca43f55683b00d04c67edbf16848df8d3767322b",
+      "designBlob": "77cf501b347103af9768f2eabfae4a9b6a4018b4"
+    },
+    {
+      "path": "tests/beta/survey-viewer-spaces-browser.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "ad0d410fb7b22dde0d489ee00a1b8a00d0c0e1da"
+    },
+    {
+      "path": "tests/ui/project-home-data.test.ts",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "1ec25a9400bb59656db6acdfdaabf99be4b379a3"
+    },
+    {
+      "path": "tests/ui/project-navigation.test.ts",
+      "change": "M",
+      "area": "Verification runners and fixtures",
+      "baseBlob": "b182be01c302ba23facfe0528b5741f97a0b232e",
+      "designBlob": "df2d512304d30ed14cc9fdce3d8f3c87410461bd"
+    }
+  ]
+}

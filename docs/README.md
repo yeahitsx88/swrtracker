@@ -10,6 +10,7 @@ SWRTracker is a modular monolith for construction Survey work requests. Next.js 
 - [CODEX.md](CODEX.md): implementation history and restart point.
 - [DEPLOYMENT.md](DEPLOYMENT.md): migration, attachment, ingress and worker contracts.
 - [Alpha 1 report](../audits/alpha1/REPORT.md): audit register and verification.
+- [Alpha 1 design reference](design/alpha1/README.md): complete design change inventory, checkpoints and future Alpha 2 integration with continuing hardening work.
 
 ## Toolchain and local setup
 
