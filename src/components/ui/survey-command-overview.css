@@ -11,6 +11,7 @@
 .ops-command-more { grid-column:1 / -1; border-top:1px solid var(--line); }
 .ops-command-more summary { cursor:pointer; min-height:44px; padding:.65rem 0; font-size:.875rem; font-weight:600; }
 .ops-command-more > div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.7rem; }
+.ops-command-more .heading-with-help { grid-column:1 / -1; }
 .ops-command-more p { grid-column:1 / -1; margin:0; color:var(--muted); font-size:.8rem; }
 .ops-command-actions { grid-column:1 / -1; display:flex; gap:.5rem; justify-content:flex-end; }
 .ops-command-scope,.ops-command-note { color:var(--muted); font-size:.8rem; line-height:1.5; }

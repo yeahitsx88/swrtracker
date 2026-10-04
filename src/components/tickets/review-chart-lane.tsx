@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { HeadingHelp } from '@/components/ui/heading-help';
 
 /** Presentation only: every chart retains its existing authorized drill-down. */
 export function ReviewChartLane({ children }: { children: ReactNode }) {
@@ -28,7 +29,7 @@ export function ReviewChartLane({ children }: { children: ReactNode }) {
     if (target) node.scrollTo({ left: target.offsetLeft });
   }
   return <div className="review-chart-workspace">
-    <div className="review-chart-toolbar"><p className="muted">{expanded ? 'All charts' : 'One row · scroll for more charts'}</p>
+    <div className="review-chart-toolbar"><HeadingHelp label="Review Charts" heading={<h3>Review Charts</h3>} help={expanded ? 'All charts' : 'One row · scroll for more charts'} />
       <div className="row">
         {!expanded && <><button type="button" className="button button-secondary" aria-controls="review-charts" disabled={ends.start} onClick={() => move(-1)}>Previous chart</button>
           <button type="button" className="button button-secondary" aria-controls="review-charts" disabled={ends.end} onClick={() => move(1)}>Next chart</button></>}

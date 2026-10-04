@@ -39,4 +39,5 @@
   .project-context { align-items: start; gap: .5rem; }
   .project-context .badge { font-size: .7rem; }
   .project-content { padding: .9rem .75rem 1.5rem; }
+  .project-workspace .detail-main > .panel, .project-workspace .detail-aside > .panel { margin-inline: 0; }
 }
