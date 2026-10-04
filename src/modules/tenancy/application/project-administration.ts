@@ -1,3 +1,4 @@
+import {assertCompanyNameAvailable} from '../infrastructure/company-name-availability';
 import {randomUUID} from 'node:crypto';
 import type {AuthContext} from '@/lib/auth';
 import {assertProjectAdministrator} from '@/lib/project-capabilities';
@@ -39,6 +40,7 @@ export async function registerProjectCompany(db:DbClient,auth:AuthContext,projec
   else{
     const name=input.name.trim();
     if(!name||name.length>200||!['GC','SUBCONTRACTOR','OWNER_REP'].includes(input.type))throw new ValidationError('A company name and valid type are required');
+    await assertCompanyNameAvailable(db,auth.tenantId,name);
     row=(await db.query<typeof row & object>('INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,$3,$4) RETURNING id,tenant_id,name,type,created_at',[randomUUID(),auth.tenantId,name,input.type])).rows[0];
   }
   if(!row)throw new NotFoundError('Company not found');

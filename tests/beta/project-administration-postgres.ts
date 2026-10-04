@@ -37,6 +37,9 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  try{
   const registered=await expect(await companies(req({name:'Local company',type:'GC',confirmed:true}),ctx()));
   const company=registered.company.id;assert.equal(await count('project_companies'),1);checks++;
+  const duplicateCompanies=await count('companies'),duplicateEvents=await count('administrative_events');
+  for(const name of ['Local company','  LOCAL   COMPANY  ','Local\tcompany'])await expect(await companies(req({name,type:'SUBCONTRACTOR',confirmed:true}),ctx()),409);
+  assert.equal(await count('companies'),duplicateCompanies);assert.equal(await count('administrative_events'),duplicateEvents);checks+=2;
   const person=randomUUID();await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Candidate','fixture')",[person,f.tenant,company,person+'@example.test']);
   const choices=await expect(await readCompanies(req(undefined,randomUUID(),'GET'),ctx()));assert.equal(choices.candidates.some((u:{userId:string})=>u.userId===person),true);checks++;
   const memberBody={userId:person,role:'REQUESTER'},memberKey=randomUUID();await expect(await members(req(memberBody,memberKey),ctx()),201);
@@ -44,6 +47,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   await expect(await members(req({userId:person,role:'SURVEY_MANAGER'}),ctx()),409);
   const grantBody={userId:person,enabled:true,confirmed:true},grantKey=randomUUID();await expect(await administrators(req(grantBody,grantKey),ctx()),403);
   await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.actor]);await expect(await administrators(req(grantBody,grantKey),ctx()));
+  await expect(await tenantCompany(req({name:' LOCAL   company ',type:'GC'})),409);
   assert.equal((await db.query('SELECT role FROM project_memberships WHERE user_id=$1',[person])).rows[0].role,'REQUESTER');checks++;
   assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[person])).rows[0].session_version,3);checks++;
   await expect(await administrators(req(grantBody,grantKey),ctx()));assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[person])).rows[0].session_version,3);checks++;

@@ -1,3 +1,4 @@
+import {assertCompanyNameAvailable} from '../infrastructure/company-name-availability';
 import { randomUUID } from 'crypto';
 import { ForbiddenError, ValidationError } from '@/shared/errors';
 import type { TenantRole } from '@/modules/identity/domain/types';
@@ -25,6 +26,8 @@ export async function createCompany(
   if (!name) {
     throw new ValidationError('name is required');
   }
+
+  await assertCompanyNameAvailable(db,params.tenantId,name);
 
   const company: Company = {
     id:        randomUUID() as UUID,

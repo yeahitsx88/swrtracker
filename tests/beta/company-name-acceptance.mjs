@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+import jwt from 'jsonwebtoken';
+import {Pool} from 'pg';
+assert.equal(process.env.SWR_ROLE_ACCESS,'1');
+const f=JSON.parse(await fs.readFile(process.env.SWR_ROLE_FIXTURE_FILE??'.local-roleaudit-fixture.json','utf8'));
+const retained=JSON.parse(await fs.readFile('.local-demo-fixture.json','utf8'));assert.notEqual(f.schema,retained.schema);assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);
+const url=new URL(process.env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15493');assert.equal(url.pathname,'/swr_team_isolated');url.searchParams.set('options','-c search_path='+f.schema+',public');
+const db=new Pool({connectionString:url.href,max:4}),origin=process.env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
+let checks=0;const evidence=[];
+async function request(actor,path,body,method=body?'POST':'GET',key=randomUUID()){
+ const state=(await db.query('SELECT tenant_id,session_version FROM users WHERE id=$1',[f[actor]])).rows[0];assert(state);
+ const cookie='swr_session='+jwt.sign({sub:f[actor],tenantId:state.tenant_id,sv:state.session_version},process.env.JWT_SECRET,{expiresIn:'1h'});
+ const r=await fetch(origin+path,{method,headers:{cookie,'content-type':'application/json','Idempotency-Key':key},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(12000)});
+ return {status:r.status,body:await r.json(),reference:r.headers.get('x-request-id')};
+}
+function check(value,label){assert(value,label);checks++;evidence.push(label);}
+
+const base=`/api/projects/${f.project}`,label='Company Name Check '+randomUUID();const shots=[];
+try{
+ check((await db.query('SELECT current_schema() s')).rows[0].s===f.schema,'Owned fixture schema');
+ const body={name:label,type:'SUBCONTRACTOR',confirmed:true},key=randomUUID();const first=await request('localAdmin',base+'/companies',body,'POST',key);check(first.status===200,'Project Admin registers a distinct name');const id=first.body.company.id;
+ const count=async()=>({companies:(await db.query('SELECT count(*)::int n FROM companies')).rows[0].n,events:(await db.query('SELECT count(*)::int n FROM administrative_events')).rows[0].n});const before=await count();
+ check((await request('localAdmin',base+'/companies',body,'POST',key)).status===200,'Same key/body registration replays');check(JSON.stringify(await count())===JSON.stringify(before),'Replay creates no company or evidence');
+ for(const name of [label,label.toUpperCase(),'  '+label.replaceAll(' ','   ')+'  ',label.replaceAll(' ','\t')])check((await request('localAdmin',base+'/companies',{...body,name,type:'GC'})).status===409,'Equivalent company name conflicts: '+(name===label?'exact':'case/spacing'));
+ check((await request('itOnly','/api/companies',{name:label.toUpperCase(),type:'OWNER_REP'})).status===409,'Tenant creation shares duplicate rule');check(JSON.stringify(await count())===JSON.stringify(before),'Duplicates leave company and administrative evidence unchanged');
+ const other=await request('itOnly',`/api/projects/${f.otherProject}/companies`,{companyId:id,confirmed:true});check(other.status===200&&other.body.company.id===id,'Existing company ID remains reusable across projects');
+ const foreignName='Independent Name '+randomUUID();await db.query("INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,$3,'GC')",[randomUUID(),f.foreignTenant,foreignName]);check((await request('localAdmin',base+'/companies',{name:foreignName,type:'GC',confirmed:true})).status===200,'Another tenant name does not block creation');
+ const racing='Concurrent Name '+randomUUID();const pair=await Promise.all([request('localAdmin',base+'/companies',{name:racing,type:'GC',confirmed:true}),request('itOnly','/api/companies',{name:'  '+racing.toUpperCase()+'  ',type:'GC'})]);check(pair.filter(r=>r.status===200||r.status===201).length===1&&pair.filter(r=>r.status===409).length===1,'Concurrent project/tenant writers create only one company');check((await db.query('SELECT count(*)::int n FROM companies WHERE tenant_id=$1 AND lower(btrim(name))=lower($2)',[f.tenant,racing])).rows[0].n===1,'Concurrent company insert persists once');
+ const staleName='Tenant Registry Name '+randomUUID();check((await request('itOnly','/api/companies',{name:staleName,type:'GC'})).status===201,'Company outside current project created once');
+ const {chromium}=await import(process.env.SWR_PLAYWRIGHT_MODULE??'file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');const browser=await chromium.launch({executablePath:process.env.SWR_EDGE_PATH??'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});const context=await browser.newContext({viewport:{width:1107,height:884}}),row=(await db.query('SELECT session_version FROM users WHERE id=$1',[f.localAdmin])).rows[0];await context.addCookies([{name:'swr_session',value:jwt.sign({sub:f.localAdmin,tenantId:f.tenant,sv:row.session_version},process.env.JWT_SECRET,{expiresIn:'1h'}),url:origin}]);const p=await context.newPage();
+ async function shot(name){await p.waitForLoadState('networkidle');await p.evaluate(async()=>{await document.fonts.ready;document.activeElement?.blur();window.scrollTo(0,0);await Promise.race([Promise.all([...document.images].filter(i=>i.getClientRects().length).map(i=>i.decode().catch(()=>{}))),new Promise(resolve=>setTimeout(resolve,1200))]);await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});const path='.impeccable/review/'+name+'.png';await p.screenshot({path,fullPage:true});shots.push(path);check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' has no page overflow');}
+ try{
+  await p.goto(origin+`/projects/${f.project}/admin/companies`);const field=p.getByLabel('New company name',{exact:true}),review=p.getByRole('button',{name:'Review company registration',exact:true});await field.fill('  '+label.toUpperCase().replaceAll(' ','   ')+'  ');await p.getByText('A company with this name is already associated with this project. Choose a different name.').waitFor();check(await review.isEnabled()===false,'Known duplicate review disabled');check(await field.getAttribute('aria-invalid')==='true'&&await field.getAttribute('aria-describedby')==='company-name-conflict','Inline duplicate feedback attached to field');await shot('company-name-user-1107');await p.setViewportSize({width:390,height:844});await shot('company-name-mobile');await field.fill('Distinct Browser Name '+randomUUID());check(await review.isEnabled(),'Changing name re-enables valid review');
+  await p.setViewportSize({width:1107,height:884});await field.fill(staleName);await review.click();await p.getByRole('checkbox',{name:'I confirm this action applies to this project.'}).check();await p.getByRole('button',{name:'Confirm action',exact:true}).click();await p.getByText('A company with this name already exists in your tenant. Use its existing Company ID to associate it with this project.').waitFor();check(await p.getByRole('button',{name:'Retry same action',exact:true}).isEnabled()===false,'Tenant-only duplicate conflict requires deliberate reload');check(await field.inputValue()===staleName,'Rejected registration preserves name');await shot('company-name-conflict-user-1107');await p.getByRole('button',{name:'Reload administration',exact:true}).click();check(await p.getByRole('button',{name:'Confirm action',exact:true}).count()===0,'Reload dismisses stale confirmation');
+ }finally{await context.close();await browser.close();}
+ console.log('Company name HTTP/browser checks passed: '+checks);await fs.writeFile('.local-company-name-results.json',JSON.stringify({checks,evidence,shots},null,2));
+}finally{await db.end();}

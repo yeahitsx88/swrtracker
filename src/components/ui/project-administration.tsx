@@ -1,4 +1,5 @@
 'use client';
+import {companyNameKey} from '@/modules/tenancy/domain/company-name';
 import {AdministrationArea} from './administration-workspace';
 import {ProjectMemberWizard,operationalRoleLabels} from './project-member-wizard';
 import {ProjectDiagnostics} from './project-diagnostics';
@@ -39,6 +40,7 @@ export function ProjectAdministration({projectId,owner}:{projectId:string;owner:
   finally{if(epoch===generation.current)setLoading(false);}
  }
  useEffect(()=>{void load();return()=>{generation.current++;};},[projectId]);
+ const duplicateCompany=!!name.trim()&&companies?.companies.some(company=>companyNameKey(company.name)===companyNameKey(name));
  const closed=template?.project.status==='ARCHIVED';
  const locked=gate.current.locked||ownerToken!==null;
  function propose(value:Intent){if(locked||childLock.current||closed||batch)return;setIntent(value);setConsent(false);setSuccess(undefined);}
@@ -74,9 +76,10 @@ export function ProjectAdministration({projectId,owner}:{projectId:string;owner:
  <AdministrationArea id="admin-companies"><Card title="Project Companies" description="Associating a company here grants no access to another project."><div className="stack">
  <AdministrationRecords scrollable label="project companies" rows={companies?.companies??[]} id={c=>c.id} columns={[{key:'name',label:'Company',text:c=>c.name,render:c=><strong>{c.name}</strong>},{key:'type',label:'Company type',text:c=>(({GC:'General contractor',SUBCONTRACTOR:'Subcontractor',OWNER_REP:'Owner representative'} as Record<string,string>)[c.type]??c.type)},{key:'id',label:'Reference',text:c=>c.id,render:c=><details><summary>Company ID</summary><span className="administration-company-id">{c.id}</span></details>}]} disabled={locked}/>
  {!closed&&<AdministrationSection title="Register or Associate a Company" open locked={locked}>
- <label className="field"><span className="field-label">New company name</span><Input value={name} maxLength={200} disabled={locked||closed} onChange={e=>setName(e.target.value)}/></label>
+ <label className="field"><span className="field-label">New company name</span><Input aria-invalid={duplicateCompany||undefined} aria-describedby={duplicateCompany?'company-name-conflict':undefined} value={name} maxLength={200} disabled={locked||closed} onChange={e=>setName(e.target.value)}/></label>
+ {duplicateCompany&&<p id="company-name-conflict" role="status">A company with this name is already associated with this project. Choose a different name.</p>}
  <label className="field"><span className="field-label">Company type</span><select className="select" value={type} disabled={locked||closed} onChange={e=>setType(e.target.value)}>{['GC','SUBCONTRACTOR','OWNER_REP'].map(t=><option key={t} value={t}>{{GC:"General Contractor",SUBCONTRACTOR:"Subcontractor",OWNER_REP:"Owner Representative"}[t]}</option>)}</select></label>
- <Button disabled={!name.trim()||locked||closed} onClick={()=>propose({url:`${base}/companies`,method:'POST',body:{name:name.trim(),type,confirmed:true},label:`Register ${name.trim()} for this project`})}>Review company registration</Button>
+ <Button disabled={!name.trim()||duplicateCompany||loading||!companies||locked||closed} onClick={()=>propose({url:`${base}/companies`,method:'POST',body:{name:name.trim(),type,confirmed:true},label:`Register ${name.trim()} for this project`})}>Review company registration</Button>
  <label className="field"><span className="field-label">Existing company ID</span><Input value={companyId} disabled={locked||closed} onChange={e=>setCompanyId(e.target.value)}/></label><Button disabled={!companyId||locked||closed} onClick={()=>propose({url:`${base}/companies`,method:'POST',body:{companyId,confirmed:true},label:'Associate existing company with this project'})}>Review company association</Button>
  </AdministrationSection>} </div></Card></AdministrationArea>
  <AdministrationArea id="admin-settings" className="administration-settings-grid">{template?.project.status==='SETUP'&&!template.project.hasBeenActivated&&<Card title="Project Setup"><div className="stack">
