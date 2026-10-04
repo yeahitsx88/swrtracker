@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { operationsStatusLabel } from '@/lib/operations-view';
@@ -22,7 +22,19 @@ import './project-home.css';
 import {HeadingHelp,HelpHint} from './heading-help';
 import {headingCase} from '@/lib/heading-case';
 
-const recordScope = (loaded:number,total:number,drafts=false) => `${loaded} of ${total.toLocaleString()} authorized ${drafts?'drafts':'requests'} · filter and export these loaded records`;
+const recordScope = (loaded:number,total:number,drafts=false) => `${loaded} of ${total.toLocaleString()} authorized ${drafts?'drafts':'requests'} · filter and export these loaded records${loaded?' · Scroll the table sideways to see every column and action.':''}`;
+
+function LinkedCrew({projectId}:{projectId:string}) {
+  const label=useRef<HTMLSpanElement>(null);
+  const [open,setOpen]=useState(false),[helpLeft,setHelpLeft]=useState(0);
+  useLayoutEffect(()=>{
+    const node=label.current;if(!node)return;
+    const measure=()=>setHelpLeft(node.offsetLeft+node.offsetWidth+4);
+    const observer=new ResizeObserver(measure);observer.observe(node);measure();
+    return()=>observer.disconnect();
+  },[]);
+  return <div className="home-linked-crew-wrap" style={{'--linked-help-left':`${helpLeft}px`} as CSSProperties}><HelpHint label="Linked-Crew KPIs">Only explicitly linked crews within your authorized Areas. Area overlap does not establish a reporting relationship.</HelpHint><details className="home-linked-crew" onToggle={event=>{if(event.target===event.currentTarget)setOpen(event.currentTarget.open);}}><summary><span ref={label}>Linked-Crew KPIs</span></summary>{open&&<KpiExplorer projectId={projectId} initialMeasure="open" fixedFilters={{cohort:'linkedCrews'}}/>}</details></div>;
+}
 
 function HomeRequests({ projectId, tickets, title, requester, drafts = false }: {
   projectId: string; tickets: TicketRecord[]; title: string; requester: boolean; drafts?: boolean;
@@ -39,7 +51,6 @@ export function ProjectHome() {
   const workspace = useProjectWorkspace();
   const router = useRouter();
   const [revision, setRevision] = useState(0);
-  const [linkedOpen, setLinkedOpen] = useState(false);
   const [name, setName] = useState<string>();
   const [nameError, setNameError] = useState<string>();
   const [snapshot, setSnapshot] = useState<{key: string; data?: ProjectHomeData; error?: string}>();
@@ -115,7 +126,7 @@ export function ProjectHome() {
         {!(manager || superintendent) && areaPanel}
       </div>
       {(requester || field) && !caps?.canAdminister && <ScopedKpiEntry projectId={projectId} audience={requester ? 'requester' : 'field'} />}
-      {superintendent && !caps?.canAdminister && <div className="home-linked-crew-wrap"><HelpHint label="Linked-Crew KPIs">Only explicitly linked crews within your authorized Areas. Area overlap does not establish a reporting relationship.</HelpHint><details className="home-linked-crew" onToggle={event => setLinkedOpen(event.currentTarget.open)}><summary>Linked-Crew KPIs</summary>{linkedOpen && <KpiExplorer projectId={projectId} initialMeasure="open" fixedFilters={{cohort: 'linkedCrews'}} />}</details></div>}
+      {superintendent && !caps?.canAdminister && <LinkedCrew projectId={projectId}/> }
     </>}
     {(!operational || caps?.canAdminister) && <Card title={caps?.canAdminister ? 'Project Administration' : 'Project Setup'} description={caps?.canAdminister ? 'Your independent administrative capability remains separate from operational work.' : 'Ordinary workflow is restricted in this project state.'}>{caps?.canAdminister && <Link className="button" href={`${base}/admin`}>Open Project Administration</Link>}<Link className="text-link" href="/projects">Return to Projects</Link></Card>}
   </div>;

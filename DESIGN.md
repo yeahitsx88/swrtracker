@@ -88,6 +88,11 @@ typography:
   home-stat-note:
     fontFamily: "Roboto, sans-serif"
     fontSize: "0.72rem"
+  heading-help:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.5
   compact-badge:
     fontFamily: "Roboto, sans-serif"
     fontSize: "0.7rem"
@@ -107,6 +112,7 @@ spacing:
   compact-record-cell: "0 0.35rem"
   home-panel: "1rem"
   section-content: "8px 0 16px"
+  heading-help-gap: "0.25rem"
 components:
   button-primary:
     backgroundColor: "{colors.action}"
@@ -208,6 +214,19 @@ components:
     rounded: "{rounded.button}"
     padding: "0.4rem 0.65rem"
     height: "44px"
+  heading-help-trigger:
+    textColor: "{colors.muted}"
+    rounded: "{rounded.button}"
+    padding: "12px"
+    width: "44px"
+    height: "44px"
+  heading-help-popover:
+    backgroundColor: "{colors.bg-elevated}"
+    textColor: "{colors.ink}"
+    typography: "{typography.heading-help}"
+    rounded: "{rounded.panel}"
+    padding: "0.85rem 1rem"
+    width: "min(340px, calc(100vw - 32px))"
   administration-disclosure:
     textColor: "{colors.ink}"
     padding: "12px 0"
@@ -274,7 +293,9 @@ Roboto is the display and body family with a generic sans-serif fallback. The no
 
 Titles use bold weight and tight tracking; their sizes remain appropriate to the actual heading level. Body copy uses the body role; labels use the label role, and inputs use the field role. Buttons use weight 700. Product identity uses the compact-title size in the application shell and 1.125rem in authentication. Ordinary status badges use 0.76rem text, step labels use the label size, utility/sidebar navigation uses workspace-link, and in-page view tabs use 0.925rem.
 
-Home adds explicit data-display roles to this Roboto foundation. The fluid home-heading role identifies the named greeting; home-value gives summary counts tabular numerals. Compact titles identify Home panels and project context. The home-action role identifies the requester intake link and drawer title, with the intake label using compact-title at phone widths. Workspace notes and Home empty states use workspace-note; intake supporting copy uses home-support. Compact-body covers table records, summary labels, dates, scope and project-role context. Compact-tools covers table controls, loaded-record scope and navigation group labels; home-stat-note covers summary date qualifiers, and compact-badge keeps status labels inside Home tables and phone project context. These roles document the implemented shell/Home hierarchy; they do not replace the existing Operations hierarchy.
+Home adds explicit data-display roles to this Roboto foundation. The fluid home-heading role identifies the named greeting; home-value gives summary counts tabular numerals. Compact titles identify Home panels and project context. The home-action role identifies the requester intake link and drawer title, with the intake label using compact-title at phone widths. Workspace notes and Home empty states use workspace-note; the former inline intake supporting copy used home-support; it now uses the heading-help role in its question-mark popover. Compact-body covers table records, summary labels, dates, scope and project-role context. Compact-tools covers table controls and navigation group labels; the former inline summary date qualifiers used home-stat-note and now use heading-help, and compact-badge keeps status labels inside Home tables and phone project context. These roles document the implemented shell/Home hierarchy; they do not replace the existing Operations hierarchy.
+
+**The Heading Case Rule.** Use grammatical title case for interface headings, table captions, column headings and metric labels, including “Recent Requests” and “Submit a New Survey Request”. Keep interior articles, conjunctions and short prepositions lowercase; preserve acronyms, identifiers and supplied person, project, company and team names. Help prose remains sentence case.
 
 ## Layout
 
@@ -284,7 +305,7 @@ Below 1000px the sidebar gives way to a Project navigation trigger and a native 
 
 Home places its named greeting and visible UTC date above a four-column summary strip. Its dashboard uses two unequal columns from 1200px, with the wider record column ordered by audience; below that it becomes one content lane. Below 600px summaries use two columns. Home panels use the shared panel shape with flat depth and compact padding, retaining their contained boundaries on phones. The requester intake action, scoped summaries, compact request/date records and existing charts form the first workspace; the role-specific composition is recorded in `.impeccable/surfaces/alpha1-project-home.md`.
 
-Record collections use semantic tables at all widths, with filtering and selection controls before the table and pagination after it. Ordinary tables retain the 640px phone minimum and sideways-scroll hint. Home uses the same primitive's compact variant with a tools disclosure and a 640px minimum at every breakpoint; its overflow hint appears when the contained table actually overflows. Keep page content within the viewport while the table scrolls. Existing request card markup can remain inside record cells; the older 900px request-card layout is a subordinate content treatment, not the standard for new record lists. The request detail page uses a main column plus a sticky Actions panel from 1100px; below that, Actions follow the request details. Historical Decision 16's right account overlay and the first Alpha 1 project-only sidebar exception were superseded by the owner's later universal sidebar annotations.
+Record collections use semantic tables at all widths, with filtering and selection controls before the table and pagination after it. Ordinary tables retain the 640px phone minimum and sideways-scroll hint. Home uses the same primitive's compact variant with a tools disclosure and a 640px minimum at every breakpoint; loaded-table scope help beside the card heading preserves the instruction to scroll sideways to every column and action. Ordinary table captions expose their overflow guidance through adjacent help when the table actually overflows. Keep page content within the viewport while the table scrolls. Existing request card markup can remain inside record cells; the older 900px request-card layout is a subordinate content treatment, not the standard for new record lists. The request detail page uses a main column plus a sticky Actions panel from 1100px; below that, Actions follow the request details. Historical Decision 16's right account overlay and the first Alpha 1 project-only sidebar exception were superseded by the owner's later universal sidebar annotations.
 
 Appearance has a 900px maximum page width inside the shared workspace and an explicit Back link to a validated prior internal authenticated route, with authorized Home or Projects as fallback. Mode options wrap with 24px gaps and 44px targets; tenant color controls wrap with 32px gaps. Secondary administration groups collapse within panels rather than introducing a new page hierarchy. Reporting charts keep their established composition and expose exact table data through disclosure sections. Recorded chart tables use a bounded 22rem scroll viewport with sticky headings, a 560px minimum table width and single-line labels/actions; filter, selection, export and paging controls remain outside that viewport.
 
@@ -308,6 +329,14 @@ Primary actions use the action role and derived action-label color; secondary ac
 
 The owner approved straight-edged buttons on 2026-10-01. The shared button-radius token is zero; general structural containers retain their existing rounding.
 
+### Heading Help
+
+Shared HeadingHelp/HelpHint places a question-mark control beside the appropriate heading using the heading-help-gap spacing role. The trigger uses the heading-help-trigger geometry with a 20px inline SVG. Muted text becomes the action color over the hover surface on hover or while open; keyboard focus has a two-pixel action outline with a two-pixel offset. The popover uses the heading-help-popover surface, shape and type roles, with a one-pixel strong-divider border, no added shadow and inherited Roboto. It stays within a 16px viewport gutter, scrolls internally if needed and repositions on scrolling or resize.
+
+Native auto popovers enter the top layer on hover or focus. Clicking or tapping pins the help; clicking again, Escape or outside dismissal closes it. A 180ms pointer-leave delay lets the pointer cross into the help without losing it. Preserve the accessible “About [heading]” label, described-by relationship and expanded state. Keep each help control independent of its neighboring link, summary or button: Home summary help must not navigate, and Linked-Crew KPIs help remains immediately beside the measured label without toggling its separate native disclosure.
+
+**The Supplemental Help Rule.** Put explanatory heading subtext and Card descriptions in adjacent help while keeping data, alerts, validation, loading and empty states, and confirmation facts visible. Preserve the full scope, date definitions, provenance limits and scroll guidance in that help; do not discard them to make the heading quieter.
+
 ### Inputs / Fields
 
 Inputs, selects, and textareas use the elevated surface with a one-pixel strong-divider border and the field type role. Labels sit above with a 0.35rem gap. Textareas start at 100px height and resize vertically. Placeholders retain the muted text color at full opacity.
@@ -318,7 +347,7 @@ Tables carry a visible caption, scoped column headers, tabular numerals, row div
 
 Request description columns retain a readable minimum width (22rem) and wrap long words with `overflow-wrap: break-word`. Ticket List and Project Review reuse this shared column treatment; the table scroll region accommodates the width on narrow screens. Request types and priorities use the shared display labels in both rows and CSV exports. Request-type columns keep those labels intact with `white-space: nowrap` and `overflow-wrap: normal`.
 
-Home's optional compact variant moves filter/selection/export tools behind a 44px “Filter and export” disclosure while retaining selection, sorting, CSV and internal pagination. Its table keeps an accessible caption, visually hidden because the card already names the collection. Loaded-record scope stays visible outside the disclosure. The fixed-layout table has a 640px minimum at every breakpoint, with reference/status/date columns of 94/220/92px and contained horizontal scrolling. Reference links, ISO dates and status labels stay on one line; descriptions clamp to two lines. Badges use block max-content sizing with border-box padding, and the dedicated status column and compact-cell gutters keep them inside their own cell and separate from dates. Sort headers and request links retain 44px targets; compact type does not shrink those actions. Home planned badges use primary text (`ink`) over their existing planned surfaces to preserve readable labels with tenant customization in either mode.
+Home's optional compact variant moves filter/selection/export tools behind a 44px “Filter and export” disclosure while retaining selection, sorting, CSV and internal pagination. Its table keeps an accessible caption, visually hidden because the card already names the collection. Loaded-record scope and the loaded-table sideways-scroll instruction are retained in help beside the containing card heading. Record values, selected counts and pagination ranges stay visible. The fixed-layout table has a 640px minimum at every breakpoint, with reference/status/date columns of 94/220/92px and contained horizontal scrolling. Reference links, ISO dates and status labels stay on one line; descriptions clamp to two lines. Badges use block max-content sizing with border-box padding, and the dedicated status column and compact-cell gutters keep them inside their own cell and separate from dates. Sort headers and request links retain 44px targets; compact type does not shrink those actions. Home planned badges use primary text (`ink`) over their existing planned surfaces to preserve readable labels with tenant customization in either mode.
 
 Recorded chart categories, monthly values and Area/status values opt into the same record primitive's bounded scroll treatment. The viewport stops at 22rem, contains horizontal and vertical scrolling, and keeps the heading row sticky. Tables use a 560px minimum and compact-body type; labels and review actions do not wrap. Review requests/month actions use a 16px search icon, compact-body type and a 44px target. Column widths remain intrinsic rather than forcing the last column to 1%. Filtering, selection, export and pagination stay outside the viewport; the overflow hint appears only when the table actually overflows.
 
@@ -340,7 +369,7 @@ Authenticated navigation groups Home, Work, People, Administration and Account, 
 
 ### Home summaries
 
-Four linked counts share a bordered, rounded strip with cell dividers, action-colored icons and tabular values. Hover changes only the surface. Labels and date qualifiers state what the count measures; the desktop chevron disappears below 1200px. At phone widths the strip becomes a two-by-two grid while each linked cell retains its generous padding. The date and Refresh Home action remain visible and wrap together. Summary and chart selections lead to matching existing scoped request views. Recent, upcoming and draft panels identify loaded-record limits; summaries cover their authorized population rather than counting displayed rows. Current-state totals and upcoming UTC dates remain visually distinct, and crew distribution never implies productivity.
+Four linked counts share a bordered, rounded strip with cell dividers, action-colored icons and tabular values. Hover changes only the surface. Labels state what the count measures; adjacent independent help retains date qualifiers and all-date definitions; the desktop chevron disappears below 1200px. At phone widths the strip becomes a two-by-two grid while each linked cell retains its generous padding. The date and Refresh Home action remain visible and wrap together. Summary and chart selections lead to matching existing scoped request views. Recent, upcoming and draft panels identify loaded-record limits in their heading help; summaries cover their authorized population rather than counting displayed rows. Current-state totals and upcoming UTC dates remain visually distinct, and crew distribution never implies productivity.
 
 ### Chips / Cards
 
@@ -392,7 +421,9 @@ Dark mode gives the mark and icon frames a white backing, preserving the supplie
 - Do separate account display mode from shared tenant branding and preserve current role authority.
 - Do keep active commands visible, freeze uncertain attempts and require deliberate reload of stale evidence.
 - Do keep project destinations square, keyboard focused and at least 44px tall, including compact Home actions.
-- Do preserve visible scope and date qualifiers, intact request references and dates, and contained table scrolling in compact Home records.
+- Do preserve scope and date definitions in adjacent heading help, visible request references and dates, and contained table scrolling in compact Home records.
+- Do use grammatical title case for interface headings and keep supplemental help independent of neighboring actions.
+- Do retain data, errors, loading and empty states, and confirmation facts in the visible interface.
 
 ### Don't:
 

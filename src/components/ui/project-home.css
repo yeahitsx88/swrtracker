@@ -79,8 +79,8 @@
 .home-stat-cell:has(.heading-help-trigger) .home-stat { padding-right:3rem; }
 .home-stat-cell:has(.heading-help-trigger) .home-stat > .icon:last-child { display:none; }
 .home-linked-crew-wrap { position:relative; }
-.home-linked-crew-wrap > .heading-help-trigger { position:absolute; right:1rem; top:.8rem; z-index:1; }
-.home-linked-crew-wrap summary { padding-right:3rem; }
+.home-linked-crew-wrap > .heading-help-trigger { position:absolute; left:var(--linked-help-left); top:.8rem; z-index:1; }
+.home-linked-crew-wrap summary { width:max-content; max-width:calc(100% - 3rem); }
 @media(max-width:599px) {
  .home-stat-cell:nth-child(3) { border-left:0; }
  .home-stat-cell:nth-child(n+3) { border-top:1px solid var(--line); }
