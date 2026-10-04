@@ -31,6 +31,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   if(failAudit&&sql.includes('INSERT INTO administrative_events'))throw Error('Synthetic evidence failure');return db.query(sql,params);
  },release:()=>{}})) as typeof app.connect;
  const req=(body?:unknown,key=randomUUID(),method='POST')=>new NextRequest('http://localhost/api/admin',{method,headers:{cookie:'swr_session='+signToken(f.actor as UUID,f.tenant as UUID,1),'content-type':'application/json','idempotency-key':key},body:body===undefined?undefined:JSON.stringify(body)});
+ const lookup=(name:string)=>readCompanies(new NextRequest('http://localhost/api/admin?companyName='+encodeURIComponent(name),{headers:req(undefined,randomUUID(),'GET').headers}),ctx());
  const ctx=(projectId=f.project)=>({params:Promise.resolve({projectId})});
  const expect=async(response:Response,status=200)=>{assert.equal(response.status,status,JSON.stringify(await response.clone().json()));checks++;return response.json();};
  const count=async(table:string)=>(await db.query('SELECT count(*)::int AS n FROM '+table)).rows[0].n;
@@ -41,6 +42,8 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   const duplicateCompanies=await count('companies'),duplicateEvents=await count('administrative_events');
   for(const name of ['Local company','  LOCAL   COMPANY  ','Local\tcompany'])await expect(await companies(req({name,type:'SUBCONTRACTOR',confirmed:true}),ctx()),409);
   assert.equal(await count('companies'),duplicateCompanies);assert.equal(await count('administrative_events'),duplicateEvents);checks+=2;
+  for(const name of ['Local company','  LOCAL   COMPANY  ','Local\tcompany']){const found=await expect(await lookup(name));assert.equal(found.matchingCompanies.length,1);assert.equal(found.matchingCompanies[0].id,company);assert.equal(found.matchingCompanies[0].associated,true);checks+=3;}
+  await expect(await lookup(' '),400);await expect(await lookup('x'.repeat(201)),400);
   // Selected company removal is atomic, versioned, scoped and preserves tenant records.
   const removable=[];
   for(const name of ['Removal one','Removal two'])removable.push((await expect(await companies(req({name,type:'GC',confirmed:true}),ctx()))).company.id);
@@ -55,6 +58,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   assert.equal(await count('project_companies'),associationCount);assert.equal(await count('administrative_events'),auditCount);checks+=2;
   assert.equal((await expect(await removeCompanies(req(removal,removalKey,'DELETE'),ctx()))).removed,2);checks++;
   assert.equal((await db.query('SELECT count(*)::int n FROM companies WHERE id=ANY($1::uuid[])',[removable])).rows[0].n,2);checks++;
+  const retainedMatch=await expect(await lookup('  REMOVAL  ONE '));assert.equal(retainedMatch.matchingCompanies[0].id,removable[0]);assert.equal(retainedMatch.matchingCompanies[0].associated,false);checks+=2;
   const removalEvents=await count('administrative_events');await expect(await removeCompanies(req(removal,removalKey,'DELETE'),ctx()));assert.equal(await count('administrative_events'),removalEvents);checks++;
   await expect(await removeCompanies(req({...removal,companies:removal.companies.slice(0,1)},removalKey,'DELETE'),ctx()),409);
   await expect(await removeCompanies(req(removal,randomUUID(),'DELETE'),ctx()),409);

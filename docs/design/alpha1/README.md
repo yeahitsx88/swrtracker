@@ -115,3 +115,5 @@ The subsequent [duplicate company guard](company-name-guard.md) maps both creati
 Current company inventory extension: [Selected Project Company Removal](company-removal.md) maps its reviewed project-only removal, dependency checks, retained history, API/module changes and verification. Earlier pinned manifests remain historical snapshots.
 
 Latest administration refinement: [Pop-ups and Task Refinements](administration-dialogs.md) maps native company review dialogs, collapsible inventories, sidebar-only Help Desk, Tenant Admin-only assignment roster and its matching verification.
+
+- [Reusing removed companies](company-reuse.md): find retained tenant records by name and explicitly add the original ID back to a project.

@@ -9,7 +9,7 @@ import {errorResponse} from '@/lib/api-error';
 import {ValidationError} from '@/shared/errors';
 import {requireIdempotencyKey,executeIdempotentHttpMutation} from '@/lib/idempotency';
 import {registerProjectCompany,removeProjectCompanies,authorizeWritable} from '@/modules/tenancy/application/project-administration';
-import {readProjectCompanies} from '@/modules/tenancy/infrastructure/project-companies.reader';
+import {readProjectCompanies,findTenantCompaniesByName} from '@/modules/tenancy/infrastructure/project-companies.reader';
 import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
 import type {CompanyType} from '@/modules/tenancy/domain/types';
 import type {UUID} from '@/shared/types';
@@ -17,6 +17,11 @@ export const dynamic='force-dynamic';
 type Context={params:Promise<{projectId:string}>};
 async function observedGET(req:NextRequest,ctx:Context){try{
   const auth=await requireActiveAuth(req),{projectId}=await ctx.params;requireResourceUuid(projectId,'projectId');await assertProjectAdministrator(pool,auth,projectId as UUID);
+  const companyName=req.nextUrl.searchParams.get('companyName');
+  if(companyName!==null){
+    if(!companyName.trim()||companyName.length>200)throw new ValidationError('Enter a company name between 1 and 200 characters');
+    return NextResponse.json({matchingCompanies:await findTenantCompaniesByName(pool,auth.tenantId,projectId as UUID,companyName)});
+  }
   const limit=Number(req.nextUrl.searchParams.get('limit')??100),offset=Number(req.nextUrl.searchParams.get('offset')??0);
   if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ValidationError('Invalid candidate page');
   const companies=await readProjectCompanies(pool,auth.tenantId,projectId as UUID);

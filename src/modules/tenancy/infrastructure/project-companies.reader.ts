@@ -3,6 +3,15 @@ export interface ProjectCompanyRecord {
   id:string;name:string;type:string;associatedAt:string;associatedBy:string;
   members:number;invitations:number;grants:number;
 }
+export interface MatchingTenantCompany {id:string;name:string;type:string;associated:boolean}
+/** Exact normalized-name discovery for authorized project administration, never another tenant. */
+export async function findTenantCompaniesByName(db:DbClient,tenantId:UUID,projectId:UUID,name:string):Promise<MatchingTenantCompany[]>{
+  return (await db.query<MatchingTenantCompany>(`SELECT c.id,c.name,c.type,
+    EXISTS(SELECT 1 FROM project_companies pc WHERE pc.tenant_id=$1 AND pc.project_id=$2 AND pc.company_id=c.id) AS associated
+    FROM companies c WHERE c.tenant_id=$1
+    AND lower(btrim(regexp_replace(c.name,'[[:space:]]+',' ','g'))) = lower(btrim(regexp_replace($3::text,'[[:space:]]+',' ','g')))
+    ORDER BY c.created_at,c.id LIMIT 100`,[tenantId,projectId,name])).rows;
+}
 /** Current removal dependencies. Disabled tenant accounts still retain enabled project access. */
 export async function readProjectCompanies(db:DbClient,tenantId:UUID,projectId:UUID):Promise<ProjectCompanyRecord[]>{
   return (await db.query<ProjectCompanyRecord>(`SELECT c.id,c.name,c.type,pc.associated_at::text AS "associatedAt",pc.associated_by AS "associatedBy",
