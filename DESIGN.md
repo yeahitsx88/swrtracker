@@ -51,6 +51,46 @@ typography:
     fontFamily: "Roboto, sans-serif"
     fontSize: "16px"
     lineHeight: 1.35
+  home-heading:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "clamp(1.4rem, 2vw, 1.8rem)"
+    fontWeight: 700
+    lineHeight: 1.25
+    letterSpacing: "-0.02em"
+  home-value:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "1.65rem"
+    fontWeight: 700
+    lineHeight: 1.2
+  compact-title:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 700
+  home-action:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "1.1rem"
+    fontWeight: 700
+  workspace-link:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.875rem"
+  workspace-note:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.9rem"
+  home-support:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.85rem"
+  compact-body:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.8rem"
+  compact-tools:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.75rem"
+  home-stat-note:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.72rem"
+  compact-badge:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "0.7rem"
 rounded:
   navigation: "0px"
   button: "0px"
@@ -64,6 +104,8 @@ spacing:
   page-gap: "1.25rem"
   panel-wide: "1.5rem"
   record-cell: "12px 10px"
+  compact-record-cell: "0 0.35rem"
+  home-panel: "1rem"
   section-content: "8px 0 16px"
 components:
   button-primary:
@@ -103,10 +145,56 @@ components:
     backgroundColor: "{colors.bg-elevated}"
     rounded: "{rounded.panel}"
     padding: "1.25rem"
-  project-tab:
+  view-tab:
     textColor: "{colors.muted}"
     rounded: "{rounded.navigation}"
     padding: "0.5rem 0.9rem"
+  project-sidebar-link:
+    textColor: "{colors.ink}"
+    typography: "{typography.workspace-link}"
+    rounded: "{rounded.navigation}"
+    padding: "0.6rem 0.75rem"
+    height: "46px"
+  project-sidebar-current:
+    backgroundColor: "{colors.surface-selected}"
+    textColor: "{colors.ink}"
+    typography: "{typography.workspace-link}"
+    rounded: "{rounded.navigation}"
+    padding: "0.6rem 0.75rem"
+    height: "46px"
+  project-sidebar:
+    backgroundColor: "{colors.bg-elevated}"
+    padding: "1.25rem 0.75rem"
+    width: "224px"
+  project-navigation-drawer:
+    backgroundColor: "{colors.bg-elevated}"
+    textColor: "{colors.ink}"
+    width: "min(340px, calc(100vw - 24px))"
+    height: "100dvh"
+  project-account-sign-out:
+    textColor: "{colors.ink}"
+    typography: "{typography.workspace-link}"
+    rounded: "{rounded.navigation}"
+    padding: "0.6rem 0.75rem"
+    height: "46px"
+    width: "100%"
+  home-panel:
+    backgroundColor: "{colors.bg-elevated}"
+    rounded: "{rounded.panel}"
+    padding: "{spacing.home-panel}"
+  home-summary:
+    backgroundColor: "{colors.bg-elevated}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.panel}"
+  compact-record-header:
+    backgroundColor: "{colors.surface-sunken}"
+    textColor: "{colors.ink}"
+    typography: "{typography.compact-body}"
+    padding: "{spacing.compact-record-cell}"
+  compact-record-cell:
+    textColor: "{colors.ink}"
+    typography: "{typography.compact-body}"
+    padding: "{spacing.compact-record-cell}"
   record-table-header:
     backgroundColor: "{colors.surface-sunken}"
     textColor: "{colors.ink}"
@@ -130,7 +218,7 @@ The pinned visual authority is the Axiom Civil Services Brand Guide, version 1.0
 
 The light interface uses white surfaces, slate text, steel blue structure, restrained orange attention, and Roboto throughout. The dark interface carries the same hierarchy through deep slate surfaces and lighter readable text. Personal display preferences and authorized tenant color customization extend that established world.
 
-Record collections share semantic tables with filtering, sorting, selection and useful selection actions across authenticated roles. The recorded system follows the shared appearance, record, account-menu and recommissioning implementations alongside the incumbent global styles and layouts. Role-specific workflow controls and their existing evidence remain visible within that structure.
+Record collections share semantic tables with filtering, sorting, selection and useful selection actions across authenticated roles. Project work uses a persistent desktop sidebar, explicit project context and a scoped Home workspace; compact dashboard records reuse the same table primitive. Role-specific workflow controls and their existing evidence remain visible within that structure.
 
 **Key Characteristics:**
 
@@ -138,6 +226,7 @@ Record collections share semantic tables with filtering, sorting, selection and 
 - Axiom defaults, validated tenant accents and derived accessible actions.
 - Supplied Axiom artwork and self-hosted Roboto.
 - Compact task controls with visible keyboard focus.
+- Grouped project navigation, explicit project context and scoped Home summaries.
 - Filterable, sortable, selectable records with explicit scope and collapsible secondary sections.
 
 ## Colors
@@ -177,15 +266,19 @@ Error, warning, success, and neutral badges retain their implemented foreground/
 
 Roboto is the display and body family with a generic sans-serif fallback. The normal variable face covers weights 100–900 and uses `font-display: swap`. It is served from `public/fonts/roboto-variable.ttf`, sourced from [Google Fonts Roboto](https://github.com/google/fonts/tree/main/ofl/roboto); retain `public/fonts/OFL.txt` with redistribution.
 
-Titles use bold weight and tight tracking; their sizes remain appropriate to the actual heading level rather than a newly invented display scale. Body copy uses the body role; labels use the label role, and inputs use the field role. Buttons use weight 700. Product identity uses a 1rem, weight-700 label in the application shell and 1.125rem in authentication. Status badges use 0.76rem text, step labels 0.82rem, utility navigation 0.875rem, and desktop project tabs 0.925rem.
+Titles use bold weight and tight tracking; their sizes remain appropriate to the actual heading level. Body copy uses the body role; labels use the label role, and inputs use the field role. Buttons use weight 700. Product identity uses the compact-title size in the application shell and 1.125rem in authentication. Ordinary status badges use 0.76rem text, step labels use the label size, utility/sidebar navigation uses workspace-link, and in-page view tabs use 0.925rem.
+
+Home adds explicit data-display roles to this Roboto foundation. The fluid home-heading role identifies the named greeting; home-value gives summary counts tabular numerals. Compact titles identify Home panels and project context. The home-action role identifies the requester intake link and drawer title, with the intake label using compact-title at phone widths. Workspace notes and Home empty states use workspace-note; intake supporting copy uses home-support. Compact-body covers table records, summary labels, dates, scope and project-role context. Compact-tools covers table controls, loaded-record scope and navigation group labels; home-stat-note covers summary date qualifiers, and compact-badge keeps status labels inside Home tables and phone project context. These roles document the implemented shell/Home hierarchy; they do not replace the existing Operations hierarchy.
 
 ## Layout
 
-The shell is a sticky elevated header (Axiom wordmark, greeting, account Menu) above a sticky elevated **project band**: project name, the viewer's project role, and the project section tabs. Content shares a centered container capped at 1280px (`--shell-max`) with a 1rem gutter, 1.25rem from 760px. Forms and long text use a 760px reading width (`.form-narrow`); text fields cap at 40rem and date/number fields at 18rem. Panels have 1.25rem padding, 1.5rem from 760px and 1rem at 600px and below. Rows wrap; panels allow their contents to shrink with `min-width: 0`.
+The sticky elevated account header retains the Axiom wordmark and greeting. On project routes, account destinations live in the left navigation and the top-right Menu is suppressed. Pages outside the project workspace retain their account Menu and right overlay. Project pages expand the header and main workspace to a centered maximum of 1600px. A persistent 224px elevated sidebar sits beside a shrinking content column; its top follows the account header and its destinations scroll independently. The project name, current role with additive administration, and lifecycle badge sit in a bordered context row above the page content. Project content has 1.2rem top, 1.5rem side and 2rem bottom padding. Non-project content retains the 1280px shell maximum and existing gutters. Forms and long text retain the 760px reading width; text fields cap at 40rem and date/number fields at 18rem. Ordinary panels retain their responsive padding. Rows wrap and panels allow contents to shrink with `min-width: 0`.
 
-Below 760px the section tabs become a fixed **bottom tab bar** (icon plus label, 60px targets, safe-area aware) and top-level panels run edge to edge. At 600px and below the header shows the supplied Axiom icon instead of the wordmark, and the greeting truncates on one line.
+Below 1000px the sidebar gives way to a Project navigation trigger and a native left modal drawer, with a fixed title/Close header and independently scrolling destinations. The drawer is full height and capped at 340px, leaving at least 24px of backdrop at narrow widths. Native modality protects focus; Close, Escape and backdrop dismissal restore the trigger. Selecting a route closes it, and widening to desktop dismisses it. Project navigation has no bottom tab bar. Below 600px project content uses .9rem top, .75rem side and 1.5rem bottom padding. At 600px and below the account header shows the supplied Axiom icon instead of the wordmark, and the greeting truncates on one line.
 
-Record collections use semantic tables at all widths, with filtering and selection controls before the table and pagination after it. The shared table has a horizontal scroll region; at 600px and below its minimum width is 640px and an explicit sideways-scroll hint appears. Keep page content within the viewport while the table scrolls. Existing request card markup can remain inside record cells; the older 900px request-card layout is a subordinate content treatment, not the standard for new record lists. The request detail page uses a main column plus a sticky Actions panel from 1100px; below that, Actions follow the request details. Account navigation remains the approved right-side overlay (Decision 16).
+Home places its named greeting and visible UTC date above a four-column summary strip. Its dashboard uses two unequal columns from 1200px, with the wider record column ordered by audience; below that it becomes one content lane. Below 600px summaries use two columns. Home panels use the shared panel shape with flat depth and compact padding, retaining their contained boundaries on phones. The requester intake action, scoped summaries, compact request/date records and existing charts form the first workspace; the role-specific composition is recorded in `.impeccable/surfaces/alpha1-project-home.md`.
+
+Record collections use semantic tables at all widths, with filtering and selection controls before the table and pagination after it. Ordinary tables retain the 640px phone minimum and sideways-scroll hint. Home uses the same primitive's compact variant with a tools disclosure and narrower columns; its overflow hint appears when the contained table actually overflows. Keep page content within the viewport while the table scrolls. Existing request card markup can remain inside record cells; the older 900px request-card layout is a subordinate content treatment, not the standard for new record lists. The request detail page uses a main column plus a sticky Actions panel from 1100px; below that, Actions follow the request details. The approved right account overlay (Decision 16) remains on pages outside the project workspace; the owner's Alpha 1 sidebar consolidation supersedes it on project routes.
 
 Appearance has a 900px maximum page width. Mode options wrap with 24px gaps and 44px targets; tenant color controls wrap with 32px gaps. Secondary administration groups collapse within panels rather than introducing a new page hierarchy. Reporting charts keep their established composition and expose exact table data through disclosure sections.
 
@@ -195,7 +288,9 @@ Authentication uses a centered shell capped at 460px with centered branding and 
 
 Panels use the elevated surface with a thin divider border and one quiet shadow token (`--shadow-panel`). Interactive cards use `--shadow-raised` and a brand border on hover; record tables remain flat with row dividers and a recessed header. Nested panels have no shadow. The header's sticky positioning and three-pixel brand top rule provide structure without ornamental depth. Dark mode uses tonal surface separation with the same component geometry.
 
-The account overlay retains its approved dimmed backdrop, full-height right drawer and quick slide: opening takes 260ms and closing 180ms with `cubic-bezier(0.16, 1, 0.3, 1)`. Reduced motion removes the slide and backdrop transition. The page stays stationary beneath the overlay.
+Outside the project workspace, the account overlay retains its approved dimmed backdrop, full-height right drawer and quick slide: opening takes 260ms and closing 180ms with `cubic-bezier(0.16, 1, 0.3, 1)`. Reduced motion removes the slide and backdrop transition. The page stays stationary beneath the overlay.
+
+Project navigation uses a separate native left modal with a dimmed backdrop (`rgb(15 25 35 / 55%)`) and no slide animation. The sidebar and Home dashboard panels are flat; surface tones and dividers supply their hierarchy in both appearance modes.
 
 ## Shapes
 
@@ -219,6 +314,8 @@ Tables carry a visible caption, scoped column headers, tabular numerals, row div
 
 Request description columns retain a readable minimum width (22rem) and wrap long words with `overflow-wrap: break-word`. Ticket List and Project Review reuse this shared column treatment; the table scroll region accommodates the width on narrow screens. Request types and priorities use the shared display labels in both rows and CSV exports. Request-type columns keep those labels intact with `white-space: nowrap` and `overflow-wrap: normal`.
 
+Home's optional compact variant moves filter/selection/export tools behind a 44px “Filter and export” disclosure while retaining selection, sorting, CSV and internal pagination. Its table keeps an accessible caption, visually hidden because the card already names the collection. Loaded-record scope stays visible outside the disclosure. The fixed-layout table has a 380px minimum, raised to 480px below 600px, with reference/status/date columns of 94/100/92px and contained horizontal scrolling. Reference links and ISO dates stay on one line; descriptions clamp to two lines and status text may wrap within its own cell. Badges use block fit-content sizing capped at the cell width with border-box padding, and compact-cell gutters separate them from dates. Sort headers and request links retain 44px targets; compact type does not shrink those actions. Home planned badges use primary text (`ink`) over their existing planned surfaces to preserve readable labels with tenant customization in either mode.
+
 Filtering matches displayed column text; sorting uses numeric-aware, case-insensitive text comparison with a stable record-ID tie-breaker. Changing the filter or sort returns to the first internal page. A visible selected count accompanies Clear selection, Select all matching and Export selected. Matching selection spans the loaded collection, while header selection covers the current internal page; selected records are limited to the supplied rows and may remain selected when a filter hides them. CSV export includes the selected loaded records and readable column labels. Role eligibility and guarded mutation controls remain authoritative.
 
 **The Loaded Records Rule.** State the scope of local filtering, sorting, selection and export. A server-paged view operates on its loaded records and does not promise a search of the full dataset.
@@ -233,7 +330,11 @@ Loading, empty, success and error messages use readable text and the existing st
 
 ### Navigation
 
-Project sections are underline tabs with icons in the project band: muted at rest, Action Blue with a 3px underline when current, pale blue on hover, minimum 46px tall. On phones they become the bottom tab bar with a 3px top indicator. Role-to-section mapping and labels are unchanged; icons are presentation only. In-page view switches (Operations, Project Review, Team Management) use the same underline treatment. Keep the projects skip link, which becomes visible on focus and targets the main content.
+Project navigation groups Home, Work, People, Administration and Account, omitting empty groups. Independent administrative capability adds its destination alongside the actual operational role. Current project state and capabilities determine discoverable links; destination APIs remain authoritative. Square icon-led links are at least 46px tall, inherit primary text at rest, and use action text over the hover surface on hover. The current destination has primary text, selected-surface fill, bold weight and `aria-current="page"`. Below 1000px the same grouped destinations occupy the native left drawer. Account contains Appearance, Profile, Assignment Details, Switch project and Sign out. Profile and Assignment Details retain the current project query context; existing Home and Team Management destinations are not duplicated. Sign out is a full-width square 46px button with a top divider, primary text, hover surface and visible focus. It disables with “Signing out…” while pending, reports failures with an alert, and redirects to login after the existing logout succeeds. Project routes suppress the top-right account Menu; non-project pages retain it. In-page view switches (Operations, Project Review, Team Management) retain the square underline treatment. Keep the projects skip link, which becomes visible on focus and targets the main content.
+
+### Home summaries
+
+Four linked counts share a bordered, rounded strip with cell dividers, action-colored icons and tabular values. Hover changes only the surface. Labels and date qualifiers state what the count measures; the desktop chevron disappears below 1200px. At phone widths the strip becomes a two-by-two grid while each linked cell retains its generous padding. The date and Refresh Home action remain visible and wrap together. Summary and chart selections lead to matching existing scoped request views. Recent, upcoming and draft panels identify loaded-record limits; summaries cover their authorized population rather than counting displayed rows. Current-state totals and upcoming UTC dates remain visually distinct, and crew distribution never implies productivity.
 
 ### Chips / Cards
 
@@ -284,6 +385,8 @@ Dark mode gives the mark and icon frames a white backing, preserving the supplie
 - Do identify loaded-record scope and retain appropriate collapsible sections and chart data disclosures.
 - Do separate account display mode from shared tenant branding and preserve current role authority.
 - Do keep active commands visible, freeze uncertain attempts and require deliberate reload of stale evidence.
+- Do keep project destinations square, keyboard focused and at least 44px tall, including compact Home actions.
+- Do preserve visible scope and date qualifiers, intact request references and dates, and contained table scrolling in compact Home records.
 
 ### Don't:
 

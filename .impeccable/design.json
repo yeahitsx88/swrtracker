@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-03T04:57:23Z",
+  "generatedAt": "2026-10-03T23:57:43.654Z",
   "title": "Design System: SWRTracker",
   "extensions": {
     "colorMeta": {
@@ -455,6 +455,50 @@
       "field": {
         "displayName": "Field",
         "purpose": "Inputs, selects, and textareas."
+      },
+      "home-heading": {
+        "displayName": "Home Heading",
+        "purpose": "Fluid named Home greeting."
+      },
+      "home-value": {
+        "displayName": "Home Value",
+        "purpose": "Tabular Home summary counts."
+      },
+      "compact-title": {
+        "displayName": "Compact Title",
+        "purpose": "Home panel titles and project context."
+      },
+      "home-action": {
+        "displayName": "Home Action",
+        "purpose": "Requester intake label and project drawer title."
+      },
+      "workspace-link": {
+        "displayName": "Workspace Link",
+        "purpose": "Grouped sidebar destinations and compact obligation rows."
+      },
+      "workspace-note": {
+        "displayName": "Workspace Note",
+        "purpose": "Lifecycle context and Home empty states."
+      },
+      "home-support": {
+        "displayName": "Home Support",
+        "purpose": "Requester intake supporting copy."
+      },
+      "compact-body": {
+        "displayName": "Compact Body",
+        "purpose": "Home records, count labels, dates, scope and project-role context."
+      },
+      "compact-tools": {
+        "displayName": "Compact Tools",
+        "purpose": "Home table controls, loaded-record scope and navigation group labels."
+      },
+      "home-stat-note": {
+        "displayName": "Home Stat Note",
+        "purpose": "Date qualifiers beneath summary labels."
+      },
+      "compact-badge": {
+        "displayName": "Compact Badge",
+        "purpose": "Home table status labels and phone project context."
       }
     },
     "shadows": [
@@ -483,7 +527,7 @@
       {
         "name": "account-drawer",
         "value": "260ms open / 180ms close cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Approved right-side overlay slide and dimmed backdrop; reduced motion removes both transitions."
+        "purpose": "Approved right-side account overlay outside the project workspace; reduced motion removes slide and backdrop transitions. Project routes use the left sidebar/native navigation dialog."
       },
       {
         "name": "appearance-arrive",
@@ -503,6 +547,18 @@
       {
         "name": "detail-columns-min",
         "value": "1100px"
+      },
+      {
+        "name": "project-sidebar-min",
+        "value": "1000px"
+      },
+      {
+        "name": "home-two-columns-min",
+        "value": "1200px"
+      },
+      {
+        "name": "home-phone-max",
+        "value": "599px"
       }
     ]
   },
@@ -540,12 +596,12 @@
       "css": ".ds-field { display:grid; gap:.35rem; font-family: var(--font-body, Roboto, sans-serif); } .ds-label { font-size:.82rem; color:var(--muted, #58636e); font-weight:600; } .ds-input { width:100%; border:1px solid var(--line-strong, #81909d); border-radius:var(--radius-control, 10px); font-family: var(--font-body, Roboto, sans-serif); font-size:16px; min-height:44px; transition:border-color 150ms ease, box-shadow 150ms ease; line-height:1.35; color:var(--ink, #2e2e2e); background:var(--bg-elevated, #ffffff); padding:.62rem .7rem; caret-color:var(--action, #315f85); } .ds-input::placeholder { color:var(--muted, #58636e); opacity:1; } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 1px; border-color:var(--action, #315f85); } .ds-input:hover { border-color:var(--action, #315f85); } @media (prefers-reduced-motion: reduce) { .ds-input { transition:none; } }"
     },
     {
-      "name": "Navigation Link",
+      "name": "Project Sidebar",
       "kind": "nav",
-      "refersTo": "navigation-link",
-      "description": "Square utility navigation link; the current route uses the shared active treatment.",
-      "html": "<nav aria-label=\"Preview\"><a class=\"ds-control ds-link\" href=\"#preview\" aria-current=\"page\">Projects</a></nav>",
-      "css": ".ds-link { font-family: var(--font-body, Roboto, sans-serif); border:1px solid var(--brand, #4682b4); border-radius:var(--button-radius, 0px); display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.45rem .75rem; font-size:.875rem; font-weight:700; color:var(--action, #315f85); background:var(--surface-hover, #edf3f8); white-space:nowrap; text-decoration:none; } .ds-link:hover { background:var(--surface-hover, #edf3f8); border-color:var(--brand, #4682b4); } .ds-control:focus-visible { outline: 3px solid var(--action, #315f85); outline-offset: 3px; }"
+      "refersTo": "project-sidebar-link",
+      "description": "Grouped capability-aware project destinations use square 46px targets. Below 1000px the same groups occupy a native left dialog with a fixed Close header. Current APIs authorize access; preview destinations are illustrative. Project routes consolidate Appearance, Profile, Assignment Details, Switch project and Sign out here and suppress the top-right account Menu; pages outside the project workspace retain the right overlay. Profile and Assignment Details preserve project context.",
+      "html": "<aside class=\"ds-project-sidebar\"><div class=\"ds-sidebar-title\">SWRTracker<span>Survey work requests</span></div><nav class=\"ds-workspace-nav\" aria-label=\"Project navigation\"><a href=\"#home\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v11h-6v-7H9v7H3z\"/></svg>Home</a><div class=\"ds-nav-group\"><p class=\"ds-nav-label\">Work</p><a href=\"#crew\">Crew Work</a></div><div class=\"ds-nav-account\"><p class=\"ds-nav-label\">Account</p><a href=\"#appearance\">Appearance</a><a href=\"#profile\">Profile</a><a href=\"#assignments\">Assignment Details</a><a href=\"#projects\">Switch project</a><button type=\"button\">Sign out</button></div></nav></aside>",
+      "css": ".ds-project-sidebar { width:224px; min-height:420px; padding:1.25rem .75rem; color:var(--ink, #2e2e2e); background:var(--bg-elevated, #ffffff); border-right:1px solid var(--line, #d8dfe5); font-family:var(--font-body, Roboto, sans-serif); } .ds-sidebar-title { padding:.25rem .65rem 1.25rem; font-weight:800; } .ds-sidebar-title span { display:block; font-size:.8rem; font-weight:400; color:var(--muted, #58636e); } .ds-workspace-nav { display:flex; flex-direction:column; gap:1.35rem; min-height:340px; } .ds-nav-group { display:grid; gap:.25rem; } .ds-nav-label { margin:0 0 .3rem; padding-inline:.75rem; color:var(--muted, #58636e); font-size:.75rem; font-weight:700; } .ds-workspace-nav a { display:flex; align-items:center; gap:.65rem; min-height:46px; padding:.6rem .75rem; border-radius:0; color:var(--ink, #2e2e2e); font-size:.875rem; text-decoration:none; } .ds-workspace-nav a:hover { background:var(--surface-hover, #edf3f8); color:var(--action, #315f85); } .ds-workspace-nav a[aria-current=page] { background:var(--surface-selected, #e9f1f7); color:var(--ink, #2e2e2e); font-weight:700; } .ds-workspace-nav a:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-nav-account { margin-top:auto; padding-top:1rem; border-top:1px solid var(--line, #d8dfe5); } .ds-workspace-nav svg { flex-shrink:0; } .ds-nav-account > button { display:flex; align-items:center; min-height:46px; width:100%; padding:.6rem .75rem; margin-top:.25rem; border:0; border-top:1px solid var(--line, #d8dfe5); border-radius:0; background:transparent; color:var(--ink, #2e2e2e); font:inherit; font-size:.875rem; text-align:left; cursor:pointer; } .ds-nav-account > button:hover { background:var(--surface-hover, #edf3f8); } .ds-nav-account > button:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-nav-account > button:disabled { opacity:.5; cursor:wait; }"
     },
     {
       "name": "Neutral Status Badge",
@@ -559,25 +615,25 @@
       "name": "Panel",
       "kind": "card",
       "refersTo": "panel",
-      "description": "Shared elevated panel with quiet depth; responsive edge-to-edge exceptions are documented in DESIGN.md.",
+      "description": "Shared elevated panel with quiet depth; responsive edge-to-edge exceptions are documented in DESIGN.md. Home composes this same panel with 1rem padding (.85rem below 600px), 1rem titles, .75rem internal gaps and no shadow, retaining its rounded border on phones.",
       "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Panel</h2><p class=\"ds-panel-muted\">Supporting context</p></section>",
       "css": ".ds-panel { font-family:var(--font-body, Roboto, sans-serif); color:var(--ink, #2e2e2e); background:var(--bg-elevated, #ffffff); border:1px solid var(--line, #d8dfe5); border-radius:var(--radius-panel, 12px); box-shadow:var(--shadow-panel, 0 1px 2px rgb(46 46 46 / 5%)); padding:1.25rem; min-width:0; display:grid; gap:1rem; } .ds-panel-title { margin:0; font-family:var(--font-display, Roboto, sans-serif); font-size:1.25rem; font-weight:700; letter-spacing:-.015em; line-height:1.25; text-wrap:balance; } .ds-panel-muted { color:var(--muted, #58636e); margin:0; } @media (min-width:760px) { .ds-panel { padding:1.5rem; } } @media (max-width:600px) { .ds-panel { padding:1rem; } }"
     },
     {
-      "name": "Project Tab",
-      "kind": "nav",
-      "refersTo": "project-tab",
-      "description": "Icon-led project tab with a current-page underline; phone tab-bar composition is documented in DESIGN.md.",
-      "html": "<nav class=\"ds-project-tabs\" aria-label=\"Project sections\"><a class=\"ds-project-tab\" href=\"#preview\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg>Operations</a></nav>",
-      "css": ".ds-project-tabs { display:flex; gap:.25rem; overflow-x:auto; scrollbar-width:none; } .ds-project-tab { font-family:var(--font-body, Roboto, sans-serif); display:inline-flex; align-items:center; gap:.45rem; min-height:46px; padding:.5rem .9rem; border-bottom:3px solid transparent; border-radius:0; color:var(--muted, #58636e); font-size:.925rem; font-weight:600; white-space:nowrap; text-decoration:none; } .ds-project-tab:hover { color:var(--action, #315f85); background:var(--surface-hover, #edf3f8); } .ds-project-tab[aria-current=\"page\"] { color:var(--action, #315f85); border-bottom-color:var(--action, #315f85); font-weight:700; } .ds-project-tab:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; }"
+      "name": "Home Summary",
+      "kind": "custom",
+      "refersTo": "home-summary",
+      "description": "Four linked current-state counts share a bordered strip with tabular values; below 600px they form a two-by-two grid. Qualifiers identify upcoming UTC dates and all-date totals. Preview values are illustrative.",
+      "html": "<div class=\"ds-home-stats\"><a class=\"ds-home-stat\" href=\"#open\"><span><strong>14</strong><span>Open requests</span></span></a><a class=\"ds-home-stat\" href=\"#review\"><span><strong>2</strong><span>Awaiting review</span></span></a><a class=\"ds-home-stat\" href=\"#due\"><span><strong>11</strong><span>Due soon</span><small>Today through +3 days</small></span></a><a class=\"ds-home-stat\" href=\"#completed\"><span><strong>2</strong><span>Completed</span><small>All dates</small></span></a></div>",
+      "css": ".ds-home-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--line, #d8dfe5); border-radius:var(--radius-panel, 12px); background:var(--bg-elevated, #ffffff); overflow:hidden; color:var(--ink, #2e2e2e); font-family:var(--font-body, Roboto, sans-serif); } .ds-home-stat { display:flex; align-items:center; padding:1.1rem 1rem; min-height:44px; min-width:0; color:inherit; text-decoration:none; } .ds-home-stat + .ds-home-stat { border-left:1px solid var(--line, #d8dfe5); } .ds-home-stat:hover { background:var(--surface-hover, #edf3f8); } .ds-home-stat:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:-3px; } .ds-home-stat strong { display:block; font-size:1.65rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.2; } .ds-home-stat span span { display:block; font-size:.8rem; } .ds-home-stat small { display:block; font-size:.72rem; margin-top:.15rem; color:var(--muted, #58636e); } @media(max-width:1199px) { .ds-home-stat { padding:.85rem .7rem; } } @media(max-width:599px) { .ds-home-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .ds-home-stat:nth-child(3) { border-left:0; } .ds-home-stat:nth-child(n+3) { border-top:1px solid var(--line, #d8dfe5); } }"
     },
     {
-      "name": "Record Table",
+      "name": "Compact Home Records",
       "kind": "custom",
-      "refersTo": "record-table-cell",
-      "description": "Shared semantic record collection with sortable columns and eligible-row selection. The app supplies loaded-record filters, selection export and 25-row internal pagination. Preview labels are illustrative. Request description columns retain a readable 22rem minimum width and wrap long words; shared request type and priority labels carry into CSV exports. Request-type labels stay intact without wrapping.",
-      "html": "<div class=\"ds-record-region\" tabindex=\"0\" role=\"region\" aria-label=\"Records table\"><table class=\"ds-record-table\"><caption>Records</caption><thead><tr><th scope=\"col\"><input type=\"checkbox\" aria-label=\"Select this page of records\"></th><th scope=\"col\" aria-sort=\"ascending\"><button type=\"button\">Record <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M12 19V5m-6 6 6-6 6 6\"/></svg></button></th><th scope=\"col\" class=\"ds-request-description\">Description</th><th scope=\"col\" class=\"ds-request-type\">Type</th></tr></thead><tbody><tr><td><input type=\"checkbox\" aria-label=\"Select retained member\"></td><td>Retained member</td><td class=\"ds-request-description\">Review authorized request details without compressing the description into a narrow text column.</td><td class=\"ds-request-type\">Survey request</td></tr></tbody></table></div>",
-      "css": ".ds-record-region { max-width:100%; overflow:auto; color:var(--ink, #2e2e2e); font-family:var(--font-body, Roboto, sans-serif); } .ds-record-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; } .ds-record-table caption { text-align:left; font-size:1rem; font-weight:600; color:var(--ink, #2e2e2e); padding:0 0 12px; caption-side:top; } .ds-record-table th,.ds-record-table td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line, #d8dfe5); vertical-align:top; } .ds-record-table th { background:var(--surface-sunken, #f5f8fb); } .ds-record-table th button { padding:0; border:0; background:transparent; color:inherit; font:inherit; font-weight:600; cursor:pointer; white-space:nowrap; } .ds-record-table th button:hover { color:inherit; } .ds-record-table th button:focus-visible { outline:2px solid var(--action, #315f85); outline-offset:3px; } .ds-record-region:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-record-table td { overflow-wrap:anywhere; min-width:100px; } .ds-record-table th:first-child,.ds-record-table td:first-child { min-width:32px; width:32px; } .ds-record-table input { width:18px; height:18px; accent-color:var(--action, #315f85); } .ds-record-table input:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } @media(max-width:600px) { .ds-record-table { min-width:640px; } } .ds-record-table .ds-request-description { min-width:22rem; overflow-wrap:break-word; } .ds-record-table .ds-request-type { white-space:nowrap; overflow-wrap:normal; }"
+      "refersTo": "compact-record-cell",
+      "description": "Home reuses the shared semantic record collection with an optional compact Filter and export disclosure, retained selection/sorting/export/pagination and loaded-record scope. An accessible caption is visually hidden because its card already names the collection. The fixed-layout table has a 380px minimum (480px below 600px), 94/100/92px reference/status/date columns, .35rem gutters and 44px sort/link targets. References and dates stay intact; badges wrap within their own border-box cell and planned Home labels use primary text. The app shows a hint only when the contained table overflows. Ordinary tables retain their controls, cell spacing and request-description minimum. Preview values and controls are illustrative.",
+      "html": "<section class=\"ds-compact-records\"><p class=\"ds-record-scope\">1 of 16 authorized requests · filter and export these loaded records</p><details class=\"ds-record-tools\"><summary>Filter and export</summary><label>Filter recent requests<input type=\"search\" aria-label=\"Filter recent requests\"></label><div class=\"ds-record-selection\"><span>0 selected</span><button type=\"button\" disabled>Export selected</button></div></details><div class=\"ds-record-region\" tabindex=\"0\" role=\"region\" aria-label=\"Recent requests table\"><table class=\"ds-record-table\"><caption>Recent requests</caption><thead><tr><th scope=\"col\"><input type=\"checkbox\" aria-label=\"Select this page of records\"></th><th scope=\"col\" class=\"ds-reference\" aria-sort=\"ascending\"><button type=\"button\">Request ↑</button></th><th scope=\"col\"><button type=\"button\">Details</button></th><th scope=\"col\" class=\"ds-status\"><button type=\"button\">Status</button></th><th scope=\"col\" class=\"ds-date\"><button type=\"button\">Need-By</button></th></tr></thead><tbody><tr><td><input type=\"checkbox\" aria-label=\"Select request SWR-1042\"></td><td class=\"ds-reference\"><a href=\"#request\">SWR-1042</a></td><td><span class=\"ds-details\">Pipe rack alignment<small>As-built</small></span></td><td class=\"ds-status\"><span class=\"ds-planned\">Approved - Awaiting Assignment</span></td><td class=\"ds-date\">2026-10-04</td></tr></tbody></table></div></section>",
+      "css": ".ds-compact-records { display:grid; gap:.75rem; min-width:0; color:var(--ink, #2e2e2e); font-family:var(--font-body, Roboto, sans-serif); } .ds-record-scope { color:var(--muted, #58636e); font-size:.75rem; margin:0 0 .5rem; } .ds-record-tools { font-size:.75rem; } .ds-record-tools summary { display:inline-flex; align-items:center; min-height:44px; padding:.55rem .6rem; border:1px solid var(--line, #d8dfe5); border-radius:0; background:var(--bg-elevated, #ffffff); font-weight:700; cursor:pointer; } .ds-record-tools summary:hover { background:var(--surface-hover, #edf3f8); } .ds-record-tools summary:focus-visible,.ds-record-selection button:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-record-tools label { display:grid; gap:.35rem; margin-block:.75rem; } .ds-record-tools input[type=search] { min-height:44px; padding:.62rem .7rem; border:1px solid var(--line-strong, #81909d); border-radius:var(--radius-control, 10px); background:var(--bg-elevated, #ffffff); color:inherit; font-family:inherit; font-size:16px; } .ds-record-tools input[type=search]:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:1px; } .ds-record-selection { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; } .ds-record-selection button { min-height:44px; border-radius:0; border:1px solid var(--line, #d8dfe5); background:var(--bg-elevated, #ffffff); color:inherit; padding:.55rem .6rem; font:inherit; } .ds-record-selection button:disabled { opacity:.45; cursor:not-allowed; } .ds-record-region { max-width:100%; overflow:auto; } .ds-record-region:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-record-table { width:100%; min-width:380px; table-layout:fixed; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:.8rem; } .ds-record-table caption { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; } .ds-record-table th,.ds-record-table td { text-align:left; padding:0 .35rem; border-bottom:1px solid var(--line, #d8dfe5); vertical-align:middle; } .ds-record-table th { background:var(--surface-sunken, #f5f8fb); } .ds-record-table th button { min-height:44px; padding:0; border:0; background:transparent; color:inherit; font:inherit; font-weight:600; cursor:pointer; white-space:nowrap; } .ds-record-table th button:hover { color:inherit; } .ds-record-table th button:focus-visible { outline:2px solid var(--action, #315f85); outline-offset:3px; } .ds-record-table :is(th,td):first-child { width:30px; } .ds-record-table .ds-reference { width:94px; } .ds-record-table .ds-status { width:100px; } .ds-record-table .ds-date { width:92px; white-space:nowrap; } .ds-record-table input[type=checkbox] { width:18px; height:18px; accent-color:var(--action, #315f85); } .ds-record-table input:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-reference a { display:inline-flex; align-items:center; min-height:44px; color:var(--action, #315f85); font-size:.8rem; font-weight:600; text-decoration:underline; text-underline-offset:.2em; text-decoration-thickness:1px; white-space:nowrap; } .ds-reference a:hover { text-decoration-thickness:2px; } .ds-reference a:focus-visible { outline:3px solid var(--action, #315f85); outline-offset:3px; } .ds-details { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width:24ch; } .ds-details small { display:block; color:var(--muted, #58636e); } .ds-planned { display:block; width:fit-content; max-width:100%; box-sizing:border-box; padding:.22rem .6rem; border:1px solid var(--line, #d8dfe5); border-radius:999px; background:var(--surface-selected, #e9f1f7); color:var(--ink, #2e2e2e); font-size:.7rem; font-weight:700; line-height:1.3; white-space:normal; overflow-wrap:anywhere; } @media(max-width:599px) { .ds-record-table { min-width:480px; } }"
     },
     {
       "name": "Administration Disclosure",
@@ -590,12 +646,13 @@
   ],
   "narrative": {
     "northStar": "Axiom Civil Services",
-    "overview": "The pinned visual authority is the Axiom Civil Services Brand Guide, version 1.0, September 2026, supplied at `D:/Programming/_references/Axiom Brand/Axiom_Civil_Services_2026_Brand_Guide.pdf`. Future UI work must follow that identity. This document records the implemented shared foundation; it does not create a replacement identity or introduce product claims.\n\nThe light interface uses white surfaces, slate text, steel blue structure, restrained orange attention, and Roboto throughout. The dark interface carries the same hierarchy through deep slate surfaces and lighter readable text. Personal display preferences and authorized tenant color customization extend that established world.\n\nRecord collections share semantic tables with filtering, sorting, selection and useful selection actions across authenticated roles. The recorded system follows the shared appearance, record, account-menu and recommissioning implementations alongside the incumbent global styles and layouts. Role-specific workflow controls and their existing evidence remain visible within that structure.",
+    "overview": "The pinned visual authority is the Axiom Civil Services Brand Guide, version 1.0, September 2026, supplied at `D:/Programming/_references/Axiom Brand/Axiom_Civil_Services_2026_Brand_Guide.pdf`. Future UI work must follow that identity. This document records the implemented shared foundation; it does not create a replacement identity or introduce product claims.\n\nThe light interface uses white surfaces, slate text, steel blue structure, restrained orange attention, and Roboto throughout. The dark interface carries the same hierarchy through deep slate surfaces and lighter readable text. Personal display preferences and authorized tenant color customization extend that established world.\n\nRecord collections share semantic tables with filtering, sorting, selection and useful selection actions across authenticated roles. Project work uses a persistent desktop sidebar, explicit project context and a scoped Home workspace; compact dashboard records reuse the same table primitive. Role-specific workflow controls and their existing evidence remain visible within that structure.",
     "keyCharacteristics": [
       "White or deep slate surfaces with readable text.",
       "Axiom defaults, validated tenant accents and derived accessible actions.",
       "Supplied Axiom artwork and self-hosted Roboto.",
       "Compact task controls with visible keyboard focus.",
+      "Grouped project navigation, explicit project context and scoped Home summaries.",
       "Filterable, sortable, selectable records with explicit scope and collapsible secondary sections."
     ],
     "rules": [
@@ -634,7 +691,9 @@
       "Do use semantic tables with labeled filters, sortable headers, selection and useful export for record collections across authenticated roles.",
       "Do identify loaded-record scope and retain appropriate collapsible sections and chart data disclosures.",
       "Do separate account display mode from shared tenant branding and preserve current role authority.",
-      "Do keep active commands visible, freeze uncertain attempts and require deliberate reload of stale evidence."
+      "Do keep active commands visible, freeze uncertain attempts and require deliberate reload of stale evidence.",
+      "Do keep project destinations square, keyboard focused and at least 44px tall, including compact Home actions.",
+      "Do preserve visible scope and date qualifiers, intact request references and dates, and contained table scrolling in compact Home records."
     ],
     "donts": [
       "Don't replace the supplied artwork or Roboto, or expose tenant color customization beyond Central/Tenant IT.",
