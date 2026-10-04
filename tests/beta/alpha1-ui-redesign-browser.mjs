@@ -67,7 +67,7 @@ try {
       check(await page.locator('.home-status-column .badge').evaluateAll(nodes=>nodes.every(node=>node.getBoundingClientRect().right<=node.closest('td').getBoundingClientRect().right-3)),true,'Status and date gutter');
     }
     if(label==='combined-superintendent')check(await page.getByText('Linked-crew reporting is separate below.',{exact:false}).count(),0,'Combined scope copy truthful');
-    if(width===390)await page.locator('dialog.project-navigation-drawer').getByRole('button',{name:'Close',exact:true}).click();
+    if(width===390)await page.locator('dialog.project-navigation-drawer').getByRole('button',{name:'Close navigation',exact:true}).click();
     check(errors,[],'No browser runtime errors '+label);
     await page.screenshot({path:`${out}/${label}-${theme.toLowerCase()}-${width}.png`,fullPage:true});
     results.push({label,theme,width,labels});
