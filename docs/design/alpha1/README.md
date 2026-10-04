@@ -4,7 +4,7 @@ Start here for the design work on `alpha1-ui-redesign` and its eventual integrat
 
 ## Branch boundary
 
-The design branch starts at hardening commit `b8ff81494c6701bb7f84550b40c247f4588b28cb`. The design implementation checkpoint indexed here is `8efbc481198c0051ac0c3f4937cd89d0a4eb31ba`. Its 11 commits change 76 files relative to that base. The local hardening branch still points to the base when this reference is prepared; remote branches have not been fetched or verified by this documentation pass.
+The design branch starts at hardening commit `b8ff81494c6701bb7f84550b40c247f4588b28cb`. The design implementation checkpoint indexed here is `c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a`. Its 14 commits change 85 files relative to that base. The local hardening branch still points to the base when this reference is prepared; remote branches have not been fetched or verified by this documentation pass.
 
 The design changes include presentation behavior, role-aware navigation, composition of existing server-scoped reads, validated Home drill-down filters, appearance, documentation and tests. The inventory confirms no changes under `src/modules/`, `src/app/api/` or `db/`, and no changes to package manifests, lockfile or Dockerfile. Client navigation and remembered project context supply no authorization; existing server checks remain authoritative.
 
@@ -20,10 +20,12 @@ The design changes include presentation behavior, role-aware navigation, composi
 | [Implementation and scope notes](../../ALPHA1_UI_REDESIGN.md) | Shell, Home, heading help, Survey/Viewer and historical verification detail |
 | [Shell/Home surface brief](../../../.impeccable/surfaces/alpha1-project-home.md) | Incumbent composition, refinements and reviewed scope |
 | [Survey/Viewer surface brief](../../../.impeccable/surfaces/survey-viewer-refinement.md) | Comparable role-space treatment and scoped finish disposition |
-| [Batch history](../../CODEX.md) | Append-only implementation/review history, batches 128–137 for design work |
+| [Tenant IT/Project Admin extension](administration.md) | Scoped composition, source map and finish handoffs |
+| [Administration surface brief](../../../.impeccable/surfaces/administration-refinement.md) | Mounted section navigation and administrative preservation contract |
+| [Batch history](../../CODEX.md) | Append-only implementation/review history, batches 128–139 for design work |
 | [Original Alpha 1 audit](../../../audits/alpha1/REPORT.md) | Existing hardening findings and open decisions carried into integration |
 
-This hub links to canonical contracts rather than duplicating tokens or moving runtime files. Its inventory is a pinned snapshot, not a claim that future branch changes are included automatically. This reference preparation adds the hub and entry-point links; it does not change the indexed implementation.
+This hub links to canonical contracts rather than duplicating tokens or moving runtime files. Its inventory is a pinned snapshot, not a claim that future branch changes are included automatically. The latest reference refresh adds the administrative extension record and evidence; it does not change the pinned implementation.
 
 ## What ships with the design branch
 
@@ -32,6 +34,7 @@ This hub links to canonical contracts rather than duplicating tokens or moving r
 - Title-case headings and adjacent independent question-mark help. Explanatory scope/provenance/date guidance remains available on hover, focus and tap; values, alerts, validation and confirmation facts remain visible.
 - Single-line status badges and review actions, contained horizontal table overflow, bounded chart record scrolling and sticky headers. Shared planned badge text uses existing primary ink in Light/Dark.
 - Comparable Survey Command, Operations, named Survey Teams, Crew Work and Viewer Review treatment. Viewer request details return to All Requests; field roles return to Crew Work; requester Drafts navigation remains scoped to requesters. Mobile Crew action groups retain compact rows.
+- Tenant IT and Project Admin use named in-page sections, mounted editors, independent introduction help, contained personnel/company/project inventories, neutral single-line access/grant badges and shared action styling. Tenant IT discovery follows the existing server `canCreateProject` signal; operational membership and independent Project Admin authority remain separate.
 - Existing Axiom identity, Roboto, semantic themes, server permissions, workflow/retry rules and retained customer data.
 
 ## Checkpoints
@@ -43,6 +46,8 @@ This hub links to canonical contracts rather than duplicating tokens or moving r
 | Heading capitalization and contextual help | `13ada0e`, `406054a` |
 | Survey/Viewer implementation and reviewed corrections | `e0ba406`, `d77983d` |
 | Drawer × and existing browser selector alignment | `74d558a`, `8efbc48` |
+| Central reference hub | `bc4c806` |
+| Tenant IT/Project Admin implementation and bounded badge correction | `d5c0917`, `c3cb158` |
 
 Preserve the complete branch history during integration. Later commits depend on earlier shared components; this is not a set of independent patches to select arbitrarily.
 
@@ -55,6 +60,9 @@ Preserve the complete branch history during integration. Later commits depend on
 | Heading/help refinement | [heading-help-evidence.json](../../../audits/alpha1-ui-redesign/heading-help-evidence.json) | 206 checks / 40 captures at its recorded source digest |
 | Survey/Viewer refinement | [survey-viewer-evidence.json](../../../audits/alpha1-ui-redesign/survey-viewer-evidence.json) | 716 checks / 68 captures at its recorded source digest |
 | Later drawer × change | [Batch 137](../../CODEX.md) and commits above | Strict types, 566 tests, pinned production build; actual 797/390 browser geometry, click/Enter/Escape and focus-return checks |
+| Tenant IT/Project Admin extension | [administration-evidence.json](../../../audits/alpha1-ui-redesign/administration-evidence.json) | 18 grouped design browser checks / 18 opened captures at 1864/797/390 in Light/Dark; independent reviewer disposition **ship** |
+
+The administrative digest records strict types, 566 unit tests, pinned production build, 27 PostgreSQL suites, 52 HTTP checks, 24 lifecycle browser checks, 26 lost-response checks and 55/55 named cases after the final badge correction. Retained demo row digests matched before and after its web-image refresh. Its screenshot verdict covers the supplied states; keyboard, motion, System switching and unshown editors are outside that visual verdict. The documenter compared the extension to the incumbent system and preserved DESIGN.md/sidecar.
 
 The Survey/Viewer digest also records 27 PostgreSQL suites, 52 HTTP checks, 24 lifecycle browser checks, 26 lost-response checks and 55/55 named cases. Those full suites were not rerun for the later isolated drawer SVG/CSS change. Each evidence artifact describes its own source digest and limited review scope; their counts cannot be added together as current-HEAD acceptance.
 

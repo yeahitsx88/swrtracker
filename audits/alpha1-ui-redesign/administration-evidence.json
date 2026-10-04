@@ -1,0 +1,418 @@
+{
+  "implementation": "493d60d7ff28a7dbb3c759971b946578511ee675e9a6130e6d8e63496d43ebbf",
+  "at": "2026-10-04T03:41:00.557Z",
+  "scope": "Tenant IT and Project Admin incumbent design extension; local production verification, not release/security approval",
+  "gates": {
+    "types": "strict and unused",
+    "unitTests": 566,
+    "productionBuild": "Node 22.23.3; pnpm 11.19.0",
+    "postgresSuites": 27,
+    "http": 52,
+    "lifecycleBrowser": 24,
+    "lostResponseBrowser": 26,
+    "administrativeBrowser": [
+      "itOnly light 1864: shell, headings/help, anchors, containment, badges",
+      "itOnly light 797: shell, headings/help, anchors, containment, badges",
+      "itOnly light 390: shell, headings/help, anchors, containment, badges",
+      "Durable Central IT review presents original local evidence and separate tenant decision",
+      "itOnly dark 1864: shell, headings/help, anchors, containment, badges",
+      "itOnly dark 797: shell, headings/help, anchors, containment, badges",
+      "itOnly dark 390: shell, headings/help, anchors, containment, badges",
+      "localAdmin light 1864: shell, headings/help, anchors, containment, badges",
+      "Section navigation retains editor values; project scope and actual blocker preview remain visible",
+      "localAdmin light 797: shell, headings/help, anchors, containment, badges",
+      "localAdmin light 390: shell, headings/help, anchors, containment, badges",
+      "localAdmin dark 1864: shell, headings/help, anchors, containment, badges",
+      "localAdmin dark 797: shell, headings/help, anchors, containment, badges",
+      "localAdmin dark 390: shell, headings/help, anchors, containment, badges",
+      "setup-admin-desktop: current authority and lifecycle affordances",
+      "archived-admin-desktop: current authority and lifecycle affordances",
+      "it-project-inventory-desktop: current authority and lifecycle affordances",
+      "Manager without independent grant denied Tenant IT and project diagnostics APIs"
+    ],
+    "namedCases": 55,
+    "roles": [
+      "Tenant IT without operational membership",
+      "Viewer with independent Project Admin",
+      "scalar Project Admin",
+      "Manager without admin (denial)"
+    ],
+    "themes": [
+      "LIGHT",
+      "DARK"
+    ],
+    "widths": [
+      1864,
+      797,
+      390
+    ]
+  },
+  "namedCases": [
+    {
+      "id": "A01",
+      "name": "tenant_disable_atomic",
+      "passed": true
+    },
+    {
+      "id": "A02",
+      "name": "central_without_project",
+      "passed": true
+    },
+    {
+      "id": "A03",
+      "name": "local_cannot_disable_tenant",
+      "passed": true
+    },
+    {
+      "id": "A04",
+      "name": "subcontractor_cannot_be_central",
+      "passed": true
+    },
+    {
+      "id": "A05",
+      "name": "fresh_bearer_after_wait",
+      "passed": true
+    },
+    {
+      "id": "A06",
+      "name": "unauthorized_foreign_subject",
+      "passed": true
+    },
+    {
+      "id": "A07",
+      "name": "foreign_and_missing_subject_indistinguishable",
+      "passed": true
+    },
+    {
+      "id": "A08",
+      "name": "self_disable_refused",
+      "passed": true
+    },
+    {
+      "id": "A09",
+      "name": "last_eligible_central_continuity",
+      "passed": true
+    },
+    {
+      "id": "A10",
+      "name": "actual_manager_continuity",
+      "passed": true
+    },
+    {
+      "id": "A11",
+      "name": "all_live_blocker_families",
+      "passed": true
+    },
+    {
+      "id": "A12",
+      "name": "history_and_drafts_are_retained",
+      "passed": true
+    },
+    {
+      "id": "A13",
+      "name": "already_disabled_fresh_noop",
+      "passed": true
+    },
+    {
+      "id": "A14",
+      "name": "same_key_race_and_lost_response",
+      "passed": true
+    },
+    {
+      "id": "A15",
+      "name": "changed_intent_key_mismatch",
+      "passed": true
+    },
+    {
+      "id": "A16",
+      "name": "different_key_one_transition",
+      "passed": true
+    },
+    {
+      "id": "A17",
+      "name": "snapshot_changes_require_reload",
+      "passed": true
+    },
+    {
+      "id": "A18",
+      "name": "subject_writer_waits_and_revalidates",
+      "passed": true
+    },
+    {
+      "id": "A19",
+      "name": "protected_writer_barrier_both_orders",
+      "passed": true
+    },
+    {
+      "id": "A20",
+      "name": "copied_old_sessions_rejected",
+      "passed": true
+    },
+    {
+      "id": "A21",
+      "name": "authority_loss_before_replay",
+      "passed": true
+    },
+    {
+      "id": "A22",
+      "name": "reset_and_invite_cannot_restore",
+      "passed": true
+    },
+    {
+      "id": "A23",
+      "name": "conditional_event_ledger_commit_rollback",
+      "passed": true
+    },
+    {
+      "id": "A24",
+      "name": "extra_domain_fields_rejected",
+      "passed": true
+    },
+    {
+      "id": "A25",
+      "name": "terminal_history_file_digest_preserved",
+      "passed": true
+    },
+    {
+      "id": "A26",
+      "name": "workers_preserve_assignments",
+      "passed": true
+    },
+    {
+      "id": "A27",
+      "name": "frozen_accessible_scoped_browser_recovery",
+      "passed": true
+    },
+    {
+      "id": "A28",
+      "name": "reactivation_refused",
+      "passed": true
+    },
+    {
+      "id": "A29",
+      "name": "local_transition_atomic",
+      "passed": true
+    },
+    {
+      "id": "A30",
+      "name": "outside_project_denied",
+      "passed": true
+    },
+    {
+      "id": "A31",
+      "name": "other_project_duties_and_access_preserved",
+      "passed": true
+    },
+    {
+      "id": "A32",
+      "name": "renewed_local_access_and_central_warning",
+      "passed": true
+    },
+    {
+      "id": "A33",
+      "name": "stacked_roles_scope_stays_explicit",
+      "passed": true
+    },
+    {
+      "id": "A34",
+      "name": "durable_review_recipients_deduplicated",
+      "passed": true
+    },
+    {
+      "id": "A35",
+      "name": "local_retry_one_review",
+      "passed": true
+    },
+    {
+      "id": "A36",
+      "name": "outbox_failure_atomic_delivery_retry",
+      "passed": true
+    },
+    {
+      "id": "A37",
+      "name": "separate_global_decision_and_linked_review",
+      "passed": true
+    },
+    {
+      "id": "A38",
+      "name": "no_central_local_disable_truthful",
+      "passed": true
+    },
+    {
+      "id": "A39",
+      "name": "archived_access_metadata_only",
+      "passed": true
+    },
+    {
+      "id": "A40",
+      "name": "independent_admin_and_current_race_authority",
+      "passed": true
+    },
+    {
+      "id": "P01",
+      "name": "local_administration_parity",
+      "passed": true
+    },
+    {
+      "id": "P02",
+      "name": "manager_only_no_admin",
+      "passed": true
+    },
+    {
+      "id": "P03",
+      "name": "central_admin_manager_navigation",
+      "passed": true
+    },
+    {
+      "id": "P04",
+      "name": "admin_grant_preserves_manager",
+      "passed": true
+    },
+    {
+      "id": "P05",
+      "name": "operational_role_preserves_admin",
+      "passed": true
+    },
+    {
+      "id": "P06",
+      "name": "foreign_project_isolation",
+      "passed": true
+    },
+    {
+      "id": "P07",
+      "name": "local_and_tenant_decisions_separate",
+      "passed": true
+    },
+    {
+      "id": "P08",
+      "name": "authority_and_subject_races",
+      "passed": true
+    },
+    {
+      "id": "P09",
+      "name": "tenant_role_template_project_creation_denied",
+      "passed": true
+    },
+    {
+      "id": "P10",
+      "name": "legacy_grant_no_invented_manager",
+      "passed": true
+    },
+    {
+      "id": "P11",
+      "name": "one_person_one_notification_and_witness",
+      "passed": true
+    },
+    {
+      "id": "P12",
+      "name": "archived_admin_local_access_only",
+      "passed": true
+    },
+    {
+      "id": "P13",
+      "name": "local_admin_not_central_replacement",
+      "passed": true
+    },
+    {
+      "id": "P14",
+      "name": "direct_http_enforces_authority",
+      "passed": true
+    },
+    {
+      "id": "P15",
+      "name": "central_manager_actual_operational_semantics",
+      "passed": true
+    }
+  ],
+  "captures": [
+    {
+      "path": ".impeccable/review/administration/current/itOnly-light-1864.png",
+      "sha256": "5b1549a68c3d5e54897b2f23e0310a60b13213e9eebfef1895fb10cccaa0cf0d"
+    },
+    {
+      "path": ".impeccable/review/administration/current/itOnly-light-797.png",
+      "sha256": "78978a39f26b53cf075cab2b571d91f8f2597bee0a3deb429663becdab66890f"
+    },
+    {
+      "path": ".impeccable/review/administration/current/itOnly-light-390.png",
+      "sha256": "2ce642bb24c59cf18da44b8f96fa1076971dc0242f45af0026d46d82c035b033"
+    },
+    {
+      "path": ".impeccable/review/administration/current/central-review-mobile.png",
+      "sha256": "ab5e0e8d272ae672be83be1d1ea768ba36f6d2b8f159ce580fe119f03c23e2e2"
+    },
+    {
+      "path": ".impeccable/review/administration/current/itOnly-dark-1864.png",
+      "sha256": "f4670df38cbc2d5b1a9052463816611bdb0f82a67de6b3c998e6251bbdae3b62"
+    },
+    {
+      "path": ".impeccable/review/administration/current/itOnly-dark-797.png",
+      "sha256": "101b7fe10200ad18d8fd66d6c9836c6589baa6ed160f016b1120b72db8946a9c"
+    },
+    {
+      "path": ".impeccable/review/administration/current/itOnly-dark-390.png",
+      "sha256": "40755e30129ea58485ea7faf0bd174a2612e6ef8f78350904108ff3c24cc2223"
+    },
+    {
+      "path": ".impeccable/review/administration/current/localAdmin-light-1864.png",
+      "sha256": "ba48f2123c7c691fde252f9d8034bf8a6597ffb9dc4560ba0a6af76fc8cc3671"
+    },
+    {
+      "path": ".impeccable/review/administration/current/project-members-and-grants-desktop.png",
+      "sha256": "bc7c998fce1f488bdfb58ce35be67c61fb676148f403f362b7046a857c6a3a46"
+    },
+    {
+      "path": ".impeccable/review/administration/current/project-access-blockers-desktop.png",
+      "sha256": "6f2a9d6c05949b3d6cef9a2bdb0747801c0298d79d2f28c60b6ddbcec3df0f74"
+    },
+    {
+      "path": ".impeccable/review/administration/current/localAdmin-light-797.png",
+      "sha256": "888f6b8c7a58a54cf54f8295c1545813d4a8388561557c161b852d0b5e5a1efd"
+    },
+    {
+      "path": ".impeccable/review/administration/current/localAdmin-light-390.png",
+      "sha256": "a0d2b6a4fd028699c13b4c5cf71d716d45e3387f5aefb5d7eb8abed1b9aceb73"
+    },
+    {
+      "path": ".impeccable/review/administration/current/localAdmin-dark-1864.png",
+      "sha256": "c8c07e7d036680db58bdb4f5e299313b4da26c86d26bc4b7e6b5ce05baf09d1a"
+    },
+    {
+      "path": ".impeccable/review/administration/current/localAdmin-dark-797.png",
+      "sha256": "a61f0743fa44d3c09f2eb30e54f968300b0d0fdd960d9d9183c06790b8903af6"
+    },
+    {
+      "path": ".impeccable/review/administration/current/localAdmin-dark-390.png",
+      "sha256": "57ab20191bfc83ef5962a8742ab4a97bc10b919424c500b7aaa57307d011094a"
+    },
+    {
+      "path": ".impeccable/review/administration/current/setup-admin-desktop.png",
+      "sha256": "17cb35dfa9706c18cebe269a437c35a69f7bde23ec4673443f9ce32abfb584d2"
+    },
+    {
+      "path": ".impeccable/review/administration/current/archived-admin-desktop.png",
+      "sha256": "f4939f8dea5457d24164926287bfbbcd9dda633e97030be51274dd953ba26abe"
+    },
+    {
+      "path": ".impeccable/review/administration/current/it-project-inventory-desktop.png",
+      "sha256": "a00757d6eb8fab42fef0a986ba05f34a5a175bdefa6445d4f3d99ed8984aa088"
+    }
+  ],
+  "finishReview": {
+    "disposition": "ship",
+    "scope": "Independent source and all 18 supplied captures; no material fixes",
+    "limitations": "Keyboard, motion, System switching and unshown editors are outside screenshot verdict; executable gates are separate",
+    "detector": {
+      "primary": 0,
+      "advisory": 1,
+      "note": "Fluid h1 type ramp advisory reviewed as no material readability defect"
+    }
+  },
+  "documentation": {
+    "record": "docs/design/alpha1/administration.md",
+    "outcome": "Ordinary extension compared to incumbent system; DESIGN.md and sidecar preserved; existing disclosure-preview drift reported without repair"
+  },
+  "buildWarnings": "Pre-existing autoprefixer start/end compatibility warnings in Survey Operations/project review styles",
+  "preservation": "Retained users, account/tenant appearance, requests, events, attachments, projects, memberships and teams matched read-only row digests before and after the demo web-image refresh.",
+  "implementationCheckpoint": "c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a"
+}

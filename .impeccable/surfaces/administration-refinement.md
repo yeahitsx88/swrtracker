@@ -26,3 +26,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 ## Preserved contract
 
 Keep the original API calls, current eligibility and closed/setup checks, explicit consent, reason, blocker evidence, notices, errors and frozen body/key retry behavior. Supplemental introductions move to independent adjacent help; destructive scope and confirmation facts stay inline. Tenant IT navigation follows existing server administration inventory/capabilities and never grants project request access. Newly owned synthetic fixtures only; preserve live demo data/settings. Register source, checkpoints and exact-source evidence in docs/design/alpha1.
+
+## Finish Handoffs
+
+Independent finish reviewer: **ship**, scoped source and all 18 supplied settled captures; no material fixes. Fluid h1 detector advisory was reviewed without a material readability defect. The ordinary-extension documenter compared the implementation against the incumbent system and preserved DESIGN.md and its sidecar. The central [design hub](../../docs/design/alpha1/README.md) records source, checkpoints and executable evidence.

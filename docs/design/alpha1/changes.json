@@ -4,19 +4,19 @@
   "branch": "alpha1-ui-redesign",
   "hardeningBranch": "alpha1-audit-hardening",
   "base": "b8ff81494c6701bb7f84550b40c247f4588b28cb",
-  "designCheckpoint": "8efbc481198c0051ac0c3f4937cd89d0a4eb31ba",
-  "scope": "Net versioned changes from the historical hardening base to the pinned design implementation checkpoint; reference preparation files are listed separately",
-  "fileCount": 76,
-  "commitCount": 11,
+  "designCheckpoint": "c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a",
+  "scope": "Net versioned design changes through the pinned implementation checkpoint; the current reference/evidence refresh is listed separately",
+  "fileCount": 85,
+  "commitCount": 14,
   "areas": {
-    "Application pages and appearance": 14,
-    "Design contracts and implementation documentation": 7,
+    "Application pages and appearance": 15,
+    "Design contracts and implementation documentation": 12,
     "Local evidence ignore rule": 1,
     "Presentation data and filter helpers": 3,
     "Request, crew and review components": 6,
     "Sanitized verification evidence": 4,
-    "Shared workspace and UI components": 33,
-    "Verification runners and fixtures": 8
+    "Shared workspace and UI components": 35,
+    "Verification runners and fixtures": 9
   },
   "protectedPathsUnchanged": [
     "src/modules/",
@@ -34,7 +34,9 @@
     "docs/design/alpha1/changes.json",
     "docs/README.md",
     "docs/ALPHA1_UI_REDESIGN.md",
-    "docs/CODEX.md"
+    "docs/CODEX.md",
+    "docs/design/alpha1/administration.md",
+    "audits/alpha1-ui-redesign/administration-evidence.json"
   ],
   "commits": [
     {
@@ -80,6 +82,18 @@
     {
       "sha": "8efbc481198c0051ac0c3f4937cd89d0a4eb31ba",
       "subject": "Align drawer browser selector with accessible close label"
+    },
+    {
+      "sha": "bc4c80664c2bf5a16a020ab9dc0a86c8c593c378",
+      "subject": "Centralize Alpha 1 design inventory and Alpha 2 integration reference"
+    },
+    {
+      "sha": "d5c09178ce443a2bf1ff1ed709a479af6d00301e",
+      "subject": "Extend shared design to Tenant IT and Project Admin spaces"
+    },
+    {
+      "sha": "c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a",
+      "subject": "Verify responsive administrative spaces and align access badges"
     }
   ],
   "files": [
@@ -96,6 +110,13 @@
       "area": "Design contracts and implementation documentation",
       "baseBlob": "7a99000701bac4364ec9e929cb8eaab95d221d61",
       "designBlob": "c67cca15358d28d38d0f203f7b234ab7b5f0a3e5"
+    },
+    {
+      "path": ".impeccable/surfaces/administration-refinement.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "25aa73802474e1f8536d7f657684317cc64cf0fb"
     },
     {
       "path": ".impeccable/surfaces/alpha1-project-home.md",
@@ -158,14 +179,42 @@
       "change": "A",
       "area": "Design contracts and implementation documentation",
       "baseBlob": null,
-      "designBlob": "bed3edf57fce0464bf9eb5a9e69027fd3b10daf2"
+      "designBlob": "dad7743c6a754d90fa9d016d50c1ceb577d8659d"
     },
     {
       "path": "docs/CODEX.md",
       "change": "M",
       "area": "Design contracts and implementation documentation",
       "baseBlob": "b7856c1c31f3d21ac25850ef921745bc9a40ee15",
-      "designBlob": "ad2c84d97fa2ae558e032cbb5d347b9170c56e16"
+      "designBlob": "5493a5a93bbf7e38d9a64e3bdc06da9486daeee8"
+    },
+    {
+      "path": "docs/README.md",
+      "change": "M",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": "2a5a544ec61e2d36687c37908cc24a7503667db7",
+      "designBlob": "a1052c738d10c2b51816eaec42dc71cd17a9ae79"
+    },
+    {
+      "path": "docs/design/alpha1/README.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "9c6c0182b303c5d30b643e025673dfcada051bdf"
+    },
+    {
+      "path": "docs/design/alpha1/changes.json",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "9eacb8de525c17ba998a728e6d35bdd58e97daa6"
+    },
+    {
+      "path": "docs/design/alpha1/files.md",
+      "change": "A",
+      "area": "Design contracts and implementation documentation",
+      "baseBlob": null,
+      "designBlob": "019509fd6d411e3a2aab1cd3956f2ef91b9df806"
     },
     {
       "path": "src/app/(auth)/login/page.tsx",
@@ -179,7 +228,7 @@
       "change": "M",
       "area": "Application pages and appearance",
       "baseBlob": "a88ac633f17fe4d6af4688e92f9b76cff54b7f01",
-      "designBlob": "6c80aff4cea0d64eb2c67438c9e8b6d8eb328ea1"
+      "designBlob": "d860000383be70eac7e83c48a51abb820f37e29b"
     },
     {
       "path": "src/app/(projects)/appearance/page.tsx",
@@ -200,7 +249,14 @@
       "change": "M",
       "area": "Application pages and appearance",
       "baseBlob": "9e909b59cd1eae84dc334b78f87eebb8b78f64d3",
-      "designBlob": "05bfbf503baf9729c34bdafc99568df6d7eea443"
+      "designBlob": "5542364f51248f1c81927318d1ba53ded3e8c447"
+    },
+    {
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/subcontractor-access.tsx",
+      "change": "M",
+      "area": "Application pages and appearance",
+      "baseBlob": "d029cfb81daa5dac977da17ec24dc7cbbc05a725",
+      "designBlob": "aa011c569c773586d326533a24639af8b4e62db8"
     },
     {
       "path": "src/app/(projects)/projects/[projectId]/(crew)/crew/work/page.tsx",
@@ -319,7 +375,7 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "91e02d21d3830e9d2fea69e306d53215068feb01",
-      "designBlob": "b7f505f1676d1aa9df9d16f9521453ffb82dd80c"
+      "designBlob": "77d39695b5b7ed8b1891826bc747c971fe9651f3"
     },
     {
       "path": "src/components/ui/account-navigation.ts",
@@ -354,7 +410,21 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "d752f10c63b4039225c6b5e1393fc6a14e937cdf",
-      "designBlob": "10934508fd4f1c07b19812ca44fd5e7afd7dcc08"
+      "designBlob": "b7385a6f4e50776f96cb60f8e8a75a002fa0b8e0"
+    },
+    {
+      "path": "src/components/ui/administration-workspace.css",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "9d495e958486fd28107fc821746b1ad99a877e3f"
+    },
+    {
+      "path": "src/components/ui/administration-workspace.tsx",
+      "change": "A",
+      "area": "Shared workspace and UI components",
+      "baseBlob": null,
+      "designBlob": "ac9f6a4d644e7b1155232e3bd02e866b979b3470"
     },
     {
       "path": "src/components/ui/assigned-workforce.tsx",
@@ -417,14 +487,14 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "2b5d704b34b7705313d3a27f1b4e1c9cb7b70036",
-      "designBlob": "4aa210833db3f8ea21defc7f9e92377f9b16d329"
+      "designBlob": "e3b6a0cf47c88fc8aa1edfa1dadc18931cfcc179"
     },
     {
       "path": "src/components/ui/project-creation.tsx",
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "e987ec5878a89c345d5eb5cfc801af732a09ebb9",
-      "designBlob": "7137248c53754779bc17147740730990bde6fc07"
+      "designBlob": "c62dff64c7db7bc088f2c800a1f32f0852ec5d52"
     },
     {
       "path": "src/components/ui/project-home.css",
@@ -445,7 +515,7 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "e50dea0aa15db973328376dd34bfb92134e12683",
-      "designBlob": "dbda3dd9350c8d04e594b196593e39649365d7f3"
+      "designBlob": "a06db8f4e0703cf50c6336a5d7fa27604283d08c"
     },
     {
       "path": "src/components/ui/project-navigation.ts",
@@ -459,14 +529,14 @@
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "abd2c889ddc205dad380ec6e66511c4c21385a50",
-      "designBlob": "a9d18634f421ad67e128a01d1d7bff4321ae4c98"
+      "designBlob": "ad7aa729eb529bd7c16a7ef0715870f435da69b4"
     },
     {
       "path": "src/components/ui/project-shell-header.tsx",
       "change": "M",
       "area": "Shared workspace and UI components",
       "baseBlob": "eaceefcb5a00be852d30113dd9d09416a2cb75eb",
-      "designBlob": "a3e345d53d064bb4c2a05be80baea2f5932f2c54"
+      "designBlob": "6169e40cf4eded5483c6c80456cb849a927563ec"
     },
     {
       "path": "src/components/ui/project-workspace.css",
@@ -558,6 +628,13 @@
       "area": "Presentation data and filter helpers",
       "baseBlob": null,
       "designBlob": "5a7df1886966ff292b4258bd38aec88d0cff94d4"
+    },
+    {
+      "path": "tests/beta/admin-spaces-browser.mjs",
+      "change": "A",
+      "area": "Verification runners and fixtures",
+      "baseBlob": null,
+      "designBlob": "0d6f67266e8d06b9a8b732b8cf555feecbd6ae2a"
     },
     {
       "path": "tests/beta/alpha1-heading-help-browser.mjs",

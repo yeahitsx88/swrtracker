@@ -1,10 +1,10 @@
 # Complete Alpha 1 Design File Index
 
-[Return to the reference hub](README.md). The corresponding [manifest](changes.json) records exact Git blob IDs and commits.
+[Return to the reference hub](README.md). The [manifest](changes.json) records exact Git blobs and commits.
 
-Inventory: **76 files**, **11 commits**, base `b8ff81494c6701bb7f84550b40c247f4588b28cb`, design checkpoint `8efbc481198c0051ac0c3f4937cd89d0a4eb31ba`. `A` means added and `M` modified relative to that base.
+Inventory: **85 files**, **14 commits**, base `b8ff81494c6701bb7f84550b40c247f4588b28cb`, design checkpoint `c3cb158ba6ac96535a20851e7c4c5f34f2d5be8a`. `A` means added and `M` modified.
 
-Links open current checkout files. The manifest pins the indexed versions; later edits do not update the snapshot automatically. Reference-hub preparation is listed separately at the end.
+Links show the current checkout; blob IDs pin the indexed versions. The current documentation/evidence refresh is listed separately below.
 
 ## Application pages and appearance
 
@@ -15,6 +15,7 @@ Links open current checkout files. The manifest pins the indexed versions; later
 | M | [src/app/(projects)/appearance/page.tsx](<../../../src/app/(projects)/appearance/page.tsx>) |
 | M | [src/app/(projects)/projects/[projectId]/(admin)/admin/draft-recovery.tsx](<../../../src/app/(projects)/projects/[projectId]/(admin)/admin/draft-recovery.tsx>) |
 | M | [src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx](<../../../src/app/(projects)/projects/[projectId]/(admin)/admin/page.tsx>) |
+| M | [src/app/(projects)/projects/[projectId]/(admin)/admin/subcontractor-access.tsx](<../../../src/app/(projects)/projects/[projectId]/(admin)/admin/subcontractor-access.tsx>) |
 | M | [src/app/(projects)/projects/[projectId]/(crew)/crew/work/page.tsx](<../../../src/app/(projects)/projects/[projectId]/(crew)/crew/work/page.tsx>) |
 | M | [src/app/(projects)/projects/[projectId]/(requester)/my-requests/page.tsx](<../../../src/app/(projects)/projects/[projectId]/(requester)/my-requests/page.tsx>) |
 | M | [src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx](<../../../src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx>) |
@@ -30,12 +31,17 @@ Links open current checkout files. The manifest pins the indexed versions; later
 | Change | File |
 | --- | --- |
 | M | [.impeccable/design.json](<../../../.impeccable/design.json>) |
+| A | [.impeccable/surfaces/administration-refinement.md](<../../../.impeccable/surfaces/administration-refinement.md>) |
 | A | [.impeccable/surfaces/alpha1-project-home.md](<../../../.impeccable/surfaces/alpha1-project-home.md>) |
 | A | [.impeccable/surfaces/survey-viewer-refinement.md](<../../../.impeccable/surfaces/survey-viewer-refinement.md>) |
 | M | [DESIGN.md](<../../../DESIGN.md>) |
 | M | [PRODUCT.md](<../../../PRODUCT.md>) |
 | A | [docs/ALPHA1_UI_REDESIGN.md](<../../../docs/ALPHA1_UI_REDESIGN.md>) |
 | M | [docs/CODEX.md](<../../../docs/CODEX.md>) |
+| M | [docs/README.md](<../../../docs/README.md>) |
+| A | [docs/design/alpha1/README.md](<../../../docs/design/alpha1/README.md>) |
+| A | [docs/design/alpha1/changes.json](<../../../docs/design/alpha1/changes.json>) |
+| A | [docs/design/alpha1/files.md](<../../../docs/design/alpha1/files.md>) |
 
 ## Local evidence ignore rule
 
@@ -82,6 +88,8 @@ Links open current checkout files. The manifest pins the indexed versions; later
 | M | [src/components/ui/administration-batch.tsx](<../../../src/components/ui/administration-batch.tsx>) |
 | M | [src/components/ui/administration-records.css](<../../../src/components/ui/administration-records.css>) |
 | M | [src/components/ui/administration-records.tsx](<../../../src/components/ui/administration-records.tsx>) |
+| A | [src/components/ui/administration-workspace.css](<../../../src/components/ui/administration-workspace.css>) |
+| A | [src/components/ui/administration-workspace.tsx](<../../../src/components/ui/administration-workspace.tsx>) |
 | M | [src/components/ui/assigned-workforce.tsx](<../../../src/components/ui/assigned-workforce.tsx>) |
 | M | [src/components/ui/card.tsx](<../../../src/components/ui/card.tsx>) |
 | A | [src/components/ui/heading-help.css](<../../../src/components/ui/heading-help.css>) |
@@ -113,6 +121,7 @@ Links open current checkout files. The manifest pins the indexed versions; later
 
 | Change | File |
 | --- | --- |
+| A | [tests/beta/admin-spaces-browser.mjs](<../../../tests/beta/admin-spaces-browser.mjs>) |
 | A | [tests/beta/alpha1-heading-help-browser.mjs](<../../../tests/beta/alpha1-heading-help-browser.mjs>) |
 | A | [tests/beta/alpha1-sidebar-annotations-browser.mjs](<../../../tests/beta/alpha1-sidebar-annotations-browser.mjs>) |
 | A | [tests/beta/alpha1-ui-redesign-browser.mjs](<../../../tests/beta/alpha1-ui-redesign-browser.mjs>) |
@@ -122,15 +131,13 @@ Links open current checkout files. The manifest pins the indexed versions; later
 | A | [tests/ui/project-home-data.test.ts](<../../../tests/ui/project-home-data.test.ts>) |
 | M | [tests/ui/project-navigation.test.ts](<../../../tests/ui/project-navigation.test.ts>) |
 
-## Reference preparation files
+## Current Reference and Evidence Refresh
 
-These documentation additions/links organize the pinned implementation for review and integration. They are outside the 76-file snapshot above.
-
-| File |
-| --- |
-| [docs/design/alpha1/README.md](<../../../docs/design/alpha1/README.md>) |
-| [docs/design/alpha1/files.md](<../../../docs/design/alpha1/files.md>) |
-| [docs/design/alpha1/changes.json](<../../../docs/design/alpha1/changes.json>) |
-| [docs/README.md](<../../../docs/README.md>) |
-| [docs/ALPHA1_UI_REDESIGN.md](<../../../docs/ALPHA1_UI_REDESIGN.md>) |
-| [docs/CODEX.md](<../../../docs/CODEX.md>) |
+- [docs/design/alpha1/README.md](<../../../docs/design/alpha1/README.md>)
+- [docs/design/alpha1/files.md](<../../../docs/design/alpha1/files.md>)
+- [docs/design/alpha1/changes.json](<../../../docs/design/alpha1/changes.json>)
+- [docs/README.md](<../../../docs/README.md>)
+- [docs/ALPHA1_UI_REDESIGN.md](<../../../docs/ALPHA1_UI_REDESIGN.md>)
+- [docs/CODEX.md](<../../../docs/CODEX.md>)
+- [docs/design/alpha1/administration.md](<../../../docs/design/alpha1/administration.md>)
+- [audits/alpha1-ui-redesign/administration-evidence.json](<../../../audits/alpha1-ui-redesign/administration-evidence.json>)

@@ -87,3 +87,7 @@ The preceding project-only implementation was checkpointed on `alpha1-ui-redesig
 Existing Alpha 1 risks and open decisions remain tracked in [the baseline report](../audits/alpha1/REPORT.md). Non-Manager accounts with administrative capability retain the existing analytics precedence limitation; Home uses bounded authorized status-count reads and omits unavailable analytics. Combined accounts may issue thirteen small status-count requests in addition to ordinary Home reads, an explicit composition tradeoff with the current API. No new reporting authority is inferred.
 
 SurveyRelay branding, new permissions/analytics, custom dashboards/builders, speculative workflows and unrelated refactoring remain deferred. Remote CI, deployment and operational beta approval are separate from this local UI acceptance. Retained customer data and runtimes were preserved.
+
+## Tenant IT and Project Admin Extension
+
+The [administrative design record](design/alpha1/administration.md) documents the comparable shared design treatment. Implementation checkpoints `d5c0917` and `c3cb158` preserve server authority and existing administrative commands while adding section anchors, contained records, neutral access badges, and Tenant IT discovery. See the [central hub](design/alpha1/README.md) and [current administrative evidence](../audits/alpha1-ui-redesign/administration-evidence.json) for the complete scoped verification and integration reference.
