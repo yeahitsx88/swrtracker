@@ -16,6 +16,7 @@ export function AccountShell({children,initialAppearance}:{children:ReactNode;in
   const [context,setContext]=useState<string>();
   const [name,setName]=useState<string>();
   const [accountError,setAccountError]=useState<string>();
+  const [administration,setAdministration]=useState<{path:string;canCreateProject:boolean}>();
   const [revision,setRevision]=useState(0);
   useEffect(()=>{
     const explicit=params.projectId??new URLSearchParams(window.location.search).get('projectId')??undefined;
@@ -30,6 +31,11 @@ export function AccountShell({children,initialAppearance}:{children:ReactNode;in
       .catch(cause=>{if(active)setAccountError(getErrorMessage(cause,'Unable to load your greeting. Retry your account details.'));});
     return()=>{active=false;};
   },[revision]);
+  useEffect(()=>{
+    let active=true;
+    apiClient.projectAdministration().then(value=>{if(active)setAdministration({path:pathname,canCreateProject:value.canCreateProject});}).catch(()=>{if(active)setAdministration({path:pathname,canCreateProject:false});});
+    return()=>{active=false;};
+  },[pathname,revision]);
   return <div className="application-shell" data-mode={initialAppearance?.mode}><AppearanceTheme initial={initialAppearance}/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="app-nav"><div className="app-nav-inner"><div className="account-identity">
@@ -38,7 +44,7 @@ export function AccountShell({children,initialAppearance}:{children:ReactNode;in
     </div></div></header>
     <ScrollToTop/>
     <div className="application-workspace"><main id="main-content" tabIndex={-1}><div className="page-shell">
-      <ProjectShellHeader projectId={params.projectId??context} requireProject={!!params.projectId}>{children}</ProjectShellHeader>
+      <ProjectShellHeader projectId={params.projectId??context} requireProject={!!params.projectId} canCreateProject={administration?.path===pathname&&administration.canCreateProject}>{children}</ProjectShellHeader>
     </div></main></div>
   </div>;
 }

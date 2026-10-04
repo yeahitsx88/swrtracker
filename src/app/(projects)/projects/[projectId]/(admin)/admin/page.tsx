@@ -9,6 +9,7 @@ import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
 import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
+import {AdministrationArea,AdministrationWorkspace} from '@/components/ui/administration-workspace';
 import {ProjectAdministration} from '@/components/ui/project-administration';
 
 export default function AdminProjectPage() {
@@ -75,9 +76,9 @@ export default function AdminProjectPage() {
   }
 
   return (
-    <div className="stack">
+    <AdministrationWorkspace title="Project Administration" description="Manage this project's personnel, companies, settings and recovery. Operational roles and independent administration remain separate." sections={[{id:"admin-personnel",label:"Personnel"},{id:"admin-companies",label:"Companies"},{id:"admin-settings",label:"Settings"},...(!loading&&!archived?[{id:"admin-request-policy",label:"Request Policy"}]:[]),{id:"admin-access-recovery",label:"Access and Recovery"},{id:"admin-diagnostics",label:"Diagnostics"}]}>
       <ProjectAdministration key={projectId} projectId={projectId}/>
-      {!loading&&!archived&&<Card
+      {!loading&&!archived&&<AdministrationArea id="admin-request-policy"><Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."
       >
@@ -124,11 +125,11 @@ export default function AdminProjectPage() {
             </>
           ) : null}
         </div>
-      </Card>}
+      </Card></AdministrationArea>}
       {archived&&error?<ErrorBanner message={error}/>:null}
-      <Card title="Survey Reviewer Handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
+      <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Survey Reviewer Handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
       <SubcontractorAccess projectId={projectId} />
-      <DraftRecovery projectId={projectId} />
-    </div>
+      <DraftRecovery projectId={projectId} /></AdministrationArea>
+    </AdministrationWorkspace>
   );
 }

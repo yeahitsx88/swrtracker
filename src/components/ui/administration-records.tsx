@@ -2,12 +2,13 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {Button,Input} from '@/components/ui';
 import './administration-records.css';
-import {HelpHint} from './heading-help';
+import {HeadingHelp,HelpHint} from './heading-help';
 import {headingCase} from '@/lib/heading-case';
 
-export function AdministrationSection({title,children,open=false,locked=false}:{title:string;children:ReactNode;open?:boolean;locked?:boolean}){
+export function AdministrationSection({title,description,children,open=false,locked=false}:{title:string;description?:ReactNode;children:ReactNode;open?:boolean;locked?:boolean}){
  const [expanded,setExpanded]=useState(open);
- return <section className="administration-section"><h3 className="panel-title"><button type="button" className="administration-disclosure" aria-expanded={expanded} disabled={locked} onClick={()=>setExpanded(v=>!v)}>{headingCase(title)}<span aria-hidden="true">{expanded?'−':'+'}</span></button></h3><div hidden={!expanded} className="stack administration-section-content">{children}</div></section>;
+ const heading=<h3 className="panel-title"><button type="button" className="administration-disclosure" aria-expanded={expanded} disabled={locked} onClick={()=>setExpanded(v=>!v)}>{headingCase(title)}<span aria-hidden="true">{expanded?'−':'+'}</span></button></h3>;
+ return <section className="administration-section">{description?<HeadingHelp label={headingCase(title)} heading={heading} help={description}/>:heading}<div hidden={!expanded} className="stack administration-section-content">{children}</div></section>;
 }
 export interface RecordColumn<T>{key:string;label:string;className?:string;text:(row:T)=>string;render?:(row:T)=>ReactNode}
 export function AdministrationRecords<T>({label,description,rows,id,columns,actions,selectionActions,selected:externalSelected,onSelection:externalSelection,compact=false,scrollable=false,disabled=false,eligible=()=>true}:{label:string;description?:ReactNode;rows:T[];compact?:boolean;scrollable?:boolean;id:(row:T)=>string;columns:RecordColumn<T>[];actions?:(row:T)=>ReactNode;selectionActions?:ReactNode;selected?:string[];onSelection?:(ids:string[])=>void;disabled?:boolean;eligible?:(row:T)=>boolean}){

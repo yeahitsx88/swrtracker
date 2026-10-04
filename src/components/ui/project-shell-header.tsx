@@ -18,7 +18,7 @@ const ProjectContext = createContext<WorkspaceContext | null>(null);
 export const useProjectWorkspace = () => useContext(ProjectContext);
 
 /** Presentation follows current capabilities; destination APIs authorize every read and action. */
-export function ProjectShellHeader({ projectId, requireProject = true, children }: { projectId?: string; requireProject?: boolean; children?: ReactNode }) {
+export function ProjectShellHeader({ projectId, requireProject = true, canCreateProject = false, children }: { projectId?: string; requireProject?: boolean; canCreateProject?: boolean; children?: ReactNode }) {
   const [revision, setRevision] = useState(0);
   const [snapshot, setSnapshot] = useState<{ key: string; context?: WorkspaceContext; error?: string }>();
   const key = `${projectId}:${revision}`;
@@ -51,7 +51,7 @@ export function ProjectShellHeader({ projectId, requireProject = true, children 
   const capabilities = context?.capabilities;
   return <ProjectContext.Provider value={context ?? null}>
     <div className="project-workspace">
-      <ProjectNav projectId={context ? projectId : undefined} role={capabilities?.operationalRole ?? null} canAdminister={capabilities?.canAdminister} status={project?.status ?? 'ACTIVE'} projectName={project?.name ?? 'SWRTracker'} />
+      <ProjectNav projectId={context ? projectId : undefined} role={capabilities?.operationalRole ?? null} canAdminister={capabilities?.canAdminister} canCreateProject={canCreateProject} status={project?.status ?? 'ACTIVE'} projectName={project?.name ?? 'SWRTracker'} />
       <div className="project-content">
         {project && capabilities && <header className="project-context"><div><span className="project-context-name">{project.name}</span><span className="project-context-role">{capabilities.operationalRole ? roleLabel(capabilities.operationalRole) : 'Project administration'}{capabilities.canAdminister && capabilities.operationalRole !== 'PROJECT_ADMIN' ? ' · Project administration' : ''}</span></div><span className="badge badge-neutral">{project.status === 'ACTIVE' ? 'Active project' : project.status === 'ARCHIVED' ? 'Archived · history available' : 'Setup · workflow restricted'}</span></header>}
         {project && project.status !== 'ACTIVE' && <p className="workspace-state-note">{project.status === 'ARCHIVED' ? 'This project is archived. Authorized history remains available; ordinary work commands are restricted.' : 'This project is in setup or recommissioning preparation. Use the existing administration and work-resolution controls where authorized.'}</p>}

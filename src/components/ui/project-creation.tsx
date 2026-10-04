@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import './administration-workspace.css';
 import {ProjectRecommissioning} from './project-recommissioning';
 import {AdministrationRecords,AdministrationSection} from './administration-records';
 import { useEffect,useRef,useState,type FormEvent } from 'react';
@@ -29,7 +30,7 @@ export function ProjectCreation(){
  finally{setBusy(false);}
  }
  if(!data||!data.canCreateProject&&!data.projects.length)return error?<div role="alert">{error}<Button variant="secondary" onClick={()=>{setError(undefined);setRevision(n=>n+1);}}>Retry administration</Button></div>:null;
- return <Card title="Project Administration" description="Open the projects you administer.">
+ return <Card className="administration-inventory" title="Project Administration" description="Open the projects you administer.">
  <div className="stack">
  {created?<><SuccessBanner message={`${created.name} was created in Setup.`}/><Link className="button button-secondary" href={`/projects/${created.id}/admin`}>Configure {created.name}</Link></>:null}
  {error?<ErrorBanner message={error}/>:null}
@@ -40,9 +41,9 @@ export function ProjectCreation(){
  <p className="muted">The project stays in Setup until its configuration is ready and an administrator activates it.</p>
  <div className="row"><Button type="submit" disabled={busy||command.current.stale||!name.trim()}>{busy?'Creating…':uncertain?'Retry unchanged project':'Create Project'}</Button><Button type="button" variant="secondary" disabled={busy||uncertain} onClick={()=>{if(command.current.reload()){setOpen(false);setError(undefined);setRevision(n=>n+1);}}}>{command.current.stale?'Reload project administration':'Cancel'}</Button></div>
  </form>)}
- {data.canCreateProject&&<Link className="app-link" href="/accounts">Tenant accounts and Central IT reviews</Link>}
+ {data.canCreateProject&&<Link className="button button-secondary" href="/accounts">Tenant Accounts and Central IT Reviews</Link>}
  {recommission&&<ProjectRecommissioning key={recommission} projectId={recommission} onClose={()=>setRecommission(undefined)} onChanged={()=>setRevision(n=>n+1)} onLockChange={setRecommissionLocked}/>}
- <AdministrationSection title="Administered Projects" open><p className="muted">Filter, sort and export this administered project inventory.</p><AdministrationRecords label="administered projects" rows={data.projects} id={p=>p.id} columns={[{key:'name',label:'Project',text:p=>p.name},{key:'status',label:'Status',text:p=>p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}]} actions={p=><><Link className="app-link" href={`/projects/${p.id}/admin`}>Open administration</Link>{data.canCreateProject&&(p.status==='ARCHIVED'||p.recommissioning)?<Button variant="secondary" disabled={recommissionLocked||locked} onClick={()=>setRecommission(p.id)}>{p.status==='ARCHIVED'?'Review recommissioning':'Continue readiness review'}</Button>:null}</>}/></AdministrationSection>
+ <AdministrationSection title="Administered Projects" open description="Filter, sort and export this administered project inventory."><AdministrationRecords scrollable label="administered projects" rows={data.projects} id={p=>p.id} columns={[{key:'name',label:'Project',text:p=>p.name},{key:'status',label:'Status',className:'administration-state-column',text:p=>p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived',render:p=><span className="badge">{p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}</span>}]} actions={p=><><Link className="button button-secondary" href={`/projects/${p.id}/admin`}>Open administration</Link>{data.canCreateProject&&(p.status==='ARCHIVED'||p.recommissioning)?<Button variant="secondary" disabled={recommissionLocked||locked} onClick={()=>setRecommission(p.id)}>{p.status==='ARCHIVED'?'Review recommissioning':'Continue readiness review'}</Button>:null}</>}/></AdministrationSection>
 
  </div></Card>;
 }
