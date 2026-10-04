@@ -72,7 +72,7 @@ export default function ProjectsLauncherPage() {
       </Card>
 
       <Card
-        title="Open by project ID"
+        title="Open by Project ID"
         description="Use the ID of one of your accessible projects for troubleshooting."
       >
         <div className="stack">

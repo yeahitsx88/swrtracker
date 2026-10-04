@@ -29,7 +29,7 @@ export function ProjectCreation(){
  finally{setBusy(false);}
  }
  if(!data||!data.canCreateProject&&!data.projects.length)return error?<div role="alert">{error}<Button variant="secondary" onClick={()=>{setError(undefined);setRevision(n=>n+1);}}>Retry administration</Button></div>:null;
- return <Card title="Project administration" description="Open the projects you administer.">
+ return <Card title="Project Administration" description="Open the projects you administer.">
  <div className="stack">
  {created?<><SuccessBanner message={`${created.name} was created in Setup.`}/><Link className="button button-secondary" href={`/projects/${created.id}/admin`}>Configure {created.name}</Link></>:null}
  {error?<ErrorBanner message={error}/>:null}
@@ -42,7 +42,7 @@ export function ProjectCreation(){
  </form>)}
  {data.canCreateProject&&<Link className="app-link" href="/accounts">Tenant accounts and Central IT reviews</Link>}
  {recommission&&<ProjectRecommissioning key={recommission} projectId={recommission} onClose={()=>setRecommission(undefined)} onChanged={()=>setRevision(n=>n+1)} onLockChange={setRecommissionLocked}/>}
- <AdministrationSection title="Administered projects" open><p className="muted">Filter, sort and export this administered project inventory.</p><AdministrationRecords label="administered projects" rows={data.projects} id={p=>p.id} columns={[{key:'name',label:'Project',text:p=>p.name},{key:'status',label:'Status',text:p=>p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}]} actions={p=><><Link className="app-link" href={`/projects/${p.id}/admin`}>Open administration</Link>{data.canCreateProject&&(p.status==='ARCHIVED'||p.recommissioning)?<Button variant="secondary" disabled={recommissionLocked||locked} onClick={()=>setRecommission(p.id)}>{p.status==='ARCHIVED'?'Review recommissioning':'Continue readiness review'}</Button>:null}</>}/></AdministrationSection>
+ <AdministrationSection title="Administered Projects" open><p className="muted">Filter, sort and export this administered project inventory.</p><AdministrationRecords label="administered projects" rows={data.projects} id={p=>p.id} columns={[{key:'name',label:'Project',text:p=>p.name},{key:'status',label:'Status',text:p=>p.status==='SETUP'?'Setup':p.status==='ACTIVE'?'Active':'Archived'}]} actions={p=><><Link className="app-link" href={`/projects/${p.id}/admin`}>Open administration</Link>{data.canCreateProject&&(p.status==='ARCHIVED'||p.recommissioning)?<Button variant="secondary" disabled={recommissionLocked||locked} onClick={()=>setRecommission(p.id)}>{p.status==='ARCHIVED'?'Review recommissioning':'Continue readiness review'}</Button>:null}</>}/></AdministrationSection>
 
  </div></Card>;
 }

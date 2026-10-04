@@ -1,4 +1,5 @@
 'use client';
+import {HeadingHelp} from '@/components/ui/heading-help';
 import {RecordCollection} from '@/components/ui/record-collection';
 import {useEffect,useRef,useState} from 'react';
 import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
@@ -37,10 +38,9 @@ export function AssignedWorkforce({projectId,role,archived}:{projectId:string;ro
  finally{setBusy(false);}
  }
  return <section className="panel tm-workspace stack" aria-labelledby="assigned-team-title">
- <h2 id="assigned-team-title" className="panel-title">Team Management</h2>
- <p className="muted">{superintendent?'Your explicitly assigned Party Chiefs and their current Instrument Men. Reassign Instrument Men only between Chiefs already assigned to you.':'Your currently assigned Instrument Men. This view does not change staffing.'}</p>
+ <HeadingHelp label="Team Management" heading={<h2 id="assigned-team-title" className="panel-title">Team Management</h2>} help={superintendent?'Your explicitly assigned Party Chiefs and their current Instrument Men. Reassign Instrument Men only between Chiefs already assigned to you.':'Your currently assigned Instrument Men. This view does not change staffing.'}/>
  {success?<SuccessBanner message={success}/>:null}
- {moving?<div className="stack tm-editor"><h3>Reassign {moving.name}</h3><p>Choose a Party Chief from your current assigned workforce.</p>
+ {moving?<div className="stack tm-editor"><HeadingHelp label={"Reassign"} heading={<h3>Reassign {moving.name}</h3>} help={<span>Choose a Party Chief from your current assigned workforce.</span>}/>
  {chiefs.error?<ErrorBanner message={chiefs.error}/>:!chiefs.data?<p role="status">Loading assigned Chiefs…</p>:<><RecordCollection label="replacement Party Chiefs" records={<>{chiefs.data.data.filter(p=>p.role==='PARTY_CHIEF').map(p=><li key={p.userId}><Button variant="secondary" aria-pressed={target===p.userId} disabled={busy||!!attempt.current||p.userId===moving.partyChiefId} onClick={()=>setTarget(p.userId)}>{p.name}{p.userId===moving.partyChiefId?' · Current Chief':''}</Button></li>)}</>}/><PaginationControls total={chiefs.data.total} limit={10} offset={chiefOffset} onChange={setChiefOffset}/></>}
  {error?<ErrorBanner message={error}/>:null}
  <div className="row"><Button disabled={busy||!target||!snapshot} onClick={()=>void save()}>{busy?'Saving…':'Save reassignment'}</Button><Button variant="secondary" disabled={busy||!!attempt.current} onClick={reload}>Reload workforce</Button></div></div>:<>

@@ -23,5 +23,5 @@ export function RecordCollection({label,records,headings=['Record','Details','Ac
   return {id:String(row.key??index),cells};
  });
  const width=Math.max(1,...rows.map(row=>row.cells.length));
- return <div className="stack"><p className="muted">Filtering and selection apply to the records loaded in this view.</p><AdministrationRecords<{id:string;cells:ReactNode[]}> label={label} rows={rows} id={row=>row.id} columns={Array.from({length:width},(_,index)=>({key:String(index),label:headings[index]??`Details ${index}`,text:row=>recordText(row.cells[index]),render:row=>row.cells[index]??'—'}))}/></div>;
+ return <div className="stack"><AdministrationRecords<{id:string;cells:ReactNode[]}> label={label} description="Filtering and selection apply to the records loaded in this view." rows={rows} id={row=>row.id} columns={Array.from({length:width},(_,index)=>({key:String(index),label:headings[index]??`Details ${index}`,text:row=>recordText(row.cells[index]),render:row=>row.cells[index]??'—'}))}/></div>;
 }

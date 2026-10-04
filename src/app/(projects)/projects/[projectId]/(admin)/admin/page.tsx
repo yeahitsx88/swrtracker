@@ -126,7 +126,7 @@ export default function AdminProjectPage() {
         </div>
       </Card>}
       {archived&&error?<ErrorBanner message={error}/>:null}
-      <Card title="Survey Reviewer handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
+      <Card title="Survey Reviewer Handover" description="Resolve supported protected obligations with confirmed replacement coverage."><ProtectedSurveyObligations key={projectId} projectId={projectId}/></Card>
       <SubcontractorAccess projectId={projectId} />
       <DraftRecovery projectId={projectId} />
     </div>

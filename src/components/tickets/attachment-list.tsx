@@ -3,7 +3,7 @@ import type {AttachmentRecord} from '@/lib/contracts';
 import {AdministrationRecords,AdministrationSection} from '@/components/ui/administration-records';
 export function AttachmentList({attachments}:{attachments:AttachmentRecord[]}){
  if(!attachments.length)return <p className="muted">No attachments uploaded.</p>;
- return <AdministrationSection title="Attachment records" open><AdministrationRecords label="attachments" rows={attachments} id={a=>a.id} columns={[
+ return <AdministrationSection title="Attachment Records" open><AdministrationRecords label="attachments" rows={attachments} id={a=>a.id} columns={[
  {key:'filename',label:'File',text:a=>a.filename},
  {key:'purpose',label:'Purpose',text:a=>a.purpose==='REQUEST_INSTRUCTION'?'Request instruction':'Field support / evidence'},
  {key:'type',label:'Type',text:a=>a.mimeType},

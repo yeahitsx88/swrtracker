@@ -1,4 +1,5 @@
 'use client';
+import {HeadingHelp} from '@/components/ui/heading-help';
 
 import {RecordCollection} from '@/components/ui/record-collection';
 import { useRef, useState } from 'react';
@@ -53,8 +54,7 @@ export function DraftRecovery({ projectId }: { projectId:string }) {
         <PaginationControls offset={offset} limit={limit} total={page.total} onChange={next => { if (!locked) void load(next); }} />
       </> : null}
       {selected ? <section className="stack" aria-label="Confirm draft recovery">
-        <h3>Restore {selected.requesterName}’s draft?</h3>
-        <p>The requester must still be an active Requester on this project. This restores saved progress, not a submitted request. Archived projects remain read-only.</p>
+        <HeadingHelp label="Restore Draft" heading={<h3>Restore {selected.requesterName}’s Draft?</h3>} help={<span>The requester must still be an active Requester on this project. This restores saved progress, not a submitted request. Archived projects remain read-only.</span>}/>
         <Field label="Recovery reason (at least 10 characters)"><Textarea disabled={locked || stale} value={reason} onChange={event => setReason(event.target.value)} /></Field>
         {stale ? <p role="status">This record changed. Refresh the recovery list before proceeding.</p> : null}
         {attempt.current.pending ? <p role="status">Recovery is unconfirmed. Retry the same action before changing the reason or refreshing.</p> : null}

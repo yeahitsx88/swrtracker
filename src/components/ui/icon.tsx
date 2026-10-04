@@ -1,7 +1,7 @@
 /** Small stroke icons drawn for this interface. Decorative unless a label is supplied. */
 export type IconName =
   | 'home' | 'plus' | 'list' | 'draft' | 'gauge' | 'team' | 'search' | 'crew' | 'check' | 'settings'
-  | 'pin' | 'calendar' | 'alert' | 'user' | 'chevron' | 'back' | 'refresh' | 'flag' | 'file' | 'clock';
+  | 'pin' | 'calendar' | 'alert' | 'user' | 'chevron' | 'back' | 'refresh' | 'flag' | 'file' | 'clock' | 'help';
 
 const paths: Record<IconName, string> = {
   home: 'M3 11l9-8 9 8M5 10v11h5v-7h4v7h5V10',
@@ -24,6 +24,7 @@ const paths: Record<IconName, string> = {
   flag: 'M5 21V4M5 4h11l-2 4 2 4H5',
   file: 'M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5',
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9a2.5 2.5 0 1 1 4.4 1.6c-1.1.7-1.9 1.2-1.9 2.4M12 16.5h.01',
 };
 
 export function Icon({ name, size = 18, label, className }: { name: IconName; size?: number; label?: string; className?: string }) {

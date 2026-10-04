@@ -40,3 +40,4 @@
 .record-scrollable .administration-table thead { position: sticky; top: 0; z-index: 1; background: var(--bg-elevated); }
 .chart-review-action { white-space: nowrap; gap: .4rem; min-height: 44px; padding: .4rem .65rem; font-size: .8rem; color: var(--action); }
 .chart-review-action .icon { width: 16px; height: 16px; flex-shrink: 0; }
+.record-caption-heading { display:inline-flex; align-items:center; gap:.25rem; }
