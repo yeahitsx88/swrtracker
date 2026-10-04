@@ -1,0 +1,34 @@
+'use client';
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {apiRequest} from '@/lib/apiClient';
+import {ApiClientError,getErrorMessage} from '@/lib/errors';
+import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
+import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
+import {AdministrationRecords} from './administration-records';
+type Template={id:string;name:string;crewBuild:string;aorDepth:number;aorLevelLabels:string[];disciplineGroups:string[]};
+type InputTemplate={name:string;crewBuild:string;aorDepth:number;aorLevelLabels:string[];disciplineGroups:string[]};
+const crewLabels:Record<string,string>={FULL:'Full — Superintendent, Party Chief, Instrument Man',MEDIUM:'Medium — Party Chief, Instrument Man',SLIM:'Slim — Instrument Man'};
+export function ProjectTemplates({owner}:{owner:CommandOwner}){
+ const token='project-template';useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
+ const gate=useRef(new FrozenCommand<InputTemplate>());
+ const [templates,setTemplates]=useState<Template[]>([]),[name,setName]=useState(''),[crewBuild,setCrew]=useState('FULL'),[labels,setLabels]=useState('Area'),[groups,setGroups]=useState('Survey'),[open,setOpen]=useState(false),[step,setStep]=useState(0),[consent,setConsent]=useState(false),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[loading,setLoading]=useState(true);
+ const [,rerender]=useState(0);const blocked=owner.blocked(token),locked=blocked||gate.current.locked;
+ async function load(){setLoading(true);try{setTemplates((await apiRequest<{templates:Template[]}>('/api/project-templates')).templates);}catch(e){setError(getErrorMessage(e,'Unable to load project templates.'));}finally{setLoading(false);}}
+ useEffect(()=>{void load();},[]);
+ const levelLabels=labels.split('\n').map(v=>v.trim()).filter(Boolean),disciplineGroups=groups.split('\n').map(v=>v.trim()).filter(Boolean);
+ async function submit(){if(!consent||!owner.claim(token))return;const attempt=gate.current.begin({name:name.trim(),crewBuild,aorDepth:levelLabels.length,aorLevelLabels:levelLabels,disciplineGroups},crypto.randomUUID());if(!attempt)return;rerender(n=>n+1);setError(undefined);
+ try{await apiRequest('/api/project-templates',{method:'POST',body:attempt.body,headers:{'Idempotency-Key':attempt.key}});gate.current.success();owner.release(token);setSuccess(`${attempt.body.name} is ready to use when creating or setting up a project.`);setOpen(false);setStep(0);setName('');setConsent(false);void load();}
+ catch(e){gate.current.fail(e instanceof ApiClientError?e.status:undefined);if(!gate.current.locked)owner.release(token);setError(getErrorMessage(e,'Outcome uncertain. Retry the unchanged template.'));}finally{rerender(n=>n+1);}}
+ return <Card title="Project Templates" description="Central IT defines reusable crew builds, Area levels and discipline groups. Applying a template retains the existing project setup."><div className="stack">
+ {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>}
+ {!open?<Button disabled={blocked||loading} onClick={()=>setOpen(true)}>Create Project Template</Button>:<section className="administration-wizard stack" aria-label="Create Project Template Wizard">
+ <ol className="administration-wizard-steps">{['Template Details','Structure','Review'].map((label,i)=><li key={label} aria-current={step===i?'step':undefined}>{label}</li>)}</ol>
+ {step===0&&<><label className="field"><span className="field-label">Template name</span><Input maxLength={160} value={name} disabled={locked} onChange={e=>setName(e.target.value)}/></label><label className="field"><span className="field-label">Crew build</span><select className="select" value={crewBuild} disabled={locked} onChange={e=>setCrew(e.target.value)}>{Object.entries(crewLabels).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select></label></>}
+ {step===1&&<><label className="field"><span className="field-label">Area level labels, one per line (top to bottom)</span><textarea className="input" rows={4} maxLength={1000} value={labels} disabled={locked} onChange={e=>setLabels(e.target.value)}/></label><label className="field"><span className="field-label">Discipline groups, one per line</span><textarea className="input" rows={4} maxLength={1000} value={groups} disabled={locked} onChange={e=>setGroups(e.target.value)}/></label></>}
+ {step===2&&<><h3 className="panel-title">Review Project Template</h3><dl><dt>Name</dt><dd>{name}</dd><dt>Crew Build</dt><dd>{crewLabels[crewBuild]}</dd><dt>Area Levels</dt><dd>{levelLabels.join(' → ')||'No Area levels'}</dd><dt>Discipline Groups</dt><dd>{disciplineGroups.join(', ')||'None'}</dd></dl><label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={e=>setConsent(e.target.checked)}/><span>I confirm this shared tenant template.</span></label>{gate.current.stale&&<p role="alert">State changed. Reload before confirming again.</p>}</>}
+ <div className="row">{step>0&&<Button variant="secondary" disabled={locked} onClick={()=>{setStep(n=>n-1);setConsent(false);}}>Back</Button>}{step<2?<Button disabled={locked||!name.trim()} onClick={()=>setStep(n=>n+1)}>Next</Button>:<Button disabled={blocked||!consent||gate.current.pending||gate.current.stale} onClick={()=>void submit()}>{gate.current.pending?'Creating…':gate.current.command?'Retry Unchanged Template':'Create Template'}</Button>}<Button variant="secondary" disabled={blocked||gate.current.pending||!!gate.current.command&&!gate.current.stale} onClick={()=>{if(gate.current.reload()){owner.release(token);setOpen(false);setStep(0);setConsent(false);setError(undefined);void load();}}}>{gate.current.stale?'Reload Templates':'Cancel'}</Button></div>
+ </section>}
+ {loading&&<p role="status">Loading project templates…</p>}
+ <AdministrationRecords scrollable label="project templates" rows={templates} id={t=>t.id} disabled={locked} columns={[{key:'name',label:'Template',text:t=>t.name},{key:'crew',label:'Crew Build',text:t=>crewLabels[t.crewBuild]??t.crewBuild},{key:'areas',label:'Area Levels',text:t=>t.aorLevelLabels.join(' → ')||'None'},{key:'disciplines',label:'Discipline Groups',text:t=>t.disciplineGroups.join(', ')||'None'}]}/>
+ </div></Card>;
+}

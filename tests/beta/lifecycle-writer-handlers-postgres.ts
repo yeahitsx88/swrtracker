@@ -2,6 +2,7 @@ import {handleOffboarding} from '../../src/app/api/accounts/[userId]/offboarding
 import {POST as resolveReview} from '../../src/app/api/accounts/offboarding-reviews/[reviewId]/route';
 import {POST as setAdmin} from '../../src/app/api/projects/[projectId]/administrators/route';
 import {POST as registerCompany} from '../../src/app/api/projects/[projectId]/companies/route';
+import {POST as createEmployee} from '../../src/app/api/projects/[projectId]/employees/route';
 import {PATCH as selectTemplate} from '../../src/app/api/projects/[projectId]/template/route';
 import assert from 'node:assert/strict';
 import {Pool,type PoolClient} from 'pg';
@@ -95,6 +96,7 @@ async function main(){
    {name:'central-review-resolution',method:'POST',handler:resolveReview,mode:'EXCLUSIVE',body:{reviewId:link,disposition:'NO_FURTHER_ACTION',reason:'Synthetic review decision',tenantEventId:null,snapshot:'a'.repeat(64),confirmed:true}},
    {name:'project-admin-grant',method:'POST',handler:setAdmin,mode:'EXCLUSIVE',body:{userId:chief,enabled:true,confirmed:true}},
    {name:'project-company-register',method:'POST',handler:registerCompany,mode:'EXCLUSIVE',body:{name:'Scoped company',type:'GC',confirmed:true}},
+   {name:'project-employee-create',method:'POST',handler:createEmployee,mode:'EXCLUSIVE',body:{name:'Writer employee',email:'writer-employee@example.test',password:'Writer-Only-Test-2026!',companyId:company,role:'REQUESTER',projectAdmin:false,confirmed:true}},
    {name:'project-template-select',method:'PATCH',handler:selectTemplate,mode:'EXCLUSIVE',body:{templateId:chief,confirmed:true}},
    {name:'project-member-add',method:'POST',handler:addProjectMember,mode:'EXCLUSIVE',body:{userId:chief,role:'REQUESTER'}},
    {name:'tenant-role-grant',method:'POST',handler:(req:NextRequest)=>grantTenantRole(req),mode:'EXCLUSIVE',body:{userId:chief,role:'BILLING_VIEWER'}},

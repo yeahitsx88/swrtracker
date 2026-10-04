@@ -93,3 +93,5 @@ git log --reverse --oneline <common-ancestor>..<latest-design-ref>
 ```
 
 Refresh `changes.json` and `files.md` with the new exact design checkpoint if the branch advances. Git blob IDs in the current manifest can verify that the indexed files match the pinned commit independently of Windows checkout line endings.
+
+- [Administration workflow restoration](administration-restoration.md): owner-requested route pages and employee/member/admin/company/template workflows; current checkpoint and verification status.

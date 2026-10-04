@@ -7,7 +7,8 @@ import { withTransaction } from '@/lib/with-transaction';
  * Both require TENANT_ADMIN.
  */
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
@@ -81,7 +82,9 @@ export async function handlePostProjectTemplates(
     const template = await (deps.withTransaction ?? withTransaction)(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
       const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      if(actorRole!=='TENANT_ADMIN')throw new ForbiddenError('Only Central IT can manage shared project templates');
       const repo = deps.createRepo();
+      const create = async()=>{
       const template = await createProjectTemplate(repo, client, {
       tenantId: auth.tenantId,
       actorId: auth.userId,
@@ -99,6 +102,13 @@ export async function handlePostProjectTemplates(
         changes: { result: template },
       });
       return template;
+      };
+      if(req.headers.has('Idempotency-Key')) {
+        const result=await executeIdempotentHttpMutation(client,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:'POST /api/project-templates',idempotencyKey:requireIdempotencyKey(req)},body,
+          async()=>({status:201,body:{template:await create()}}));
+        return result.body.template;
+      }
+      return create();
     });
     return NextResponse.json({ template }, { status: 201 });
   } catch (err) {
