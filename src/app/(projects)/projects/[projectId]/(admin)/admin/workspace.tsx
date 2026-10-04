@@ -21,6 +21,7 @@ export function AdminProjectWorkspace() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
   const owner=useRef(new CommandOwner()).current;
+  const [companiesRevision,setCompaniesRevision]=useState(0);
   const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const policyToken='request-policy',policy=useRef(new FrozenCommand<ProjectRequestConfig>()).current;
   const [,renderPolicy]=useState(0);
@@ -86,7 +87,7 @@ export function AdminProjectWorkspace() {
   return (
     <AdministrationWorkspace title="Project Administration" description="Manage this project's personnel, companies, settings and recovery. Operational roles and independent administration remain separate." sections={tabs} activeId={activeId}>
       <AdministrationArea id="admin-help-desk"><HelpDesk projectId={projectId} owner={owner}/></AdministrationArea>
-      <ProjectAdministration key={projectId} projectId={projectId} owner={owner}/>
+      <ProjectAdministration key={projectId} projectId={projectId} owner={owner} onCompaniesChanged={()=>setCompaniesRevision(v=>v+1)}/>
       {<AdministrationArea id="admin-settings"><Card
         title="Project Request Configuration"
         description="Manage per-project requester submission and attachment policy."
@@ -140,7 +141,7 @@ export function AdminProjectWorkspace() {
       <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Transfer Area Review Responsibility" description="Before removing or changing a Superintendent, transfer their Area review responsibility to a replacement. This keeps unfinished requests covered; it does not transfer crew membership or remove access."><ProtectedSurveyObligations key={projectId} projectId={projectId} owner={owner}/></Card>
       <DraftRecovery projectId={projectId} owner={owner} /></AdministrationArea>
       <AdministrationArea id="admin-access-recovery"><MemberAccessRecovery projectId={projectId} owner={owner} readOnly={loading||archived}/></AdministrationArea>
-      <AdministrationArea id="admin-companies"><SubcontractorAccess projectId={projectId} owner={owner}/></AdministrationArea>
+      <AdministrationArea id="admin-companies"><SubcontractorAccess projectId={projectId} owner={owner} companiesRevision={companiesRevision}/></AdministrationArea>
     </AdministrationWorkspace>
   );
 }

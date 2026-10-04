@@ -7,8 +7,9 @@ import type {DbClient,UUID} from '@/shared/types';
 import {ConflictError,ForbiddenError,NotFoundError,ValidationError} from '@/shared/errors';
 import type {Company,CompanyType} from '../domain/types';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
+import {readProjectCompanies} from '../infrastructure/project-companies.reader';
 
-async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:UUID){
+export async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:UUID){
   await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
   const authority=await assertProjectAdministrator(db,auth,projectId);
   const project=(await db.query<{status:string;activated_at:Date|null}>('SELECT status,activated_at FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE',[auth.tenantId,projectId])).rows[0];
@@ -58,4 +59,22 @@ export async function selectProjectTemplate(db:DbClient,auth:AuthContext,project
   await db.query('UPDATE projects SET template_id=$3,crew_build=$4 WHERE tenant_id=$1 AND id=$2',[auth.tenantId,projectId,templateId,template.crew_build]);
   await appendAdministrativeEvent(db,{auth,projectId,subjectUserId:null,eventType:'project.configuration_changed',authorityEvidence:{centralIT:authority.centralIT},
     changes:{resource:'TEMPLATE_SELECTION',templateId,crewBuild:template.crew_build,existingSetupPreserved:true}});
+}
+
+/** Remove only the reviewed project associations; tenant companies and all history remain. */
+export async function removeProjectCompanies(db:DbClient,auth:AuthContext,projectId:UUID,selected:Array<{id:UUID;associatedAt:string}>):Promise<{removed:number}>{
+  const {authority}=await authorizeWritable(db,auth,projectId);
+  const current=await readProjectCompanies(db,auth.tenantId,projectId);
+  const records=selected.map(selection=>{
+    const company=current.find(c=>c.id===selection.id);
+    if(!company)throw new ConflictError('A selected company is no longer associated with this project. Reload companies and review again.');
+    if(company.associatedAt!==selection.associatedAt)throw new ConflictError('A selected company association changed. Reload companies and review again.');
+    if(company.members||company.invitations||company.grants)throw new ConflictError(`${company.name} still has ${company.members} enabled project membership(s), ${company.invitations} pending invitation(s) and ${company.grants} active authority grant(s). Resolve these before removing the company. No selected companies were removed.`);
+    return company;
+  });
+  // All selected dependencies pass before any effect; the held EXCLUSIVE barrier serializes access writers.
+  await db.query('DELETE FROM project_companies WHERE tenant_id=$1 AND project_id=$2 AND company_id=ANY($3::uuid[])',[auth.tenantId,projectId,records.map(c=>c.id)]);
+  for(const company of records)await appendAdministrativeEvent(db,{auth,projectId,subjectUserId:null,eventType:'project.company_removed',
+    authorityEvidence:{centralIT:authority.centralIT},changes:{companyId:company.id,name:company.name,type:company.type,associatedAt:company.associatedAt,associatedBy:company.associatedBy,associationScope:projectId,tenantCompanyPreserved:true,historyPreserved:true}});
+  return {removed:records.length};
 }

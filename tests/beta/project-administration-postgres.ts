@@ -7,7 +7,7 @@ import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
 import {resolveDepartmentMembershipActorRole,handlePostDepartmentMembers} from '../../src/app/api/projects/[projectId]/departments/[departmentId]/members/handler';
 import {POST as members} from '../../src/app/api/projects/[projectId]/members/route';
-import {POST as companies,GET as readCompanies} from '../../src/app/api/projects/[projectId]/companies/route';
+import {POST as companies,GET as readCompanies,DELETE as removeCompanies} from '../../src/app/api/projects/[projectId]/companies/route';
 import {POST as administrators} from '../../src/app/api/projects/[projectId]/administrators/route';
 import {PATCH as template} from '../../src/app/api/projects/[projectId]/template/route';
 import {GET as diagnostics} from '../../src/app/api/projects/[projectId]/diagnostics/route';
@@ -40,6 +40,41 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   const duplicateCompanies=await count('companies'),duplicateEvents=await count('administrative_events');
   for(const name of ['Local company','  LOCAL   COMPANY  ','Local\tcompany'])await expect(await companies(req({name,type:'SUBCONTRACTOR',confirmed:true}),ctx()),409);
   assert.equal(await count('companies'),duplicateCompanies);assert.equal(await count('administrative_events'),duplicateEvents);checks+=2;
+  // Selected company removal is atomic, versioned, scoped and preserves tenant records.
+  const removable=[];
+  for(const name of ['Removal one','Removal two'])removable.push((await expect(await companies(req({name,type:'GC',confirmed:true}),ctx()))).company.id);
+  const review=async(ids:string[])=>{const records=await expect(await readCompanies(req(undefined,randomUUID(),'GET'),ctx()));return {companies:records.companies.filter((c:{id:string})=>ids.includes(c.id)).map((c:{id:string;associatedAt:string})=>({id:c.id,associatedAt:c.associatedAt})),confirmed:true};};
+  const removal=await review(removable),removalKey=randomUUID();
+  await expect(await removeCompanies(req({...removal,confirmed:false},randomUUID(),'DELETE'),ctx()),400);
+  await expect(await removeCompanies(req({companies:[],confirmed:true},randomUUID(),'DELETE'),ctx()),400);
+  await expect(await removeCompanies(req({companies:[removal.companies[0],removal.companies[0]],confirmed:true},randomUUID(),'DELETE'),ctx()),400);
+  await expect(await removeCompanies(req({...removal,companies:removal.companies.map((c:{id:string;associatedAt:string})=>({...c,associatedAt:'stale'}))},randomUUID(),'DELETE'),ctx()),409);
+  const associationCount=await count('project_companies'),auditCount=await count('administrative_events');
+  failAudit=true;await expect(await removeCompanies(req(removal,randomUUID(),'DELETE'),ctx()),500);failAudit=false;
+  assert.equal(await count('project_companies'),associationCount);assert.equal(await count('administrative_events'),auditCount);checks+=2;
+  assert.equal((await expect(await removeCompanies(req(removal,removalKey,'DELETE'),ctx()))).removed,2);checks++;
+  assert.equal((await db.query('SELECT count(*)::int n FROM companies WHERE id=ANY($1::uuid[])',[removable])).rows[0].n,2);checks++;
+  const removalEvents=await count('administrative_events');await expect(await removeCompanies(req(removal,removalKey,'DELETE'),ctx()));assert.equal(await count('administrative_events'),removalEvents);checks++;
+  await expect(await removeCompanies(req({...removal,companies:removal.companies.slice(0,1)},removalKey,'DELETE'),ctx()),409);
+  await expect(await removeCompanies(req(removal,randomUUID(),'DELETE'),ctx()),409);
+  await expect(await companies(req({companyId:removable[0],confirmed:true}),ctx()));
+  // This route harness shares one outer transaction; advance NOW()'s otherwise fixed timestamp to model a later association.
+  await db.query("UPDATE project_companies SET associated_at=associated_at+interval '1 microsecond' WHERE company_id=$1",[removable[0]]);
+  await expect(await removeCompanies(req({companies:[removal.companies[0]],confirmed:true},randomUUID(),'DELETE'),ctx()),409);
+  const blockedUser=randomUUID();await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Removal dependent','fixture')",[blockedUser,f.tenant,removable[0],blockedUser+'@example.test']);
+  await db.query("INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,'REQUESTER')",[f.project,blockedUser]);
+  let currentRemoval=await review([removable[0]]);await expect(await removeCompanies(req(currentRemoval,randomUUID(),'DELETE'),ctx()),409);
+  await db.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=$2 WHERE id=$1',[blockedUser,f.actor]);await expect(await removeCompanies(req(currentRemoval,randomUUID(),'DELETE'),ctx()),409);
+  await db.query('UPDATE project_memberships SET access_disabled_at=NOW(),access_disabled_by=$2 WHERE user_id=$1',[blockedUser,f.actor]);
+  const invite=randomUUID();await db.query("INSERT INTO invites(id,tenant_id,project_id,company_id,email,role,invited_by,expires_at) VALUES($1,$2,$3,$4,$5,'REQUESTER',$6,NOW()+interval '1 day')",[invite,f.tenant,f.project,removable[0],invite+'@example.test',f.actor]);
+  await expect(await removeCompanies(req(currentRemoval,randomUUID(),'DELETE'),ctx()),409);await db.query('UPDATE invites SET canceled_at=NOW() WHERE id=$1',[invite]);
+  const grant=randomUUID();await db.query("INSERT INTO project_responsibility_grants(id,tenant_id,project_id,user_id,responsibility,granted_by) VALUES($1,$2,$3,$4,'SURVEY_REVIEWER',$5)",[grant,f.tenant,f.project,blockedUser,f.actor]);
+  await expect(await removeCompanies(req(currentRemoval,randomUUID(),'DELETE'),ctx()),409);await db.query('UPDATE project_responsibility_grants SET revoked_at=NOW(),revoked_by=$2 WHERE id=$1',[grant,f.actor]);
+  currentRemoval=await review([removable[0]]);await expect(await removeCompanies(req(currentRemoval,randomUUID(),'DELETE'),ctx()));
+  assert.equal((await db.query('SELECT count(*)::int n FROM project_memberships WHERE user_id=$1',[blockedUser])).rows[0].n,1);assert.equal((await db.query('SELECT count(*)::int n FROM invites WHERE id=$1',[invite])).rows[0].n,1);assert.equal((await db.query('SELECT count(*)::int n FROM project_responsibility_grants WHERE id=$1',[grant])).rows[0].n,1);checks+=3;
+  // Fresh independent authority precedes even a successful recorded removal replay.
+  await db.query('UPDATE project_admin_grants SET revoked_at=NOW(),revoked_by=$2 WHERE user_id=$1',[f.actor,blockedUser]);await expect(await removeCompanies(req(removal,removalKey,'DELETE'),ctx()),403);await db.query('UPDATE project_admin_grants SET revoked_at=NULL,revoked_by=NULL WHERE user_id=$1',[f.actor]);
+  await expect(await removeCompanies(req(removal,randomUUID(),'DELETE'),ctx(f.foreignProject)),404);
   const person=randomUUID();await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Candidate','fixture')",[person,f.tenant,company,person+'@example.test']);
   const choices=await expect(await readCompanies(req(undefined,randomUUID(),'GET'),ctx()));assert.equal(choices.candidates.some((u:{userId:string})=>u.userId===person),true);checks++;
   const memberBody={userId:person,role:'REQUESTER'},memberKey=randomUUID();await expect(await members(req(memberBody,memberKey),ctx()),201);
@@ -102,6 +137,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   await db.query('UPDATE project_admin_grants SET revoked_at=NULL,revoked_by=NULL WHERE user_id=$1',[f.actor]);
   const archiveKey=randomUUID();await expect(await handlePostProjectArchive(req({},archiveKey),ctx()));await expect(await handlePostProjectArchive(req({},archiveKey),ctx()));assert.equal((await db.query('SELECT status FROM projects WHERE id=$1',[localProject])).rows[0].status,'SETUP');checks++;
   await expect(await companies(req({name:'Archived mutation',type:'GC',confirmed:true}),ctx()),409);
+  await expect(await removeCompanies(req(removal,removalKey,'DELETE'),ctx()),409);
   console.log('Project administration PostgreSQL checks passed: '+checks);
  }finally{app.query=oldQuery;app.connect=oldConnect;if(oldSecret===undefined)delete process.env.JWT_SECRET;else process.env.JWT_SECRET=oldSecret;}
 }).catch(error=>{console.error(error);process.exitCode=1;});

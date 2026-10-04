@@ -111,3 +111,5 @@ The current [role/action audit](role-access-audit.md) and [sanitized evidence](.
 Verified final milestone `6944175`: [complete later-increment inventory](role-access-files.md) and [exact Git blob manifest](role-access-changes.json), from restoration reference `4e254cc`. The updated local demo preserves its records and uses additive migrations035/036. The listed-fix review scores both final conditional UI corrections resolved; the source audit still records remaining High workflow gaps.
 
 The subsequent [duplicate company guard](company-name-guard.md) maps both creation paths, UI feedback, concurrency/variant acceptance and source-bound evidence. Include this correction with the role/support increment; existing company records are preserved.
+
+Current company inventory extension: [Selected Project Company Removal](company-removal.md) maps its reviewed project-only removal, dependency checks, retained history, API/module changes and verification. Earlier pinned manifests remain historical snapshots.

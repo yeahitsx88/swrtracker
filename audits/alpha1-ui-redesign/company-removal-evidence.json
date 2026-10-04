@@ -1,0 +1,106 @@
+{
+  "recordedAt": "2026-10-04T19:28:02.555261+00:00",
+  "scope": "Selected project-company association removal",
+  "parentCheckpoint": "fdd66a1",
+  "branch": "alpha1-ui-redesign",
+  "sourceMigrationDigest": "c270a1129385496167ecf1fd3f639d89855deffaea32698018c1e7b3a4aba734",
+  "digestAlgorithm": "SHA256 of sorted repository paths under src and db/migrations, NUL, raw file bytes, NUL",
+  "runtime": "Pinned Node22.23.3 / pnpm11.19.0 production image",
+  "strictTypecheck": "passed, including unused checks",
+  "unitTests": {
+    "passed": 584,
+    "failed": 0
+  },
+  "productionBuild": "passed",
+  "postgresql": {
+    "suitesPassed": 30,
+    "mode": "Owned rollback/uniquely named schemas; shared savepoint route harness models reassociation time explicitly",
+    "cases": [
+      "selected atomic removal and one event per company",
+      "confirmation/body/duplicate-ID validation",
+      "stale association and changed replay body rejection",
+      "fresh revoked admin denied before recorded replay",
+      "foreign project non-disclosure",
+      "enabled project membership even with tenant-disabled account blocks removal",
+      "pending invitation and live responsibility grant block removal",
+      "disabled membership, canceled invitation and revoked grant remain historical",
+      "audit failure rolls back all associations/evidence",
+      "Archived project rejects removal and recorded replay"
+    ]
+  },
+  "httpBrowser": {
+    "passed": 41,
+    "cases": [
+      "Register owned synthetic company",
+      "Register owned synthetic company",
+      "Read scoped companies and dependency counts",
+      "Ordinary member cannot remove companies",
+      "Project Admin cannot remove another project companies",
+      "Foreign company selection reveals no record and changes no association",
+      "Atomic selected removal succeeds",
+      "Each removed association has one event",
+      "Tenant company records preserved",
+      "Exact replay adds no removal event",
+      "Changed replay body rejected",
+      "Tenant Admin can reassociate retained company ID",
+      "Old association consent cannot remove a newly reassociated company",
+      "Register owned synthetic company",
+      "Register owned synthetic company",
+      "Read scoped companies and dependency counts",
+      "Owned pending invitation established",
+      "A new invitation blocks the whole selection with no partial removal",
+      "Register owned synthetic company",
+      "Read scoped companies and dependency counts",
+      "Concurrent removals serialize to one effect and one conflict",
+      "Register owned synthetic company",
+      "Read scoped companies and dependency counts",
+      "Invitation/removal race cannot leave a live invitation for a removed company",
+      "Remove Selected disabled without selection",
+      "Review lists both duplicate-name companies separately",
+      "Removal requires deliberate confirmation",
+      "Reviewed unblocked removal enabled",
+      "company-removal-user-1107 has no page overflow",
+      "company-removal-desktop has no page overflow",
+      "company-removal-mobile has no page overflow",
+      "Lost browser response committed removal",
+      "Uncertain removal cannot be discarded",
+      "Uncertain company removal blocks sibling settings",
+      "Lost-response retry uses exact original body and key",
+      "Lost response/replay persist one event per duplicate-name ID",
+      "Successful removal refreshes company list",
+      "Register owned synthetic company",
+      "Definitive dependency conflict requires deliberate reload",
+      "Reloaded review shows invitation blocker and disables removal",
+      "company-removal-blocked-user-1107 has no page overflow"
+    ],
+    "mode": "Separate owned synthetic schema; guarded production HTTP plus installed Edge/Playwright",
+    "captureHashes": {
+      ".impeccable/review/company-removal-user-1107.png": "a635fb81bbb771c08fb3d1d1e3565783f7b434e061035a9652e36ea9d542582e",
+      ".impeccable/review/company-removal-desktop.png": "43d0c9c07d95509621ca7619d8c49354af07f253e6671b5eb0ccfd6ea4a57df2",
+      ".impeccable/review/company-removal-mobile.png": "ba9d80849e10ae18bfbce044cb9710457c2a741588d7d4603446d67687b7c7f1",
+      ".impeccable/review/company-removal-blocked-user-1107.png": "3f2f16901da4b5916caa7fa4a353919b849ec6a703e305ec1ba254a859c4b208"
+    }
+  },
+  "design": {
+    "disposition": "ship",
+    "scope": "Narrow selected-company removal feature; sampled source and four required captures",
+    "materialFixes": [],
+    "detectorOnce": [],
+    "documenter": "Ordinary extension; incumbent DESIGN and sidecar preserved"
+  },
+  "retainedDemo": {
+    "port": 3124,
+    "imageRefreshed": true,
+    "existingEnvironmentAndFileVolumePreserved": true,
+    "beforeAfterProtectedRowDigests": "matched; includes current companies/project associations, accounts/preferences, requests/events/files, memberships/teams/independent and company/responsibility grants, invitations and administrative history",
+    "actualBrowser": "Existing Alex Rivera session shows three selected companies in the new removal review, each with visible Company ID; consent remains unchecked. No browser mutation performed by agent."
+  },
+  "limitations": [
+    "No tenant-company hard deletion or historical duplicate consolidation",
+    "No automatic access/grant/obligation removal",
+    "Operator SQL remains outside application guards",
+    "Test fixture/runtime provisioning remains local and explicitly owned",
+    "Unchanged administration areas not covered by narrow finish review",
+    "No push, merge or Alpha2 initialization"
+  ]
+}

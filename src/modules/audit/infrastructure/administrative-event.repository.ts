@@ -3,7 +3,7 @@ import type {AuthContext} from '@/lib/auth';
 import type {DbClient,UUID} from '@/shared/types';
 export type AdministrativeEventType =
   | 'project.member_added' | 'project.role_changed' | 'project.admin_granted' | 'project.admin_revoked'
-  | 'project.company_registered' | 'project.company_associated' | 'project.archived' | 'project.activated'
+  | 'project.company_registered' | 'project.company_associated' | 'project.company_removed' | 'project.archived' | 'project.activated'
   | 'project.configuration_changed' | 'tenant.membership_changed' | 'tenant.membership_removed'
   | 'user.invited' | 'user.registered' | 'user.provisioned' | 'password.reset_requested' | 'password.reset_completed'
   | 'session.logged_out' | 'tenant.company_created' | 'project.created'

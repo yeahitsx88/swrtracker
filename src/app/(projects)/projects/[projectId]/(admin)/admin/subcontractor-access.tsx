@@ -12,7 +12,7 @@ import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
 import {apiRequest} from '@/lib/apiClient';
 import { Field } from '@/components/forms';
 
-export function SubcontractorAccess({ projectId,owner }: { projectId: string;owner:CommandOwner }) {
+export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { projectId: string;owner:CommandOwner;companiesRevision?:number }) {
   const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const token='subcontractor-invite',gate=useRef(new FrozenCommand<{companyId:string;email:string}>()).current;
   const [,render]=useState(0);const blocked=owner.blocked(token);
@@ -31,13 +31,13 @@ export function SubcontractorAccess({ projectId,owner }: { projectId: string;own
       const next = await apiClient.getProjectCompanyAccess(projectId);
       setOverview(next);
       const context=await apiRequest<{project:{status:string}}>(`/api/projects/${projectId}/template`);setArchived(context.project.status==='ARCHIVED');
-      setCompanyId((current) => current || next.companies[0]?.id || '');
+      setCompanyId((current) => next.companies.some(c=>c.id===current)?current:next.companies[0]?.id || '');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load subcontractor access.'));
     }
   }, [projectId]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); }, [load,companiesRevision]);
 
   async function invite() {
     if(archived||busy!==null||!owner.claim(token))return;
