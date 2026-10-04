@@ -1,0 +1,7 @@
+.administration-dialog { --popout-inset:1.25rem; width:min(680px,calc(100vw - 2rem)); max-height:calc(100dvh - 2rem); padding:0; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius-panel); background:var(--bg-elevated); color:var(--ink); }
+.administration-dialog::backdrop { background:rgb(24 38 50 / 48%); }
+.administration-dialog .popout-header h2 { min-width:0; overflow-wrap:anywhere; }
+.administration-dialog .popout-header .button { flex-shrink:0; width:44px; padding:.5rem; }
+.administration-dialog .popout-body { overflow-wrap:anywhere; }
+.administration-dialog .row { flex-wrap:wrap; }
+@media(max-width:600px){.administration-dialog { --popout-inset:1rem; width:calc(100vw - 1rem); max-height:calc(100dvh - 1rem); }}

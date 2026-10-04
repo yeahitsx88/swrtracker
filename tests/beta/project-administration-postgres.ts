@@ -8,7 +8,7 @@ import {signToken} from '../../src/lib/auth';
 import {resolveDepartmentMembershipActorRole,handlePostDepartmentMembers} from '../../src/app/api/projects/[projectId]/departments/[departmentId]/members/handler';
 import {POST as members} from '../../src/app/api/projects/[projectId]/members/route';
 import {POST as companies,GET as readCompanies,DELETE as removeCompanies} from '../../src/app/api/projects/[projectId]/companies/route';
-import {POST as administrators} from '../../src/app/api/projects/[projectId]/administrators/route';
+import {POST as administrators,GET as readAdministrators} from '../../src/app/api/projects/[projectId]/administrators/route';
 import {PATCH as template} from '../../src/app/api/projects/[projectId]/template/route';
 import {GET as diagnostics} from '../../src/app/api/projects/[projectId]/diagnostics/route';
 import {GET as discovery} from '../../src/app/api/projects/administration/route';
@@ -35,6 +35,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  const expect=async(response:Response,status=200)=>{assert.equal(response.status,status,JSON.stringify(await response.clone().json()));checks++;return response.json();};
  const count=async(table:string)=>(await db.query('SELECT count(*)::int AS n FROM '+table)).rows[0].n;
  try{
+  await expect(await readAdministrators(req(undefined,randomUUID(),'GET'),ctx()),403);
   const registered=await expect(await companies(req({name:'Local company',type:'GC',confirmed:true}),ctx()));
   const company=registered.company.id;assert.equal(await count('project_companies'),1);checks++;
   const duplicateCompanies=await count('companies'),duplicateEvents=await count('administrative_events');
@@ -82,6 +83,7 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   await expect(await members(req({userId:person,role:'SURVEY_MANAGER'}),ctx()),409);
   const grantBody={userId:person,enabled:true,confirmed:true},grantKey=randomUUID();await expect(await administrators(req(grantBody,grantKey),ctx()),403);
   await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.actor]);await expect(await administrators(req(grantBody,grantKey),ctx()));
+  await expect(await readAdministrators(req(undefined,randomUUID(),'GET'),ctx()));
   await expect(await tenantCompany(req({name:' LOCAL   company ',type:'GC'})),409);
   assert.equal((await db.query('SELECT role FROM project_memberships WHERE user_id=$1',[person])).rows[0].role,'REQUESTER');checks++;
   assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[person])).rows[0].session_version,3);checks++;

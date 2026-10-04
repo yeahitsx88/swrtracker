@@ -5,9 +5,10 @@ import './administration-records.css';
 import {HeadingHelp,HelpHint} from './heading-help';
 import {headingCase} from '@/lib/heading-case';
 
-export function AdministrationSection({title,description,children,open=false,locked=false}:{title:string;description?:ReactNode;children:ReactNode;open?:boolean;locked?:boolean}){
+export function AdministrationSection({title,description,children,open=false,locked=false,level=3}:{title:string;description?:ReactNode;children:ReactNode;open?:boolean;locked?:boolean;level?:2|3}){
  const [expanded,setExpanded]=useState(open);
- const heading=<h3 className="panel-title"><button type="button" className="administration-disclosure" aria-expanded={expanded} disabled={locked} onClick={()=>setExpanded(v=>!v)}>{headingCase(title)}<span aria-hidden="true">{expanded?'−':'+'}</span></button></h3>;
+ const Heading=level===2?'h2':'h3';
+ const heading=<Heading className="panel-title"><button type="button" className="administration-disclosure" aria-expanded={expanded} disabled={locked} onClick={()=>setExpanded(v=>!v)}>{headingCase(title)}<span aria-hidden="true">{expanded?'−':'+'}</span></button></Heading>;
  return <section className="administration-section">{description?<HeadingHelp label={headingCase(title)} heading={heading} help={description}/>:heading}<div hidden={!expanded} className="stack administration-section-content">{children}</div></section>;
 }
 export interface RecordColumn<T>{key:string;label:string;className?:string;text:(row:T)=>string;render?:(row:T)=>ReactNode}

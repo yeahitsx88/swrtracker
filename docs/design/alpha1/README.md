@@ -113,3 +113,5 @@ Verified final milestone `6944175`: [complete later-increment inventory](role-ac
 The subsequent [duplicate company guard](company-name-guard.md) maps both creation paths, UI feedback, concurrency/variant acceptance and source-bound evidence. Include this correction with the role/support increment; existing company records are preserved.
 
 Current company inventory extension: [Selected Project Company Removal](company-removal.md) maps its reviewed project-only removal, dependency checks, retained history, API/module changes and verification. Earlier pinned manifests remain historical snapshots.
+
+Latest administration refinement: [Pop-ups and Task Refinements](administration-dialogs.md) maps native company review dialogs, collapsible inventories, sidebar-only Help Desk, Tenant Admin-only assignment roster and its matching verification.

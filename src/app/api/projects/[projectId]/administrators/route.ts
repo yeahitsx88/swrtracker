@@ -13,7 +13,8 @@ import type {UUID} from '@/shared/types';
 export const dynamic='force-dynamic';
 type Context={params:Promise<{projectId:string}>};
 async function observedGET(req:NextRequest,ctx:Context){try{
-  const auth=await requireActiveAuth(req),{projectId}=await ctx.params;requireResourceUuid(projectId,'projectId');await assertProjectAdministrator(pool,auth,projectId as UUID);
+  const auth=await requireActiveAuth(req),{projectId}=await ctx.params;requireResourceUuid(projectId,'projectId');
+  if(!(await assertProjectAdministrator(pool,auth,projectId as UUID)).centralIT)throw new ForbiddenError('Project Admin assignments are managed by Tenant Admin. Use the project member roster.');
   const limit=Number(req.nextUrl.searchParams.get('limit')??100),offset=Number(req.nextUrl.searchParams.get('offset')??0);
   if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0)throw new ValidationError('Invalid administrator page');
   const {rows}=await pool.query(`SELECT pm.user_id AS "userId",u.name,u.email,pm.role,pm.access_disabled_at AS "accessDisabledAt",u.deactivated_at AS "accountDisabledAt",

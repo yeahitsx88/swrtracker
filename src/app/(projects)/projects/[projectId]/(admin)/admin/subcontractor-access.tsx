@@ -98,7 +98,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
             {batch&&<AdministrationBatch actions={batch} owner={owner} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setSelected([]);void load();}}/>}
             </AdministrationSection>
 
-            <h3>Pending Invitations</h3>
+            <AdministrationSection title="Pending Invitations" locked={ownerToken!==null}>
             {overview.pendingInvites.length === 0 ? <p className="muted">No active invitations.</p> : null}
             <RecordCollection label="pending invitations" records={<>{overview.pendingInvites.map((inviteRecord) => (
               <div key={inviteRecord.id}>
@@ -108,6 +108,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
                 </div>
               </div>
             ))}</>}/>
+            </AdministrationSection>
           </>
         ) : null}
       </div>

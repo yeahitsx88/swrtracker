@@ -14,7 +14,6 @@ import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
 import {useAdministrationProgress} from '@/lib/use-administration-progress';
 import type {ProjectRequestConfig,ProjectRequestConfigResponse} from '@/lib/contracts/projects';
 import {ProjectAdministration} from '@/components/ui/project-administration';
-import {HelpDesk} from '@/components/ui/help-desk';
 import {MemberAccessRecovery} from '@/components/ui/member-access-recovery';
 
 export function AdminProjectWorkspace() {
@@ -30,8 +29,8 @@ export function AdminProjectWorkspace() {
   useAdministrationProgress(owner,base);
   const policyBlocked=owner.blocked(policyToken),policyLocked=policy.locked||policyBlocked;
   void ownerToken;
-  const tabs = [{id:'admin-personnel',label:'Personnel',href:base},{id:'admin-help-desk',label:'Help Desk',href:base+'/help-desk'},{id:'admin-companies',label:'Companies',href:base+'/companies'},{id:'admin-settings',label:'Project Settings',href:base+'/settings'},{id:'admin-access-recovery',label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',label:'Diagnostics',href:base+'/diagnostics'}];
-  const activeId = pathname===base+'/administrators'?'admin-help-desk':pathname===base+'/request-policy'?'admin-settings':tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
+  const tabs = [{id:'admin-personnel',label:'Personnel',href:base},{id:'admin-companies',label:'Companies',href:base+'/companies'},{id:'admin-settings',label:'Project Settings',href:base+'/settings'},{id:'admin-access-recovery',label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',label:'Diagnostics',href:base+'/diagnostics'}];
+  const activeId = pathname===base+'/request-policy'?'admin-settings':tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
 
   const [leadTimeEnforcementEnabled, setLeadTimeEnforcementEnabled] = useState(true);
   const [leadTimeDays, setLeadTimeDays] = useState(2);
@@ -86,7 +85,6 @@ export function AdminProjectWorkspace() {
 
   return (
     <AdministrationWorkspace title="Project Administration" description="Manage this project's personnel, companies, settings and recovery. Operational roles and independent administration remain separate." sections={tabs} activeId={activeId}>
-      <AdministrationArea id="admin-help-desk"><HelpDesk projectId={projectId} owner={owner}/></AdministrationArea>
       <ProjectAdministration key={projectId} projectId={projectId} owner={owner} onCompaniesChanged={()=>setCompaniesRevision(v=>v+1)}/>
       {<AdministrationArea id="admin-settings"><Card
         title="Project Request Configuration"
