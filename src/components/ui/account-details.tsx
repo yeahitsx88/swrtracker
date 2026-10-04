@@ -5,20 +5,22 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { MyAccount } from '@/modules/tenancy/application/my-account';
+import {useProjectWorkspace} from './project-shell-header';
 
 export function AccountDetails({ assignments = false }: { assignments?: boolean }) {
+  const workspace = useProjectWorkspace();
   const [account, setAccount] = useState<MyAccount>();
   const [projectId, setProjectId] = useState<string>();
   const [error, setError] = useState<string>();
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
-    const id = new URLSearchParams(window.location.search).get('projectId') ?? undefined;
+    const id = new URLSearchParams(window.location.search).get('projectId') ?? workspace?.project.id;
     setProjectId(id); setAccount(undefined); setError(undefined);
     apiClient.getMyAccount(assignments ? id : undefined).then(result => { if (active) setAccount(result); })
       .catch(cause => { if (active) setError(getErrorMessage(cause, 'Unable to load your account. Please retry.')); });
     return () => { active = false; };
-  }, [assignments, revision]);
+  }, [assignments, revision, workspace?.project.id]);
   const assignment = account?.assignment;
   return <section className="panel stack">
     <h1 className="panel-title">{assignments ? 'Assignment Details' : 'Profile'}</h1>

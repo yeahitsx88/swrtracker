@@ -25,14 +25,14 @@
 .home-dashboard-grid .panel-header.has-actions > .panel-heading { flex-basis: auto; }
 .home-dashboard-grid .text-link { font-size: .8rem; min-height: 44px; display: inline-flex; align-items: center; }
 .home-record-scope { color: var(--muted); font-size: .75rem; margin: 0 0 .5rem; }
-.home-records .administration-table { table-layout: fixed; min-width: 380px; font-size: .8rem; }
+.home-records .administration-table { table-layout: fixed; min-width: 640px; font-size: .8rem; }
 .home-records .administration-table td { min-width: 0; }
 .home-records .administration-table :is(th,td):first-child { width: 30px; }
 .home-records .home-reference-column { width: 94px; }
 .home-records .home-reference-column .text-link { white-space: nowrap; }
-.home-records .home-status-column { width: 100px; }
+.home-records .home-status-column { width: 220px; }
 .home-records .home-date-column { width: 92px; white-space: nowrap; }
-.home-records .badge { display: block; width: fit-content; max-width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; }
+.home-records .badge { display: block; width: max-content; box-sizing: border-box; white-space: nowrap; }
 :root .home-workspace .tone-planned { color: var(--ink); }
 .home-records .administration-table td { padding: 0 .35rem; vertical-align: middle; }
 .home-records .administration-table th { padding: 0 .35rem; }
@@ -57,7 +57,7 @@
   .home-dashboard-grid, .home-dashboard-grid[data-audience=survey] { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 599px) {
-  .home-records .administration-table { min-width: 480px; }
+  .home-records .administration-table { min-width: 640px; }
   .home-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .home-stat:nth-child(3) { border-left: 0; }
   .home-stat:nth-child(n+3) { border-top: 1px solid var(--line); }

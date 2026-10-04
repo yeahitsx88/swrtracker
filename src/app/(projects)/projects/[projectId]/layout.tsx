@@ -1,18 +1,6 @@
-import type { ReactNode } from 'react';
-import { ProjectShellHeader } from '@/components/ui';
+import type {ReactNode} from 'react';
 
-export default async function ProjectLayout(
-  {
-    children,
-    params,
-  }: {
-    children: ReactNode;
-    params: Promise<{ projectId: string }>;
-  },
-) {
-  const { projectId } = await params;
-
-  return (
-    <ProjectShellHeader projectId={projectId}>{children}</ProjectShellHeader>
-  );
+// AccountShell owns the shared workspace on project and account destinations.
+export default function ProjectLayout({children}:{children:ReactNode}) {
+  return children;
 }

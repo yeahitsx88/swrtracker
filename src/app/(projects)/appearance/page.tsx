@@ -1,4 +1,7 @@
 'use client';
+import Link from 'next/link';
+import {Icon} from '@/components/ui/icon';
+import {useProjectWorkspace} from '@/components/ui/project-shell-header';
 import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import {useEffect,useRef,useState} from 'react';
 import {Button,Card,ErrorBanner,SuccessBanner} from '@/components/ui';
@@ -6,6 +9,9 @@ import {AdministrationSection} from '@/components/ui/administration-records';
 import {applyAppearance} from '@/components/ui/appearance-theme';
 import type {Appearance,DisplayMode} from '@/modules/identity/application/appearance';
 export default function AppearancePage(){
+ const workspace=useProjectWorkspace();
+ const [returnTo,setReturnTo]=useState<string>();
+ useEffect(()=>{const candidate=new URLSearchParams(window.location.search).get('returnTo');if(candidate&&/^\/(?:projects(?:[/?]|$)|profile(?:[?]|$)|assignment-details(?:[?]|$))/.test(candidate))setReturnTo(candidate);},[]);
  const [data,setData]=useState<Appearance>(),[mode,setMode]=useState<DisplayMode>('SYSTEM'),[primary,setPrimary]=useState('#315f85'),[accent,setAccent]=useState('#ffa500'),[busy,setBusy]=useState(false),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[stale,setStale]=useState(false);
  const attempt=useRef<{key:string;body:unknown}|undefined>(undefined);
  function accept(value:Appearance){setData(value);setMode(value.mode);setPrimary(value.branding.primary);setAccent(value.branding.accent);applyAppearance(value);window.dispatchEvent(new CustomEvent('swr-appearance',{detail:value}));}
@@ -19,7 +25,7 @@ export default function AppearancePage(){
  }
  useUnsavedProgress(busy||!!attempt.current);
  const locked=busy||!!attempt.current||stale;
- return <div className="stack appearance-page"><Card title="Appearance" description="Choose how SWRTracker looks for your account."><div className="stack">
+ return <div className="stack appearance-page"><div><Link className="app-link" href={returnTo??(workspace?`/projects/${workspace.project.id}/home`:'/projects')}><Icon name="back"/>Back</Link></div><Card title="Appearance" description="Choose how SWRTracker looks for your account."><div className="stack">
  {!data&&!error?<p role="status">Loading appearance…</p>:null}{error?<ErrorBanner message={error}/>:null}{success?<SuccessBanner message={success}/>:null}
  {data?<><fieldset disabled={locked} className="appearance-modes"><legend>Display mode</legend>{(['LIGHT','DARK','SYSTEM'] as DisplayMode[]).map(value=><label key={value}><input type="radio" name="display-mode" value={value} checked={mode===value} onChange={()=>setMode(value)}/><span>{value==='SYSTEM'?'Use device setting':value==='DARK'?'Dark':'Light'}</span></label>)}</fieldset><p className="muted">This preference follows your account. Company branding is shared across your tenant.</p><Button disabled={busy||stale||!!attempt.current} onClick={()=>void save('PERSONAL')}>Save display mode</Button></>:null}
  {!!attempt.current&&!busy?<Button onClick={()=>void save((attempt.current!.body as {scope:'PERSONAL'|'TENANT'}).scope)}>Retry unchanged setting</Button>:null}

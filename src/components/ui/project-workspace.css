@@ -1,5 +1,5 @@
-.application-shell:has(.project-workspace) .app-nav-inner { max-width: 1600px; }
-.application-shell:has(.project-workspace) main { width: min(100%, 1600px); padding: 0; }
+.application-shell:has(.project-workspace) .app-nav-inner { width: 100%; max-width: none; }
+.application-shell:has(.project-workspace) main { width: 100%; margin: 0; padding: 0; }
 .project-workspace { display: grid; grid-template-columns: 224px minmax(0, 1fr); min-height: calc(100dvh - 67px); }
 .project-sidebar { background: var(--bg-elevated); border-right: 1px solid var(--line); padding: 1.25rem .75rem; position: sticky; top: 67px; height: calc(100dvh - 67px); overflow-y: auto; }
 .workspace-sidebar-title { padding: .25rem .65rem 1.25rem; font-weight: 800; color: var(--ink); }

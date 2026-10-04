@@ -18,13 +18,14 @@ const ProjectContext = createContext<WorkspaceContext | null>(null);
 export const useProjectWorkspace = () => useContext(ProjectContext);
 
 /** Presentation follows current capabilities; destination APIs authorize every read and action. */
-export function ProjectShellHeader({ projectId, children }: { projectId: string; children?: ReactNode }) {
+export function ProjectShellHeader({ projectId, requireProject = true, children }: { projectId?: string; requireProject?: boolean; children?: ReactNode }) {
   const [revision, setRevision] = useState(0);
   const [snapshot, setSnapshot] = useState<{ key: string; context?: WorkspaceContext; error?: string }>();
   const key = `${projectId}:${revision}`;
   const current = snapshot?.key === key ? snapshot : undefined;
   useEffect(() => {
     let active = true;
+    if (!projectId) return;
     async function load() {
       const [{ projects }, { capabilities }] = await Promise.all([
         apiClient.listProjects(), apiRequest<{ capabilities: ProjectCapabilities }>(`/api/projects/${projectId}/capabilities`),
@@ -36,22 +37,27 @@ export function ProjectShellHeader({ projectId, children }: { projectId: string;
       if (!project || (!capabilities.operationalRole && !capabilities.canAdminister)) {
         throw new Error('Current access to this project is unavailable. Return to Projects to review your access.');
       }
-      if (active) setSnapshot({ key, context: { project, capabilities } });
+      if (active) {
+        setSnapshot({ key, context: { project, capabilities } });
+        try { window.sessionStorage.setItem('swr-workspace-project', project.id); } catch { /* Explicit navigation links retain context. */ }
+      }
     }
     load().catch(error => { if (active) setSnapshot({ key, error: getErrorMessage(error, 'Unable to load project navigation. Retry to check current access.') }); });
     return () => { active = false; };
   }, [projectId, key]);
 
-  if (!current) return <p className="muted" role="status">Loading your project workspace…</p>;
-  if (!current.context) return <section className="panel stack"><p className="error-banner" role="alert">{current.error}</p><div className="row"><button className="button button-secondary" onClick={() => setRevision(value => value + 1)}>Retry project access</button><Link className="app-link" href="/projects">Return to Projects</Link></div></section>;
-  const { project, capabilities } = current.context;
-  return <ProjectContext.Provider value={current.context}>
+  const context = current?.context;
+  const project = context?.project;
+  const capabilities = context?.capabilities;
+  return <ProjectContext.Provider value={context ?? null}>
     <div className="project-workspace">
-      <ProjectNav projectId={projectId} role={capabilities.operationalRole} canAdminister={capabilities.canAdminister} status={project.status} projectName={project.name} />
+      <ProjectNav projectId={context ? projectId : undefined} role={capabilities?.operationalRole ?? null} canAdminister={capabilities?.canAdminister} status={project?.status ?? 'ACTIVE'} projectName={project?.name ?? 'SWRTracker'} />
       <div className="project-content">
-        <header className="project-context"><div><span className="project-context-name">{project.name}</span><span className="project-context-role">{capabilities.operationalRole ? roleLabel(capabilities.operationalRole) : 'Project administration'}{capabilities.canAdminister && capabilities.operationalRole !== 'PROJECT_ADMIN' ? ' · Project administration' : ''}</span></div><span className="badge badge-neutral">{project.status === 'ACTIVE' ? 'Active project' : project.status === 'ARCHIVED' ? 'Archived · history available' : 'Setup · workflow restricted'}</span></header>
-        {project.status !== 'ACTIVE' && <p className="workspace-state-note">{project.status === 'ARCHIVED' ? 'This project is archived. Authorized history remains available; ordinary work commands are restricted.' : 'This project is in setup or recommissioning preparation. Use the existing administration and work-resolution controls where authorized.'}</p>}
-        <div className="project-page">{children}</div>
+        {project && capabilities && <header className="project-context"><div><span className="project-context-name">{project.name}</span><span className="project-context-role">{capabilities.operationalRole ? roleLabel(capabilities.operationalRole) : 'Project administration'}{capabilities.canAdminister && capabilities.operationalRole !== 'PROJECT_ADMIN' ? ' · Project administration' : ''}</span></div><span className="badge badge-neutral">{project.status === 'ACTIVE' ? 'Active project' : project.status === 'ARCHIVED' ? 'Archived · history available' : 'Setup · workflow restricted'}</span></header>}
+        {project && project.status !== 'ACTIVE' && <p className="workspace-state-note">{project.status === 'ARCHIVED' ? 'This project is archived. Authorized history remains available; ordinary work commands are restricted.' : 'This project is in setup or recommissioning preparation. Use the existing administration and work-resolution controls where authorized.'}</p>}
+        {projectId && !current && <p className="muted" role="status">Loading your project workspace…</p>}
+        {current?.error && <section className="panel stack"><p className="error-banner" role="alert">{current.error}</p><div className="row"><button className="button button-secondary" onClick={() => setRevision(value => value + 1)}>Retry project access</button><Link className="app-link" href="/projects">Return to Projects</Link></div></section>}
+        {(!requireProject || context) && <div className="project-page">{children}</div>}
       </div>
     </div>
   </ProjectContext.Provider>;
