@@ -1,0 +1,769 @@
+{
+  "baseCheckpoint": "4e254ccbd31d30bde8a54554de4ec37582d66fa6",
+  "designCheckpoint": "6944175d76f353fd6ada0493766d6fe0151da9e5",
+  "branch": "alpha1-ui-redesign",
+  "scope": "Later role access and support functional increment; earlier design/restoration manifests remain immutable",
+  "fileCount": 124,
+  "commits": [
+    {
+      "sha": "45a67e320c408386eda63dd900343f742a806b7e",
+      "subject": "feat: checkpoint tenant custom-role wizard and scoped assignments"
+    },
+    {
+      "sha": "72887619869bcbb9ded5ba07a3af64a752523a16",
+      "subject": "feat: checkpoint scoped help desk and administration recovery"
+    },
+    {
+      "sha": "6944175d76f353fd6ada0493766d6fe0151da9e5",
+      "subject": "Complete role audit and reviewed administration support milestone"
+    }
+  ],
+  "files": [
+    {
+      "status": "M",
+      "path": ".impeccable/surfaces/administration-refinement.md",
+      "baseBlob": "f467682280b961f230bc796c4ad8d31611316cd3",
+      "checkpointBlob": "4e918cdd5df9066178ecba91914e4878a34b9c9b"
+    },
+    {
+      "status": "A",
+      "path": "audits/alpha1-ui-redesign/role-access-evidence.json",
+      "baseBlob": null,
+      "checkpointBlob": "c82eea75aeb1809b77b0b6c896e123e4834a4b09"
+    },
+    {
+      "status": "M",
+      "path": "audits/phase5-lifecycle-writers.json",
+      "baseBlob": "b3a25cca14afeeaaab9b2136438832b7dccc5082",
+      "checkpointBlob": "58822a7fd63bae83775fda19d92610d4de087d6c"
+    },
+    {
+      "status": "A",
+      "path": "db/migrations/035_tenant_custom_roles.sql",
+      "baseBlob": null,
+      "checkpointBlob": "03e4cc849818391fff5d4bf85a7ef4ed868e7a6a"
+    },
+    {
+      "status": "A",
+      "path": "db/migrations/036_project_support.sql",
+      "baseBlob": null,
+      "checkpointBlob": "3a595eabec246c0926bc7f2bd32ffb4de01e90f3"
+    },
+    {
+      "status": "M",
+      "path": "docs/CODEX.md",
+      "baseBlob": "58983c0d99a7bdffb21bd9a4e8ca0a615a21526f",
+      "checkpointBlob": "14369a86544e27cde33b919e5131e59a389bbfb9"
+    },
+    {
+      "status": "M",
+      "path": "docs/README.md",
+      "baseBlob": "5ade109e60ff2abbc3276f1db8668cf11fac1a1e",
+      "checkpointBlob": "20655462c0e555e9d0a1cd847781704c043a260b"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/alpha1/README.md",
+      "baseBlob": "c856b562bef48cb423c6232a2c78aca433856e5b",
+      "checkpointBlob": "d25d7dabb13a09e027a9ce8b045be222eff88741"
+    },
+    {
+      "status": "A",
+      "path": "docs/design/alpha1/role-access-audit.md",
+      "baseBlob": null,
+      "checkpointBlob": "4f8c569e722b5e6e04f53c44316b743af7546ac2"
+    },
+    {
+      "status": "M",
+      "path": "scripts/run-postgres-tests.mjs",
+      "baseBlob": "0d9db830057b158b268fb3ee45ce6b6a05e5e634",
+      "checkpointBlob": "3b4e9357946c792878b02cf1adb9e5073f01d5c7"
+    },
+    {
+      "status": "A",
+      "path": "src/app/(projects)/accounts/help-desk/page.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "dc914879ec47e23ce53b300002b92820358c2d8e"
+    },
+    {
+      "status": "M",
+      "path": "src/app/(projects)/accounts/layout.tsx",
+      "baseBlob": "d6f9750ef7209d6d08ec08c842b0e6e980a2c735",
+      "checkpointBlob": "f795ca3d1ebc9b4b4d38437a833947b547585f7d"
+    },
+    {
+      "status": "A",
+      "path": "src/app/(projects)/accounts/roles/page.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "a6c378651c7f09fbd548212e768bc4ade0b325a8"
+    },
+    {
+      "status": "M",
+      "path": "src/app/(projects)/accounts/workspace.tsx",
+      "baseBlob": "56b15718a29c5bd4048f99b948eb92e5b3ff23c7",
+      "checkpointBlob": "a9c5c2a02d6f4f7845c7474dd82ece93cb09b50a"
+    },
+    {
+      "status": "M",
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/draft-recovery.tsx",
+      "baseBlob": "ea25353f7bb278dfa72cf73013e88af027efc32d",
+      "checkpointBlob": "fd17d5e60ea61c3ba7bea7e4f429918eb74e0c1b"
+    },
+    {
+      "status": "A",
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/help-desk/page.tsx",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/(projects)/projects/[projectId]/(admin)/admin/help-desk/page.tsx",
+      "checkpointBlob": "e74dd5f28a871a9b932c025ade39db1c5e73b35a"
+    },
+    {
+      "status": "M",
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/layout.tsx",
+      "baseBlob": "6f87ae905c92facb149cb847e059a855f0be342b",
+      "checkpointBlob": "88df3822a80bb254c1fc44537ce7f3ac26fa8144"
+    },
+    {
+      "status": "M",
+      "path": "src/app/(projects)/projects/[projectId]/(admin)/admin/workspace.tsx",
+      "baseBlob": "ad638ffb031227b6c919c87ebb4cb1f3bccbc1d5",
+      "checkpointBlob": "939412c9802740430eb48457cc2fbcc8ba369b36"
+    },
+    {
+      "status": "A",
+      "path": "src/app/(projects)/projects/[projectId]/help-desk/page.tsx",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/(projects)/projects/[projectId]/help-desk/page.tsx",
+      "checkpointBlob": "dbdf78329b279342137fe81cf00308b3ab93751d"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/help-desk/route.ts",
+      "baseBlob": null,
+      "checkpointBlob": "b14d2b1956c7eb72081f0e1acf4a02aa254d479c"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/activate/route.ts",
+      "baseBlob": "a25e8a402d3773211780e2164c216f59e046d33e",
+      "checkpointBlob": "cbeea0aa942f8378cee048b364932da220a38a2e"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/administrators/route.ts",
+      "baseBlob": "dde8e1a17ae188b4af1fe53521af56a0c3cbdbc0",
+      "checkpointBlob": "7360d1f81500ae95a646bf0caf9e4950a027301e"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/aor/assignments/route.ts",
+      "baseBlob": "7be274604688aefbaef507b19ee771ea149d2216",
+      "checkpointBlob": "008baeb306f78d631d99d875b76411379e05cd10"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/aor/route.ts",
+      "baseBlob": "5f782f73df7495290333f9512f70818f7cce75f7",
+      "checkpointBlob": "3b71abbbbb278f045d2b58ca1a3cf77ba6a15716"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/archive/route.ts",
+      "baseBlob": "3500a7ed91901261d63a706c65e81b68dbe3fe51",
+      "checkpointBlob": "26fa879b2eb0d10e0fc0e6c03a66687bcd5ac629"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/areas/[areaId]/subareas/route.ts",
+      "baseBlob": "7419d26f2cfe6708b662a08021d0e7b9cbd08e7a",
+      "checkpointBlob": "92c88094b81c482b2f4f25eee17d80ea30a9da07"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/areas/route.ts",
+      "baseBlob": "292ff0fc30f26f9a53934db1a44c80e5911e9eb0",
+      "checkpointBlob": "0ce1ecd90903e85d49da5a9926eebd627c236508"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/capabilities/route.ts",
+      "baseBlob": "a80561aaed936e5da6789b5c30cb26aa7cf2ef1e",
+      "checkpointBlob": "d3dec104586bb509164699e5fb092d10142a9159"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/companies/route.ts",
+      "baseBlob": "722e60a92e34979925bbea191815b4e5f7f7e3af",
+      "checkpointBlob": "9234121039998a1242e475f15bd05381aaf1f441"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/company-authority/[grantId]/route.ts",
+      "baseBlob": "6bcbcc2ed24c2109dd74e188de786c6683dc016c",
+      "checkpointBlob": "91b49e06543a6a49399ae0fddfcfb4ab59bfb9ab"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/company-authority/route.ts",
+      "baseBlob": "85ae23e7d46311375738ef3939c4c5e6c392dab2",
+      "checkpointBlob": "b1d33253be426fbabb023049c7fc4818d870c394"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/deleted-drafts/route.ts",
+      "baseBlob": "f3a81b4f376864bfd4f093c37235095e38d01be3",
+      "checkpointBlob": "4acb23d86e4307948f69a82709ef6ef7b3140765"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/departments/[departmentId]/members/route.ts",
+      "baseBlob": "d861962034831bdde9c6a1441ca99fdfb8f3ff8b",
+      "checkpointBlob": "6cb6395208aae6553856f0392e3a92f25f54d631"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/departments/[departmentId]/titles/route.ts",
+      "baseBlob": "a46b512b3ec41a5954b1c3e5bdbebba0c28af5ff",
+      "checkpointBlob": "9d921c83fec1bb9ba7f2101e292c979d796316e2"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/departments/route.ts",
+      "baseBlob": "c2784a4ddf28fd9ba5103f7e53c6a705e5d1de06",
+      "checkpointBlob": "7e00a8e96e4320d6e30a82c91dc18f140af70450"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/diagnostics/route.ts",
+      "baseBlob": "4f3b15e3f732f99ea3aad0b6b1f9d5d9a90a7603",
+      "checkpointBlob": "b41908c0cce2229f9b996260ec1c3b90dc9223d9"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/drafts/[ticketId]/restore/route.ts",
+      "baseBlob": "41db5670c0a156d585d93be97fa4325c5ad2565c",
+      "checkpointBlob": "3a2b13ce9bedb39f55822b05d054d1b9747cf13e"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/drafts/route.ts",
+      "baseBlob": "7d729108e1017b5156a19a67674789afaa7e780d",
+      "checkpointBlob": "e42e33a264dc36d59ac166ad2d443163c2ed5c45"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/employees/route.ts",
+      "baseBlob": "2f02e46264f3f6c15a08052b99d3516f75ae6830",
+      "checkpointBlob": "d3090303e6fd77d5f09fb0e8821a5296aad32988"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/projects/[projectId]/help-desk/[supportId]/route.ts",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/api/projects/[projectId]/help-desk/[supportId]/route.ts",
+      "checkpointBlob": "4cc7209451e00518450636dbf427545172b64a49"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/projects/[projectId]/help-desk/route.ts",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/api/projects/[projectId]/help-desk/route.ts",
+      "checkpointBlob": "99d1d0acdc98ef303c612c957ffb517eccc8256c"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/invites/route.ts",
+      "baseBlob": "5462ee5e625b66150f4166d150c403c46f946209",
+      "checkpointBlob": "2f6cb71ce0ba463abab8c754e0730f5da08761bf"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/members/[userId]/offboarding/route.ts",
+      "baseBlob": "932ae9b625895f4b3826fe2becd80d28cb4a223c",
+      "checkpointBlob": "d3330644ae878aa6abac798ddaae6fe4dfebf903"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/projects/[projectId]/members/[userId]/restore/route.ts",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/api/projects/[projectId]/members/[userId]/restore/route.ts",
+      "checkpointBlob": "16bbbb0d6bb1325f58d8383425a8f572bff26a0a"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/projects/[projectId]/members/[userId]/role/route.ts",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/api/projects/[projectId]/members/[userId]/role/route.ts",
+      "checkpointBlob": "16ac2bf9bae76d81cf10e86317b0917aa2da68f1"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/members/route.ts",
+      "baseBlob": "d7ea74ae154df3acb43bcad8b859807b2822f0f0",
+      "checkpointBlob": "1f61d753d4513fedd9e8a968074dcea7c6d296be"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/metrics/route.ts",
+      "baseBlob": "11a4ff30a92096850e6452c2609fab498bab12d9",
+      "checkpointBlob": "3b6e7abdc9ce4f44a042698e9c0730743f50ded4"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/notifications/route.ts",
+      "baseBlob": "a0a0f7c51c71081bb6b9493a311586d153d103cb",
+      "checkpointBlob": "e6be5853fec19be4aff53a7d1c5cf46f843b99e2"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/recommission/route.ts",
+      "baseBlob": "9521508a63f8ce05b7c47709af0d11da715aab1b",
+      "checkpointBlob": "5f3d37513d5605913b4a0ccbf09fa447cc11dcfe"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/request-config/route.ts",
+      "baseBlob": "5359d4bbf045172b239c75d1340413e4e065a9d2",
+      "checkpointBlob": "5d37a2d6326991dd14eaca13d46541b7b0e20355"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/review/route.ts",
+      "baseBlob": "2303b1e22d0677dc5b53159b35d47917fc575057",
+      "checkpointBlob": "fc8ccbb5ade92b1034c9fcc4086f2e41337a9bdb"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/survey/manager-handover/route.ts",
+      "baseBlob": "f4939e457d63fd767d6406140baeb6cac0978cc6",
+      "checkpointBlob": "41150bee574620ece3e4e14e3e95ebf2e5f1abee"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/survey/protected-obligations/route.ts",
+      "baseBlob": "9fbbb848aca8e40bf07ac831c44bc6491056f709",
+      "checkpointBlob": "2997e80dc8da1d40eb2c28ceda60316fe387338c"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/survey/reorganization/route.ts",
+      "baseBlob": "ad542b3b337722089126bfdb742b26307e7a1652",
+      "checkpointBlob": "88e7ec5bb2f4939d58e3027bcbe5379a2bb3d921"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/survey/staffing/route.ts",
+      "baseBlob": "69f3ca4b4bc6e872850383fd2c9b9b5cc79ed47b",
+      "checkpointBlob": "dd385dc93ca9d27ae686a8768a97b170ec4bbc44"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/survey/teams/route.ts",
+      "baseBlob": "a0ad06160d05f4da870289e6f2a22fc3f78f2699",
+      "checkpointBlob": "8dcd8826808583f6f18ffbae6e08fa5468b06571"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/survey/workforce/route.ts",
+      "baseBlob": "20151cf7f353a1ae2d6bc8807733f0c921f792be",
+      "checkpointBlob": "18de65383d68ccd65778ed1ebbd19022cf1b45fa"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/template/route.ts",
+      "baseBlob": "c3e1a878e21d72c0af5900e5cbcc20012e192219",
+      "checkpointBlob": "d3f2ea5d0d943efea410b3b37f0a6f6194c004fc"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/projects/[projectId]/whitelist/route.ts",
+      "baseBlob": "db6c2757d5913a4d431a448741981533a0f459d7",
+      "checkpointBlob": "20b5cc44447f8625ffe4b2ba587c61e66ec7fd8b"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/roles/[roleId]/route.ts",
+      "baseBlob": "4e254ccbd31d30bde8a54554de4ec37582d66fa6:src/app/api/roles/[roleId]/route.ts",
+      "checkpointBlob": "591694dba29cd5bbf42b34809f7e7b39da8f8449"
+    },
+    {
+      "status": "A",
+      "path": "src/app/api/roles/route.ts",
+      "baseBlob": null,
+      "checkpointBlob": "d5b45c22e68226eccf560e9956e4afa804350439"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/approve/route.ts",
+      "baseBlob": "17d880db62a738a73fac1635d41872c63e39bf87",
+      "checkpointBlob": "6f4beb4ddfc9e01fd8bc06d63bacb3a0ef24245d"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/assign/route.ts",
+      "baseBlob": "8dd33e5c13475546eaa92d3e086cfe8bd34d19c1",
+      "checkpointBlob": "57b4c1ce565c1118d0d5e6e52f98f42f8b3ce6e4"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/attachments/[attachmentId]/route.ts",
+      "baseBlob": "9599fbfa00f778f2c31ced11e895b498d700058c",
+      "checkpointBlob": "2dd7110d4570d3637e54354d5b4bf9e8763d6ca6"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/attachments/route.ts",
+      "baseBlob": "0f4cd37d314823b8296adb8e4483406e04a1cb4c",
+      "checkpointBlob": "13797180e7f87359e805e0937d10854bdcc47344"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/complete/route.ts",
+      "baseBlob": "137be552144bcde4ec20752276f22ea8ef99d61e",
+      "checkpointBlob": "340ab62f6439acbd98f35b297555bb2dc32d8d69"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/delay/route.ts",
+      "baseBlob": "80176a25145ee30af65a84bdb6bac8059fa21631",
+      "checkpointBlob": "4d996ae268048f4f2196a8fbf98455636628b83a"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/draft/route.ts",
+      "baseBlob": "86fb62dddfaf08d70ef77282c653a5a86e7dec20",
+      "checkpointBlob": "1323a2bf04c5ef103f9b53e6b57b9cf7cab30c6c"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/elevate-priority/route.ts",
+      "baseBlob": "f9f6b2b9f214737ab777b57c9f919731e6cef469",
+      "checkpointBlob": "ba38d00597e875d44dde0192fd99050a0bb4b794"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/field-cancel/route.ts",
+      "baseBlob": "78442c26c4234f0cb69f3035ed1a9b94b949ae36",
+      "checkpointBlob": "65ecd3e8dc1f4ed9621385ef7d5d76841d365e66"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/field-inability/reject/route.ts",
+      "baseBlob": "5974616bf144d8db98062a59b5a28a504fb2fae1",
+      "checkpointBlob": "d2adbcdb984eb6b9b986528bcfdbbf215eacedaf"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/field-inability/route.ts",
+      "baseBlob": "3153648b61dd1c266c1b38176a563b16bc09e04b",
+      "checkpointBlob": "3ecfee57627b6bad929844ee64d7a195a16d8634"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/field-inability/validate/route.ts",
+      "baseBlob": "5e0375be14db76157a768079bb34676017665481",
+      "checkpointBlob": "07c2e05297c5281fd63bf8f12115535585e4e849"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/follow-up/route.ts",
+      "baseBlob": "1ff5515def6c257ed53d2b2c0d0fdcf4bda3294b",
+      "checkpointBlob": "5692fd2a0c3ac41ccda562b52109e2c2990fb2f2"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/history/route.ts",
+      "baseBlob": "2396543339215583b674fab78c1b4e03f5b0cd73",
+      "checkpointBlob": "a8c70bc33eaf8a21c682be66c14326b5c0838e32"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/need-by/route.ts",
+      "baseBlob": "492528dbaa282a3be940f18a8bd67afc4d764097",
+      "checkpointBlob": "6a7caa6c04c844b55747279b24094303e336f34d"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/override-rejection/route.ts",
+      "baseBlob": "91e8dd15d11166981ac48dc97492963e8013a588",
+      "checkpointBlob": "0205e7f823171c22f5c8c73731e0a3f60b396cd8"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/pc-approve/route.ts",
+      "baseBlob": "3113f67a10f3423375a1eca52a9452dcf6e878b3",
+      "checkpointBlob": "b29f9f5eb242d814006fb4c76c699dbd3016e7e2"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/pc-reject/route.ts",
+      "baseBlob": "6047ed0719904ecb42a34421d4a36e760f99f2e0",
+      "checkpointBlob": "884cc9da52ee0023ff3bebaf67f519a8197d1132"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/priority/route.ts",
+      "baseBlob": "63687b17f41423de13f2c98aa4f3ec2da90fb5e8",
+      "checkpointBlob": "b4071a9b164985484fe3a6840bf85b09850c5373"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/reject/route.ts",
+      "baseBlob": "1cfa782b6fee935314e43c895e06805d19b16df9",
+      "checkpointBlob": "39d42d223e5273b5cd774f486867381f15690c7f"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/requester-cancel/route.ts",
+      "baseBlob": "4215fe123f7c046f34a37937b090ca27b1daf710",
+      "checkpointBlob": "57efdc4db38e2890865420e2192db8e98dab22a7"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/restart-delay/route.ts",
+      "baseBlob": "333f0aefa93273d43d6480f7eb72e54eadf42b01",
+      "checkpointBlob": "ac467269fb1a5f8bc7584dc9bc094d18725819a7"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/return/route.ts",
+      "baseBlob": "f5baef203f1c78874f0737c17e10230e39958151",
+      "checkpointBlob": "c055ec93d3f0e797c14d022f8795af4be9bebc82"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/route.ts",
+      "baseBlob": "70a65e69a03b8bdb8cde0cfe06383e62c496e77a",
+      "checkpointBlob": "acf4892db0e140e593f75582d319daa6216facf1"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/start/route.ts",
+      "baseBlob": "b0cd003093b867deddbe91b336d3b5bca56ae055",
+      "checkpointBlob": "456d855222913dbdfe42438f95a409d6cee35417"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/submit/route.ts",
+      "baseBlob": "032bfd1852c41cbb793ca82d768fabd7ca6fbb6d",
+      "checkpointBlob": "0ad23427747a775076dcad03c5ecbdc0d795b4ac"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/survey-cancel/approve/route.ts",
+      "baseBlob": "bcc9d7c5746e1f0c392c43cda17fb44e3f8e8408",
+      "checkpointBlob": "7e86344506d09a48d781744d2632b862731b2d44"
+    },
+    {
+      "status": "M",
+      "path": "src/app/api/tickets/[ticketId]/survey-cancel/route.ts",
+      "baseBlob": "812927923d296f5d877dbfe054800c044c582670",
+      "checkpointBlob": "9f6e46b74e4a39ff2a99eaa44318247c1f503f50"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/administration-records.css",
+      "baseBlob": "ca7c7b51cf9d67b51818612a95c8f978af4d0076",
+      "checkpointBlob": "4c3bfaac0b0b7db8c3684e7516bc9760b2e69de2"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/administration-workspace.css",
+      "baseBlob": "e4bb736aa296702abd093d854c202a801952f71b",
+      "checkpointBlob": "2dc7873f72d50496fa84d39ccd395f7bba6a418e"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/administration-workspace.tsx",
+      "baseBlob": "bf01c6c3fc96540ba23a57fe0df646e8f9c6264b",
+      "checkpointBlob": "d2d70d1e91c1d6e6beb6230e91badf351c40215b"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ui/custom-roles.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "8226b59331bd1c9cf7ba4015ffeeec1e91ba079f"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ui/help-desk.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "7db4018975ffab34b1ad67afb098d09dff47a5e7"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ui/member-access-recovery.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "df5d5ccef4edcbed36f8dabd9a490a669cd67530"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ui/member-role-assignment.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "3e75cffaa615a0438247b875a564b791ebf7ebb5"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/project-administration.tsx",
+      "baseBlob": "b82dc1323054ff1133a8ef150743f29f125818d0",
+      "checkpointBlob": "d60c797c3e61a4451f6e3af623536a3d7fb5fefa"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ui/project-diagnostics.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "11d9afb1f331e1364b98d3220211cf7674089015"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/project-member-wizard.tsx",
+      "baseBlob": "7a1bce7ac8ff8df708503a724fa3538d2443ba0f",
+      "checkpointBlob": "88052307271b03d48b88cee0163b6350f44fc3ab"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/project-nav.tsx",
+      "baseBlob": "0cc9831458e264cd7bf55a9f13fc3a3f66197bf3",
+      "checkpointBlob": "01679ed4a526412ff40830d1ca009994622dfd0f"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/project-navigation.ts",
+      "baseBlob": "12450838504d9be0fe82548c00fa27705b8aa9a1",
+      "checkpointBlob": "552a05442c058c4f1837298078205c8edf3426b9"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/protected-survey-obligations.tsx",
+      "baseBlob": "09e510b94c8702338702d5a390fb5454b422813a",
+      "checkpointBlob": "3f5ffacb03f9210c75fcdcd87bdbf09202e8b9e6"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ui/role-options.tsx",
+      "baseBlob": null,
+      "checkpointBlob": "c89abe7a5eb29632640f5baa0d259ef485eb3941"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ui/scroll-to-top.tsx",
+      "baseBlob": "38a8cc81a528708f510087e21c63db789374dc32",
+      "checkpointBlob": "e645132e9d747de0c66fc4c1859fc99190127074"
+    },
+    {
+      "status": "A",
+      "path": "src/lib/observe-project-route.ts",
+      "baseBlob": null,
+      "checkpointBlob": "7c59cf4de3177878976aa45a6258d3495e9fdf6d"
+    },
+    {
+      "status": "M",
+      "path": "src/modules/audit/infrastructure/administrative-event.repository.ts",
+      "baseBlob": "f3dd29959fe81ef2fdee5a15c6db24b3cad52491",
+      "checkpointBlob": "09df4d8f799320a1c6b56bb24d0b7128a2399120"
+    },
+    {
+      "status": "A",
+      "path": "src/modules/support/application/help-desk.ts",
+      "baseBlob": null,
+      "checkpointBlob": "ef2ac8476665e2ebbe4c0e373702b9e6afff1473"
+    },
+    {
+      "status": "A",
+      "path": "src/modules/support/infrastructure/request-observation.ts",
+      "baseBlob": null,
+      "checkpointBlob": "6e30f091b1d6073af075091d4d032931197f3ffc"
+    },
+    {
+      "status": "A",
+      "path": "src/modules/tenancy/application/assign-template-role.ts",
+      "baseBlob": null,
+      "checkpointBlob": "c8f0749936c54d1712b0649482eb52ec0b6fac4c"
+    },
+    {
+      "status": "M",
+      "path": "src/modules/tenancy/application/create-project-employee.ts",
+      "baseBlob": "7b33d03c387cc360d7a355c752fb083174b971df",
+      "checkpointBlob": "4aae1aab66755abf7f6113d5c331b484621399af"
+    },
+    {
+      "status": "A",
+      "path": "src/modules/tenancy/application/custom-roles.ts",
+      "baseBlob": null,
+      "checkpointBlob": "97ab0c5cc8776fcdae41e239de00e0d75f5ccd86"
+    },
+    {
+      "status": "M",
+      "path": "src/modules/tenancy/application/project-administration.ts",
+      "baseBlob": "e6441ffefb6a252a67b9a0d2754b99ae6f91fcd0",
+      "checkpointBlob": "683428230dc1685ec95f3c0a544cc3be748a9bb3"
+    },
+    {
+      "status": "A",
+      "path": "src/modules/tenancy/application/restore-project-member.ts",
+      "baseBlob": null,
+      "checkpointBlob": "de587556ff1e53c210b04c1cbd7d71683a4756f3"
+    },
+    {
+      "status": "A",
+      "path": "src/modules/tenancy/domain/custom-role.ts",
+      "baseBlob": null,
+      "checkpointBlob": "48852a97355f1f03024846075288e95127ccf8c4"
+    },
+    {
+      "status": "M",
+      "path": "src/modules/ticket/application/draft-access.ts",
+      "baseBlob": "1a0e314283cee6ae0b0e2e124b7365c6a820ffd5",
+      "checkpointBlob": "eb4c3ecd4281a9f528a48754610d1e1b8f55352a"
+    },
+    {
+      "status": "A",
+      "path": "tests/beta/custom-roles-postgres.ts",
+      "baseBlob": null,
+      "checkpointBlob": "bfdc73925e70cf63426f3da619fd347eaeba0a8f"
+    },
+    {
+      "status": "M",
+      "path": "tests/beta/project-administration-postgres.ts",
+      "baseBlob": "e7eeb213da2ae33aab49f63ecf4bd74f5e60d2bb",
+      "checkpointBlob": "12b76d7bcce40d95eb988d504aa00e2b893c769a"
+    },
+    {
+      "status": "M",
+      "path": "tests/beta/project-employee-postgres.ts",
+      "baseBlob": "7461215c352548e7287c7535691ff87a682658a8",
+      "checkpointBlob": "239baf797d720401ef1a8ae8fc8d8282b79d739d"
+    },
+    {
+      "status": "A",
+      "path": "tests/beta/project-support-postgres.ts",
+      "baseBlob": null,
+      "checkpointBlob": "e2533ea89a6c58d168fada65781a4207089e3ee7"
+    },
+    {
+      "status": "A",
+      "path": "tests/beta/role-access-conditions-browser.mjs",
+      "baseBlob": null,
+      "checkpointBlob": "a3c7598b73f0483a56167d6536dfdb629c1cecc5"
+    },
+    {
+      "status": "A",
+      "path": "tests/beta/role-access-http.mjs",
+      "baseBlob": null,
+      "checkpointBlob": "80291692d90a81f9a37624e9b6c91ab16e4c0c0b"
+    },
+    {
+      "status": "A",
+      "path": "tests/tenancy/custom-role.test.ts",
+      "baseBlob": null,
+      "checkpointBlob": "ac5c968af62bd0a1d2fcd133fdf6fae032472f21"
+    },
+    {
+      "status": "M",
+      "path": "tests/ticket/draft-recovery.test.ts",
+      "baseBlob": "49ae6b00c72794f9f5d800d7160aed67891599ce",
+      "checkpointBlob": "a3468890b86c29cc8b3132c5894dd7236da4b41b"
+    },
+    {
+      "status": "M",
+      "path": "tests/ui/project-navigation.test.ts",
+      "baseBlob": "df2d512304d30ed14cc9fdce3d8f3c87410461bd",
+      "checkpointBlob": "456246ab6570076f4ae3a8e258bfb13ab7578ed6"
+    }
+  ],
+  "evidence": "audits/alpha1-ui-redesign/role-access-evidence.json",
+  "referencePreparation": "This manifest and its inventory are written after the named implementation checkpoint; they are not self-referential runtime evidence."
+}
