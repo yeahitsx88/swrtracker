@@ -7,19 +7,19 @@ related_targets: [src/app/(projects)/accounts/page.tsx, src/app/(projects)/proje
 
 # Tenant IT and Project Admin refinement
 
-Mode: Operate. Extend the owner-approved Axiom workspace, heading/help and record treatment into existing administrative screens. No new identity, permissions or command lifecycle.
+Mode: Operate. Restore owner-requested administration workflows within the approved Axiom workspace. This correction supersedes the earlier in-page navigation and paired Accounts/reviews composition. Existing fixed roles and authorization remain authoritative.
 
 ## Direction contract
 
-THESIS: Make the existing administrative tasks easy to find and inspect through named sections and contained records; avoid an undifferentiated stack of nested forms.
+THESIS: Restore discoverable, functioning employee/member/admin/company/template creation with separate task pages and explicit guided confirmation.
 
 OWN-WORLD: Inherit Roboto, semantic Light/Dark surfaces, square 44px controls, flat shared cards and independent question-mark help. IT staff and project administrators work through long personnel inventories on office screens and phones; saved personal/device appearance remains authoritative.
 
-STORY: Tenant IT finds accounts and durable Central IT reviews, opens exact evidence and separately confirms each scope. Project Admin finds personnel, companies, settings, access/recovery and diagnostics while operational and independent administration remain distinct.
+STORY: Tenant IT creates employees, independent Project Admins and reusable templates, and reviews account evidence separately. Project Admin creates employees or adds eligible existing members, registers companies and manages the project's scoped settings while operational and independent administration remain distinct.
 
-FIRST VIEWPORT: Keep the persistent left workspace. A page heading with adjacent scope help precedes a wrapping in-page section navigator. Tenant accounts and reviews use a shared two-column desktop work area and one lane on phones. Project administration groups existing full-width personnel/company inventories and lighter settings sections. Selection controls precede bounded record viewports; existing command confirmations remain visible in their current flow.
+FIRST VIEWPORT: Keep the persistent left workspace and padded full-width content. A page heading with adjacent help precedes wrapping route links with a marked current page. Only its task area appears. Creation actions precede inventories; a three-step Person/Access/Review or Template/Structure/Review wizard exposes the actual operation. Role options use readable title case and native scrolling.
 
-FORM: Code-led extension of existing pages and components. No concept seed: the user pins the newly deployed composition. The signature interaction is a section link leading to its current controls without unmounting editors or discarding state; record actions stay readable inside table overflow.
+FORM: Code-led extension; no concept seed because the user pins the deployed composition. The signature interaction is navigation between sibling task pages without discarding input or the exact frozen command, while uncertain commands block competing actions. Archived creation remains restricted with its read-only explanation visible.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -29,4 +29,4 @@ Keep the original API calls, current eligibility and closed/setup checks, explic
 
 ## Finish Handoffs
 
-Independent finish reviewer: **ship**, scoped source and all 18 supplied settled captures; no material fixes. Fluid h1 detector advisory was reviewed without a material readability defect. The ordinary-extension documenter compared the implementation against the incumbent system and preserved DESIGN.md and its sidecar. The central [design hub](../../docs/design/alpha1/README.md) records source, checkpoints and executable evidence.
+The prior increment's 18-capture ship verdict is historical and does not verify this restoration. The owner supplied contrary workflow evidence. A fresh independent restoration review and documenter handoff are pending. The central [design hub](../../docs/design/alpha1/README.md) records source, checkpoints and executable evidence.

@@ -5,7 +5,7 @@
 .administration-jump-links .button { min-height: 44px; padding: .5rem .75rem; font-size: .875rem; white-space: nowrap; }
 .administration-area { min-width: 0; scroll-margin-top: 100px; }
 .administration-area[hidden] { display: none; }
-.administration-jump-links [aria-current="page"] { background: var(--surface-selected); color: var(--action); border-color: var(--action); }
+.administration-jump-links [aria-current="page"] { background: var(--surface-selected); color: var(--ink); border-color: var(--action); font-weight: 700; }
 .administration-wizard { padding-block: 1rem; border-block: 1px solid var(--line); }
 .administration-wizard-steps { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; padding-left: 1.5rem; }
 .administration-wizard-steps [aria-current="step"] { font-weight: 700; color: var(--action); }
