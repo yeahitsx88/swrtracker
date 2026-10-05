@@ -1,0 +1,78 @@
+{
+  "recordedAt": "2026-10-04T23:24:32.224129+00:00",
+  "scope": "Shared buttons, icons, surfaces and design code audit",
+  "parentCheckpoint": "9b76081",
+  "branch": "alpha1-ui-redesign",
+  "sourceMigrationDigest": "0445afb0c5356f264ac45b5ea2d48390c6ed0588ce90cb0c95d9142a63ed0c4b",
+  "digestAlgorithm": "SHA256 of sorted repository paths under src and db/migrations, NUL, raw file bytes, NUL",
+  "runtime": "Pinned Node22.23.3 / pnpm11.19.0 production image swr-design-refinement-ff2f",
+  "strictTypecheck": "passed, including unused checks",
+  "unitTests": {
+    "passed": 584,
+    "failed": 0
+  },
+  "productionBuild": "passed",
+  "browser": {
+    "checks": 29,
+    "evidence": [
+      "Primary buttons share 6px corners",
+      "Primary text contrast meets 4.5:1",
+      "Primary target remains at least 44px",
+      "Primary hover has visible color change",
+      "Primary hover contrast meets 4.5:1",
+      "Every Project Administration destination has a decorative icon",
+      "Registration review still opens as a dialog",
+      "Escape closes registration review",
+      "Dark primary text contrast meets 4.5:1",
+      "LIGHT custom branding #ffff00 remains readable",
+      "LIGHT custom hover #ffff00 remains readable",
+      "LIGHT custom branding #000000 remains readable",
+      "LIGHT custom hover #000000 remains readable",
+      "LIGHT custom branding #ffffff remains readable",
+      "LIGHT custom hover #ffffff remains readable",
+      "LIGHT custom branding #dd33aa remains readable",
+      "LIGHT custom hover #dd33aa remains readable",
+      "DARK custom branding #ffff00 remains readable",
+      "DARK custom hover #ffff00 remains readable",
+      "DARK custom branding #000000 remains readable",
+      "DARK custom hover #000000 remains readable",
+      "DARK custom branding #ffffff remains readable",
+      "DARK custom hover #ffffff remains readable",
+      "DARK custom branding #dd33aa remains readable",
+      "DARK custom hover #dd33aa remains readable",
+      "Keyboard focus ring remains visible",
+      "Companies has no horizontal page overflow at390px",
+      "Home retains four real request measures",
+      "Home has no horizontal page overflow at390px"
+    ],
+    "shots": [
+      ".local-design-companies-light-desktop.png",
+      ".local-design-review-light-desktop.png",
+      ".local-design-companies-dark-desktop.png",
+      ".local-design-companies-mobile.png",
+      ".local-design-home-desktop.png",
+      ".local-design-home-mobile.png"
+    ]
+  },
+  "detector": {
+    "runs": 1,
+    "advisories": 58,
+    "note": "Contextual advisories, not confirmed defect count; see scoped audit"
+  },
+  "limitations": [
+    "No full application WCAG certification",
+    "No measured performance benchmark",
+    "No backend/domain change; PostgreSQL suites not rerun for this visual increment"
+  ],
+  "finishReview": {
+    "disposition": "ship",
+    "materialFixes": 0,
+    "capturesReviewed": 6,
+    "note": "Reference-led refinement; formal quality-card absent. Detector was produced separately and contextualized in audit."
+  },
+  "retainedPreview": {
+    "port": 3124,
+    "preserved": "Fresh full-row digests for18 present tables from20 checked table names match; original environment and file volume retained",
+    "mutations": "Only web image replaced"
+  }
+}

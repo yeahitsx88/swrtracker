@@ -6,6 +6,7 @@ import type { AmeliaMetricsRecord } from '@/lib/contracts';
 import { Button } from './button';
 import type { KpiMeasure } from './kpi-explorer';
 import './popout.css';
+import {closePopup} from './popup-motion';
 import {HeadingHelp} from './heading-help';
 
 const KpiExplorer = dynamic(()=>import('./kpi-explorer').then(module=>module.KpiExplorer), { loading:()=> <p role="status">Loading analytics controls…</p> });
@@ -29,8 +30,8 @@ export function OperationsHealth({metrics,projectId,areaWide=false}:{metrics:Ame
         <span>{titles[key]}</span><strong>{values[key]}</strong><span className="ops-metric-link">View details</span>
       </button>)}</div>
     </section>
-    <dialog ref={dialog} className="ops-dialog popout-dialog" aria-labelledby="metric-heading" onClose={()=>setOpened(false)}>
-      <div className="ops-section-heading popout-header"><h2 id="metric-heading">Explore Queue Health</h2><Button variant="secondary" onClick={()=>dialog.current?.close()}>Close</Button></div>
+    <dialog onCancel={event=>{event.preventDefault();closePopup(dialog.current);}} ref={dialog} className="ops-dialog popout-dialog" aria-labelledby="metric-heading" onClose={()=>setOpened(false)}>
+      <div className="ops-section-heading popout-header"><h2 id="metric-heading">Explore Queue Health</h2><Button variant="secondary" onClick={()=>closePopup(dialog.current)}>Close</Button></div>
       <div className="popout-body">{opened?<KpiExplorer key={metric} projectId={projectId} initialMeasure={metric}/>:null}</div>
     </dialog>
   </>;

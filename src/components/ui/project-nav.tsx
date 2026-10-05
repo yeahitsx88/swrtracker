@@ -9,8 +9,9 @@ import { Icon, type IconName } from './icon';
 import { getProjectNavigation } from './project-navigation';
 import { accountNavigation } from './account-navigation';
 import { AccountSignOut } from './account-sign-out';
+import { closePopup } from './popup-motion';
 
-const ICONS: Record<string, IconName> = { Home: 'home', 'New Request': 'plus', Requests: 'list', Drafts: 'draft', 'All Requests': 'search', 'Crew Work': 'crew', 'Survey Operations': 'gauge', 'PC Approvals': 'check', 'Team Management': 'team', Admin: 'settings' };
+const ICONS: Record<string, IconName> = { 'Review Requests':'check', Notifications: 'alert', Home: 'home', 'New Request': 'plus', Requests: 'list', Drafts: 'draft', 'All Requests': 'search', 'Crew Work': 'crew', 'Survey Operations': 'gauge', 'PC Approvals': 'check', 'Team Management': 'team', Admin: 'settings', 'Help Desk': 'support', Appearance: 'sliders', Profile: 'user', 'Assignment Details': 'crew' };
 
 export function ProjectNav({ projectId, role, canAdminister, canCreateProject = false, status, projectName }: {
   projectId?: string; role: ProjectRole | null; canAdminister?: boolean; canCreateProject?: boolean;
@@ -22,7 +23,7 @@ export function ProjectNav({ projectId, role, canAdminister, canCreateProject = 
   const trigger = useRef<HTMLButtonElement>(null);
   const backdrop = useRef(false);
   const items = projectId ? getProjectNavigation(role, canAdminister, status) : [];
-  function close() { dialog.current?.close(); setOpen(false); trigger.current?.focus({ preventScroll: true }); }
+  function close() { closePopup(dialog.current,()=>{setOpen(false);trigger.current?.focus({preventScroll:true});}); }
   useEffect(() => { dialog.current?.close(); setOpen(false); }, [pathname]);
   useEffect(() => {
     if (!open) return;
@@ -47,8 +48,8 @@ export function ProjectNav({ projectId, role, canAdminister, canCreateProject = 
         return <Link key={item.label} href={href} aria-current={active ? 'page' : undefined} onClick={() => { if (open) close(); }}><Icon name={ICONS[item.label] ?? 'list'} /><span>{item.label === 'Admin' ? 'Project Administration' : item.label}</span></Link>;
       })}</div> : null;
     })}
-    {canCreateProject&&<div className="workspace-nav-group"><p className="workspace-nav-label">Tenant IT</p><Link href="/accounts" aria-current={pathname==='/accounts'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="settings"/>Tenant Accounts</Link><Link href="/accounts/reviews" aria-current={pathname==='/accounts/reviews'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="list"/>Central IT Reviews</Link><Link href="/accounts/templates" aria-current={pathname==='/accounts/templates'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="settings"/>Project Templates</Link><Link href="/accounts/roles" aria-current={pathname==='/accounts/roles'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="settings"/>Custom Roles</Link><Link href="/accounts/help-desk" aria-current={pathname==='/accounts/help-desk'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="list"/>Help Desk</Link></div>}
-    <div className="workspace-nav-account"><p className="workspace-nav-label">Account</p>{accountNavigation(projectId,role ?? undefined).filter(item => item.label !== 'Home' && item.label !== 'Team Management' && (projectId || item.label !== 'Projects')).map(item => <Link key={item.label} href={item.label === 'Appearance' ? `${item.href}${projectId ? '&' : '?'}returnTo=${encodeURIComponent(pathname)}` : item.href} aria-current={pathname === item.href.split('?')[0] ? 'page' : undefined} onClick={() => { if (open) close(); }}><Icon name={item.label === 'Projects' ? 'back' : 'settings'} />{item.label === 'Projects' ? 'Switch project' : item.label}</Link>)}<AccountSignOut /></div>
+    {canCreateProject&&<div className="workspace-nav-group"><p className="workspace-nav-label">Tenant IT</p><Link href="/accounts" aria-current={pathname==='/accounts'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="team"/>Tenant Accounts</Link><Link href="/accounts/reviews" aria-current={pathname==='/accounts/reviews'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="list"/>Central IT Reviews</Link><Link href="/accounts/templates" aria-current={pathname==='/accounts/templates'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="file"/>Project Templates</Link><Link href="/accounts/roles" aria-current={pathname==='/accounts/roles'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="shield"/>Custom Roles</Link><Link href="/accounts/help-desk" aria-current={pathname==='/accounts/help-desk'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="support"/>Help Desk</Link></div>}
+    <div className="workspace-nav-account"><p className="workspace-nav-label">Account</p>{accountNavigation(projectId,role ?? undefined).filter(item => item.label !== 'Home' && item.label !== 'Team Management' && (projectId || item.label !== 'Projects')).map(item => <Link key={item.label} href={item.label === 'Appearance' ? `${item.href}${projectId ? '&' : '?'}returnTo=${encodeURIComponent(pathname)}` : item.href} aria-current={pathname === item.href.split('?')[0] ? 'page' : undefined} onClick={() => { if (open) close(); }}><Icon name={item.label === 'Projects' ? 'back' : ICONS[item.label] ?? 'user'} />{item.label === 'Projects' ? 'Switch project' : item.label}</Link>)}<AccountSignOut /></div>
   </nav>;
   return <>
     <aside className="project-sidebar"><div className="workspace-sidebar-title">SWRTracker<span>Survey work requests</span></div>{navigation}</aside>

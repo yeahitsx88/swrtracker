@@ -14,7 +14,7 @@ function fixture(){
  const writes:unknown[]=[];
  const repo:WorkforceRepository={
  context:async()=>({status:'ACTIVE',crewBuild:'FULL'}),lockProject:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
- lockActor:async()=>true,lockSubjects:async()=>{},lockTransferScope:async()=>{},snapshot:async()=>'a'.repeat(32),
+ sameTeam:async()=>true,lockActor:async()=>true,lockSubjects:async()=>{},lockTransferScope:async()=>{},snapshot:async()=>'a'.repeat(32),
  person:async(_db,_actor,userId)=>people.find(p=>p.userId===userId)??null,
  personnel:async(_db,_actor,q)=>({data:people,total:3,limit:q.limit,offset:q.offset,snapshotToken:'a'.repeat(32)}),
  move:async(_db,_actor,im,chief)=>{writes.push([im,chief]);},record:async(_db,_actor,payload)=>{writes.push(payload);}
@@ -47,4 +47,10 @@ test('stale staffing, changed actor authority, and archived projects reject work
 });
 test('unrelated project roles cannot inspect workforce members',async()=>{
  const f=fixture();await assert.rejects(readWorkforceMember(f.repo,db,{...actor,actorRole:'REQUESTER'},id(6)),ForbiddenError);
+});
+
+test('a Superintendent cannot move a person across named teams even when both Chiefs report to them',async()=>{
+ const f=fixture();f.repo.sameTeam=async()=>false;
+ await assert.rejects(moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),expectedSnapshot:'a'.repeat(32)}),ForbiddenError);
+ assert.deepEqual(f.writes,[]);
 });

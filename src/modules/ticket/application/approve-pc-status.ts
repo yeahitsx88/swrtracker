@@ -26,6 +26,7 @@ export async function approvePcStatus(
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if(params.actorRole==='PARTY_CHIEF'&&ticket.assignedPartyChiefId!==params.actorId)throw new ForbiddenError('Only the assigned Party Chief may change this field work.');
 
   if (!APPROVER_ROLES.includes(params.actorRole)) {
     throw new ForbiddenError('Only Party Chief or survey-side approvers may approve pending field status');

@@ -105,7 +105,7 @@ async function main(){
     assert.equal((await pool.query('SELECT deactivated_at FROM aor_assignments WHERE id=$1',[departmentGrant])).rows[0].deactivated_at,null,'Department scope must remain');checks++;
     // Responsibility/acting grants remain intact and independently block role removal.
     const actor={tenantId:tenant,projectId:project,actorId:manager,actorRole:'SURVEY_MANAGER' as const,sessionVersion:1};
-    const demote=(user:UUID,expectedRole:'PARTY_CHIEF'|'INSTRUMENT_MAN')=>transaction(db=>changeSurveyRole(roles,db,actor,{userId:user,expectedRole,expectedRoleVersion:1,role:'REQUESTER',confirmRoleChanges:true}));
+    const demote=(user:UUID,expectedRole:'PARTY_CHIEF'|'INSTRUMENT_MAN')=>transaction(db=>changeSurveyRole(roles,db,actor,{userId:user,expectedRole,expectedRoleVersion:1,role:expectedRole==='PARTY_CHIEF'?'INSTRUMENT_MAN':'PARTY_CHIEF',confirmRoleChanges:true}));
     await pool.query(`INSERT INTO project_responsibility_grants(tenant_id,project_id,user_id,responsibility,granted_by) VALUES($1,$2,$3,'FIELD_COORDINATOR',$4)`,[tenant,project,chief,manager]);
     await assert.rejects(demote(chief,'PARTY_CHIEF'),/responsibility and acting/);checks++;
     await pool.query('UPDATE project_responsibility_grants SET revoked_at=NOW(),revoked_by=$3 WHERE tenant_id=$1 AND project_id=$2',[tenant,project,manager]);

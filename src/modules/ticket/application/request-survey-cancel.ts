@@ -27,6 +27,7 @@ export async function requestSurveyCancel(
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if(params.actorRole==='PARTY_CHIEF'&&ticket.assignedPartyChiefId!==params.actorId)throw new ForbiddenError('Only the assigned Party Chief may change this field work.');
 
   if (params.actorRole === 'SURVEY_MANAGER') {
     const canceled = await performTransition(db, repo, {

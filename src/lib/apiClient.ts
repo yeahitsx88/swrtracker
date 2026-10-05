@@ -137,6 +137,9 @@ export const apiClient = {
   listTeamAreas(projectId: string, query: import('@/modules/tenancy/application/survey-teams').TeamPageQuery): Promise<import('@/shared/types').Page<import('@/modules/tenancy/application/survey-teams').TeamArea>> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { ...query, mode: 'areas' }));
   },
+  createSurveyArea(projectId: string, input: {name:string;code:string}, idempotencyKey:string): Promise<{area:{id:string;name:string}}> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/areas`, {method:'POST',body:input,headers:{'Idempotency-Key':idempotencyKey}});
+  },
   getSurveyTeam(projectId: string, teamId: string): Promise<{ team: import('@/modules/tenancy/application/survey-teams').SurveyTeamDetail }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { teamId }));
   },
@@ -273,10 +276,13 @@ export const apiClient = {
       body: { expectedVersion, reason }, headers: { 'Idempotency-Key': retryKey } });
   },
 
-  approveTicket(ticketId: string): Promise<TicketResponse> {
+  approveTicket(ticketId: string, idempotencyKey=createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/approve`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': idempotencyKey },
     });
+  },
+  rejectTicket(ticketId:string,rejectionReason:string,idempotencyKey:string):Promise<TicketResponse> {
+    return apiRequest(`/api/tickets/${ticketId}/reject`,{method:'POST',body:{rejectionReason},headers:{'Idempotency-Key':idempotencyKey}});
   },
 
   assignTicket(ticketId: string, assignedPartyChiefId: string | null, assignedInstrumentManId: string | null): Promise<TicketResponse> {

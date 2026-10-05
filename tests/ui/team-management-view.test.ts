@@ -20,6 +20,6 @@ test('role controls reflect fixed crew-build tiers and protect unrelated authori
   assert.deepEqual(supportedTeamRoles('FULL'),['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN']);
   assert.deepEqual(supportedTeamRoles('MEDIUM'),['PARTY_CHIEF','INSTRUMENT_MAN']);
   assert.deepEqual(supportedTeamRoles('SLIM'),['INSTRUMENT_MAN']);
-  for(const role of ['SURVEY_MANAGER','PROJECT_ADMIN','DEPARTMENT_MANAGER','AREA_VIEWER'] as const) assert.equal(canEditSurveyRole(role),false);
-  for(const role of ['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN','REQUESTER','VIEWER'] as const) assert.equal(canEditSurveyRole(role),true);
+  for(const role of ['SURVEY_MANAGER','PROJECT_ADMIN','DEPARTMENT_MANAGER','AREA_VIEWER','REQUESTER','VIEWER'] as const) assert.equal(canEditSurveyRole(role),false);
+  for(const role of ['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'] as const) assert.equal(canEditSurveyRole(role),true);
 });

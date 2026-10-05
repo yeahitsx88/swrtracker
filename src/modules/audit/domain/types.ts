@@ -20,6 +20,8 @@ export type AuditEventType =
   | 'ticket.field_inability_reported'
   | 'ticket.field_inability_rejected'
   | 'ticket.rejected'
+  | 'ticket.rejection_proposed'
+  | 'ticket.rejection_proposal_resolved'
   | 'ticket.rejection_overridden'
   | 'ticket.priority_set_by_whitelist'
   | 'ticket.priority_elevated'

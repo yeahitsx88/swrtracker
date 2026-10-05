@@ -3,7 +3,7 @@ name: SWRTracker
 description: Axiom Civil Services foundation for accessible appearance and authorized survey record work.
 colors:
   brand: "#4682b4"
-  action: "#315f85"
+  action: "#0b4bb3"
   accent: "#ffa500"
   ink: "#2e2e2e"
   muted: "#58636e"
@@ -97,11 +97,12 @@ typography:
     fontFamily: "Roboto, sans-serif"
     fontSize: "0.7rem"
 rounded:
-  navigation: "0px"
-  button: "0px"
+  navigation: "6px"
+  view-tab: "0px"
+  button: "6px"
   control: "10px"
   ticket: "12px"
-  panel: "12px"
+  panel: "16px"
   pill: "999px"
 spacing:
   stack: "0.75rem"
@@ -121,7 +122,7 @@ components:
     padding: "0.55rem 0.95rem"
   button-secondary:
     backgroundColor: "{colors.bg-elevated}"
-    textColor: "{colors.ink}"
+    textColor: "{colors.muted}"
     rounded: "{rounded.button}"
     padding: "0.55rem 0.95rem"
   button-danger:
@@ -153,7 +154,7 @@ components:
     padding: "1.25rem"
   view-tab:
     textColor: "{colors.muted}"
-    rounded: "{rounded.navigation}"
+    rounded: "{rounded.view-tab}"
     padding: "0.5rem 0.9rem"
   project-sidebar-link:
     textColor: "{colors.ink}"
@@ -261,7 +262,7 @@ The palette follows the supplied Axiom identity and the approved tenant branding
 ### Primary
 
 - **Steel Blue** (`brand`): global structural fallback for selected outlines and the header rule. Authenticated views use the saved tenant primary color for this role; the Axiom default chosen in Appearance uses the Action Blue primary.
-- **Action Blue** (`action`): global readable action fallback for active navigation, caret, focus and primary buttons. Authenticated views derive this role from the tenant primary color against the current elevated surface, targeting at least 4.5:1 contrast. The runtime hover role follows that derived action color; static fallback hover remains separately defined.
+- **Action Blue** (`action`): global readable action fallback for active navigation, caret, focus and primary buttons. Authenticated views derive this role from the tenant primary color against the current elevated surface, targeting at least 4.5:1 contrast. For the untouched version-zero default, the runtime starts from the approved Action Blue; saved tenant customization retains its primary hue. Runtime hover darkens a fill with light text or lightens a fill with dark text, keeping a distinct state; static fallback hover remains separately defined.
 - **Action Label** (`brand-ink`): primary button text derived from the action fill's luminance, choosing dark slate or white for readable labels. It is independent of the panel background.
 
 ### Secondary
@@ -275,7 +276,7 @@ The palette follows the supplied Axiom identity and the approved tenant branding
 - **Cool Background** (`bg`): page canvas.
 - **White** (`bg-elevated`): light panels, navigation and controls.
 - **Divider** (`line`): quiet panel and navigation boundaries.
-- **Strong Divider** (`line-strong`): field outlines.
+- **Strong Divider** (`line-strong`): field and secondary-action outlines.
 - **Quiet Surface States** (`surface-hover`, `surface-selected`, `surface-sunken`): hover, selected and recessed regions, including table headers.
 - **Deep Slate and Light Slate** (`dark-bg`, `dark-bg-elevated`, `dark-ink`, `dark-muted`): dark canvas, elevated regions and their text hierarchy. The dark divider, strong divider and surface-state roles preserve the same boundaries and interactions.
 
@@ -319,15 +320,15 @@ Authenticated navigation uses one native left modal with a dimmed backdrop (`rgb
 
 ## Shapes
 
-Buttons and visually button-like navigation use square corners. Inputs and banners retain the 10px control radius. Ticket cards and panels have their own slightly larger corners. Status badges are pills; numbered steps use circular markers and straight underline progress indicators. Maintain these functional distinctions rather than assigning one radius everywhere.
+Action buttons and visually button-like navigation use softly rounded corners through the button and navigation roles. Underlined view tabs remain straight; disclosure and sort controls retain lightweight component-specific shapes. Inputs and banners retain the 10px control radius. Ticket cards retain their ticket radius; shared panels use the larger panel radius. Status badges are pills; numbered steps use circular markers and straight underline progress indicators. Maintain these functional distinctions rather than assigning one radius everywhere.
 
 ## Components
 
 ### Buttons
 
-Primary actions use the action role and derived action-label color; secondary actions use the elevated surface with a divider border and primary text; destructive actions use the danger fill. All have a minimum height of 44px, weight 700, and the documented control padding. Hover uses the action-hover and surface-hover roles; destructive hover follows the implemented mode-specific treatment. Disabled buttons have opacity 0.45 and a not-allowed cursor. Color transitions take 150ms with `ease`; reduced-motion preference removes the transition.
+Primary actions use the action role and derived action-label color; secondary actions use the elevated surface with a strong-divider outline and muted text; destructive actions use the danger fill. All have a minimum height of 44px, weight 700, and the documented control padding. Hover uses the action-hover and surface-hover roles; destructive hover follows the implemented mode-specific treatment. Disabled shared buttons use the recessed surface, muted text, divider outline and full opacity with a not-allowed cursor; hover does not change their state. Color transitions take 150ms with `ease`; reduced-motion preference removes the transition.
 
-The owner approved straight-edged buttons on 2026-10-01. The shared button-radius token is zero; general structural containers retain their existing rounding.
+The owner’s 2026-10-04 reference images supersede the earlier straight-edged action contract. Shared actions and sidebar destinations use the button radius; panels use the softer panel radius. Existing page composition, Roboto hierarchy, fields, ticket cards and underlined view tabs remain intact.
 
 ### Heading Help
 
@@ -365,11 +366,13 @@ Loading, empty, success and error messages use readable text and the existing st
 
 ### Navigation
 
-Authenticated navigation groups Home, Work, People, Administration and Account, omitting empty groups. Independent administrative capability adds its destination alongside the actual operational role. Current project state and capabilities determine discoverable links; destination APIs remain authoritative. Square icon-led links are at least 46px tall, inherit primary text at rest, and use action text over the hover surface on hover. The current destination has primary text, selected-surface fill, bold weight and `aria-current="page"`. Below 1000px the same grouped destinations occupy the native left drawer on every authenticated route. Account contains Appearance, Profile, Assignment Details, Switch project and Sign out. Without a selected, currently authorized project, navigation shows Projects and Account destinations. Appearance, Profile, Assignment Details and Projects links retain project query context when authorized; existing Home and Team Management destinations are not duplicated. The last successfully authorized project is remembered per tab in sessionStorage and revalidated through current project inventory and capabilities; it is a navigation hint, never authority. Project content waits for current access, while account pages remain available if remembered access fails. Sign out is a full-width square 46px button with a top divider, primary text, hover surface and visible focus. It disables with “Signing out…” while pending, reports failures with an alert, and clears the remembered project and redirects to login only after the existing logout succeeds. No authenticated page has a redundant top-right Menu. In-page view switches (Operations, Project Review, Team Management) retain the square underline treatment. Keep the projects skip link, which becomes visible on focus and targets the main content.
+Authenticated navigation groups Home, Work, People, Administration and Account, omitting empty groups. Independent administrative capability adds its destination alongside the actual operational role. Current project state and capabilities determine discoverable links; destination APIs remain authoritative. Softly rounded icon-led links are at least 46px tall, inherit primary text at rest, and use action text over the hover surface on hover. The current destination has primary text, selected-surface fill, bold weight and `aria-current="page"`. Below 1000px the same grouped destinations occupy the native left drawer on every authenticated route. Account contains Appearance, Profile, Assignment Details, Switch project and Sign out. Without a selected, currently authorized project, navigation shows Projects and Account destinations. Appearance, Profile, Assignment Details and Projects links retain project query context when authorized; existing Home and Team Management destinations are not duplicated. The last successfully authorized project is remembered per tab in sessionStorage and revalidated through current project inventory and capabilities; it is a navigation hint, never authority. Project content waits for current access, while account pages remain available if remembered access fails. Sign out is a full-width softly rounded 46px button with a top divider, primary text, hover surface and visible focus. It disables with “Signing out…” while pending, reports failures with an alert, and clears the remembered project and redirects to login only after the existing logout succeeds. No authenticated page has a redundant top-right Menu. In-page view switches (Operations, Project Review, Team Management) retain the square underline treatment. Keep the projects skip link, which becomes visible on focus and targets the main content.
+
+Use decorative inline stroke SVGs beside retained text labels: people for Personnel, a building for Companies, a gear for Project Settings, a shield for Access and Recovery, a chart for Diagnostics, and a headset for Help Desk. Account Appearance uses sliders, Profile a person, and Assignment Details a crew hard hat. Icons inherit the readable label color and do not replace accessible destination names.
 
 ### Home summaries
 
-Four linked counts share a bordered, rounded strip with cell dividers, action-colored icons and tabular values. Hover changes only the surface. Labels state what the count measures; adjacent independent help retains date qualifiers and all-date definitions; the desktop chevron disappears below 1200px. At phone widths the strip becomes a two-by-two grid while each linked cell retains its generous padding. The date and Refresh Home action remain visible and wrap together. Summary and chart selections lead to matching existing scoped request views. Recent, upcoming and draft panels identify loaded-record limits in their heading help; summaries cover their authorized population rather than counting displayed rows. Current-state totals and upcoming UTC dates remain visually distinct, and crew distribution never implies productivity.
+Four linked counts share a bordered, rounded strip with cell dividers and tabular values. The leading icons sit in 40px accents with 8px padding and 12px corners: action for ordinary totals, warning for Due Soon, and success for Completed, over a 10% token tint mixed with the elevated surface. Hover changes only the surface. Labels state what the count measures; adjacent independent help retains date qualifiers and all-date definitions; the desktop chevron disappears below 1200px. At phone widths the strip becomes a two-by-two grid while each linked cell retains its generous padding. The date and Refresh Home action remain visible and wrap together. Summary and chart selections lead to matching existing scoped request views. Recent, upcoming and draft panels identify loaded-record limits in their heading help; summaries cover their authorized population rather than counting displayed rows. Current-state totals and upcoming UTC dates remain visually distinct, and crew distribution never implies productivity.
 
 ### Chips / Cards
 
@@ -385,7 +388,7 @@ Empty lists use a dashed empty-state block with a short explanation. Step chips 
 
 ### Operations workspace
 
-Queue health uses five clickable measures and a native details dialog, with a blue count heat map carrying numeric labels. Work queues use keyboard-navigable tabs, labeled filters, selectable page sizes, and native disclosure rows. Collapsed descriptions are ellipsized; expanded rows retain full descriptions and workflow controls. Metric values use 1.8rem tabular numerals; section headings use 1.25rem, summary rows 0.9rem, metric labels 0.875rem, and detail links 0.75rem. These are compact data-display roles, not a replacement type system. Overdue measures reuse the existing warning badge colors. Inputs retain the 10px radius; interactive buttons use square corners and tabs retain their square bottom selection rule.
+Queue health uses five clickable measures and a native details dialog, with a blue count heat map carrying numeric labels. Work queues use keyboard-navigable tabs, labeled filters, selectable page sizes, and native disclosure rows. Collapsed descriptions are ellipsized; expanded rows retain full descriptions and workflow controls. Metric values use 1.8rem tabular numerals; section headings use 1.25rem, summary rows 0.9rem, metric labels 0.875rem, and detail links 0.75rem. These are compact data-display roles, not a replacement type system. Overdue measures reuse the existing warning badge colors. Inputs retain the 10px radius; action buttons use the shared rounded shape and tabs retain their square bottom selection rule.
 
 Requester My Requests and field Crew Work reuse the KPI explorer through a compact chart-entry row and labeled native dialog. Requester opens on an authorized request-status donut; field opens on an open-request Area heat map. The entry leaves the queue visible and fetches charts only when opened. On narrow screens the Requester KPI field spans the dialog while visualization and grouping share a row when both fit; the dialog scrolls internally without horizontal page overflow.
 
@@ -420,7 +423,7 @@ Dark mode gives the mark and icon frames a white backing, preserving the supplie
 - Do identify loaded-record scope and retain appropriate collapsible sections and chart data disclosures.
 - Do separate account display mode from shared tenant branding and preserve current role authority.
 - Do keep active commands visible, freeze uncertain attempts and require deliberate reload of stale evidence.
-- Do keep project destinations square, keyboard focused and at least 44px tall, including compact Home actions.
+- Do keep project destinations softly rounded, keyboard focused and at least 44px tall, including compact Home actions.
 - Do preserve scope and date definitions in adjacent heading help, visible request references and dates, and contained table scrolling in compact Home records.
 - Do use grammatical title case for interface headings and keep supplemental help independent of neighboring actions.
 - Do retain data, errors, loading and empty states, and confirmation facts in the visible interface.

@@ -16,8 +16,12 @@ export function applyAppearance(value:Appearance){
  const root=document.documentElement,dark=value.mode==='DARK'||value.mode==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches;
  root.dataset.theme=dark?'dark':'light';root.style.setProperty('--brand',value.branding.primary);root.style.setProperty('--accent',value.branding.accent);
  // Preserve the selected brand hue while deriving accessible text/link and button colors.
- const action=readable(value.branding.primary,dark);root.style.setProperty('--action',action);root.style.setProperty('--action-hover',action);
- root.style.setProperty('--brand-ink',luminance(action)>0.179?'#111820':'#ffffff');
+ const primary=value.branding.version===0&&value.branding.primary.toLowerCase()==='#315f85'?'#0b4bb3':value.branding.primary;
+ const action=readable(primary,dark),level=luminance(action);
+ const lightInk=1.05/(level+0.05)>=(level+0.05)/(luminance('#111820')+0.05);
+ const hover='#'+[1,3,5].map(i=>Math.round(parseInt(action.slice(i,i+2),16)*0.84+(lightInk?0:255)*0.16).toString(16).padStart(2,'0')).join('');
+ root.style.setProperty('--action',action);root.style.setProperty('--action-hover',hover);
+ root.style.setProperty('--brand-ink',lightInk?'#ffffff':'#111820');
 }
 export function AppearanceTheme({initial}:{initial?:Appearance}){
  useEffect(()=>{

@@ -1,3 +1,4 @@
+import { selectedTeamAreas } from '../application/survey-teams';
 import type { DbClient, Page, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import { ConflictError } from '@/shared/errors';
@@ -9,18 +10,21 @@ import type { ChangeSurveyRoleInput, SurveyRoleObligations, SurveyRoleRepository
 interface TeamRow {
   id: UUID; name: string; aor_node_id: UUID; area_name: string; lead_user_id: UUID;
   lead_name: string; lead_email: string; lead_role: ProjectRole; lead_active: boolean;
-  member_count: number; row_version: number;
+  member_count: number; row_version: number; areas: TeamArea[];
 }
 interface PersonRow {
   user_id: UUID; name: string; email: string; role: ProjectRole; active: boolean; team_id: UUID | null; team_name: string | null; role_version: number;
 }
 const summary = (row: TeamRow): SurveyTeamSummary => ({
-  id: row.id, name: row.name, areaId: row.aor_node_id, areaName: row.area_name,
+  id: row.id, name: row.name, areaId: row.aor_node_id, areaName: row.area_name, areas: row.areas,
   lead: { userId: row.lead_user_id, name: row.lead_name, email: row.lead_email, role: row.lead_role, active: row.lead_active },
   memberCount: row.member_count, rowVersion: row.row_version,
 });
 const person = (row: PersonRow): TeamPerson => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role, active: row.active });
 const teamSelect = `SELECT t.id,t.name,t.aor_node_id,n.name AS area_name,t.lead_user_id,
+  COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a.name) ORDER BY lower(a.name),a.id)
+    FROM survey_team_areas ta JOIN aor_nodes a ON a.tenant_id=ta.tenant_id AND a.project_id=ta.project_id AND a.id=ta.area_id
+    WHERE ta.tenant_id=t.tenant_id AND ta.project_id=t.project_id AND ta.team_id=t.id AND ta.deactivated_at IS NULL),'[]'::jsonb) AS areas,
   u.name AS lead_name,u.email AS lead_email,pm.role AS lead_role,(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AS lead_active,
   t.row_version,(SELECT COUNT(*)::int FROM survey_team_members m
     WHERE m.tenant_id=t.tenant_id AND m.project_id=t.project_id AND m.team_id=t.id AND m.deactivated_at IS NULL) AS member_count
@@ -70,6 +74,16 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     return rows.length === 1;
   }
 
+  async lockSuperintendent(db:DbClient,actor:TeamActor):Promise<boolean> {
+    const result=await db.query(
+      `SELECT pm.user_id FROM project_memberships pm JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
+       JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1
+       WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='SURVEY_SUPERINTENDENT' AND pm.access_disabled_at IS NULL
+       AND u.deactivated_at IS NULL AND u.session_version=$4 AND c.type<>'SUBCONTRACTOR' FOR UPDATE OF pm`,
+      [actor.tenantId,actor.projectId,actor.actorId,actor.sessionVersion]);
+    return result.rows.length===1;
+  }
+
   async team(db: DbClient, tenantId: UUID, projectId: UUID, teamId: UUID): Promise<SurveyTeamDetail | null> {
     const { rows } = await db.query<TeamRow>(`${teamSelect} AND t.id=$3`, [tenantId, projectId, teamId]);
     if (!rows[0]) return null;
@@ -84,15 +98,17 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     return { ...summary(rows[0]), members: members.rows.map(person) };
   }
 
-  async list(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery): Promise<Page<SurveyTeamSummary>> {
+  async list(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery, leadUserId?: UUID): Promise<Page<SurveyTeamSummary>> {
     const search = `%${query.search}%`;
-    const filter = ` AND (t.name ILIKE $3 OR n.name ILIKE $3)`;
+    const filter = ` AND ($4::uuid IS NULL OR t.lead_user_id=$4) AND (t.name ILIKE $3 OR EXISTS (SELECT 1 FROM survey_team_areas ta
+      JOIN aor_nodes a ON a.tenant_id=ta.tenant_id AND a.project_id=ta.project_id AND a.id=ta.area_id
+      WHERE ta.tenant_id=t.tenant_id AND ta.project_id=t.project_id AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND a.name ILIKE $3))`;
     const count = await db.query<{ total: number }>(
       `SELECT COUNT(*)::int AS total FROM survey_teams t
        JOIN aor_nodes n ON n.tenant_id=t.tenant_id AND n.project_id=t.project_id AND n.id=t.aor_node_id
-       WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL${filter}`, [tenantId, projectId, search]);
-    const { rows } = await db.query<TeamRow>(`${teamSelect}${filter} ORDER BY lower(t.name),t.id LIMIT $4 OFFSET $5`,
-      [tenantId, projectId, search, query.limit, query.offset]);
+       WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL${filter}`, [tenantId, projectId, search,leadUserId??null]);
+    const { rows } = await db.query<TeamRow>(`${teamSelect}${filter} ORDER BY lower(t.name),t.id LIMIT $5 OFFSET $6`,
+      [tenantId, projectId, search,leadUserId??null, query.limit, query.offset]);
     return { data: rows.map(summary), total: count.rows[0]!.total, limit: query.limit, offset: query.offset };
   }
 
@@ -101,7 +117,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
       JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)
       JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
-      WHERE pm.project_id=$2 AND pm.role IN ('REQUESTER','VIEWER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
+      WHERE pm.project_id=$2 AND pm.role IN ('SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
         AND (u.name ILIKE $3 OR u.email ILIKE $3 OR pm.role ILIKE $3 OR replace(pm.role,'_',' ') ILIKE $3)`;
     const values = [tenantId, projectId, `%${query.search}%`];
     const count = await db.query<{ total: number }>(`SELECT COUNT(*)::int AS total ${from}`, values);
@@ -164,6 +180,12 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
   }
 
   async save(db: DbClient, actor: TeamActor, teamId: UUID, input: SaveSurveyTeamInput, previous: SurveyTeamDetail | null): Promise<void> {
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&previous){
+      const removed=previous.members.filter(member=>!input.memberIds.includes(member.userId)).map(member=>member.userId);
+      const links=await db.query(`SELECT id FROM crew_rosters WHERE tenant_id=$1 AND project_id=$2 AND deactivated_at IS NULL
+        AND (party_chief_id=ANY($3::uuid[]) OR instrument_man_id=ANY($3::uuid[])) LIMIT 1`,[actor.tenantId,actor.projectId,removed]);
+      if(links.rows.length)throw new ConflictError('This person still has a crew assignment. Resolve that assignment before removing them from the team.');
+    }
     const values = [actor.tenantId, actor.projectId, teamId, input.name, input.areaId, input.leadUserId];
     if (previous) {
       const { rows } = await db.query<{ id: UUID }>(
@@ -173,6 +195,13 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     } else await db.query(
       `INSERT INTO survey_teams (tenant_id,project_id,id,name,aor_node_id,lead_user_id,created_by)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`, [...values, actor.actorId]);
+    const areaIds = selectedTeamAreas(input);
+    await db.query(`UPDATE survey_team_areas SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3
+      AND deactivated_at IS NULL AND NOT(area_id=ANY($4::uuid[]))`, [actor.tenantId,actor.projectId,teamId,areaIds]);
+    await db.query(`INSERT INTO survey_team_areas(tenant_id,project_id,team_id,area_id)
+      SELECT $1,$2,$3,unnest($4::uuid[]) ON CONFLICT(tenant_id,project_id,team_id,area_id) DO UPDATE SET
+      assigned_at=CASE WHEN survey_team_areas.deactivated_at IS NOT NULL THEN NOW() ELSE survey_team_areas.assigned_at END,deactivated_at=NULL`,
+      [actor.tenantId,actor.projectId,teamId,areaIds]);
     await db.query(
       `UPDATE survey_team_members SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3
        AND deactivated_at IS NULL AND NOT(user_id=ANY($4::uuid[]))`, [actor.tenantId, actor.projectId, teamId, input.memberIds]);
@@ -188,11 +217,21 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     const { rows } = await db.query<{ id: UUID }>(`UPDATE survey_teams SET deactivated_at=NOW(),updated_at=NOW(),row_version=row_version+1
       WHERE tenant_id=$1 AND project_id=$2 AND id=$3 AND row_version=$4 AND deactivated_at IS NULL RETURNING id`, [actor.tenantId, actor.projectId, team.id, team.rowVersion]);
     if (!rows[0]) throw new ConflictError('This team changed; reload before deleting', 'STALE_TEAM');
+    await db.query(`UPDATE survey_team_areas SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND deactivated_at IS NULL`, [actor.tenantId,actor.projectId,team.id]);
     await db.query(`UPDATE survey_team_members SET deactivated_at=NOW()
       WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND deactivated_at IS NULL`, [actor.tenantId, actor.projectId, team.id]);
   }
 
   async recordTeamEvent(db: DbClient, actor: TeamActor, event: TeamEvent, payload: Record<string, unknown>): Promise<void> {
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&event==='survey.team_updated'){
+      await db.query(`INSERT INTO survey_notifications(tenant_id,project_id,recipient_id,actor_id,event_key,title,message)
+        SELECT $1,$2,pm.user_id,$3,$4,'Team roster updated',u.name || ' updated ' || $5 || '. Review the team for its current roster.'
+        FROM project_memberships pm JOIN users recipient ON recipient.id=pm.user_id AND recipient.tenant_id=$1
+        JOIN users u ON u.id=$3 AND u.tenant_id=$1 WHERE pm.project_id=$2 AND pm.role='SURVEY_MANAGER'
+        AND pm.access_disabled_at IS NULL AND recipient.deactivated_at IS NULL
+        ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`,[actor.tenantId,actor.projectId,actor.actorId,
+        'team:'+String(payload.teamId)+':'+String(payload.rowVersion),String(payload.name)]);
+    }
     await db.query(`INSERT INTO survey_staffing_events (tenant_id,project_id,actor_id,event_type,payload)
       VALUES ($1,$2,$3,$4,$5::jsonb)`, [actor.tenantId, actor.projectId, actor.actorId, event, JSON.stringify(payload)]);
   }

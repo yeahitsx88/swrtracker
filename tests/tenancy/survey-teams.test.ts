@@ -28,13 +28,13 @@ function fixture() {
   const repo: SurveyRoleRepository = {
     projectContext:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
     areas:async(_db,t,p,q)=>({data:t===tenantId&&p===projectId?[{id:areaId,name:'Train 1'}]:[],total:1,limit:q.limit,offset:q.offset}),
-    lockProject: async()=>({status:'ACTIVE',crewBuild:'FULL'}), lockManager:async()=>true,
+    lockProject: async()=>({status:'ACTIVE',crewBuild:'FULL'}), lockManager:async()=>true, lockSuperintendent:async()=>true,
     team:async(_db,t,p)=> t===tenantId && p===projectId ? current : null,
     list:async(_db,t,p,q)=>({data:t===tenantId&&p===projectId&&current?[current]:[],total:current?1:0,limit:q.limit,offset:q.offset}),
     personnel:async(_db,_t,_p,q)=>({data:people,total:people.length,limit:q.limit,offset:q.offset}),
     activeArea:async()=>true,members:async(_db,t,p,ids)=>t===tenantId&&p===projectId?people.filter(person=>ids.includes(person.userId)):[],
     nameExists:async()=>false,
-    save:async(_db,_actor,newId,value)=>{ writes.push('save'); current={id:newId,name:value.name,areaId:value.areaId,areaName:'Train 1',lead:people.find(person=>person.userId===value.leadUserId)!,memberCount:value.memberIds.length,rowVersion:(current?.rowVersion??0)+1,members:people.filter(person=>value.memberIds.includes(person.userId))}; },
+    save:async(_db,_actor,newId,value)=>{ writes.push('save'); current={id:newId,name:value.name,areaId:value.areaId,areaName:'Train 1',areas:(value.areaIds??[value.areaId]).map(id=>({id,name:'Train 1'})),lead:people.find(person=>person.userId===value.leadUserId)!,memberCount:value.memberIds.length,rowVersion:(current?.rowVersion??0)+1,members:people.filter(person=>value.memberIds.includes(person.userId))}; },
     deactivate:async()=>{writes.push('deactivate');current=null;}, recordTeamEvent:async(_db,_actor,event,payload)=>{writes.push(event);events.push(payload);},
     roleObligations:async()=>obligations,
     changeOperationalRole:async(_db,_actor,value)=>{const member=people.find(p=>p.userId===value.userId)!;member.role=value.role;member.roleVersion++;writes.push('role');return member.roleVersion;},
@@ -51,8 +51,8 @@ test('team creation and edits record atomic project events, while no-op saves re
   assert.deepEqual(f.writes,['save','survey.team_created','save','survey.team_updated']);
 });
 
-test('all team reads and writes reject non-Manager roles before repository access', async()=>{
-  const f=fixture(); const wrong={...actor,actorRole:'SURVEY_SUPERINTENDENT' as const};
+test('Party Chiefs cannot use Manager or Superintendent team controls', async()=>{
+  const f=fixture(); const wrong={...actor,actorRole:'PARTY_CHIEF' as const};
   await assert.rejects(saveSurveyTeam(f.repo,db,wrong,input()),ForbiddenError);
   await assert.rejects(deactivateSurveyTeam(f.repo,db,wrong,teamId,1),ForbiddenError);
   await assert.rejects(readSurveyTeams(f.repo,db,wrong,{search:'',limit:25,offset:0}),ForbiddenError);
@@ -165,16 +165,16 @@ const roleInput = (value: Partial<ChangeSurveyRoleInput> = {}): ChangeSurveyRole
   userId:chiefId,expectedRole:'PARTY_CHIEF',expectedRoleVersion:1,role:'INSTRUMENT_MAN',confirmRoleChanges:true,...value,
 });
 
-test('fixed survey role assignment/promotion/demotion/removal retains one existing identity and records each change',async()=>{
-  const f=fixture();f.people[0].role='REQUESTER';
-  for(const role of ['INSTRUMENT_MAN','PARTY_CHIEF','SURVEY_SUPERINTENDENT','REQUESTER'] as const) {
+test('survey department promotion and demotion retains one existing identity and records each change',async()=>{
+  const f=fixture();f.people[0].role='PARTY_CHIEF';
+  for(const role of ['INSTRUMENT_MAN','PARTY_CHIEF','SURVEY_SUPERINTENDENT','INSTRUMENT_MAN'] as const) {
     const member=f.people[0]; const from=member.role;
     const result=await changeSurveyRole(f.repo,db,actor,roleInput({expectedRole:from,expectedRoleVersion:member.roleVersion,role}));
     assert.equal(result.changed,true);assert.equal(result.userId,chiefId);assert.equal(result.role,role);
   }
   assert.equal(f.people[0].roleVersion,5);assert.equal(f.people.length,2);
   assert.deepEqual(f.writes,['role','survey.role_changed','role','survey.role_changed','role','survey.role_changed','role','survey.role_changed']);
-  assert.equal(f.events[3]!.role,'REQUESTER');assert.equal(f.events[3]!.historicalTicketAssignmentsUnchanged,true);
+  assert.equal(f.events[3]!.role,'INSTRUMENT_MAN');assert.equal(f.events[3]!.historicalTicketAssignmentsUnchanged,true);
 });
 
 test('role no-op writes no audit/session change; stale role or account version is rejected including ABA',async()=>{
@@ -191,7 +191,7 @@ test('role no-op writes no audit/session change; stale role or account version i
 
 test('role edits never replace Survey Manager or unrelated elevated project roles',async()=>{
   const f=fixture();
-  for(const role of ['SURVEY_MANAGER','PROJECT_ADMIN','CAD_LEAD','DEPARTMENT_MANAGER'] as const) {
+  for(const role of ['REQUESTER','VIEWER','SURVEY_MANAGER','PROJECT_ADMIN','CAD_LEAD','DEPARTMENT_MANAGER'] as const) {
     f.people[0].role=role;
     await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput({expectedRole:role})),ConflictError);
   }
@@ -199,12 +199,12 @@ test('role edits never replace Survey Manager or unrelated elevated project role
   assert.deepEqual(f.writes,[]);
 });
 
-test('removing a survey role requires removing the team member and replacing the lead first',async()=>{
-  const f=fixture();f.people[0].teamId=teamId;f.obligations.leadsTeam=true;
-  await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput({role:'REQUESTER'})),/Choose another team lead/);
-  f.obligations.leadsTeam=false;
-  await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput({role:'REQUESTER'})),/Remove this person from their named team/);
-  // Changing between supported roles need not remove organizational membership.
+test('survey Managers cannot move personnel outside the survey department, including direct application calls',async()=>{
+  const f=fixture();f.people[0].teamId=teamId;
+  for (const role of ['REQUESTER','VIEWER','PROJECT_ADMIN']) {
+    await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput({role:role as ChangeSurveyRoleInput['role']})),ValidationError);
+  }
+  assert.deepEqual(f.writes,[]);
   await changeSurveyRole(f.repo,db,actor,roleInput());
   assert.equal(f.events[0]!.retainedTeamId,teamId);
 });
@@ -262,3 +262,21 @@ test('team and survey-role commands recheck current session before any domain or
    assert.equal(domain,0);assert.equal(ledger,0);assert.deepEqual(f.writes,[]);
  }
 });
+
+ test('teams retain multiple Areas and compare coverage as a set',async()=>{
+  const f=fixture();const areaIds=[areaId,id(80)];
+  await saveSurveyTeam(f.repo,db,actor,{...input(),areaIds});
+  assert.deepEqual(f.events[0]!.areaIds,areaIds);
+  const created=f.events[0]!.teamId as UUID;
+  const before=f.writes.length;
+  assert.equal((await saveSurveyTeam(f.repo,db,actor,{...input(),teamId:created,expectedVersion:1,areaIds:[...areaIds].reverse()})).changed,false);
+  assert.equal(f.writes.length,before);
+ });
+ test('all selected Areas are validated before any team writes',async()=>{
+  const f=fixture();f.repo.activeArea=async(_db,_tenant,_project,selected)=>selected===areaId;
+  await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...input(),areaIds:[areaId,id(80)]}),NotFoundError);
+  await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...input(),areaIds:[]}),ValidationError);
+  await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...input(),areaIds:[areaId,areaId]}),ValidationError);
+  await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...input(),areaIds:[id(80)]}),ValidationError);
+  assert.deepEqual(f.writes,[]);
+ });

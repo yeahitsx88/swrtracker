@@ -10,7 +10,7 @@ import {StatusBadge} from '@/components/ui';
 interface TicketListProps {projectId:string;tickets:TicketRecord[];areaNames?:Map<string,AreaName>;renderActions?:(ticket:TicketRecord)=>ReactNode;emptyTitle?:string;emptyMessage?:string;}
 export function TicketList({projectId,tickets,areaNames,renderActions,emptyTitle='No requests yet',emptyMessage='Requests you can see will appear here.'}:TicketListProps){
 
- return <div className="stack">{!tickets.length?<div className="empty-state" role="status"><strong>{emptyTitle}</strong><span>{emptyMessage}</span></div>:null}<AdministrationRecords label="requests" description="Filter, sort and export requests on this loaded page. Use this view’s search or page controls to review remaining authorized history." rows={tickets} id={t=>t.id} columns={[
+ return <div className="stack">{!tickets.length?<div className="empty-state" role="status"><strong>{emptyTitle}</strong><span>{emptyMessage}</span></div>:null}<AdministrationRecords preferencesKey={`project:${projectId}:requests`} label="requests" description="Filter, sort and export requests on this loaded page. Use this view’s search or page controls to review remaining authorized history." rows={tickets} id={t=>t.id} columns={[
  {key:'number',label:'Number',text:t=>t.ticketNumber??'Draft',render:t=><Link className="app-link" href={`/projects/${projectId}/tickets/${t.id}`}>{t.ticketNumber??'Open draft'}</Link>},
  {key:'description',label:'Request',className:'request-description-column',text:t=>t.description||'Untitled draft'},
  {key:'type',label:'Type',className:'request-type-column',text:t=>t.ticketType?ticketTypeLabel(t.ticketType):'Not specified'},

@@ -2,8 +2,9 @@ import { ForbiddenError } from '@/shared/errors';
 import { getProjectRole } from './get-project-role';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
+import { surveyTeamCoverageQuery } from './survey-team-coverage';
 
-/** Resolve and lock the explicit review grant inside the caller's mutation transaction. */
+/** Resolve current role, team coverage or explicit grant inside the mutation transaction. */
 export async function requireSurveyReviewAuthority(
   db: DbClient,
   scope: { tenantId: UUID; projectId: UUID; aorNodeId: UUID | null },
@@ -14,10 +15,17 @@ export async function requireSurveyReviewAuthority(
     if (current !== 'SURVEY_MANAGER') throw new ForbiddenError('Current Survey Manager authority is required');
     return { kind: 'PROJECT_ROLE', role: 'SURVEY_MANAGER' };
   }
-  if (actor.actorRole !== 'SURVEY_SUPERINTENDENT') {
-    throw new ForbiddenError('Survey review requires the Survey Manager or an explicitly authorized Area Superintendent');
+  if (actor.actorRole !== 'SURVEY_SUPERINTENDENT' && actor.actorRole !== 'PARTY_CHIEF') {
+    throw new ForbiddenError('Survey review requires the Survey Manager, responsible Superintendent or a Chief on the responsible team.');
   }
   if (!scope.aorNodeId) throw new ForbiddenError('An incomplete draft has no delegated Area review authority');
+  const coverage=await db.query<{team_id:UUID;area_id:UUID;row_version:number}>(
+    `SELECT coverage.* FROM (SELECT $1::uuid AS tenant_id,$2::uuid AS project_id,$3::uuid AS aor_node_id) t
+     CROSS JOIN LATERAL (${surveyTeamCoverageQuery('$4',actor.actorRole)}
+       ORDER BY st.id LIMIT 1 FOR SHARE OF st,m,ta,pm,u,c) coverage`,
+    [scope.tenantId,scope.projectId,scope.aorNodeId,actor.actorId]);
+  if(coverage.rows[0])return {kind:'TEAM_COVERAGE',teamId:coverage.rows[0].team_id,teamVersion:coverage.rows[0].row_version,areaId:coverage.rows[0].area_id,role:actor.actorRole};
+  if(actor.actorRole==='PARTY_CHIEF')throw new ForbiddenError('Your current team does not cover this request Area.');
   const { rows } = await db.query<{
     id: UUID; aor_node_id: UUID; granted_by: UUID; granted_at: Date;
   }>(

@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import jwt from 'jsonwebtoken';
+assert.equal(process.env.SWR_SURVEY_WORKFLOW_TEST,'1');
+const f=JSON.parse(await fs.readFile('.local-survey-ui.json','utf8'));assert.equal(f.origin,'http://127.0.0.1:3150');
+const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');
+const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const checks=[];function check(value,label){assert(value,label);checks.push(label);}
+const cookie={name:'swr_session',value:jwt.sign({sub:f.manager,tenantId:f.tenant,sv:1},f.secret,{algorithm:'HS256',expiresIn:'1h',jwtid:crypto.randomUUID()}),url:f.origin,httpOnly:true,sameSite:'Lax'};
+try {
+ const context=await browser.newContext({viewport:{width:1440,height:1000}});await context.addCookies([cookie]);
+ await context.addInitScript(()=>{window.pageFades=[];const original=Element.prototype.animate;Element.prototype.animate=function(frames,options){if(this.classList.contains('project-page'))window.pageFades.push(options);return original.call(this,frames,options);};});
+ const page=await context.newPage();await page.goto(`${f.origin}/projects/${f.project}/survey/teams`);
+ await page.getByRole('tab',{name:'Areas',exact:true}).click();
+ const code=`A-${crypto.randomUUID().slice(0,8)}`,name=`Browser Area ${code}`;
+ await page.getByLabel('Area name',{exact:true}).fill(name);await page.getByLabel('Area code',{exact:true}).fill(code);
+ await page.getByRole('button',{name:'Create Area',exact:true}).click();await page.getByText('Area created. It is available to requesters and teams.',{exact:true}).waitFor();
+ await page.getByLabel('Search Areas',{exact:true}).fill(name);await Promise.all([page.waitForResponse(r=>r.url().includes('/survey/teams')&&new URL(r.url()).searchParams.get('search')===name),page.getByRole('button',{name:'Search',exact:true}).click()]);await page.getByText(name,{exact:true}).waitFor();
+ check(await page.getByText(name,{exact:true}).count()===1,'Manager creates Area through visible controls');
+ const tree=await (await context.request.get(`${f.origin}/api/projects/${f.project}/aor`)).json();check(tree.nodes.some(n=>n.name===name&&n.code===code.toUpperCase()),'Area appears in the shared requester hierarchy');
+ await page.getByLabel('Area name',{exact:true}).fill(name.toLowerCase());await page.getByLabel('Area code',{exact:true}).fill(`D-${code}`);
+ await page.getByRole('button',{name:'Create Area',exact:true}).click();await page.getByRole('button',{name:'Reload Areas',exact:true}).waitFor();
+ check(await page.getByRole('button',{name:'Create Area',exact:true}).isDisabled(),'Duplicate response requires reload before retry');
+ await page.getByRole('button',{name:'Reload Areas',exact:true}).click();
+ const endpoint=`${f.origin}/api/projects/${f.project}/survey/areas`,key=crypto.randomUUID(),data={name:`Replay ${code}`,code:`R-${code}`};
+ const a=await context.request.post(endpoint,{data,headers:{'Idempotency-Key':key}}),b=await context.request.post(endpoint,{data,headers:{'Idempotency-Key':key}});
+ check(a.status()===201&&b.status()===201&&JSON.stringify(await a.json())===JSON.stringify(await b.json()),'Exact HTTP retry returns the same Area');
+ await page.screenshot({path:'.local-survey-areas-desktop.png',fullPage:true});
+ check(await page.evaluate(()=>window.pageFades.some(a=>a.duration===180)),'Page entry uses 180ms opacity animation');
+ await page.getByRole('link',{name:'Home',exact:true}).first().click();await page.getByRole('button',{name:'Arrange dashboard',exact:true}).waitFor();
+ check(await page.evaluate(()=>window.pageFades.length>=2),'Client navigation starts another fade');
+ await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Project navigation',exact:true}).click();
+ const dialog=page.getByRole('dialog');check(await dialog.evaluate(n=>getComputedStyle(n).animationDuration)==='0.6s','Circular reveal uses the reference 600ms timing');check(await dialog.evaluate(n=>getComputedStyle(n).animationName)==='popup-enter','Popup has the requested entrance transition');
+ const close=page.getByRole('button',{name:'Close navigation',exact:true});check(await close.evaluate(n=>getComputedStyle(n).borderTopColor)==='rgba(0, 0, 0, 0)','Close icon border is transparent');
+ check(await close.evaluate(n=>n.getBoundingClientRect().height>=44),'Close icon retains 44px touch target');
+ await page.keyboard.press('Tab');await close.focus();check(await close.evaluate(n=>getComputedStyle(n).outlineStyle)!=='none','Close icon retains keyboard focus indication');
+ await page.keyboard.press('Escape');check(await dialog.getAttribute('data-closing')==='true','Escape animates circular dismissal before native close');await dialog.waitFor({state:'hidden'});check(await dialog.count()===0||!await dialog.isVisible(),'Escape closes navigation');
+ const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});await reduced.addCookies([cookie]);const rp=await reduced.newPage();await rp.goto(`${f.origin}/projects/${f.project}/home`);
+ await rp.getByRole('button',{name:'Project navigation',exact:true}).click();check(await rp.getByRole('dialog').evaluate(n=>getComputedStyle(n).animationName)==='none','Reduced motion removes popup animation');
+ check(await rp.locator('.project-page').evaluate(n=>n.getAnimations().length===0),'Reduced motion removes page animation');
+ await rp.screenshot({path:'.local-survey-menu-mobile.png',fullPage:true});
+ console.log(JSON.stringify({checks},null,2));await fs.writeFile('.local-survey-area-motion-results.json',JSON.stringify({checks},null,2));
+}finally{await browser.close();}

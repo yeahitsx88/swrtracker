@@ -12,6 +12,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { AuditEventType } from '@/modules/audit/domain/types';
 import type { Ticket, TicketStatus } from '../domain/types';
 import type { ITicketRepository, TicketStatusPatch, VisibilityScope } from './ports';
+import {resolveRejectionProposal} from './rejection-proposal';
 
 export function assertActorHasRole(
   actorRole: ProjectRole,
@@ -40,7 +41,7 @@ export async function performTransition(
 ): Promise<Ticket> {
   const { tenantId, ticketId, actorId, actorRole, permittedRoles, to, patch, eventType } = options;
   const eventPayload = { ...options.eventPayload };
-  return executeWorkflowTransition(db, {
+  const result=await executeWorkflowTransition(db, {
     tenantId,
     ticketId,
     actorId,
@@ -80,4 +81,8 @@ export async function performTransition(
       updatedAt: new Date(),
     }),
   });
+  if(to==='RETURNED_FOR_CORRECTION'||to==='REQUESTER_CANCELED'||to==='SURVEY_CANCELED'){
+    await resolveRejectionProposal(db,{tenantId,ticketId,actorId,actorRole},'SUPERSEDED');
+  }
+  return result;
 }

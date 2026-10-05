@@ -10,6 +10,7 @@ export interface WorkforceRepository {
  lockActor(db:DbClient,actor:TeamActor):Promise<boolean>;
  lockSubjects(db:DbClient,tenantId:UUID,projectId:UUID,userIds:UUID[]):Promise<void>;
  lockTransferScope(db:DbClient,actor:TeamActor,instrumentManId:UUID):Promise<void>;
+ sameTeam(db:DbClient,actor:TeamActor,userIds:UUID[]):Promise<boolean>;
  snapshot(db:DbClient,tenantId:UUID,projectId:UUID):Promise<string|null>;
  person(db:DbClient,actor:TeamActor,userId:UUID):Promise<WorkforcePerson|null>;
  personnel(db:DbClient,actor:TeamActor,query:TeamPageQuery):Promise<WorkforcePage>;
@@ -37,7 +38,8 @@ export async function authorizeWorkforceMove(repo:WorkforceRepository,db:DbClien
  await repo.lockTransferScope(db,actor,input.instrumentManId);
  const instrument=await readWorkforceMember(repo,db,actor,input.instrumentManId);
  const chief=await readWorkforceMember(repo,db,actor,input.partyChiefId);
- if(instrument.role!=='INSTRUMENT_MAN'||!instrument.partyChiefId||chief.role!=='PARTY_CHIEF')throw new NotFoundError('Assigned survey member not found');
+ if(instrument.role!=='INSTRUMENT_MAN'||chief.role!=='PARTY_CHIEF')throw new NotFoundError('Assigned survey member not found');
+ if(!await repo.sameTeam(db,actor,[instrument.userId,chief.userId,...(instrument.partyChiefId?[instrument.partyChiefId]:[])]))throw new ForbiddenError('Only the Survey Manager can move people between teams. Choose a Chief from your own team.');
  return {instrument,chief};
 }
 export async function moveWorkforceMember(repo:WorkforceRepository,db:DbClient,actor:TeamActor,input:WorkforceMove){
@@ -47,6 +49,6 @@ export async function moveWorkforceMember(repo:WorkforceRepository,db:DbClient,a
  if(instrument.partyChiefId===chief.userId)return {changed:false};
  // A transfer preserves the authorized pool: the old and new Chiefs both still report to this Superintendent.
  await repo.move(db,actor,instrument.userId,chief.userId);
- await repo.record(db,actor,{action:'reorganize-roster',instrumentManId:instrument.userId,partyChiefId:chief.userId,previousPartyChiefId:instrument.partyChiefId});
+ await repo.record(db,actor,{action:'reorganize-roster',instrumentManId:instrument.userId,partyChiefId:chief.userId,previousPartyChiefId:instrument.partyChiefId,instrumentManName:instrument.name,partyChiefName:chief.name});
  return {changed:true};
 }

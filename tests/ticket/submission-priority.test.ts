@@ -120,10 +120,11 @@ test('submitTicket derives department but leaves initial sequencing neutral rega
   assert.equal(patchCalls[0]?.departmentId, memberDepartmentId);
   assert.equal(patchCalls[0]?.priority, 'NORMAL');
   assert.equal(departmentLookupCalls, 0);
-  assert.equal(dbCalls.length, 3);
+  assert.equal(dbCalls.length, 4);
   assert.match(dbCalls[0]?.sql ?? '', /FOR UPDATE/);
   assert.equal(dbCalls[1]?.params?.[4], 'ticket.submitted');
   assert.match(dbCalls[2]?.sql ?? '', /notification_outbox/);
+  assert.match(dbCalls[3]?.sql ?? '', /survey_notifications/);
 });
 
 test('submitTicket accepts a manual department at submit time when the requester has no membership', async () => {
@@ -182,12 +183,13 @@ test('submitTicket does not use an obsolete whitelist to set Survey sequencing',
 
   assert.equal(result.priority, 'NORMAL');
   assert.equal(patchCalls[0]?.priority, 'NORMAL');
-  assert.equal(dbCalls.length, 3);
+  assert.equal(dbCalls.length, 4);
   assert.deepEqual(
     dbCalls.slice(1, 2).map((call) => call.params?.[4] as string),
     ['ticket.submitted'],
   );
   assert.match(dbCalls[2]?.sql ?? '', /notification_outbox/);
+  assert.match(dbCalls[3]?.sql ?? '', /survey_notifications/);
 });
 
 test('resubmission preserves the recorded Survey priority and provenance despite title and whitelist',async()=>{

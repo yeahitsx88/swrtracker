@@ -5,6 +5,8 @@ import {getProjectRole} from './get-project-role';
 import {resolveVisibility} from './resolve-visibility';
 import {buildVisibilityClause} from './ticket-visibility-clause';
 import {requireSurveyReviewAuthority} from './survey-review-authority';
+import {assertActiveReviewProject} from '@/modules/ticket/application/rejection-proposal';
+import {assertAssignmentScope} from '@/modules/ticket/application/assignment-scope';
 import {executeIdempotentHttpMutation, type IdempotencyScope, type IdempotentHttpResult} from './idempotency';
 
 interface AuthorityTicket {
@@ -36,23 +38,33 @@ export async function executeAuthorizedTicketMutation<T>(
   `SELECT t.id FROM tickets t WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.id=$3 ${clause.sql}`,
   [scope.tenantId,ticket.project_id,ticketId,...clause.params]);
  if(!visible.rows[0])throw new NotFoundError('Ticket not found');
+ if(['approve','reject','rejection-proposal'].includes(action??''))await assertActiveReviewProject(db,scope.tenantId,ticket.project_id);
  const allowed=(roles:readonly ProjectRole[],relationship=true)=>{
   if(!roles.includes(role)||!relationship)throw new ForbiddenError('Current authority for this ticket action is required');
  };
  switch(action){
+  case 'rejection-proposal':
+   allowed(['PARTY_CHIEF']);
+   await requireSurveyReviewAuthority(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},{actorId:scope.actorId,actorRole:role});break;
+  case 'reject':
+   allowed(['SURVEY_MANAGER','SURVEY_SUPERINTENDENT']);
+   await requireSurveyReviewAuthority(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},{actorId:scope.actorId,actorRole:role});break;
   case 'approve': case 'return':
    await requireSurveyReviewAuthority(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},{actorId:scope.actorId,actorRole:role});break;
   case 'assign':
    if(role==='PARTY_CHIEF')allowed(['PARTY_CHIEF'],ticket.assigned_party_chief_id===scope.actorId);
-   else allowed(['SURVEY_MANAGER','SURVEY_SUPERINTENDENT']);break;
+   else allowed(['SURVEY_MANAGER','SURVEY_SUPERINTENDENT']);
+   await assertAssignmentScope(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},
+     {actorId:scope.actorId,actorRole:role},{partyChiefId:ticket.assigned_party_chief_id,instrumentManId:ticket.assigned_instrument_man_id,
+       previousChiefId:ticket.assigned_party_chief_id,previousInstrumentId:ticket.assigned_instrument_man_id});break;
   case 'start': case 'complete': case 'delay': case 'field-inability':
    allowed(['INSTRUMENT_MAN'],ticket.assigned_instrument_man_id===scope.actorId);break;
-  case 'restart-delay':allowed(['PARTY_CHIEF','SURVEY_MANAGER','SURVEY_SUPERINTENDENT']);break;
+  case 'restart-delay':allowed(['PARTY_CHIEF','SURVEY_MANAGER','SURVEY_SUPERINTENDENT'],role!=='PARTY_CHIEF'||ticket.assigned_party_chief_id===scope.actorId);break;
   case 'priority': case 'need-by':allowed(['SURVEY_MANAGER']);break;
   case 'requester-cancel': case 'follow-up':
    allowed(['REQUESTER'],ticket.requester_id===scope.actorId);break;
   case 'survey-cancel':
-   allowed(['PARTY_CHIEF','INSTRUMENT_MAN','SURVEY_MANAGER'],role!=='INSTRUMENT_MAN'||ticket.assigned_instrument_man_id===scope.actorId);break;
+   allowed(['PARTY_CHIEF','INSTRUMENT_MAN','SURVEY_MANAGER'],(role!=='INSTRUMENT_MAN'||ticket.assigned_instrument_man_id===scope.actorId)&&(role!=='PARTY_CHIEF'||ticket.assigned_party_chief_id===scope.actorId));break;
   case 'field-cancel':
    allowed(['PARTY_CHIEF','INSTRUMENT_MAN','SURVEY_MANAGER','SURVEY_SUPERINTENDENT'],role!=='INSTRUMENT_MAN'||ticket.assigned_instrument_man_id===scope.actorId);break;
   case 'field-inability/validate': case 'field-inability/reject':{

@@ -1,4 +1,5 @@
 'use client';
+import { HomeWidgets } from './home-widgets';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -107,7 +108,7 @@ export function ProjectHome() {
         {stat('Due soon', data.upcoming.total, 'calendar', `${requestHref}?queue=open&view=requests&dateBasis=needBy&dateFrom=${data.dates.today}&dateTo=${data.dates.through}`, 'Today through +3 days')}
         {stat('Completed', data.completed, 'check', `${requestHref}?queue=completed&view=requests`, 'All dates')}
       </div>
-      <div className="home-dashboard-grid" data-audience={manager || superintendent ? 'survey' : requester ? 'requester' : 'field'}>
+      <HomeWidgets storageKey={`${projectId}:${role}`} audience={manager || superintendent ? 'survey' : 'other'}>
         {(manager || superintendent) && areaPanel}
         <Card title={field ? 'Recent Crew Requests' : 'Recent Requests'} description={recordScope(data.recent.data.length,data.recent.total)} actions={<Link className="text-link" href={requestHref}>View all requests</Link>} className="home-recent"><HomeRequests projectId={projectId} tickets={data.recent.data} title="recent requests" requester={requester} /></Card>
 
@@ -124,7 +125,7 @@ export function ProjectHome() {
         {(manager || superintendent) && upcomingPanel}
         {(manager || superintendent) && statusPanel}
         {!(manager || superintendent) && areaPanel}
-      </div>
+      </HomeWidgets>
       {(requester || field) && !caps?.canAdminister && <ScopedKpiEntry projectId={projectId} audience={requester ? 'requester' : 'field'} />}
       {superintendent && !caps?.canAdminister && <LinkedCrew projectId={projectId}/> }
     </>}

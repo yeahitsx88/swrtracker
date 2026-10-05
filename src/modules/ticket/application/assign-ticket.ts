@@ -11,6 +11,7 @@ import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { assertValidTransition } from '@/modules/workflow/domain/transitions';
 import { enqueueRequesterNotification } from './amelia-notifications';
+import {assertAssignmentScope} from './assignment-scope';
 
 export async function assignTicket(
   repo: ITicketRepository,
@@ -49,6 +50,8 @@ export async function assignTicket(
   if (assignedPartyChiefActor && params.assignedPartyChiefId !== ticket.assignedPartyChiefId) {
     throw new ForbiddenError('Party Chiefs cannot change the Party Chief assignment');
   }
+  await assertAssignmentScope(db,ticket,params,{partyChiefId:params.assignedPartyChiefId,instrumentManId:params.assignedInstrumentManId,
+    previousChiefId:ticket.assignedPartyChiefId,previousInstrumentId:ticket.assignedInstrumentManId});
 
   if (!repo.isActiveProjectMemberWithRole) {
     throw new Error('Ticket repository does not support assignment eligibility checks');

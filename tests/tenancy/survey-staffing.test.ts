@@ -12,7 +12,7 @@ const input = () => ({ expectedSnapshot: 'a'.repeat(32), partyChiefId: chiefId, 
 
 function fixture() {
   const writes: string[] = [];
-  const roles = new Map<UUID, ProjectRole>([[chiefId, 'REQUESTER'], [superintendentId, 'SURVEY_SUPERINTENDENT'], [instrumentManId, 'VIEWER']]);
+  const roles = new Map<UUID, ProjectRole>([[chiefId, 'PARTY_CHIEF'], [superintendentId, 'SURVEY_SUPERINTENDENT'], [instrumentManId, 'INSTRUMENT_MAN']]);
   const areas: UUID[] = [];
   let rosterChief: UUID | null = null;
   let link = false;
@@ -62,20 +62,22 @@ test('selected people must already be project members with compatible roles', as
   assert.deepEqual(f.writes, []);
 });
 
-test('replacement of existing project roles requires an explicit confirmation', async () => {
-  const f = fixture();
-  await assert.rejects(saveSurveyStaffing(f.repo, db, {
-    tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', sessionVersion: 1, input: { ...input(), confirmRoleChanges: false },
-  }), ValidationError);
-  assert.deepEqual(f.writes, []);
+test('staffing cannot convert Requesters or Viewers into survey personnel', async () => {
+  for (const userId of [chiefId,instrumentManId]) {
+    for (const role of ['REQUESTER','VIEWER'] as const) {
+      const f=fixture();f.roles.set(userId,role);
+      await assert.rejects(f.save(),ConflictError);
+      assert.deepEqual(f.writes,[]);
+    }
+  }
 });
 
-test('Manager assignment changes only fixed roles and records one atomic staffing event', async () => {
+test('Manager staffing preserves survey roles and records one atomic staffing event', async () => {
   const f = fixture();
   assert.deepEqual(await f.save(), { changed: true });
   assert.equal(f.roles.get(chiefId), 'PARTY_CHIEF');
   assert.equal(f.roles.get(instrumentManId), 'INSTRUMENT_MAN');
-  assert.deepEqual(f.writes.map(write => write.split(':')[0]), ['role', 'area', 'link', 'role', 'roster', 'audit']);
+  assert.deepEqual(f.writes.map(write => write.split(':')[0]), ['area', 'link', 'roster', 'audit']);
   assert.deepEqual(await f.save(), { changed: false });
   assert.equal(f.writes.filter(write => write === 'audit').length, 1);
 });

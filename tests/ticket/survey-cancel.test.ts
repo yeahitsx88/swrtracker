@@ -25,7 +25,7 @@ function makeTicket(overrides?: Partial<Ticket>): Ticket {
     ticketNumber: 'FSS-U1-00001',
     ticketType: 'LAYOUT',
     requesterId: 'requester-1' as UUID,
-    assignedPartyChiefId: 'pc-1' as UUID,
+    assignedPartyChiefId: actorId,
     assignedInstrumentManId: 'im-1' as UUID,
     surveyLeadId: 'lead-1' as UUID,
     workflowVariant: 'STANDARD_APPROVAL',
@@ -167,7 +167,7 @@ test('approveSurveyCancel clears pending request metadata and cancels the ticket
   assert.equal(patchCalls[0]?.surveyCancelRequestedRole, null);
   assert.equal(patchCalls[0]?.assignedPartyChiefId, null);
   assert.equal(patchCalls[0]?.assignedInstrumentManId, null);
-  assert.equal(dbCalls.length, 6);
+  assert.equal(dbCalls.filter(sql=>sql.includes('UPDATE survey_rejection_proposals')).length,1);
   assert.equal(dbCalls.filter((sql) => /notification_outbox/.test(sql)).length, 3);
 });
 
@@ -184,7 +184,7 @@ test('requester cancellation queues stop work for the captured crew before clear
   });
   assert.equal(result.assignedPartyChiefId,null);
   assert.equal(result.assignedInstrumentManId,null);
-  assert.deepEqual(outbox.filter(p=>p[3]==='STOP_WORK_CANCELED').map(p=>p[2]),['pc-1','im-1']);
+  assert.deepEqual(outbox.filter(p=>p[3]==='STOP_WORK_CANCELED').map(p=>p[2]),[actorId,'im-1']);
   assert.equal(outbox.filter(p=>p[3]==='REQUESTER_CANCELED').length,1);
   assert.equal(new Set(outbox.map(p=>p[5])).size,3);
 });

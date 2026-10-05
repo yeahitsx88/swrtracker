@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {executeAuthorizedTicketMutation} from '@/lib/ticket-mutation-idempotency';
-import {ForbiddenError,NotFoundError} from '@/shared/errors';
+import {ConflictError,ForbiddenError,NotFoundError} from '@/shared/errors';
 import type {DbClient, UUID} from '@/shared/types';
 import type {ProjectRole} from '@/modules/identity/domain/types';
 
 const actor='11111111-1111-4111-8111-111111111111' as UUID;
 const ticket='AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA' as UUID;
 function fixture(role:ProjectRole){
- const state={role,ledgerReads:0,ledgerWrites:0,marker:false,grant:true,visible:true,
+ const state={role,projectStatus:'ACTIVE',ledgerReads:0,ledgerWrites:0,marker:false,grant:true,visible:true,
   row:{project_id:'project' as UUID,aor_node_id:'area' as UUID,requester_id:actor,
    assigned_party_chief_id:actor as UUID|null,assigned_instrument_man_id:actor as UUID|null,
    field_validation_reviewer_id:actor as UUID|null}};
@@ -16,9 +16,11 @@ function fixture(role:ProjectRole){
   let rows:object[]=[];
   if(sql.includes('SELECT project_id,aor_node_id,requester_id')){assert.match(sql,/FOR UPDATE/);rows=[state.row];}
   else if(sql.includes('SELECT role'))rows=[{role:state.role}];
+  else if(sql.includes('SELECT status FROM projects'))rows=[{status:state.projectStatus}];
   else if(sql.includes('SELECT t.id FROM tickets t'))rows=state.visible?[{id:ticket}]:[];
   else if(sql.includes('FROM users u JOIN companies'))rows=[{company_id:'company',type:'GC'}];
   else if(sql.includes('SELECT party_chief_id FROM crew_rosters'))rows=[];
+  else if(sql.includes('SELECT id FROM crew_rosters'))rows=[{id:'crew'}];
   else if(sql.includes('aor_assignments'))rows=[{aor_node_id:'area'}];
   else if(sql.includes('WITH RECURSIVE ancestors'))rows=state.grant?[{id:'grant',aor_node_id:'area',granted_by:actor,granted_at:new Date()}]:[];
   else if(sql.includes('AS completed')){state.ledgerReads++;rows=[{completed:state.marker}];}
@@ -30,6 +32,12 @@ function fixture(role:ProjectRole){
  const run=(action:string)=>executeAuthorizedTicketMutation(db,{tenantId:'tenant' as UUID,actorId:actor,endpoint:'POST:/api/tickets/'+ticket+'/'+action,idempotencyKey:'key'},{ticketId:ticket},async()=>({status:200,body:{ok:true}}));
  return{state,run};
 }
+test('closed projects refuse review actions before recorded replay',async()=>{
+ for(const action of ['approve','reject','rejection-proposal']){
+  const f=fixture(action==='rejection-proposal'?'PARTY_CHIEF':'SURVEY_MANAGER');f.state.projectStatus='ARCHIVED';
+  await assert.rejects(f.run(action),ConflictError);assert.equal(f.state.ledgerReads,0);assert.equal(f.state.ledgerWrites,0);
+ }
+});
 test('post-lock visibility loss rejects role-only Chief replay before ledger',async()=>{
  const f=fixture('PARTY_CHIEF');f.state.visible=false;
  for(const action of ['restart-delay','survey-cancel','field-cancel'])await assert.rejects(f.run(action),NotFoundError);

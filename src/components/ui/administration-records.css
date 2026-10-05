@@ -46,3 +46,19 @@
 .record-collection-tools > .row { gap:.375rem; }
 .record-collection-tools > .row .button { padding:.35rem .55rem; font-size:.8rem; white-space:nowrap; }
 @media(pointer:coarse){.record-collection-tools > .row .button { min-height:44px; }}
+
+.record-custom-columns { table-layout:fixed; font-size:.875rem; line-height:1.4; }
+.record-custom-columns :is(th,td) { white-space:nowrap; overflow-wrap:normal; padding:.65rem .75rem; }
+.record-custom-columns th { position:relative; padding-right:18px; }
+.record-custom-columns th>button { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+.record-cell-content { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.record-column-resize { position:absolute; top:0; right:0; bottom:0; width:12px; cursor:col-resize; touch-action:none; }
+.record-column-resize::after { content:''; position:absolute; top:25%; bottom:25%; left:5px; width:2px; background:var(--line); }
+.record-column-resize:is(:hover,:focus-visible)::after { background:var(--action); }
+.record-column-resize:focus-visible { outline:2px solid var(--action); outline-offset:-2px; }
+.record-column-options summary { cursor:pointer; padding:.6rem 0; font-weight:600; }
+.record-column-settings { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1rem; margin-bottom:1rem; }
+.record-column-settings>div { display:flex; flex-direction:column; gap:.5rem; }
+.record-column-settings label { display:flex; align-items:center; gap:.5rem; }
+.record-column-settings input[type=range] { min-width:0; flex:1; }
+.record-column-settings output { min-width:4rem; font-variant-numeric:tabular-nums; }

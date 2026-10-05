@@ -1,0 +1,492 @@
+{
+  "objective": "Implement the full agreed survey workflow, all five survey annotations, connected role pages, visible actions and plain-language descriptions.",
+  "status": "in_progress",
+  "requirements": [
+    {
+      "id": "personnel",
+      "requirement": "Survey-only Manager roster and role changes; SS sees assigned PCs/IMs; PC sees own IMs",
+      "status": "in_progress"
+    },
+    {
+      "id": "areas",
+      "requirement": "Manager creates Areas; requesters select them; team may cover multiple Areas; Areas may have multiple teams",
+      "status": "in_progress"
+    },
+    {
+      "id": "teams",
+      "requirement": "Manager creates teams/leads/rosters; Superintendent edits own team; only Manager transfers across teams",
+      "status": "in_progress"
+    },
+    {
+      "id": "reporting",
+      "requirement": "Manager and Superintendent assign Instrument Men to Chiefs within authorized scope",
+      "status": "in_progress"
+    },
+    {
+      "id": "roster_notifications",
+      "requirement": "Superintendent structure changes notify Manager with actor and changes",
+      "status": "in_progress"
+    },
+    {
+      "id": "submission_notifications",
+      "requirement": "Submission alerts Manager and all responsible team members with recipient deduplication",
+      "status": "in_progress"
+    },
+    {
+      "id": "review",
+      "requirement": "Manager/responsible SS/PC approve; SS/Manager reject; PC proposes rejection requiring SS/Manager confirmation",
+      "status": "in_progress"
+    },
+    {
+      "id": "assignment",
+      "requirement": "Direct individual assignment and delegation to responsible team or Superintendent, visibly awaiting crew",
+      "status": "pending"
+    },
+    {
+      "id": "menus",
+      "requirement": "All survey roles have appropriate visible menus/actions; combined admin role does not remove survey work",
+      "status": "in_progress"
+    },
+    {
+      "id": "onboarding",
+      "requirement": "Contextual team setup guidance with dismissible prompt and persistent setup access",
+      "status": "pending"
+    },
+    {
+      "id": "dashboard",
+      "requirement": "Movable widgets, saved placement, keyboard controls, remove uneven gaps",
+      "status": "implemented_pending_final_review"
+    },
+    {
+      "id": "tables",
+      "requirement": "Readable non-wrapping references/dates/status; column widths and visibility with reset",
+      "status": "implemented_pending_final_review"
+    },
+    {
+      "id": "copy",
+      "requirement": "Simple headings, descriptions, errors and function explanations across survey pages",
+      "status": "in_progress"
+    },
+    {
+      "id": "verification",
+      "requirement": "New isolated PostgreSQL/HTTP fixtures, role matrix and negative/concurrency/history checks; pinned build; bounded browser visual verification; preserve live demo data",
+      "status": "pending"
+    },
+    {
+      "id": "demo",
+      "requirement": "Refresh retained live demo only after checks; verify current schema migration without reset and preserve records",
+      "status": "pending"
+    },
+    {
+      "id": "motion",
+      "requirement": "Borderless close icons, reference-based circular popup reveal/dismissal and simple page fade, with reduced-motion support",
+      "status": "implemented_pending_final_review"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": 1,
+      "date": "2026-10-04",
+      "changes": [
+        "Survey Manager personnel query excludes Requesters/Viewers and includes survey roles.",
+        "Role editor and API/application reject changes into or out of non-survey roles.",
+        "Legacy staffing command cannot promote Requesters/Viewers; use dedicated survey role editor.",
+        "Survey personnel headings clarified."
+      ],
+      "verification": {
+        "baseline_focused_tests": 19,
+        "focused_after_tests": 29,
+        "unit_tests": 584,
+        "strict_types": "pass",
+        "note": "Initial sandbox loopback EACCES in notification timeout test; full suite passes with loopback access."
+      },
+      "remaining": [
+        "Update PostgreSQL fixtures which assumed Requester/Viewer promotion; execute in new isolated DB.",
+        "Complete remaining workflow requirements and browser verification before refreshing live demo."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 2,
+      "date": "2026-10-04",
+      "changes": [
+        "Additive migration037 backfills original team Areas into retained multi-Area coverage records.",
+        "Team editor supports multiple selections and removal; list/search/read-only detail expose all coverage.",
+        "API/application validate all selected Areas; saves compare sets and record before/after coverage; multiple teams may cover same Area."
+      ],
+      "verification": {
+        "strict_types": "pass",
+        "unit_tests": 586,
+        "postgres": "All37 migrations applied to new independently owned port15495 database. New rollback integration test covers multi-Area persistence, shared coverage, search, survey-only personnel, removal/reactivation and retained coverage history."
+      },
+      "remaining": [
+        "Authority and notifications not yet connected to team coverage.",
+        "Migration backfill on populated legacy fixture, complete integration/build/browser gates remain.",
+        "Live demo remains unchanged."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 3,
+      "date": "2026-10-04",
+      "changes": [
+        "Superintendent workforce reassignment requires old/new Chiefs and Instrument Man to belong to one active team led by the actor.",
+        "Roster event and Manager notification persist in the same transaction.",
+        "Recipient-scoped paginated survey Notifications API/page and menu destination added.",
+        "Superintendent retains Survey Operations when independently granted project administration."
+      ],
+      "verification": {
+        "strict_types": "pass",
+        "unit_tests": 587,
+        "postgres": "Migration038 applied only to owned test database. Same-team/other-team guards, recipient isolation, stale-session reads and notification rollback verified."
+      },
+      "remaining": [
+        "Full team editing and request notification integration pending.",
+        "Production build, full HTTP/browser verification and independent UI finish review pending."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 4,
+      "date": "2026-10-04",
+      "changes": [
+        "Team-derived Superintendent personnel scope, retaining old explicit reporting only for unteamed legacy personnel.",
+        "Staffing snapshot now includes team versions and member relationships.",
+        "Submission/resubmission alert fan-out to active Managers and active covering-team members, including ancestor Area coverage; recipient/cycle deduplication; same-transaction delivery outbox.",
+        "Plain-language staffing guidance explains same-team boundary and Manager notification."
+      ],
+      "verification": {
+        "strict_types": "pass before final copy-only change",
+        "unit_tests": 587,
+        "postgres": "Extended isolated rollback integration passes actual initial IM assignment, resulting PC personnel view, Manager notice, overlapping teams, submission deduplication and disabled-member resubmission exclusion."
+      },
+      "remaining": [
+        "End-to-end submission HTTP, ancestor/foreign-area/race/fault gates remain.",
+        "Request visibility/review, team editor authority, assignment delegation and visual annotations remain incomplete."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 5,
+      "date": "2026-10-04",
+      "changes": [
+        "Annotation3 table preferences and readable rows implemented in shared record table, opted in for project review and standard ticket lists."
+      ],
+      "verification": {
+        "pinned_build": "pass",
+        "unit_tests": 587,
+        "browser_checks": 11,
+        "captures": "Desktop/mobile inspected; confirmation corrected capture scroll/focus artifact without runtime changes."
+      },
+      "remaining": [
+        "Dashboard widgets and workflow integration remain pending; final independent UI review outstanding."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 6,
+      "date": "2026-10-04",
+      "changes": [
+        "Dashboard cards can be moved by pointer or keyboard-accessible Earlier/Later controls.",
+        "Browser-local order is saved per project and role, with a reset action.",
+        "Independent desktop columns keep a consistent 16px gap; mobile stacks cards in one column."
+      ],
+      "verification": {
+        "pinned_build": "pass",
+        "unit_tests": 587,
+        "browser_checks": 12,
+        "captures": "Desktop and mobile inspected."
+      },
+      "remaining": [
+        "Final independent UI review and integration with all survey role pages remain.",
+        "Placement is local to this browser, not synchronized between devices."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 7,
+      "date": "2026-10-04",
+      "changes": [
+        "Manager Areas tab creates Areas in the shared requester/team hierarchy while preserving existing project setup.",
+        "Menu/dialog close icons have transparent borders; popup entrance fades with slight movement; page content fades on navigation without form remounts; reduced motion disables animations."
+      ],
+      "verification": {
+        "strict_types": "pass",
+        "unit_tests": 589,
+        "pinned_build": "pass",
+        "postgres": "Area create, duplicate normalized name/code, wrong role, stale session and foreign project verified in owned rollback fixture.",
+        "browser_checks": 13,
+        "captures": "Desktop Areas and mobile navigation inspected."
+      },
+      "remaining": [
+        "Full submission/review/delegation and team editing workflow incomplete.",
+        "Independent final UI review and retained demo refresh pending.",
+        "Popup reference URL supplies a library only; using stated fade/6px movement default."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 8,
+      "date": "2026-10-04",
+      "changes": [
+        "Adapted supplied Haml/Sass transition into theme-aware circular popup opening and closing, without external JS.",
+        "Superintendent led-team API editing and atomic Manager update notifications added."
+      ],
+      "verification": {
+        "strict_types": "pass",
+        "unit_tests": 589,
+        "pinned_build": "pass",
+        "postgres": "Own-team scope/edit, outside-team additions, coverage authority, stale session and Manager notice verified.",
+        "browser_checks": 15,
+        "captures": "Circular reveal inspected mid-animation; borderless menu/reduced-motion settled capture preserved."
+      },
+      "remaining": [
+        "Superintendent editor UI and membership/crew reconciliation remain incomplete.",
+        "Manager cross-team transfer, submission review/delegation and final role integration still pending.",
+        "Final independent UI review and retained demo refresh remain outstanding."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 9,
+      "date": "2026-10-04",
+      "changes": [
+        "Visible Superintendent My teams editor plus Crew assignments, with review consent and frozen retry handling.",
+        "Synthetic role fixture verifies survey-only rosters and eligible personnel independently for Manager, Superintendent and Chief."
+      ],
+      "verification": {
+        "strict_types": "pass",
+        "unit_tests": 589,
+        "pinned_build": "pass",
+        "browser_checks": 9,
+        "captures": "Superintendent crew and Manager eligible-picker captures inspected."
+      },
+      "remaining": [
+        "Cross-team Manager transfers, crew unlink/reconciliation, submission review/delegation and setup guidance remain.",
+        "Broader role negative/paging/concurrency tests and final independent UI review still pending.",
+        "Existing Team editor explanatory copy must be updated with complete team authority integration."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 10,
+      "date": "2026-10-04",
+      "changes": [
+        "Current-team coverage connected to shared ticket visibility; draft and company fences retained.",
+        "Explicit assigned-Chief guards protect field completion/rejection/cancellation/restart actions from wider read access, including replay gates."
+      ],
+      "verification": {
+        "strict_types": "pass",
+        "unit_tests": 590,
+        "postgres": "Covered unassigned request for SS/PC/IM; removed membership, uncovered Area and private draft denied."
+      },
+      "remaining": [
+        "Ancestor/foreign-project/retired coverage and concurrency acceptance remain.",
+        "Shared visibility reaches reporting; historical temporary-schema PG fixtures must include team relations before full gate.",
+        "Review/delegation UI/API, full production build/browser integration and retained demo refresh remain pending."
+      ],
+      "live_demo_changed": false
+    },
+    {
+      "id": 11,
+      "date": "2026-10-04",
+      "changes": [
+        "Current responsible-team membership authorizes Chief approval and Superintendent approval/rejection with retained review evidence.",
+        "Review Requests menu and dialog added for Manager, Superintendent and Chief; written rejection reason and explicit confirmation; exact retries and conflict reload.",
+        "Team descriptions explain Area request access and crew assignments; removed obsolete Requester-conversion description."
+      ],
+      "verification": [
+        "Pinned Node22/pnpm strict types, 590 unit tests and production build pass.",
+        "Owned PostgreSQL authority/transition tests pass, including uncovered and disabled reviewer refusal.",
+        "Six owned browser checks pass for Chief approval, retained evidence, Instrument Man refusal, Chief direct rejection refusal, Superintendent rejection and retained reason.",
+        "Review dialog screenshot inspected; accessible Decision label corrected after initial browser failure."
+      ],
+      "limitations": [
+        "Chief rejection proposals and leadership confirmation remain unimplemented.",
+        "Full review concurrency, replay revocation and mobile integration gates remain.",
+        "Retained live demo remains untouched; full goal and five annotations remain open."
+      ]
+    },
+    {
+      "id": 12,
+      "date": "2026-10-04",
+      "changes": [
+        "Migration039 retains Chief rejection proposals separately from final ticket status, including original reason and leadership resolution.",
+        "Covered Chiefs can propose rejection in Review Requests. Pending proposals block Chief approval; responsible leadership sees the reason and may reject or approve instead.",
+        "Proposal creation atomically records audit evidence and one in-app notice per current Manager or covering Superintendent."
+      ],
+      "verification": [
+        "Owned migration039 applies without reset. Pinned Node22 strict types,590 unit tests and production build pass.",
+        "Real PostgreSQL verifies pending status, responsible recipients, duplicate refusal, blocked Chief approval and both leadership resolution outcomes with retained history.",
+        "Ten browser checks pass, including visible Chief proposal, Manager notice and Superintendent confirmation; dialog capture inspected."
+      ],
+      "limitations": [
+        "Full proposal lifecycle, concurrent decisions, retry revocation, fault rollback and mobile gates remain.",
+        "Returned/canceled requests need explicit proposal supersession handling before release.",
+        "Proposal and submission notifications still need actionable request links; delivery and decision-recipient coverage remain.",
+        "No retained demo refresh; all five annotations and full goal remain tracked."
+      ]
+    },
+    {
+      "id": 13,
+      "date": "2026-10-04",
+      "changes": [
+        "Return-for-correction and cancellation supersede pending rejection proposals atomically while preserving reasons and resolution evidence.",
+        "Review approval, rejection and proposal endpoints require an active project before idempotent replay.",
+        "Migration040 adds scoped request targets to submission/proposal notices, including known existing notices; inbox checks current request visibility before showing Open request."
+      ],
+      "verification": [
+        "Pinned strict types,591 unit tests and production build pass.",
+        "Owned PostgreSQL verifies requester cancellation/return supersession, archived proposal refusal and removal of notification target after lost team coverage.",
+        "Eleven browser checks pass, including Manager notification navigation to the actual request page."
+      ],
+      "limitations": [
+        "Concurrent review/proposal decisions, fault rollback and revoked-authority replay need full HTTP gates.",
+        "Broader mobile, delivery, team update links and decision notifications remain.",
+        "Delegation, cross-team moves, crew reconciliation, onboarding and final five-annotation audit remain open; live demo unchanged."
+      ]
+    },
+    {
+      "id": 14,
+      "date": "2026-10-04",
+      "changes": [
+        "Assignment application enforces current responsible-team boundaries for Superintendents, including both previous and proposed crews.",
+        "Chief assignment requires an active own-Instrument-Man crew link; Manager retains cross-team choice.",
+        "Replay rechecks current assignment scope before returning recorded results."
+      ],
+      "verification": [
+        "Pinned strict types,591 unit tests and production build pass.",
+        "Owned PostgreSQL verifies own-team success, other-team proposed/current Chief refusal, Manager override and active/missing/wrong-Chief crew relationships."
+      ],
+      "limitations": [
+        "Delegation to teams and corresponding UI choices still pending.",
+        "End-to-end assignment and concurrent membership changes require further HTTP/browser gates.",
+        "Checkpoint push authorized by user; full goal remains incomplete and live demo unchanged."
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "id": 1,
+      "surface": "Home dashboard",
+      "request": "Movable widgets with saved placement; remove uneven container gaps.",
+      "status": "implemented_pending_final_review",
+      "changes": [
+        "Dashboard cards can be moved by pointer or keyboard-accessible Earlier/Later controls.",
+        "Browser-local order is saved per project and role, with a reset action.",
+        "Independent desktop columns keep a consistent 16px gap; mobile stacks cards in one column."
+      ],
+      "verification": [
+        "Pinned Node22/pnpm production build, strict types and 587 unit tests pass.",
+        "tests/beta/survey-widgets-browser.mjs passes 12 checks covering movement, reload persistence, reset, spacing and mobile overflow/stacking.",
+        "Desktop and mobile captures visually inspected."
+      ],
+      "unresolved": [
+        "Final independent UI review and integration with all survey role pages remain.",
+        "Placement is local to this browser, not synchronized between devices."
+      ]
+    },
+    {
+      "id": 2,
+      "surface": "Survey Operations assignments",
+      "request": "Direct individual assignment and delegation to responsible team/Superintendent.",
+      "status": "in_progress",
+      "changes": [
+        "Multi-Area team coverage is persisted and editable.",
+        "Superintendent workforce moves now enforce same named-team membership.",
+        "Crew reassignment records a Manager notification in the roster transaction; survey roles have a Notifications destination.",
+        "Named team leaders can see unassigned team Instrument Men and assign them to a Chief in that team.",
+        "Request submission creates recipient-deduplicated in-app alerts and delivery outbox entries for Manager and all active covering-team members.",
+        "Survey Manager Area creation added to the Areas tab using the shared requester hierarchy; browser verification in progress.",
+        "Superintendent team API scopes lists and saves to led teams, preserves Manager ownership of coverage/leadership and blocks outside-team additions; successful edits notify Manager atomically.",
+        "Superintendent My teams editor and Crew assignments views expose reviewed team changes and same-team IM assignment; competing views stay disabled during an edit.",
+        "Shared ticket visibility now includes current responsible-team coverage for Chiefs, Instrument Men and team-leading Superintendents, retaining draft privacy and checking membership at read time.",
+        "Review Requests page connects covered-team approval and Superintendent rejection with retained evidence.",
+        "Chief rejection proposal and leadership decision controls implemented with retained proposal history and in-app leadership notifications.",
+        "Submission and proposal notices now link to their request only while the recipient has current request access.",
+        "Assignment authority now enforces same-team Superintendent scope and own-crew Chief scope; Manager retains cross-team authority."
+      ],
+      "verification": [
+        "Multi-Area persistence/overlap/search and coverage history checked against isolated PostgreSQL.",
+        "Same-team boundary, recipient scoping, stale-session reads and notification rollback checked against isolated PostgreSQL.",
+        "Isolated PostgreSQL verifies actual initial assignment, resulting Chief personnel scope and Manager message.",
+        "Overlapping-team submission generates five unique recipients/outbox messages; repeat invocation does not duplicate; resubmission excludes disabled member.",
+        "New Manager Area action: isolated PostgreSQL creation/duplicate/role/session/scope checks; owned browser creation, requester hierarchy visibility, duplicate reload and exact HTTP retry verified.",
+        "Isolated PostgreSQL verifies own-team list/edit, cross-team refusal, coverage refusal, stale session and exactly one Manager update notice.",
+        "Browser test saves Superintendent team edit, confirms Manager inbox message, assigns Instrument Man and checks resulting Party Chief page.",
+        "Actual PostgreSQL verifies unassigned covered request visibility, membership removal, uncovered Areas and draft privacy; 590 units pass including field-action ownership denial.",
+        "Checkpoint 11: six browser review checks and actual PostgreSQL authorization/transition checks pass.",
+        "Checkpoint12 verifies both leadership outcomes in PostgreSQL and ten review browser checks.",
+        "Checkpoint13: proposal supersession and revoked notification targets verified in PG; eleven browser review/notification checks pass."
+      ],
+      "unresolved": [
+        "Implement delegation controls and downstream crew assignment.",
+        "Complete Superintendent team editing and notification coverage for every structural change.",
+        "Verify full connected workflow through HTTP and browser.",
+        "Verify all team-visible request consumers and linked-crew reporting, then connect review/delegation actions and notification links."
+      ]
+    },
+    {
+      "id": 3,
+      "surface": "All Requests table",
+      "request": "Readable rows without awkward wrapping; adjustable widths and column visibility.",
+      "status": "implemented_pending_final_review",
+      "changes": [
+        "Request tables opt into single-line fixed-width columns with ellipsis/full text titles.",
+        "Columns and widths disclosure provides visibility toggles, width sliders, pointer drag handles, keyboard arrow resizing and reset.",
+        "Browser-local preferences scoped by project and table; Number stays visible; export uses visible columns."
+      ],
+      "verification": [
+        "Pinned Node22/pnpm production build, strict types and587units pass.",
+        "tests/beta/survey-table-browser.mjs passes11 isolated browser checks at1440 and390 widths: row rendering, nowrap, hide, keyboard/drag resize, reload persistence, reset, no page overflow and contained table scrolling.",
+        "Desktop and settled mobile captures visually inspected."
+      ],
+      "unresolved": [
+        "Final independent UI review and full survey-page integration checks remain before task completion.",
+        "Settings are local to the browser, not synchronized between devices."
+      ]
+    },
+    {
+      "id": 4,
+      "surface": "Survey personnel roster",
+      "request": "Only survey department members; Manager all surveyors, Superintendent assigned PCs/IMs, Chief assigned IMs.",
+      "status": "in_progress",
+      "changes": [
+        "Manager personnel SQL excludes Requesters/Viewers and includes survey roles.",
+        "Role editor/API/application refuse non-survey source and target roles.",
+        "Legacy staffing cannot convert Requesters/Viewers.",
+        "Named team membership now establishes Superintendent personnel scope, including Instrument Men awaiting a Chief. Named members do not inherit another Superintendent visibility through stale legacy reporting."
+      ],
+      "verification": [
+        "Focused role and staffing unit tests pass.",
+        "Isolated PostgreSQL personnel query excludes a synthetic Requester.",
+        "Real repository read and assignment verified without separate Area/reporting grants; Chief view returns the assigned Instrument Man.",
+        "Owned browser role fixture verifies Manager survey-only personnel and eligible picker, Superintendent own-team roster/crew scope, and Chief assigned Instrument Man view."
+      ],
+      "unresolved": [
+        "Reconcile named-team responsibility with existing reporting scopes.",
+        "Complete negative coverage for all roles, foreign projects, revoked access and current team changes.",
+        "Verify all roster pages in the browser."
+      ]
+    },
+    {
+      "id": 5,
+      "surface": "Team eligible-personnel selection",
+      "request": "Only survey roles appear in survey team personnel selectors.",
+      "status": "in_progress",
+      "changes": [
+        "Shared Manager personnel query excludes Requesters/Viewers.",
+        "Selection heading identifies survey personnel; role eligibility checks remain enforced."
+      ],
+      "verification": [
+        "Unit tests cover fixed-role eligibility and non-survey mutation refusal.",
+        "Underlying repository query checked in isolated PostgreSQL.",
+        "Owned browser role fixture verifies Manager survey-only personnel and eligible picker, Superintendent own-team roster/crew scope, and Chief assigned Instrument Man view."
+      ],
+      "unresolved": [
+        "Update and run historical PostgreSQL fixtures that assumed non-survey promotion.",
+        "Verify team and staffing selectors, search, paging and selection in browser for each permitted role."
+      ]
+    }
+  ]
+}

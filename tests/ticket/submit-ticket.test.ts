@@ -240,10 +240,11 @@ test('submitTicket assigns ticketNumber when the draft is submitted', async () =
   assert.equal(patchCalls[0]?.ticketNumber, 'FSS-U1-00042');
   assert.equal(nextSequenceCalls, 1);
   assert.equal(findAorNodeCodeCalls, 1);
-  assert.equal(dbCalls.length, 3);
+  assert.equal(dbCalls.length, 4);
   assert.match(dbCalls[0] ?? '', /FOR UPDATE/);
   assert.match(dbCalls[1] ?? '', /INSERT INTO ticket_events/);
   assert.match(dbCalls[2] ?? '', /notification_outbox/);
+  assert.match(dbCalls[3] ?? '', /survey_notifications/);
 });
 
 test('submitTicket enforces configured lead-time before allocating a number', async () => {

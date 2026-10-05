@@ -1,5 +1,6 @@
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
 import { ForbiddenError } from '@/shared/errors';
+import { surveyTeamCoverageQuery } from './survey-team-coverage';
 
 /** A query cannot request the linked population without a server-resolved fence. */
 export function assertVisibilityCohort(scope: VisibilityScope, cohort?: 'areaWorkload' | 'linkedCrews'): void {
@@ -60,7 +61,7 @@ export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): 
       if (!departmentId || !aorNodeIds?.length) return isolate({ sql: 'AND 1 = 0', params: [] });
       return isolate({ sql: `AND t.department_id = $${baseIdx} AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i + 1}`).join(', ')})`, params: [departmentId, ...aorNodeIds] });
     case 'PARTY_CHIEF':
-      return isolate({ sql: `AND t.assigned_party_chief_id = $${baseIdx}`, params: [actorId] });
+      return isolate({ sql: `AND (t.assigned_party_chief_id = $${baseIdx} OR EXISTS (${surveyTeamCoverageQuery(`$${baseIdx}`,'PARTY_CHIEF')}))`, params: [actorId] });
     case 'INSTRUMENT_MAN':
       // Recheck the relationship at the data read, not only when resolving the
       // request context. A previously resolved Chief must not survive unlinking.
@@ -72,16 +73,17 @@ export function buildVisibilityClause(scope: VisibilityScope, baseIdx: number): 
             AND cr.party_chief_id = $${baseIdx} AND cr.instrument_man_id = $${baseIdx + 1}
             AND cr.deactivated_at IS NULL
         )
-      ))`, params: [partyChiefId ?? null, actorId] });
+      ) OR EXISTS (${surveyTeamCoverageQuery(`$${baseIdx+1}`,'INSTRUMENT_MAN')}))`, params: [partyChiefId ?? null, actorId] });
     case 'SURVEY_SUPERINTENDENT':
-      if (!aorNodeIds?.length || scope.linkedCrewAssignments?.length === 0) return isolate({ sql: 'AND 1 = 0', params: [] });
+      if (scope.linkedCrewAssignments !== undefined && (!aorNodeIds?.length || scope.linkedCrewAssignments.length === 0)) return isolate({ sql: 'AND 1 = 0', params: [] });
+      if (!aorNodeIds?.length) return isolate({sql:`AND EXISTS (${surveyTeamCoverageQuery(`$${baseIdx}`,'SURVEY_SUPERINTENDENT')})`,params:[actorId]});
       if (scope.linkedCrewAssignments !== undefined) {
         return isolate({ sql: `AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')})
           AND EXISTS (SELECT 1 FROM jsonb_to_recordset($${baseIdx+aorNodeIds.length}::jsonb) AS crew("partyChiefId" uuid,"areaId" uuid)
             WHERE crew."partyChiefId"=t.assigned_party_chief_id AND crew."areaId"=t.aor_node_id)`,
           params: [...aorNodeIds,JSON.stringify(scope.linkedCrewAssignments)] });
       }
-      return isolate({ sql: `AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')})`, params: aorNodeIds });
+      return isolate({ sql: `AND (t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')}) OR EXISTS (${surveyTeamCoverageQuery(`$${baseIdx+aorNodeIds.length}`,'SURVEY_SUPERINTENDENT')}))`, params: [...aorNodeIds,actorId] });
     case 'AREA_VIEWER':
       if (!aorNodeIds?.length) return isolate({ sql: 'AND 1 = 0', params: [] });
       return isolate({ sql: `AND t.aor_node_id IN (${aorNodeIds.map((_, i) => `$${baseIdx + i}`).join(', ')})`, params: aorNodeIds });

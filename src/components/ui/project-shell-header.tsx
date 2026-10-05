@@ -8,6 +8,7 @@ import { apiClient, apiRequest } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { roleLabel } from '@/lib/display-labels';
 import { ProjectNav } from './project-nav';
+import { PageTransition } from './page-transition';
 import './project-workspace.css';
 
 interface WorkspaceContext {
@@ -57,7 +58,7 @@ export function ProjectShellHeader({ projectId, requireProject = true, canCreate
         {project && project.status !== 'ACTIVE' && <p className="workspace-state-note">{project.status === 'ARCHIVED' ? 'This project is archived. Authorized history remains available; ordinary work commands are restricted.' : 'This project is in setup or recommissioning preparation. Use the existing administration and work-resolution controls where authorized.'}</p>}
         {projectId && !current && <p className="muted" role="status">Loading your project workspace…</p>}
         {current?.error && <section className="panel stack"><p className="error-banner" role="alert">{current.error}</p><div className="row"><button className="button button-secondary" onClick={() => setRevision(value => value + 1)}>Retry project access</button><Link className="app-link" href="/projects">Return to Projects</Link></div></section>}
-        {(!requireProject || context) && <div className="project-page">{children}</div>}
+        {(!requireProject || context) && <PageTransition>{children}</PageTransition>}
       </div>
     </div>
   </ProjectContext.Provider>;

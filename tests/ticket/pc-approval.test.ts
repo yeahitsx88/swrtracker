@@ -23,7 +23,7 @@ function makePendingTicket(outcome: Ticket['pendingPcOutcome'] = 'COMPLETED'): T
     ticketNumber: 'FSS-U1-00001',
     ticketType: 'LAYOUT',
     requesterId: 'requester-1' as UUID,
-    assignedPartyChiefId: 'pc-1' as UUID,
+    assignedPartyChiefId: actorId,
     assignedInstrumentManId: 'im-1' as UUID,
     surveyLeadId: 'lead-1' as UUID,
     workflowVariant: 'STANDARD_APPROVAL',
