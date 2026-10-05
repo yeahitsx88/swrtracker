@@ -1,6 +1,6 @@
 {
   "objective": "Implement the full agreed survey workflow, all five survey annotations, connected role pages, visible actions and plain-language descriptions.",
-  "status": "in_progress",
+  "status": "paused_at_user_request",
   "requirements": [
     {
       "id": "personnel",
@@ -40,7 +40,7 @@
     {
       "id": "assignment",
       "requirement": "Direct individual assignment and delegation to responsible team or Superintendent, visibly awaiting crew",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "menus",
@@ -363,6 +363,166 @@
         "End-to-end assignment and concurrent membership changes require further HTTP/browser gates.",
         "Checkpoint push authorized by user; full goal remains incomplete and live demo unchanged."
       ]
+    },
+    {
+      "id": 15,
+      "date": "2026-10-04",
+      "changes": [
+        "Manager can delegate approved requests to a current responsible team with an eligible Superintendent or Chief lead.",
+        "Retained delegation history, versioned request update, audit and actionable team notices are atomic; request remains approved awaiting crew.",
+        "Assignment queue offers reviewed team delegation and awaiting-crew label; Superintendent scope honors selected delegation; crew selection/return/cancel close pending delegation."
+      ],
+      "verification": [
+        "Migration041 applies only to owned disposable DB; pinned strict types,591 units and production build pass.",
+        "Actual PG verifies Manager-only delegation, eligible teams, awaiting-crew state, recipients, retained redelegation history and downstream Superintendent crew selection.",
+        "Seven browser/API checks pass, including visible Manager dialog/label, Superintendent notice, cross-team redelegation refusal and downstream crew assignment; dialog capture inspected."
+      ],
+      "limitations": [
+        "Superintendent downstream assignment was exercised through API; complete its visible UI path and eligible choices.",
+        "Overlapping-team ownership, revoked replay, concurrency, fault rollback, archived/deactivated-team obligations and mobile gates remain.",
+        "Manager cross-team personnel transfers, crew reconciliation, onboarding and full annotation review remain; retained live demo unchanged."
+      ]
+    },
+    {
+      "id": 16,
+      "date": "2026-10-04",
+      "changes": [
+        "Request-specific assignment-choice API returns active survey crew only, scoped to current Manager, responsible Superintendent team/delegation, or assigned Chief crew.",
+        "Superintendent operations queue exposes Choose a crew dialog with explicit confirmation, exact retry and conflict reload; choosing a Chief filters Instrument Men to that team."
+      ],
+      "verification": [
+        "Pinned strict types,591 units and production build pass.",
+        "Owned PG verifies delegated Superintendent choices contain exactly eligible own-team Chief and Instrument Man; Manager choices exclude non-crew roles.",
+        "Eight owned browser checks pass for complete visible Manager delegation to Superintendent crew selection, excluding other-team Chief; assignment state and delegation closure verified in DB; screenshot inspected."
+      ],
+      "limitations": [
+        "Still required: Chief assignment controls, Manager cross-team personnel transfer, crew unlink/reconciliation, onboarding and lifecycle/concurrency/mobile gates.",
+        "Retained live demo remains unchanged; current additions are after pushed checkpoint14."
+      ]
+    },
+    {
+      "id": 17,
+      "date": "2026-10-04",
+      "changes": [
+        "Workspace exposes authenticated actor identity for role-aware controls.",
+        "Chief Crew Work includes approved assigned requests and offers own-Instrument-Man assignment with fixed Chief identity.",
+        "Instrument Man queue and actions are limited to their assigned work; Chief no longer sees IM start/complete buttons, and IM no longer sees leadership restart."
+      ],
+      "verification": [
+        "Pinned strict types,591 units and production build pass.",
+        "Seven owned browser checks verify Manager direct Chief handoff, fixed Chief identity, eligible own crew, visible assignment, hidden IM action for Chief and visible Instrument Man start transition; field screenshot inspected."
+      ],
+      "limitations": [
+        "Full delayed/restart/cancel/field-review paths, mobile, concurrency and replay gates remain.",
+        "Manager cross-team personnel transfers, crew reconciliation, onboarding and final annotation audit remain open; live demo unchanged."
+      ]
+    },
+    {
+      "id": 18,
+      "date": "2026-10-04",
+      "changes": [
+        "Superintendent can hand approved work to an own-team Party Chief without choosing an Instrument Man.",
+        "Dialog explains waiting for field crew; empty assignments remain disabled and active work still requires an Instrument Man."
+      ],
+      "verification": [
+        "Pinned strict types,591 unit tests and production build pass.",
+        "Desktop12 and mobile13 browser checks pass for full Manager-to-team-to-Superintendent-to-Chief-to-Instrument-Man handoff, scoped choices, preserved APPROVED status and delegation closure on actual field assignment.",
+        "Desktop and mobile dialog screenshots inspected."
+      ],
+      "limitations": [
+        "Direct assignment notifications, cross-team personnel transfer, lifecycle obligations and remaining full release gates are not complete.",
+        "Retained demo on3147 unchanged."
+      ]
+    },
+    {
+      "id": 19,
+      "date": "2026-10-04",
+      "changes": [
+        "Crew assignments now create in-app notices for the assigned Party Chief and Instrument Man in the assignment transaction.",
+        "Chief-only handoff notice explains choosing an Instrument Man in Crew Work; all assignment notices carry the request target.",
+        "Current active account, membership and survey role eligibility are checked; version-based event keys prevent duplicate notices."
+      ],
+      "verification": [
+        "Owned PostgreSQL verifies exact Chief/Instrument Man recipients.",
+        "Pinned strict types,591 units and production build pass.",
+        "Sixteen delegation browser checks and nine Chief-work checks pass, including actual inbox link navigation and exact replay without duplicate notices."
+      ],
+      "limitations": [
+        "External email delivery is not established by these in-app checks.",
+        "Outcome notices, cross-team personnel transfers, crew reconciliation, onboarding and full release verification remain pending.",
+        "Retained3147 demo unchanged."
+      ]
+    },
+    {
+      "id": 20,
+      "date": "2026-10-04",
+      "changes": [
+        "Party Chiefs receive the outcome of their rejection proposal: accepted, declined or superseded by a request change.",
+        "Outcome alerts are atomic with proposal resolution and audit history, target the request and exclude removed or ineligible Chiefs."
+      ],
+      "verification": [
+        "Actual PostgreSQL checks all three outcome messages and exact recipients, including no new notice for a removed Chief.",
+        "Pinned strict types,591 unit tests and production build pass.",
+        "Twelve browser checks pass across Chief proposal, Superintendent decision and Chief outcome inbox link to the request."
+      ],
+      "limitations": [
+        "Manager cross-team personnel transfers, crew reconciliation, onboarding, lifecycle and full final verification remain open.",
+        "Retained3147 demo unchanged."
+      ]
+    },
+    {
+      "id": 21,
+      "date": "2026-10-04",
+      "changes": [
+        "Manager Instrument Man transfer now resolves destination team through Chief membership, supporting Superintendent-led teams.",
+        "Transfers preserve all source and destination Areas, validate source crew/team consistency, retain current request assignments and use reviewed snapshot consent."
+      ],
+      "verification": [
+        "Actual PostgreSQL verifies Manager-only authority, transfer from Superintendent-led team, preserved Areas, one active team, former-Chief scope removal and stale preview refusal.",
+        "Pinned strict types,591 unit tests and production build pass.",
+        "Four owned browser checks pass: Manager transfer between Superintendent-led teams, return transfer, unchanged existing ticket assignments/versions and Superintendent API refusal."
+      ],
+      "limitations": [
+        "Broader Chief/intact-team and unassigned-person transfer cases remain unfinished.",
+        "Crew unlink/reconciliation, onboarding, team lifecycle obligations and final review remain open.",
+        "Retained3147 unchanged."
+      ]
+    },
+    {
+      "id": 22,
+      "date": "2026-10-04",
+      "changes": [
+        "Manager transfer supports Instrument Men without a Chief, including those with no current team.",
+        "Reviewed placement creates the destination crew link and team membership together; preview identifies the unassigned personnel pool."
+      ],
+      "verification": [
+        "Actual PostgreSQL verifies existing-team/no-Chief and no-team/no-Chief placement using rollback savepoints.",
+        "Pinned strict types,591 unit tests and production build pass.",
+        "Eight owned browser checks pass for cross-team round trip, unassigned-person placement, destination crew links, preserved ticket assignments/versions and Superintendent refusal."
+      ],
+      "limitations": [
+        "Chief/intact-team transfer, crew reconciliation, onboarding and broader lifecycle/final release verification remain open.",
+        "Retained3147 unchanged."
+      ]
+    },
+    {
+      "id": 23,
+      "date": "2026-10-04",
+      "changes": [
+        "Survey Manager Home shows a dismissible first-team setup reminder only after an unfiltered API read confirms no teams.",
+        "Team Management keeps a setup guide with Areas, teams and personnel shortcuts, opened by the Home reminder link.",
+        "Team editor copy now reflects team Area access and separate crew assignment."
+      ],
+      "verification": [
+        "Pinned strict types,591 units and production build pass.",
+        "Ten fresh-project browser checks pass: reminder/dismissal, guide navigation, real Area creation, desktop/mobile fit, first-team creation, reminder removal and Superintendent exclusion.",
+        "Desktop/mobile captures inspected. Actual password login verified for the owned Survey Manager demo on3150."
+      ],
+      "limitations": [
+        "Goal is intentionally paused at user request after commit/push; not declared complete.",
+        "Chief/intact-team transfers, crew reconciliation, team/delegation lifecycle obligations and full final role/annotation/release audits remain.",
+        "Retained3147 unchanged;3150 is the current checkpoint demo."
+      ]
     }
   ],
   "annotations": [
@@ -404,7 +564,14 @@
         "Review Requests page connects covered-team approval and Superintendent rejection with retained evidence.",
         "Chief rejection proposal and leadership decision controls implemented with retained proposal history and in-app leadership notifications.",
         "Submission and proposal notices now link to their request only while the recipient has current request access.",
-        "Assignment authority now enforces same-team Superintendent scope and own-crew Chief scope; Manager retains cross-team authority."
+        "Assignment authority now enforces same-team Superintendent scope and own-crew Chief scope; Manager retains cross-team authority.",
+        "Manager team delegation is available in the assignment queue with explicit review, awaiting-crew label and team notifications.",
+        "Superintendents select delegated-work crews through a visible, scoped confirmation dialog.",
+        "Checkpoint18: Superintendent may delegate crew selection to an own-team Party Chief from the visible assignment dialog.",
+        "Checkpoint19: assigned Chief and Instrument Man receive actionable inbox notifications, including Chief-only handoff guidance.",
+        "Checkpoint20: proposing Chiefs receive leadership decision or supersession notifications with request links.",
+        "Checkpoint21: Manager can move an Instrument Man between Superintendent-led teams through the reviewed movement controls, preserving Area coverage.",
+        "Checkpoint22: Manager placement works for available Instrument Men without existing team or crew."
       ],
       "verification": [
         "Multi-Area persistence/overlap/search and coverage history checked against isolated PostgreSQL.",
@@ -417,13 +584,21 @@
         "Actual PostgreSQL verifies unassigned covered request visibility, membership removal, uncovered Areas and draft privacy; 590 units pass including field-action ownership denial.",
         "Checkpoint 11: six browser review checks and actual PostgreSQL authorization/transition checks pass.",
         "Checkpoint12 verifies both leadership outcomes in PostgreSQL and ten review browser checks.",
-        "Checkpoint13: proposal supersession and revoked notification targets verified in PG; eleven browser review/notification checks pass."
+        "Checkpoint13: proposal supersession and revoked notification targets verified in PG; eleven browser review/notification checks pass.",
+        "Checkpoint15: seven owned browser/API checks plus real PostgreSQL delegation and crew-resolution tests.",
+        "Checkpoint16 verifies full Manager-to-Superintendent visible assignment workflow in eight browser checks.",
+        "Checkpoint17: seven browser checks cover direct Manager-to-Chief-to-Instrument-Man workflow and role-appropriate controls.",
+        "Desktop and mobile browser workflows verify Chief-only handoff followed by Chief Instrument Man selection.",
+        "Exact recipients checked in PostgreSQL; browser confirms request-link navigation and retry deduplication.",
+        "Three outcomes and removed-member exclusion verified in PostgreSQL; complete proposal-to-outcome browser flow passes.",
+        "PG scope and stale-preview checks plus browser round-trip transfer preserve existing request assignments.",
+        "Unassigned placement verified in PostgreSQL and through visible Manager review controls."
       ],
       "unresolved": [
-        "Implement delegation controls and downstream crew assignment.",
         "Complete Superintendent team editing and notification coverage for every structural change.",
         "Verify full connected workflow through HTTP and browser.",
-        "Verify all team-visible request consumers and linked-crew reporting, then connect review/delegation actions and notification links."
+        "Verify all team-visible request consumers and linked-crew reporting, then connect review/delegation actions and notification links.",
+        "Complete field workflow, delegation lifecycle and overlapping-team concurrency gates."
       ]
     },
     {

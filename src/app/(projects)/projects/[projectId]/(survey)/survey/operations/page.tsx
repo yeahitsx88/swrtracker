@@ -24,6 +24,8 @@ import './operations.css';
 import { Icon } from '@/components/ui/icon';
 import { formatCalendarDate } from '@/lib/calendar-date';
 import { humanizeCode, priorityLabel } from '@/lib/display-labels';
+import {TeamDelegation} from '@/components/ui/team-delegation';
+import {CrewAssignment} from '@/components/ui/crew-assignment';
 
 export default function SurveyOperationsPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -161,7 +163,7 @@ export default function SurveyOperationsPage() {
           <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket} partyChiefs={partyChiefs} instrumentMen={instrumentMen}
               readOnly={superintendent} projectId={projectId}
-              busy={busy === ticket.id || members.length === 0} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
+              busy={busy === ticket.id || members.length === 0} onDelegated={()=>void loadOperations()} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
           ))}</>}/>
         </div>
       </Card> : null}
@@ -231,19 +233,21 @@ export default function SurveyOperationsPage() {
   );
 }
 
-function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign, readOnly, projectId }: {
+function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign, readOnly, projectId,onDelegated }: {
   ticket: TicketRecord; partyChiefs: ProjectMemberRecord[]; instrumentMen: ProjectMemberRecord[]; busy: boolean;
   onAssign: (partyChiefId: string | null, instrumentManId: string | null) => Promise<void>;
-  readOnly?: boolean; projectId: string;
+  readOnly?: boolean; projectId: string;onDelegated:()=>void;
 }) {
   const [partyChiefId, setPartyChiefId] = useState(ticket.assignedPartyChiefId ?? '');
   const [instrumentManId, setInstrumentManId] = useState(ticket.assignedInstrumentManId ?? '');
+  useEffect(()=>{setPartyChiefId(ticket.assignedPartyChiefId??'');setInstrumentManId(ticket.assignedInstrumentManId??'');},[ticket.assignedPartyChiefId,ticket.assignedInstrumentManId]);
   return (
     <details className="ops-queue-row">
       <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
       <div className="stack ops-row-body">
         <p>{ticket.description}</p>
-        {readOnly ? <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link> : <div className="row">
+        <TeamDelegation ticketId={ticket.id} canDelegate={!readOnly} onDelegated={onDelegated}/>
+        {readOnly ? <div className="row"><CrewAssignment ticketId={ticket.id} allowChiefOnly={ticket.status === 'APPROVED'} onSaved={onDelegated}/><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link></div> : <div className="row">
           <label>Party Chief <select value={partyChiefId} onChange={(event) => setPartyChiefId(event.target.value)}><option value="">None</option>{partyChiefs.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
           <label>Instrument Man <select value={instrumentManId} onChange={(event) => setInstrumentManId(event.target.value)}><option value="">Unassigned</option>{instrumentMen.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
           <Button disabled={busy} onClick={() => void onAssign(partyChiefId || null, instrumentManId || null)}>{busy ? 'Saving…' : 'Save Assignment'}</Button>

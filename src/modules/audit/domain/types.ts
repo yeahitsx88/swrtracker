@@ -28,6 +28,7 @@ export type AuditEventType =
   | 'ticket.priority_revised'
   | 'ticket.need_by_revised'
   | 'ticket.assigned'
+  | 'ticket.team_delegated'
   | 'ticket.party_chief_assigned'
   | 'ticket.unassigned'
   | 'workflow.orphan_escalation'

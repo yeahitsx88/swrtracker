@@ -1,4 +1,5 @@
 'use client';
+import {SurveySetupTip} from './survey-setup';
 import { HomeWidgets } from './home-widgets';
 
 import Link from 'next/link';
@@ -96,6 +97,7 @@ export function ProjectHome() {
   const upcomingPanel = data && (<Card className="home-upcoming" title="Upcoming Need-By Dates" description={`${data.dates.today} through ${data.dates.through} · open requests only. ${recordScope(data.upcoming.data.length,data.upcoming.total)}`}><HomeRequests projectId={projectId} tickets={data.upcoming.data} title="upcoming requests" requester={requester} /></Card>);
   const areaPanel = data && (!requester && !field && 'areas' in (chart ?? {}) && <Card className="home-area" title="Requests by Area" description="Current requests · all dates · authorized Areas. Up to eight Areas shown. Summary totals cover your complete authorized scope."><KpiChart kind="bar" rows={('areas' in chart! ? chart.areas : []).slice(0,8)} months={[]} cells={[]} cycle={false} total={data.metrics.total ?? 0} denominator={data.metrics.total ?? 0} title="Requests by Area" select={value => drill({areaId: value})} selectMonth={() => {}} /></Card>);
   return <div className="home-workspace">
+    {manager&&status==='ACTIVE'?<SurveySetupTip projectId={projectId}/>:null}
     <header className="home-heading"><HeadingHelp label="Home" heading={<h1>{name ? `Welcome, ${name}` : 'Home'}</h1>} help={<><p>{operational ? title : 'Your project workspace'}</p>{operational&&<p>{requester ? 'Your requests and company requests you’re authorized to follow.' : superintendent ? `All work within your Areas, including unassigned work.${caps?.canAdminister ? '' : ' Linked-crew reporting is separate below.'}` : field ? 'Work and history available to your crew and assignments.' : 'Current request state within your project access. Request counts are not productivity measures.'} Counts include all dates; upcoming dates use UTC.</p>}</>}/><div className="home-heading-actions"><span className="home-date">{data?.dates.today ?? new Date().toISOString().slice(0,10)} · UTC</span><button className="button button-secondary" type="button" onClick={() => setRevision(value => value + 1)}><Icon name="refresh" />Refresh Home</button></div></header>
     {nameError && <p className="error-banner" role="alert">{nameError}</p>}
     {requester && status === 'ACTIVE' && <div className="home-primary-action"><Icon name="plus" size={28}/><HeadingHelp label="Submit a New Survey Request" heading={<Link className="home-primary-link" href={`${base}/request/new`}><strong>Submit a New Survey Request</strong></Link>} help="Provide the Area, Need-By date, contact and work details."/><Icon name="chevron"/></div>}

@@ -14,6 +14,8 @@ import { Button, Card, ErrorBanner } from '@/components/ui';
 import { Icon } from '@/components/ui/icon';
 import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
 import { useAreaNames } from '@/lib/use-area-names';
+import {useProjectWorkspace} from '@/components/ui/project-shell-header';
+import {CrewAssignment} from '@/components/ui/crew-assignment';
 
 export default function CrewWorkPage() {
   return <Suspense fallback={<p role="status">Loading crew work…</p>}><CrewWorkContent /></Suspense>;
@@ -21,6 +23,7 @@ export default function CrewWorkPage() {
 function CrewWorkContent() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
+  const workspace=useProjectWorkspace(),role=workspace?.capabilities.operationalRole,actorId=workspace?.actorId;
   const query = useSearchParams().toString();
   const parsed = homeRequestFilters(query, 'fieldWork');
   const areaNames = useAreaNames(projectId);
@@ -29,7 +32,8 @@ function CrewWorkContent() {
   const [revision, setRevision] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busyTicketId, setBusyTicketId] = useState<string | null>(null);
-  const work = useTicketPage(projectId, page, size, parsed.filters, !parsed.error, revision);
+  const filters=role==='PARTY_CHIEF'?{...parsed.filters,queue:'open' as const,crewId:actorId}:role==='INSTRUMENT_MAN'?{...parsed.filters,instrumentManId:actorId}:parsed.filters;
+  const work = useTicketPage(projectId, page, size, filters, !parsed.error&&!!actorId, revision);
   const total = work.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / size));
   useEffect(() => { if (work.data && page > pages) setPage(pages); }, [work.data, page, pages]);
@@ -72,8 +76,12 @@ function CrewWorkContent() {
             tickets={work.data?.data ?? []}
             areaNames={areaNames}
             emptyTitle="No actionable crew work"
-            emptyMessage="Assigned, in-progress and delayed requests for your crew will appear here."
-            renderActions={(ticket) => (
+            emptyMessage="Work assigned to you will appear here, including requests awaiting your crew selection."
+            renderActions={(ticket) => role==='PARTY_CHIEF'&&ticket.assignedPartyChiefId===actorId?(<div className="row">
+              {['APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<CrewAssignment ticketId={ticket.id} fixedChiefId={actorId} onSaved={()=>setRevision(n=>n+1)}/>:null}
+              {ticket.status==='DELAYED'?<Button disabled={busyTicketId===ticket.id} onClick={()=>void runAction(ticket.id,()=>apiClient.restartDelayedTicket(ticket.id).then(()=>undefined))}>Restart delayed work</Button>:null}
+              {['IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="danger" disabled={busyTicketId===ticket.id} onClick={()=>{const reason=window.prompt('Why should this request be stopped?');if(reason?.trim())void runAction(ticket.id,()=>apiClient.surveyCancel(ticket.id,reason).then(()=>undefined));}}>Flag Stop Work</Button>:null}
+              </div>):role==='INSTRUMENT_MAN'&&ticket.assignedInstrumentManId===actorId?(
               <CrewWorkActions
                 ticket={ticket}
                 busy={busyTicketId === ticket.id}
@@ -82,9 +90,8 @@ function CrewWorkContent() {
                 onDelay={(id, reason) => runAction(id, () => apiClient.delayTicket(id, reason).then(() => undefined))}
                 onReportInability={(id, reason) => runAction(id, () => apiClient.reportFieldInability(id, reason).then(() => undefined))}
                 onFlagStopWork={(id, reason) => runAction(id, () => apiClient.surveyCancel(id, reason).then(() => undefined))}
-                onRestartDelay={(id) => runAction(id, () => apiClient.restartDelayedTicket(id).then(() => undefined))}
               />
-            )}
+            ):<Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request</Link>}
           />
         ) : null}
         {!work.loading && total > size ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}

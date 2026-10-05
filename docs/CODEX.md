@@ -3683,3 +3683,84 @@ Assignment inspection found Superintendents could choose any project surveyor. N
 Pinned strict types,591units and production build pass. Owned PostgreSQL verifies own-team success, outside-team target and previous crew refusal, Manager exception and missing/active/other-Chief crew links. Initial positive fixture had intentionally rolled back its earlier crew; test now explicitly proves missing refusal, creates an isolated link and proves success before rolling back. Full HTTP/browser assignment gates remain. No live demo update.
 
 User requested next checkpoint push and linked Push to GitHub chat. Read linked chat; it concerns another repository and supplies no SWRTracker branch authority. Current SWRTracker branch alpha1-ui-redesign is the push target. This is an intermediate checkpoint with all previous work preserved; delegation, transfers, crew reconciliation, onboarding and full release verification remain unfinished.
+
+
+## Batch 164 - Survey checkpoint 15: team delegation (2026-10-04)
+
+Migration041 retains team delegation history separately from ticket status. Manager selects a currently covered team with active eligible SS/PC lead; API uses current Manager/active project before replay, ticket lock and optimistic version update. Request remains APPROVED awaiting crew; captured delegation, old assignment closure, audit and actionable team notices are atomic. Manager operations queue has reviewed Delegate to a team dialog, exact uncertain retry, conflict reload, and awaiting-crew label. Delegation refreshes crew selections. SS assignment scope respects active delegated team; actual crew selection or Manager direct assignment closes the awaiting-crew record. Return/cancellation also closes it without deleting history.
+
+Owned migration applied; pinned types,591units and production build pass after adding shared cleanup writer to lifecycle inventory. Actual PG verifies eligible team selection, non-Manager refusal, foreign team refusal, retained redelegation, precise notice recipients and downstream SS own-crew assignment. Seven browser/API checks pass: Manager visible delegation/label, approved status, SS redelegation refusal, actionable SS notice, SS crew selection and delegation closure. Dialog capture inspected. SS downstream assignment verified via API, not its final UI flow.
+
+Remaining gates include SS visible assignment choices, overlapping-team ownership, deactivated team/lead obligations, stale/revoked replay, concurrent changes, rollback and mobile coverage. Cross-team personnel movement, crew reconciliation, onboarding and full five-annotation audit remain. No retained3147 refresh and no additional push requested after checkpoint14.
+
+
+## Batch 165 - Survey checkpoint 16: Superintendent crew assignment UI (2026-10-04)
+
+Assignment GET supplies request-specific current crew choices after authenticated ticket visibility: Manager active PC/IM project population; SS responsible led team intersected with current delegation and prior crew; Chief own active Instrument Men and self when assigned. Shared endpoint never offers Requesters/Viewers. Superintendent Need Assignment rows expose reviewed Choose a crew dialog, Chief-based team filtering, required Instrument Man/consent, frozen retry and definitive conflict reload. Existing Manager direct assignment and team delegation remain.
+
+Pinned types,591units and production build pass. Owned PG verifies exact SS candidate population and Manager crew-only roles. Eight browser checks now exercise actual SS dialog instead of API-only assignment: Manager delegation, SS actionable notice, other-team Chief absent, visible crew confirmation, ASSIGNED state and closed delegation; capture inspected. No retained3147 updates.
+
+Remaining: Chief assignment UI/menu integration, Manager cross-team personnel transfer, full crew unlink/reconciliation, setup guidance, team/delegation lifecycle obligations, concurrency/fault/revoked replay, mobile and independent UI checks. The full five-annotation goal remains active.
+
+
+## Batch 166 - Survey checkpoint 17: Chief crew selection and field-role controls (2026-10-04)
+
+Capabilities response carries authenticated actorId into workspace context for identity-aware presentation. Chief Crew Work narrows to own assigned open requests, including approved work awaiting Instrument Man; IM queue narrows to own assigned field work. Chief uses shared crew dialog with fixed Chief identity and eligible own IM options. Chief no longer sees IM start/complete controls; IM no longer sees leadership restart. Assigned Chief retains restart and stop-work controls. Server authority remains independently enforced.
+
+Pinned types,591units and production build pass. Seven owned browser checks exercise Manager direct Chief assignment, approved request in Chief queue, fixed Chief field, no other Chief choice, actual IM assignment, no Chief start button, IM visible start transition and no IM crew management. Instrument work capture inspected.
+
+Remaining: delayed/restart/cancel/field review and retry integration, cross-team personnel transfer, crew unlink/reconciliation, onboarding, notification completion, lifecycle/concurrency/fault/mobile and final independent reviews. Existing native reason prompts still need consistent modal treatment. Retained3147 unchanged; full goal active.
+
+
+## Batch 167 - Survey checkpoint 18: Superintendent to Chief handoff (2026-10-04)
+
+Server already accepts Chief-only assignments for approved requests; the Superintendent dialog incorrectly required an Instrument Man. The dialog now allows Chief-only handoff explicitly for APPROVED requests, explains waiting for field crew, and sends a null Instrument Man. Empty assignments remain blocked. Chief and active-work dialogs retain their required Instrument Man selection. Existing server authority and lifecycle guards remain authoritative.
+
+Pinned strict types,591 units and production build pass. Owned browser verifies full Manager team delegation, Superintendent own-Chief handoff, APPROVED status with retained delegation, Chief visible crew selection and ASSIGNED transition closing delegation. Twelve desktop and thirteen mobile checks pass; both dialog captures inspected. Cross-team refusal and other-team choice exclusion remain covered.
+
+Cross-team personnel transfers, crew reconciliation, assignment/outcome notifications, onboarding and complete lifecycle/replay/concurrency/mobile release audit remain open. Prior work preserved, retained3147 unchanged, full goal active.
+
+
+## Batch 168 - Survey checkpoint 19: crew handoff notifications (2026-10-04)
+
+Assignments previously notified only the requester. The assignment application now inserts current assigned Chief/Instrument Man inbox notices atomically with ticket/history/audit writes. It checks tenant, active membership/account/company and matching survey role; version-based event keys preserve exact-replay deduplication. Chief-only handoff text points to Crew Work; notices retain request targets and existing inbox visibility checks govern links. Existing lifecycle writer inventory already covers this assignment module and notification writes.
+
+Pinned strict types,591 units and production build pass. Actual owned PostgreSQL asserts exact recipients. Sixteen delegation browser checks and nine Chief-work checks pass: actionable Chief/IM notices, real inbox link navigation, full downstream handoff, and exact assignment replay without duplicate alerts.
+
+In-app delivery does not establish external email delivery. Proposal outcome notices, cross-team personnel transfer, crew reconciliation, onboarding and final role/lifecycle/replay/concurrency gates remain. Retained3147 unchanged; full goal remains active.
+
+
+## Batch 169 - Survey checkpoint 20: rejection proposal outcome feedback (2026-10-04)
+
+Proposal resolution now atomically creates an inbox update for its proposing Chief alongside retained resolution evidence. Plain-language messages distinguish accepted/rejected request, declined/approved request, and superseded request changes. Tenant, active account/company/membership and Chief-role eligibility gate recipients; request targets remain subject to inbox visibility. Existing proposal lifecycle writer inventory covers these writes.
+
+Pinned strict types,591 units and production build pass. Actual owned PG checks all three outcomes, exact recipient and removed-member exclusion; initial removal fixture omitted required paired actor evidence, corrected before successful rerun. Twelve browser checks pass through Chief proposal, Superintendent decision and Chief outcome inbox navigation. No new UI layout or migration.
+
+Cross-team personnel transfers, crew reconciliation, onboarding, lifecycle obligations and complete audit/release gates remain open. Retained3147 unchanged, full goal active.
+
+
+## Batch 170 - Survey checkpoint 21: Manager Instrument Man transfers across led teams (2026-10-04)
+
+Existing transfer assumed destination Chief led the named team. Instrument Man transfer now resolves source person and destination Chief active memberships, supporting Superintendent-led teams. It validates source Chief membership consistency and prevents moving a team lead without replacement. Both team saves preserve full multi-Area coverage; prior code supplied only the legacy single Area. Existing EXCLUSIVE lifecycle barrier, Manager authority, snapshot review, consent, idempotency and historical assignment preservation remain.
+
+Pinned strict types,591 units and production build pass. Actual PG checks cross-team move, Manager-only authority, roster visibility change, one active team, retained source Areas and stale preview refusal. Four browser checks pass using visible review/reason/consent controls for an outward and return transfer between Superintendent-led teams, unchanged request assignments/versions and SS refusal. Initial browser selectors assumed exact accessible labels; corrected to observed form select order, with no fixture mutations during failed attempts.
+
+This completes the linked Instrument Man transfer case, not the broader Chief/intact-team or unassigned-person cases. Those, crew reconciliation, setup guidance, lifecycle obligations and final audit remain open. Retained3147 unchanged.
+
+
+## Batch 171 - Survey checkpoint 22: place unassigned surveyors (2026-10-04)
+
+Manager Instrument Man transfer no longer requires an existing Chief. It supports available team members and project surveyors without a team; destination team membership and crew link are saved in the reviewed transaction. Source-team lead and membership consistency guards remain. Preview distinguishes the unassigned personnel pool. No change to request assignments or Superintendent cross-team authority.
+
+Pinned strict types,591 units and production build pass. Actual owned PG tests both no-Chief cases using savepoints. Eight browser checks verify cross-team round trip, placement of a fresh unassigned owned-fixture surveyor, current destination crew links, preserved ticket assignments/versions and SS refusal.
+
+Chief/intact-team transfer, crew reconciliation, setup guidance and full lifecycle/release verification remain open. Retained3147 unchanged; full goal active.
+
+
+## Batch 172 - Survey checkpoint 23: setup guidance and requested stop (2026-10-04)
+
+Manager Home now offers a dismissible first-team reminder after a successful unfiltered team count. Team Management has a permanent guide with functional Areas/teams/personnel shortcuts. Home link opens it directly. Guide explains Area selection, team lead/roster, crew arrangement and notification flow. Corrected stale team editor copy denying team Area access. Initial tip used unsupported limit1; corrected to10.
+
+Pinned strict types,591 units and production build pass. Ten browser checks on a fresh owned project pass, including real Area creation, actual API first-team creation, reminder disappearance and non-Manager exclusion; desktop/mobile captures inspected. Browser test expectations corrected for201 creation and hidden mobile navigation heading. Actual Survey Manager password login to3150 verified; credentials remain in ignored local manifest.
+
+User requested finishing next checkpoint, committing ALL uncommitted work, pushing, providing demo credentials, then stopping development. This checkpoint includes preserved changes since checkpoint14. Full goal is not complete: Chief/intact-team transfers, crew reconciliation, lifecycle obligations and full final audit remain. Tracker paused at user request. Retained3147 untouched; current demo3150 retained for user review and must no longer be treated as disposable without explicit authorization.

@@ -9,6 +9,13 @@ import {saveSurveyTeam} from '../application/survey-teams';
 interface Crew {chiefId:UUID;areas:Array<{id:UUID;areaId:UUID;departmentId:UUID|null}>;reporting:Array<{id:UUID;areaId:UUID;superintendentId:UUID}>;roster:UUID[];teams:UUID[]}
 export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository implements ReorganizationRepository{
  async authorize(db:DbClient,actor:StaffingActor){await authorizeStaffingMutation(this,db,actor);}
+ private async memberTeam(db:DbClient,actor:StaffingActor,userId:UUID){
+  const {rows}=await db.query<{team_id:UUID}>(`SELECT m.team_id FROM survey_team_members m
+    JOIN survey_teams t ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id
+    WHERE m.tenant_id=$1 AND m.project_id=$2 AND m.user_id=$3 AND m.deactivated_at IS NULL AND t.deactivated_at IS NULL`,
+    [actor.tenantId,actor.projectId,userId]);
+  return rows[0]?new SurveyTeamsPgRepository().team(db,actor.tenantId,actor.projectId,rows[0].team_id):null;
+ }
  private async crew(db:DbClient,actor:StaffingActor,chiefId:UUID):Promise<Crew>{
   const scope=[actor.tenantId,actor.projectId,chiefId];
   if((await this.member(db,actor.tenantId,actor.projectId,chiefId))?.role!=='PARTY_CHIEF')throw new NotFoundError('Active Party Chief not found');
@@ -39,13 +46,14 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
   }else{
    subject=selection.instrumentManId;
    if((await this.member(db,actor.tenantId,actor.projectId,subject))?.role!=='INSTRUMENT_MAN')throw new NotFoundError('Active Instrument Man not found');
-   const sourceId=await this.rosterChief(db,actor.tenantId,actor.projectId,subject);if(!sourceId)throw new ConflictError('Select an Instrument Man with a current crew');
-   const source=await this.crew(db,actor,sourceId);state.source=source;
-   const oldTeamId=(await db.query<{team_id:UUID}>(`SELECT m.team_id FROM survey_team_members m JOIN survey_teams t ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id AND t.deactivated_at IS NULL WHERE m.tenant_id=$1 AND m.project_id=$2 AND m.user_id=$3 AND m.deactivated_at IS NULL`,[actor.tenantId,actor.projectId,subject])).rows[0]?.team_id;
-   const oldTeam=oldTeamId?await teamRepo.team(db,actor.tenantId,actor.projectId,oldTeamId):null,newTeam=destination.teams.length===1?await teamRepo.team(db,actor.tenantId,actor.projectId,destination.teams[0]!):null;
+   const sourceId=await this.rosterChief(db,actor.tenantId,actor.projectId,subject);
+   const source=sourceId?await this.crew(db,actor,sourceId):null;state.source=source;
+   const oldTeam=await this.memberTeam(db,actor,subject),newTeam=await this.memberTeam(db,actor,destination.chiefId);
    state.oldTeam=oldTeam;state.newTeam=newTeam;
-   if(destination.teams.length>1||!!oldTeam!==!!newTeam||oldTeam&&oldTeam.lead.userId!==sourceId||newTeam&&newTeam.lead.userId!==destination.chiefId)blockers.push('Resolve ambiguous named-team membership before transferring this person');
-   summary.push('Move only this Instrument Man in the current roster and matching named teams. Existing assigned requests remain with their recorded Chief and Instrument Man.');
+   if(oldTeam&&!newTeam||oldTeam&&sourceId&&!oldTeam.members.some(member=>member.userId===sourceId))blockers.push('The Instrument Man and current Chief must belong to the same team, and the destination Chief must have a team.');
+   if(oldTeam?.lead.userId===subject&&oldTeam.id!==newTeam?.id)blockers.push('Choose another lead for the current team before moving this person.');
+   if(sourceId===destination.chiefId)blockers.push('This Instrument Man already belongs to the selected Chief.');
+   summary.push(`Move this Instrument Man from ${oldTeam?.name??(sourceId?'the current crew':'the unassigned personnel pool')} to ${newTeam?.name??'the destination crew'}. Existing request assignments stay with their recorded Chief and Instrument Man.`);
   }
   const work=(await db.query<{id:UUID;status:string;row_version:number}>(`SELECT id,status,row_version FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND ${selection.kind==='CREW'?'assigned_party_chief_id':'assigned_instrument_man_id'}=$3 AND status NOT IN ('DRAFT','COMPLETED','REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED') ORDER BY id`,[actor.tenantId,actor.projectId,subject])).rows;
   if(selection.kind==='CREW'&&destination.areas.some(a=>a.areaId!==selection.areaId)&&work.length)blockers.push(`Resolve or explicitly reassign ${work.length} open crew requests before changing Area`);
@@ -63,9 +71,9 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
   }else{
    await this.addInstrumentMan(db,actor.tenantId,actor.projectId,selection.partyChiefId,selection.instrumentManId);
    const oldTeam=preview.state.oldTeam as Awaited<ReturnType<SurveyTeamsPgRepository['team']>>,newTeam=preview.state.newTeam as typeof oldTeam;
-   if(oldTeam&&newTeam&&oldTeam.id!==newTeam.id){
-    await saveSurveyTeam(teamRepo,db,actor,{teamId:oldTeam.id,expectedVersion:oldTeam.rowVersion,name:oldTeam.name,areaId:oldTeam.areaId,leadUserId:oldTeam.lead.userId,memberIds:oldTeam.members.filter(m=>m.userId!==selection.instrumentManId).map(m=>m.userId)});
-    await saveSurveyTeam(teamRepo,db,actor,{teamId:newTeam.id,expectedVersion:newTeam.rowVersion,name:newTeam.name,areaId:newTeam.areaId,leadUserId:newTeam.lead.userId,memberIds:[...newTeam.members.map(m=>m.userId),selection.instrumentManId]});
+   if(newTeam&&oldTeam?.id!==newTeam.id){
+    if(oldTeam)await saveSurveyTeam(teamRepo,db,actor,{teamId:oldTeam.id,expectedVersion:oldTeam.rowVersion,name:oldTeam.name,areaId:oldTeam.areaId,areaIds:oldTeam.areas?.map(area=>area.id)??[oldTeam.areaId],leadUserId:oldTeam.lead.userId,memberIds:oldTeam.members.filter(m=>m.userId!==selection.instrumentManId).map(m=>m.userId)});
+    await saveSurveyTeam(teamRepo,db,actor,{teamId:newTeam.id,expectedVersion:newTeam.rowVersion,name:newTeam.name,areaId:newTeam.areaId,areaIds:newTeam.areas?.map(area=>area.id)??[newTeam.areaId],leadUserId:newTeam.lead.userId,memberIds:[...newTeam.members.map(m=>m.userId),selection.instrumentManId]});
    }
   }
   await this.record(db,actor.tenantId,actor.projectId,actor.actorId,{action:'coordinated-reorganization',selection,reason,snapshot:preview.snapshot,previous:preview.state,activeAssignmentCount:preview.activeWork,historicalWorkUnchanged:true});

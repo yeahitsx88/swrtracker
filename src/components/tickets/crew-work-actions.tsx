@@ -11,7 +11,6 @@ interface CrewWorkActionsProps {
   onDelay: (ticketId: string, reason: string) => Promise<void>;
   onReportInability: (ticketId: string, reason: string) => Promise<void>;
   onFlagStopWork: (ticketId: string, reason: string) => Promise<void>;
-  onRestartDelay: (ticketId: string) => Promise<void>;
 }
 
 export function CrewWorkActions({
@@ -22,7 +21,6 @@ export function CrewWorkActions({
   onDelay,
   onReportInability,
   onFlagStopWork,
-  onRestartDelay,
 }: CrewWorkActionsProps) {
   if (ticket.status === 'ASSIGNED') {
     return <Button disabled={busy} onClick={() => void onStart(ticket.id)}>Start Work</Button>;
@@ -73,7 +71,7 @@ export function CrewWorkActions({
   if (ticket.status === 'DELAYED') {
     return (
       <div className="crew-work-actions">
-        <Button disabled={busy} onClick={() => void onRestartDelay(ticket.id)}>Restart Delay</Button>
+        <p className="muted">Your Party Chief or survey lead can restart this work.</p>
         <Button
           variant="danger"
           disabled={busy}

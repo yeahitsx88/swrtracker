@@ -83,6 +83,7 @@ export async function performTransition(
   });
   if(to==='RETURNED_FOR_CORRECTION'||to==='REQUESTER_CANCELED'||to==='SURVEY_CANCELED'){
     await resolveRejectionProposal(db,{tenantId,ticketId,actorId,actorRole},'SUPERSEDED');
+    await db.query('UPDATE survey_work_delegations SET ended_at=now(),end_reason=$3 WHERE tenant_id=$1 AND ticket_id=$2 AND ended_at IS NULL',[tenantId,ticketId,to]);
   }
   return result;
 }

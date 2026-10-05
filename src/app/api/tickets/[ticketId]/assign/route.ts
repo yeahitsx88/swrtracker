@@ -16,6 +16,8 @@ import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-he
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { assignTicket } from '@/modules/ticket/application/assign-ticket';
 import type { UUID } from '@/shared/types';
+import {assignmentChoices} from '@/modules/ticket/application/assignment-choices';
+import {pool} from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,3 +86,7 @@ async function observedPOST(
 }
 
 export const POST=observeProjectRoute(observedPOST);
+export const GET=observeProjectRoute(async(req:NextRequest,{params}:{params:Promise<{ticketId:string}>})=>{
+  try{const {ticketId}=await params,ctx=await getTicketRouteContext(req,ticketId);return NextResponse.json({people:await assignmentChoices(pool,ctx)});}
+  catch(error){return errorResponse(error);}
+});

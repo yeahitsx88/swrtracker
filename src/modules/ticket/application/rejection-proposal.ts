@@ -60,8 +60,21 @@ export async function assertProposalDecision(db:DbClient,actor:Actor):Promise<vo
 
 /** Called after a successful leadership transition, in the same transaction. */
 export async function resolveRejectionProposal(db:DbClient,actor:Actor,outcome:'CONFIRMED'|'DECLINED'|'SUPERSEDED'):Promise<void>{
-  const {rows}=await db.query<{id:UUID}>(`UPDATE survey_rejection_proposals SET resolved_at=now(),resolved_by=$3,outcome=$4
-    WHERE tenant_id=$1 AND ticket_id=$2 AND resolved_at IS NULL RETURNING id`,[actor.tenantId,actor.ticketId,actor.actorId,outcome]);
-  for(const proposal of rows)await db.query(`INSERT INTO ticket_events(tenant_id,ticket_id,actor_id,event_type,payload)
+  const {rows}=await db.query<{id:UUID;proposedBy:UUID}>(`UPDATE survey_rejection_proposals SET resolved_at=now(),resolved_by=$3,outcome=$4
+    WHERE tenant_id=$1 AND ticket_id=$2 AND resolved_at IS NULL RETURNING id,proposed_by AS "proposedBy"`,[actor.tenantId,actor.ticketId,actor.actorId,outcome]);
+  for(const proposal of rows){await db.query(`INSERT INTO ticket_events(tenant_id,ticket_id,actor_id,event_type,payload)
     VALUES($1,$2,$3,'ticket.rejection_proposal_resolved',$4)`,[actor.tenantId,actor.ticketId,actor.actorId,JSON.stringify({proposalId:proposal.id,outcome})]);
+    const message=outcome==='CONFIRMED'?'Your rejection proposal was accepted. The request has been rejected.':
+      outcome==='DECLINED'?'Your rejection proposal was declined. The request has been approved.':
+      'The request changed before a decision was made. Your rejection proposal no longer needs a decision.';
+    await db.query(`INSERT INTO survey_notifications(tenant_id,project_id,ticket_id,recipient_id,actor_id,event_key,title,message)
+      SELECT t.tenant_id,t.project_id,t.id,u.id,$3,$4,'Rejection proposal update',COALESCE(t.ticket_number,'Survey request') || ': ' || $5
+      FROM tickets t JOIN project_memberships pm ON pm.project_id=t.project_id AND pm.user_id=$6
+      JOIN users u ON u.id=pm.user_id AND u.tenant_id=t.tenant_id
+      JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+      WHERE t.tenant_id=$1 AND t.id=$2 AND pm.role='PARTY_CHIEF' AND pm.access_disabled_at IS NULL
+        AND u.deactivated_at IS NULL AND c.type<>'SUBCONTRACTOR'
+      ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`,
+      [actor.tenantId,actor.ticketId,actor.actorId,`rejection-outcome:${proposal.id}`,message,proposal.proposedBy]);
+  }
 }

@@ -86,6 +86,10 @@ export async function assignTicket(
     expectedStatus: ticket.status,
     expectedRowVersion: ticket.rowVersion,
   });
+  if(params.assignedInstrumentManId||params.actorRole==='SURVEY_MANAGER'){
+    await db.query("UPDATE survey_work_delegations SET ended_at=now(),end_reason=$3 WHERE tenant_id=$1 AND ticket_id=$2 AND ended_at IS NULL",
+      [params.tenantId,params.ticketId,params.assignedInstrumentManId?'CREW_ASSIGNED':'DIRECT_ASSIGNMENT']);
+  }
 
   await db.query(
     `UPDATE ticket_assignment_history
@@ -121,6 +125,25 @@ export async function assignTicket(
     },
     idempotencyKey: `${params.ticketId}:assignment:${ticket.rowVersion ?? 0}`,
   });
+
+  // Keep the handoff notice in the same transaction as the assignment and history.
+  // Version-based keys also prevent duplicate inbox items on exact request replay.
+  await db.query(`INSERT INTO survey_notifications
+      (tenant_id,project_id,ticket_id,recipient_id,actor_id,event_key,title,message)
+    SELECT u.tenant_id,pm.project_id,$3,u.id,$4,$5,'Work assigned to you',$6
+    FROM users u JOIN project_memberships pm ON pm.user_id=u.id AND pm.project_id=$2
+    JOIN companies c ON c.tenant_id=u.tenant_id AND c.id=u.company_id
+    WHERE u.tenant_id=$1 AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
+      AND c.type<>'SUBCONTRACTOR'
+      AND ((u.id=$7 AND pm.role='PARTY_CHIEF') OR (u.id=$8 AND pm.role='INSTRUMENT_MAN'))
+    ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`, [
+    params.tenantId,ticket.projectId,params.ticketId,params.actorId,
+    `assignment:${params.ticketId}:${ticket.rowVersion ?? 0}`,
+    params.assignedInstrumentManId
+      ? `${ticket.ticketNumber ?? 'Survey request'} has been assigned to your crew. Open the request to see the work.`
+      : `${ticket.ticketNumber ?? 'Survey request'} is waiting for you to choose an Instrument Man in Crew Work.`,
+    params.assignedPartyChiefId,params.assignedInstrumentManId,
+  ]);
 
   return {
     ...ticket,

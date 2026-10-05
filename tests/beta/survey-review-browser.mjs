@@ -20,6 +20,11 @@ try{
  check((await db.query('SELECT status,rejection_reason FROM tickets WHERE id=$1',[ids[1]])).rows[0].status==='REJECTED','Responsible Superintendent rejects through reviewed reason dialog');
  check((await db.query('SELECT rejection_reason FROM tickets WHERE id=$1',[ids[1]])).rows[0].rejection_reason==='Outside the agreed survey scope','Written rejection reason retained');
  check((await db.query('SELECT outcome,resolved_by FROM survey_rejection_proposals WHERE id=$1',[proposal.id])).rows[0].outcome==='CONFIRMED','Leadership resolution retains proposal history');
+ await p.goto(`${f.origin}/projects/${f.project}/survey/notifications`);
+ const outcomeNotice=p.getByRole('listitem').filter({hasText:`REVIEW-${suffix}-1`}).filter({has:p.getByRole('heading',{name:'Rejection proposal update',exact:true})});
+ await outcomeNotice.getByText(/Your rejection proposal was accepted/).waitFor();
+ await outcomeNotice.getByRole('link',{name:'Open request',exact:true}).click();await p.waitForURL(`**/tickets/${ids[1]}`);
+ check(true,'Proposing Chief sees the outcome and opens its request from Notifications');
  const manager=await session(f.manager),mp=await manager.newPage();await mp.goto(`${f.origin}/projects/${f.project}/survey/notifications`);
  const notice=mp.getByRole('listitem').filter({hasText:`REVIEW-${suffix}-1`});await notice.getByRole('link',{name:'Open request',exact:true}).click();
  await mp.waitForURL(`**/tickets/${ids[1]}`);await mp.getByText(`REVIEW-${suffix}-1`,{exact:false}).first().waitFor();check(true,'Notification opens its authorized request');

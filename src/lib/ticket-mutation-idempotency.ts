@@ -38,11 +38,12 @@ export async function executeAuthorizedTicketMutation<T>(
   `SELECT t.id FROM tickets t WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.id=$3 ${clause.sql}`,
   [scope.tenantId,ticket.project_id,ticketId,...clause.params]);
  if(!visible.rows[0])throw new NotFoundError('Ticket not found');
- if(['approve','reject','rejection-proposal'].includes(action??''))await assertActiveReviewProject(db,scope.tenantId,ticket.project_id);
+ if(['approve','reject','rejection-proposal','delegate'].includes(action??''))await assertActiveReviewProject(db,scope.tenantId,ticket.project_id);
  const allowed=(roles:readonly ProjectRole[],relationship=true)=>{
   if(!roles.includes(role)||!relationship)throw new ForbiddenError('Current authority for this ticket action is required');
  };
  switch(action){
+  case 'delegate':allowed(['SURVEY_MANAGER']);break;
   case 'rejection-proposal':
    allowed(['PARTY_CHIEF']);
    await requireSurveyReviewAuthority(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},{actorId:scope.actorId,actorRole:role});break;
@@ -54,7 +55,7 @@ export async function executeAuthorizedTicketMutation<T>(
   case 'assign':
    if(role==='PARTY_CHIEF')allowed(['PARTY_CHIEF'],ticket.assigned_party_chief_id===scope.actorId);
    else allowed(['SURVEY_MANAGER','SURVEY_SUPERINTENDENT']);
-   await assertAssignmentScope(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},
+   await assertAssignmentScope(db,{tenantId:scope.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id,id:ticketId},
      {actorId:scope.actorId,actorRole:role},{partyChiefId:ticket.assigned_party_chief_id,instrumentManId:ticket.assigned_instrument_man_id,
        previousChiefId:ticket.assigned_party_chief_id,previousInstrumentId:ticket.assigned_instrument_man_id});break;
   case 'start': case 'complete': case 'delay': case 'field-inability':

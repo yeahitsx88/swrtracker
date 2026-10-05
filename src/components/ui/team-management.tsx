@@ -1,5 +1,6 @@
 'use client';
 import {HeadingHelp} from '@/components/ui/heading-help';
+import {SurveySetupGuide} from './survey-setup';
 
 import {AdministrationRecords} from './administration-records';
 import {RecordCollection} from '@/components/ui/record-collection';
@@ -165,7 +166,7 @@ function TeamEditor({ projectId, project, initial, cancel, saved }: { projectId:
   </form>;
   return <div className="tm-editor stack">
     <div className="tm-heading"><h3 className="panel-title" tabIndex={-1} ref={editorHeading}>{initial ? `Edit ${initial.name}` : 'Create Team'}</h3><Button type="button" variant="secondary" disabled={command.busy || command.uncertain} onClick={cancel}>Back to teams</Button></div>
-    <p className="muted">This is an organizational group. Selecting an Area does not grant Area access or establish Superintendent → Party Chief → Instrument Man reporting.</p>
+    <p className="muted">Choose a lead, surveyors and the Areas they cover. Members can see requests for those Areas. Assign Instrument Men to Party Chiefs separately when arranging the crew.</p>
     <form id="tm-save-team" onSubmit={submit} className="tm-basics">
       <label className="field"><span className="field-label">Team name</span><input className="input" required maxLength={80} value={name} disabled={command.locked} onChange={event => setName(event.target.value)} /></label>
       <label className="field"><span className="field-label">Team lead — selected member</span><select className="select" required value={lead} disabled={command.locked} onChange={event => setLead(event.target.value)}><option value="">Choose a lead</option>{selected.map(person => <option key={person.userId} value={person.userId} disabled={!person.active || !validRoles.includes(person.role)}>{person.name} · {roleLabel(person.role)}</option>)}</select></label>
@@ -330,6 +331,7 @@ export function TeamManagement({ projectId,onEditorOpen,onEditorClose }: { proje
     {!project && !contextError ? <p role="status" className="muted">Checking project access…</p> : null}
     {contextError ? <div className="stack"><ErrorBanner message={contextError} /><Button type="button" variant="secondary" onClick={() => refresh()}>Retry project access</Button></div> : null}
     {project ? <>
+      {!readOnly?<SurveySetupGuide disabled={areaLocked||detailBusy||!!person||!!editor||!!staffingPerson} onSelect={value=>{switchTab(value);document.getElementById(`tm-tab-${value}`)?.focus();}}/>:null}
       <div className="tm-tabs" role="tablist" aria-label="Team Management views">{(['personnel','teams','areas'] as const).map(value => <button type="button" role="tab" className="tm-tab" key={value} id={`tm-tab-${value}`} aria-selected={tab === value} aria-controls={`tm-panel-${value}`} tabIndex={tab === value ? 0 : -1} disabled={areaLocked || detailBusy || !!person || !!editor || !!staffingPerson} onKeyDown={tabKey} onClick={() => switchTab(value)}>{value === 'personnel' ? 'Personnel' : value === 'areas' ? 'Areas' : 'Teams'}</button>)}</div>
       <p className="muted tm-scope">{project.crewBuild === 'FULL' ? 'Full' : project.crewBuild === 'MEDIUM' ? 'Medium' : 'Slim'} crew build · One active named team per person{readOnly ? ' · Closed project — read only' : ''}</p>
       {success ? <SuccessBanner message={success} /> : null}{detailError ? <ErrorBanner message={detailError} /> : null}

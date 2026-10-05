@@ -12,6 +12,7 @@ import { PageTransition } from './page-transition';
 import './project-workspace.css';
 
 interface WorkspaceContext {
+  actorId:string;
   project: Pick<ProjectMembershipRecord, 'id' | 'name' | 'status'>;
   capabilities: ProjectCapabilities;
 }
@@ -28,8 +29,8 @@ export function ProjectShellHeader({ projectId, requireProject = true, canCreate
     let active = true;
     if (!projectId) return;
     async function load() {
-      const [{ projects }, { capabilities }] = await Promise.all([
-        apiClient.listProjects(), apiRequest<{ capabilities: ProjectCapabilities }>(`/api/projects/${projectId}/capabilities`),
+      const [{ projects }, { capabilities,actorId }] = await Promise.all([
+        apiClient.listProjects(), apiRequest<{ capabilities: ProjectCapabilities;actorId:string }>(`/api/projects/${projectId}/capabilities`),
       ]);
       let project: WorkspaceContext['project'] | undefined = projects.find(candidate => candidate.id === projectId);
       if (!project && capabilities.canAdminister) {
@@ -39,7 +40,7 @@ export function ProjectShellHeader({ projectId, requireProject = true, canCreate
         throw new Error('Current access to this project is unavailable. Return to Projects to review your access.');
       }
       if (active) {
-        setSnapshot({ key, context: { project, capabilities } });
+        setSnapshot({ key, context: { project, capabilities,actorId } });
         try { window.sessionStorage.setItem('swr-workspace-project', project.id); } catch { /* Explicit navigation links retain context. */ }
       }
     }
