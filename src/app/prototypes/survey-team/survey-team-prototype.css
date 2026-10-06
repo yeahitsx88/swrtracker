@@ -1,0 +1,67 @@
+.org-poc { width:100%; max-width:none; margin:0; padding:0; min-height:100vh; background:var(--bg); color:var(--ink); font-variant-numeric:tabular-nums; }
+.org-poc[data-theme=dark] { color-scheme:dark; --bg:#111820; --bg-elevated:#19242e; --ink:#e7edf2; --muted:#b4c2ce; --line:#3e5060; --line-strong:#8397a8; --action:#a6cce9; --action-hover:#c1def3; --brand-ink:#111820; --surface-hover:#243440; --surface-selected:#2b4050; --surface-sunken:#14202a; --success:#84deb5; --danger:#ffb3ad; }
+.org-header { padding:16px 32px; display:flex; justify-content:space-between; align-items:center; gap:24px; background:var(--bg-elevated); border-bottom:1px solid var(--line); }
+.org-brand { display:flex; align-items:center; gap:20px; color:var(--ink); font-size:20px; font-weight:800; text-decoration:none; }
+.org-brand span { padding-left:20px; border-left:1px solid var(--line); font-size:14px; font-weight:400; color:var(--muted); }
+.org-header-actions,.org-heading,.org-context,.org-available-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+.org-prototype-label { color:var(--muted); font-size:13px; }
+.org-workspace { max-width:1740px; margin:0 auto; padding:32px; }
+.org-heading h1 { font-size:clamp(1.4rem,2vw,1.8rem); line-height:1.25; margin:0 0 8px; }
+.org-heading p,.org-available-heading p { color:var(--muted); margin:0; }
+.org-context { font-size:13px; padding:18px 0; margin-top:16px; border-bottom:1px solid var(--line); color:var(--muted); }
+.org-context strong { color:var(--ink); }
+.org-sandbox-note { color:var(--muted); font-size:13px; margin:14px 0; }
+.org-instructions { min-height:44px; display:flex; gap:10px; align-items:center; font-size:14px; color:var(--action); }
+.org-status-dot { width:7px; height:7px; border-radius:50%; background:var(--action); flex-shrink:0; }
+html:has(.org-poc) { height:auto; overflow-y:scroll; }
+body:has(.org-poc) { height:auto; overflow-y:visible; }
+.org-chart-container { position:relative; isolation:isolate; height:clamp(420px,65vh,720px); display:grid; grid-template-rows:minmax(0,1fr); padding-top:86px; border:1px solid var(--line); border-radius:var(--radius-panel); background:var(--surface-sunken); }
+/* Zoom changes canvas overflow, never the panel's footprint. Reserve scrollbar
+   space so the measured canvas width does not change when vertical overflow does. */
+.org-scroll { min-width:0; min-height:0; overflow:auto; scrollbar-gutter:stable; padding:20px 8px; scrollbar-color:var(--line-strong) var(--surface-sunken); }
+/* Anchor the unscaled overlay to the panel, outside its scrolling canvas.
+   The reserved top inset keeps personnel clear even while the canvas pans. */
+.org-toolbar { position:absolute; top:12px; left:12px; z-index:2; width:fit-content; max-width:calc(100% - 24px); display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0; padding:8px; border:1px solid var(--line); border-radius:var(--radius-control); background:var(--bg-elevated); }
+.org-toolbar .button { padding:6px 12px; font-size:.875rem; }
+.org-toolbar .org-zoom-button { width:44px; height:44px; padding:0; }
+.org-toolbar output { min-width:52px; text-align:center; font-size:.875rem; font-weight:600; }
+.org-chart-stage { display:flex; justify-content:center; width:100%; }
+/* Native CSS zoom scales layout, painted cards and browser hit testing together.
+   Keep the unzoomed width fixed so zoom-out actually fits more of the hierarchy. */
+.org-chart { min-width:1190px; flex:none; }
+.org-collapse { display:inline-flex; align-items:center; gap:4px; }
+.org-chevron-collapsed { rotate:-90deg; }
+.org-manager { width:300px; margin:0 auto; padding-bottom:32px; position:relative; }
+.org-manager:after { content:''; position:absolute; height:32px; width:1px; background:var(--line-strong); left:50%; bottom:0; }
+.org-superintendents { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+.org-branch { padding:24px 14px 0; position:relative; }
+.org-branch:before { content:''; position:absolute; top:0; left:0; right:0; border-top:1px solid var(--line-strong); }
+.org-branch:first-child:before { left:50%; }.org-branch:last-child:before { right:50%; }
+.org-branch:after { content:''; position:absolute; top:0; left:50%; height:24px; border-left:1px solid var(--line-strong); }
+.org-crews { margin:0 0 0 12px; padding:24px 0 0 18px; border-left:1px solid var(--line-strong); }
+.org-crews[hidden],.org-members[hidden] { display:none; }
+.org-crew { position:relative; margin-bottom:24px; }
+.org-crew:before { content:''; position:absolute; left:-18px; top:30px; width:18px; border-top:1px solid var(--line-strong); }
+.org-members { margin-left:16px; padding:12px 0 0 16px; border-left:1px solid var(--line-strong); display:grid; gap:8px; }
+.org-members .org-person:before { content:''; position:absolute; top:28px; left:-17px; width:16px; border-top:1px solid var(--line-strong); }
+.org-person { padding:14px; border:1px solid var(--line); border-radius:12px; background:var(--bg-elevated); position:relative; min-width:0; }
+.org-person-top { display:flex; align-items:center; gap:10px; }.org-identity { flex:1; min-width:0; }
+.org-identity strong { display:block; font-size:1rem; overflow-wrap:anywhere; }.org-identity > span { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
+.org-avatar { width:34px; height:34px; flex:0 0 34px; display:grid; place-items:center; background:var(--surface-selected); color:var(--action); font-size:12px; font-weight:700; border-radius:50%; }
+.org-grip { background:transparent; color:var(--muted); border:0; cursor:grab; padding:8px 4px; touch-action:auto; }.org-grip:active { cursor:grabbing; }
+.org-person-detail { margin:10px 0 0 44px; color:var(--muted); font-size:12px; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.org-card-footer { border-top:1px solid var(--line); margin-top:12px; padding-top:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
+.org-text-button { font:inherit; font-size:12px; font-weight:600; border:0; background:transparent; color:var(--action); padding:6px 0; cursor:pointer; text-underline-offset:3px; }.org-text-button:hover { text-decoration:underline; }
+.org-card-actions { display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+.org-instrument { padding:10px 12px; }.org-instrument .org-avatar { width:28px; height:28px; flex-basis:28px; }.org-instrument .org-person-detail { margin:6px 0 0 38px; }.org-instrument .org-card-actions { margin-left:38px; }
+.org-valid { border:1px dashed var(--success); background:color-mix(in srgb,var(--success) 5%,var(--bg-elevated)); }.org-valid.org-hover { border-style:solid; background:color-mix(in srgb,var(--success) 12%,var(--bg-elevated)); }
+.org-invalid.org-hover { border-color:var(--danger); cursor:not-allowed; }.org-moving { opacity:.55; }.org-proposed { border-style:dashed; border-color:var(--action); background:var(--surface-selected); }
+.org-pending { color:var(--action); font-size:12px; font-weight:600; }.org-drop-label { display:block; color:var(--success); font-size:12px; margin-top:8px; }.org-drop-reject { color:var(--danger); }
+.org-available { padding-top:28px; }.org-available-heading h2 { font-size:1.25rem; margin:0 0 6px; }.org-available-heading p,.org-available-heading > span { font-size:13px; color:var(--muted); }.org-available-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:16px; }
+.org-legend { display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:12px; margin-top:24px; }.org-narrow-note { display:none; color:var(--muted); font-size:13px; }
+.org-empty { font-size:13px; color:var(--muted); }.org-destinations { display:grid; gap:8px; }.org-destinations .button { justify-content:flex-start; text-align:left; }
+.org-review-person { display:grid; gap:6px; }.org-review-person strong { font-size:20px; }.org-review-person span { color:var(--muted); }
+.org-review-facts { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:14px 20px; margin:8px 0; }.org-review-facts dt { color:var(--muted); }.org-review-facts dd { margin:0; font-weight:600; overflow-wrap:anywhere; }.org-review-note { font-size:13px; color:var(--muted); padding:12px; background:var(--surface-sunken); border-radius:10px; }
+.org-poc :focus-visible { outline:2px solid var(--action); outline-offset:3px; }.org-poc ::selection { background:var(--action); color:var(--bg-elevated); }
+@media(max-width:1250px) { .org-narrow-note { display:block; }.org-manager { margin-left:48px; margin-right:0; } }
+@media(max-width:700px) { .org-header { padding:12px 16px; align-items:flex-start; }.org-brand { font-size:18px; }.org-brand span,.org-prototype-label { display:none; }.org-workspace { padding:24px 16px; }.org-available-list { grid-template-columns:1fr; }.org-review-facts { grid-template-columns:1fr; gap:6px; }.org-review-facts dd { margin-bottom:12px; } }
