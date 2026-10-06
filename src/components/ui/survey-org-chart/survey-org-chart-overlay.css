@@ -1,0 +1,9 @@
+.survey-org-chart-overlay { width:min(1800px,calc(100vw - 32px)); height:calc(100dvh - 32px); max-width:none; max-height:none; padding:0; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius-panel); background:var(--bg); color:var(--ink); }
+.survey-org-chart-overlay[open] { display:flex; flex-direction:column; }
+.survey-org-chart-overlay::backdrop { background:rgb(24 38 50 / 48%); }
+.survey-org-chart-overlay-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; flex:none; padding:12px 24px; border-bottom:1px solid var(--line); background:var(--bg-elevated); }
+.survey-org-chart-overlay-heading h2 { margin:0; font-size:1.125rem; }
+.survey-org-chart-overlay-heading .button { flex:none; }
+.survey-org-chart-overlay-body { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; scrollbar-color:var(--line-strong) var(--bg); }
+.survey-org-chart-overlay .org-poc { min-height:0; }
+@media(max-width:700px) { .survey-org-chart-overlay { width:calc(100vw - 16px); height:calc(100dvh - 16px); }.survey-org-chart-overlay-heading { padding:12px 16px; } }

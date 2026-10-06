@@ -8,6 +8,7 @@ import {AssignedWorkforce} from './assigned-workforce';
 import {CommandOwner} from '@/lib/frozen-command';
 import {SurveyReorganization} from './survey-reorganization';
 import {SuperintendentTeams} from './superintendent-teams';
+import {SurveyOrgChartLauncher} from './survey-org-chart/survey-org-chart-launcher';
 export function TeamManagementEntry({projectId}:{projectId:string}){
  const owner=useRef(new CommandOwner()).current;const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
  const [context,setContext]=useState<Awaited<ReturnType<typeof apiClient.workforceContext>>>(),[error,setError]=useState<string>(),[revision,setRevision]=useState(0);
@@ -15,5 +16,5 @@ export function TeamManagementEntry({projectId}:{projectId:string}){
  if(error)return <div className="stack"><ErrorBanner message={error}/><Button variant="secondary" onClick={()=>setRevision(n=>n+1)}>Retry project access</Button></div>;
  if(!context)return <p role="status">Checking Team Management access…</p>;
  if(context.role==='SURVEY_SUPERINTENDENT')return <SuperintendentTeams projectId={projectId} archived={context.project.status==='ARCHIVED'}/>;
- return context.role==='SURVEY_MANAGER'?<div className="stack"><fieldset className="panel manpower-movement-panel" disabled={ownerToken==='existing'}><SurveyReorganization projectId={projectId} archived={context.project.status==='ARCHIVED'} isBlocked={()=>owner.blocked('movement')} onLockChange={locked=>{if(locked)owner.claim('movement');else owner.release('movement');}}/></fieldset><fieldset className="manpower-existing-controls" disabled={ownerToken==='movement'}><TeamManagement projectId={projectId} onEditorOpen={()=>owner.claim('existing')} onEditorClose={()=>owner.release('existing')}/></fieldset></div>:<AssignedWorkforce projectId={projectId} role={context.role} archived={context.project.status==='ARCHIVED'}/>;
+ return context.role==='SURVEY_MANAGER'?<div className="stack"><SurveyOrgChartLauncher disabled={ownerToken!==null}/><fieldset className="panel manpower-movement-panel" disabled={ownerToken==='existing'}><SurveyReorganization projectId={projectId} archived={context.project.status==='ARCHIVED'} isBlocked={()=>owner.blocked('movement')} onLockChange={locked=>{if(locked)owner.claim('movement');else owner.release('movement');}}/></fieldset><fieldset className="manpower-existing-controls" disabled={ownerToken==='movement'}><TeamManagement projectId={projectId} onEditorOpen={()=>owner.claim('existing')} onEditorClose={()=>owner.release('existing')}/></fieldset></div>:<AssignedWorkforce projectId={projectId} role={context.role} archived={context.project.status==='ARCHIVED'}/>;
 }

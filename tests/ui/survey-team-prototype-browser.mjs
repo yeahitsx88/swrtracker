@@ -9,6 +9,12 @@ if (!origin || !/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(origin)) throw ne
 if (!process.env.SWR_PLAYWRIGHT_MODULE) throw new Error('Set SWR_PLAYWRIGHT_MODULE to an existing Playwright module');
 const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
 const preview = process.argv.includes('--preview');
+const overlay = process.env.SWR_POC_OVERLAY === '1';
+const targetPath = overlay ? '/prototypes/survey-team/workspace' : '/prototypes/survey-team';
+async function openWorkspace(page) {
+  await page.goto(origin + targetPath);
+  if (overlay) await page.getByRole('button', { name: 'Open Survey Organization Chart (Demo)', exact: true }).click();
+}
 const browser = await chromium.launch({ channel: 'msedge', headless: !preview });
 // A headed preview must follow its real window. A fixed emulated viewport can
 // extend below the visible browser and make the document bottom unreachable.
@@ -18,7 +24,7 @@ const context = await browser.newContext({ viewport: preview ? null : { width: 1
 await context.addCookies([{ name: 'swr_session', value: 'fixture-ui-only', url: origin }]);
 const page = await context.newPage();
 if (preview) {
-  await page.goto(`${origin}/prototypes/survey-team`);
+  await openWorkspace(page);
   console.log('Fixture-only preview open in an isolated Edge session. Close that window to stop.');
   await new Promise(resolve => browser.once('disconnected', resolve));
   process.exit(0);
@@ -28,7 +34,7 @@ page.on('pageerror', error => failures.push(error.message));
 page.on('request', req => { if (new URL(req.url()).pathname.startsWith('/api/')) apiCalls.push(req.url()); });
 const receipts = [];
 const card = id => page.locator(`[data-person="${id}"]`);
-const review = () => page.getByRole('dialog');
+const review = () => page.locator('dialog.administration-dialog');
 async function check(name, work) { await work(); receipts.push(name); }
 async function drag(from, to, expectedTarget) {
   // Start a native drag, pan the fixed canvas, then re-read the painted target.
@@ -59,7 +65,7 @@ async function confirm() { await review().getByRole('button', { name: 'Confirm M
 async function cancel() { await review().getByRole('button', { name: 'Cancel', exact: true }).click(); await review().waitFor({ state: 'detached' }); }
 await mkdir('.local/org-poc', { recursive: true });
 try {
-  await page.goto(`${origin}/prototypes/survey-team`);
+  await openWorkspace(page);
   await card('manager').waitFor();
   await page.evaluate(() => document.fonts.ready);
   await check('fixture scale and available personnel', async () => {
@@ -205,11 +211,11 @@ try {
   await check('fixed viewport and toolbar; zoom never shifts surrounding page; canvas and page scroll independently', async () => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.getByRole('button', { name: 'Reset Demo' }).click();
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => (document.querySelector('.survey-org-chart-overlay-body') ?? document.scrollingElement).scrollTo(0, 0));
     const footprint = () => page.evaluate(() => {
       const rect = selector => {
         const r = document.querySelector(selector).getBoundingClientRect();
-        return [r.x, r.y + scrollY, r.width, r.height];
+        return [r.x, r.y + (document.querySelector('.survey-org-chart-overlay-body')?.scrollTop ?? scrollY), r.width, r.height];
       };
       return { panel: rect('.org-chart-container'), viewport: rect('.org-scroll'), toolbar: rect('.org-toolbar'), tray: rect('.org-available'), pageHeight: document.documentElement.scrollHeight };
     });
@@ -231,11 +237,11 @@ try {
     await page.locator('.org-scroll').scrollIntoViewIfNeeded();
     const canvas = await page.locator('.org-scroll').boundingBox();
     const before = await page.locator('.org-toolbar').boundingBox();
-    const pageY = await page.evaluate(() => scrollY);
+    const pageY = await page.evaluate(() => document.querySelector('.survey-org-chart-overlay-body')?.scrollTop ?? scrollY);
     await page.mouse.move(canvas.x + 200, canvas.y + 150);
     await page.mouse.wheel(350, 400);
     await page.waitForFunction(() => document.querySelector('.org-scroll').scrollTop > 0);
-    assert.equal(await page.evaluate(() => scrollY), pageY);
+    assert.equal(await page.evaluate(() => document.querySelector('.survey-org-chart-overlay-body')?.scrollTop ?? scrollY), pageY);
     assert.ok(await page.locator('.org-scroll').evaluate(el => el.scrollLeft > 0));
     assert.deepEqual(await page.locator('.org-toolbar').boundingBox(), before);
     await page.screenshot({ path: '.local/org-poc/toolbar-panned.png', animations: 'disabled' });
@@ -259,7 +265,7 @@ try {
       assert.equal(await button.locator('svg[aria-hidden="true"]').count(), 1);
       assert.equal(await button.getAttribute('title'), name);
     }
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => (document.querySelector('.survey-org-chart-overlay-body') ?? document.scrollingElement).scrollTo(0, 0));
     await page.locator('.org-toolbar').hover();
     await page.mouse.wheel(0, 10000);
     await page.waitForFunction(() => document.querySelector('.org-available-list').getBoundingClientRect().bottom <= innerHeight);
@@ -291,11 +297,25 @@ try {
   await page.setViewportSize({ width: 390, height: 3500 });
   await page.screenshot({ path: '.local/org-poc/mobile.png', fullPage: true, animations: 'disabled' });
   await page.reload();
+  if (overlay) await page.getByRole('button', { name: 'Open Survey Organization Chart (Demo)', exact: true }).click();
   await card('manager').waitFor();
   assert.equal(await page.locator('.org-available [data-person]').count(), 3);
+  if (overlay) await check('workspace close and Escape restore focus; reopening resets local fixture state', async () => {
+    const launcher = page.getByRole('button', { name: 'Open Survey Organization Chart (Demo)', exact: true });
+    assert.equal(await page.locator('dialog.survey-org-chart-overlay[open]').count(), 1);
+    await page.getByRole('button', { name: 'Zoom In', exact: true }).click();
+    await page.getByRole('button', { name: 'Close organization chart', exact: true }).click();
+    assert.equal(await page.locator('dialog.survey-org-chart-overlay').count(), 0);
+    assert.equal(await launcher.evaluate(el => document.activeElement === el), true);
+    await launcher.click();
+    assert.equal(await page.getByLabel('Current chart zoom').innerText(), '100%');
+    assert.equal(await page.locator('.org-available [data-person]').count(), 3);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('dialog.survey-org-chart-overlay').count(), 0);
+    assert.equal(await launcher.evaluate(el => document.activeElement === el), true);
+  });
   assert.deepEqual(failures, []); assert.deepEqual(apiCalls, []);
   receipts.push('refresh resets fixtures; zero API requests; zero browser errors');
-  await writeFile('.local/org-poc/evidence.json', JSON.stringify({ receipts, apiCalls, failures }, null, 2));
+  await writeFile(overlay ? '.local/org-poc/overlay-evidence.json' : '.local/org-poc/evidence.json', JSON.stringify({ receipts, apiCalls, failures }, null, 2));
   console.log(JSON.stringify({ checks: receipts.length, receipts }, null, 2));
 } finally { await browser.close(); }
-

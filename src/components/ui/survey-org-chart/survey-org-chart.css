@@ -13,8 +13,8 @@
 .org-sandbox-note { color:var(--muted); font-size:13px; margin:14px 0; }
 .org-instructions { min-height:44px; display:flex; gap:10px; align-items:center; font-size:14px; color:var(--action); }
 .org-status-dot { width:7px; height:7px; border-radius:50%; background:var(--action); flex-shrink:0; }
-html:has(.org-poc) { height:auto; overflow-y:scroll; }
-body:has(.org-poc) { height:auto; overflow-y:visible; }
+html:has(> body > .org-poc) { height:auto; overflow-y:scroll; }
+body:has(> .org-poc) { height:auto; overflow-y:visible; }
 .org-chart-container { position:relative; isolation:isolate; height:clamp(420px,65vh,720px); display:grid; grid-template-rows:minmax(0,1fr); padding-top:86px; border:1px solid var(--line); border-radius:var(--radius-panel); background:var(--surface-sunken); }
 /* Zoom changes canvas overflow, never the panel's footprint. Reserve scrollbar
    space so the measured canvas width does not change when vertical overflow does. */
