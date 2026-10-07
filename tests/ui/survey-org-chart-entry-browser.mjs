@@ -16,12 +16,15 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/api/**', async route => {
       if (route.request().method() !== 'GET') writes.push(route.request().method());
+      if (new URL(route.request().url()).pathname.endsWith('/survey/organization')) {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ projectId: 'fixture-project', project: { status: 'ACTIVE', crewBuild: 'FULL' }, personnel: [], teams: [], staffing: [], superintendentAreas: [] }) });
+      }
       await route.fulfill({ status: role ? 200 : 403, contentType: 'application/json', body: JSON.stringify(role ? {
         project: { status: 'ACTIVE', crewBuild: 'FULL' }, role, snapshotToken: 'fixture-only', data: [], total: 0, offset: 0, limit: 100,
       } : { error: { type: 'Forbidden', message: 'Fixture access denied' } }) });
     });
     await page.goto(`${origin}/prototypes/survey-team/workspace?entry=1`);
-    const launcher = page.getByRole('button', { name: 'Open Survey Organization Chart (Demo)', exact: true });
+    const launcher = page.getByRole('button', { name: 'Open Survey Organization Chart (Read-Only)', exact: true });
     if (role === 'SURVEY_MANAGER') {
       await launcher.waitFor();
       assert.equal(await launcher.isEnabled(), true);

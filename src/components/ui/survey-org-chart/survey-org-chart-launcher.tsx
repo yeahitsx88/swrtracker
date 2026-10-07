@@ -4,9 +4,10 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '../button';
 import { Icon } from '../icon';
 import { SurveyOrgChartWorkspace } from './survey-org-chart-workspace';
+import { LiveSurveyOrgChart } from './live-survey-org-chart';
 import './survey-org-chart-overlay.css';
 
-function SurveyOrgChartOverlay({ onDismiss }: { onDismiss: () => void }) {
+function SurveyOrgChartOverlay({ projectId, onDismiss }: { projectId?: string; onDismiss: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useId();
   useEffect(() => {
@@ -21,18 +22,18 @@ function SurveyOrgChartOverlay({ onDismiss }: { onDismiss: () => void }) {
     event.preventDefault(); onDismiss();
   }}>
     <div className="survey-org-chart-overlay-heading">
-      <h2 id={heading} tabIndex={-1} autoFocus>Survey Organization Chart · Demo</h2>
+      <h2 id={heading} tabIndex={-1} autoFocus>Survey Organization Chart · {projectId ? 'Read-Only' : 'Demo'}</h2>
       <Button variant="secondary" className="icon-close" aria-label="Close organization chart" onClick={onDismiss}><Icon name="close" /></Button>
     </div>
-    <div className="survey-org-chart-overlay-body"><SurveyOrgChartWorkspace /></div>
+    <div className="survey-org-chart-overlay-body"><>{projectId ? <LiveSurveyOrgChart key={projectId} projectId={projectId} /> : <SurveyOrgChartWorkspace />}</></div>
   </dialog>;
 }
 
-/** Fixture-only workspace: never reads or mutates operational staffing. */
-export function SurveyOrgChartLauncher({ disabled = false }: { disabled?: boolean }) {
+/** Operational launches read the current project; standalone previews retain fixtures. No writes. */
+export function SurveyOrgChartLauncher({ projectId, disabled = false }: { projectId?: string; disabled?: boolean }) {
   const [open, setOpen] = useState(false);
   return <>
-    <Button variant="secondary" disabled={disabled} onClick={() => setOpen(true)}>Open Survey Organization Chart (Demo)</Button>
-    {open && <SurveyOrgChartOverlay onDismiss={() => setOpen(false)} />}
+    <Button variant="secondary" disabled={disabled} onClick={() => setOpen(true)}>Open Survey Organization Chart ({projectId ? 'Read-Only' : 'Demo'})</Button>
+    {open && <SurveyOrgChartOverlay projectId={projectId} onDismiss={() => setOpen(false)} />}
   </>;
 }

@@ -65,3 +65,13 @@ body:has(> .org-poc) { height:auto; overflow-y:visible; }
 .org-poc :focus-visible { outline:2px solid var(--action); outline-offset:3px; }.org-poc ::selection { background:var(--action); color:var(--bg-elevated); }
 @media(max-width:1250px) { .org-narrow-note { display:block; }.org-manager { margin-left:48px; margin-right:0; } }
 @media(max-width:700px) { .org-header { padding:12px 16px; align-items:flex-start; }.org-brand { font-size:18px; }.org-brand span,.org-prototype-label { display:none; }.org-workspace { padding:24px 16px; }.org-available-list { grid-template-columns:1fr; }.org-review-facts { grid-template-columns:1fr; gap:6px; }.org-review-facts dd { margin-bottom:12px; } }
+
+/* Live leadership is a grouping; only stored reporting/crew links are connectors. */
+.org-poc[data-read-only=true] .org-manager::after,
+.org-poc[data-read-only=true] .org-superintendents::before,
+.org-poc[data-read-only=true] .org-branch::before,
+.org-poc[data-read-only=true] .org-branch::after { display:none; }
+.org-poc[data-read-only=true] .org-person-detail { display:grid; overflow-wrap:anywhere; }
+.org-poc[data-read-only=true] .org-chart > h2 { margin:16px 8px; font-size:1.25rem; }
+.org-poc[data-read-only=true] .org-available details { padding:12px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+.org-poc[data-read-only=true] .org-available summary { cursor:pointer; }

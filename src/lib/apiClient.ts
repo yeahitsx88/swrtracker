@@ -98,6 +98,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export const apiClient = {
+  getSurveyOrganization(projectId: string): Promise<import('@/modules/tenancy/application/read-survey-organization').SurveyOrganization> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/organization`);
+  },
  projectAdministration():Promise<{canCreateProject:boolean;projects:Array<{id:string;name:string;status:'SETUP'|'ACTIVE'|'ARCHIVED';crewBuild:string;recommissioning?:boolean}>;templates:Array<{id:string;name:string;crewBuild:string}>}>{return apiRequest('/api/projects/administration');},
  createProject(input:{name:string;crewBuild?:import('@/modules/tenancy/domain/types').CrewBuild;templateId?:string},key?:string):Promise<{project:{id:string;name:string;status:'SETUP'}}> {return apiRequest('/api/projects',{method:'POST',body:input,...(key?{headers:{'Idempotency-Key':key}}:{})});},
  workforceContext(projectId:string):Promise<{project:import('@/modules/tenancy/application/survey-teams').TeamProjectContext;role:import('@/modules/identity/domain/types').ProjectRole;snapshotToken:string}>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{mode:'context'}));},
