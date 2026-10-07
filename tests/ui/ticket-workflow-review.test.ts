@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {executeTicketWorkflow,ticketWorkflowReview,type TicketWorkflowAction,type TicketWorkflowIntent} from '../../src/lib/ticket-workflow-review';
 import {FrozenCommand} from '../../src/lib/frozen-command';
 
-const routes:Record<TicketWorkflowAction,string>={start:'start',complete:'complete',delay:'delay',inability:'field-inability',stop:'survey-cancel',restart:'restart-delay','validate-inability':'field-inability/validate','reject-inability':'field-inability/reject','approve-legacy':'pc-approve','reject-legacy':'pc-reject',approve:'approve',return:'return',cancel:'survey-cancel','need-by':'need-by',high:'priority',normal:'priority'};
+const routes:Record<TicketWorkflowAction,string>={'requester-cancel':'requester-cancel','follow-up':'follow-up',start:'start',complete:'complete',delay:'delay',inability:'field-inability',stop:'survey-cancel',restart:'restart-delay','validate-inability':'field-inability/validate','reject-inability':'field-inability/reject','approve-legacy':'pc-approve','reject-legacy':'pc-reject',approve:'approve',return:'return',cancel:'survey-cancel','need-by':'need-by',high:'priority',normal:'priority'};
 test('workflow callers retain exact idempotency keys and existing endpoint payloads for every reviewed action',async()=>{
  const original=globalThis.fetch;
  try {

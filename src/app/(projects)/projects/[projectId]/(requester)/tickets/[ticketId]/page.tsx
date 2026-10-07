@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { ApiClientError, getErrorMessage } from '@/lib/errors';
-import { RetryableMutation } from '@/lib/retryable-mutation';
+import {FrozenCommand} from '@/lib/frozen-command';
+import {createIdempotencyKey} from '@/lib/apiClient';
+import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
 import { useUnsavedProgress } from '@/lib/use-unsaved-progress';
 import type { AorNodeRecord, AorLevelRecord, AttachmentRecord, TicketCapabilities, TicketRecord, TicketType, UpdateRequesterTicketRequest } from '@/lib/contracts';
 import { AttachmentList, AttachmentUploader, TicketDetails, TicketHistory } from '@/components/tickets';
@@ -14,6 +16,7 @@ import { Field } from '@/components/forms';
 import { AorNodePicker } from '@/components/aor';
 import { TICKET_STATUS_LABELS } from '@/lib/contracts';
 import { Icon } from '@/components/ui/icon';
+import {AdministrationDialog} from '@/components/ui/administration-dialog';
 import { ticketTypeLabel } from '@/lib/display-labels';
 import { buildAreaNames } from '@/lib/use-area-names';
 import { useProjectWorkspace } from '@/components/ui/project-shell-header';
@@ -42,8 +45,6 @@ export default function TicketDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submittingDraft, setSubmittingDraft] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [creatingFollowUp, setCreatingFollowUp] = useState(false);
-  const [canceling, setCanceling] = useState(false);
   const [historyRevision, setHistoryRevision] = useState(0);
   const [editCraft, setEditCraft] = useState('');
   const [editFieldContact, setEditFieldContact] = useState('');
@@ -56,13 +57,18 @@ export default function TicketDetailPage() {
   const [areaTree, setAreaTree] = useState<{ levels: AorLevelRecord[]; nodes: AorNodeRecord[] } | null>(null);
   const [stale, setStale] = useState(false);
   const busy = useRef(false);
-  const saveAttempt = useRef(new RetryableMutation<UpdateRequesterTicketRequest>());
-  const submitAttempt = useRef(new RetryableMutation<{ expectedVersion: number; urgentReason: string }>());
-  const deleteAttempt = useRef(new RetryableMutation<{ expectedVersion: number }>());
+  const saveAttempt = useRef(new FrozenCommand<{ticketId:string;input:UpdateRequesterTicketRequest}>());
+  const submitAttempt = useRef(new FrozenCommand<{ticketId:string; expectedVersion: number; urgentReason: string }>());
+  const deleteAttempt = useRef(new FrozenCommand<{ticketId:string; expectedVersion: number }>());
   const [deleting, setDeleting] = useState(false);
+  const [deleteReview,setDeleteReview]=useState<TicketRecord|null>(null),[deleteConsent,setDeleteConsent]=useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const uncertain = Boolean(saveAttempt.current.pending || submitAttempt.current.pending || deleteAttempt.current.pending);
-  const working = saving || submittingDraft || canceling || creatingFollowUp || deleting || uploadingFile;
+  const workflow=useTicketWorkflowReview(()=>void loadAll(true),(response,action)=>{
+    if(action==='follow-up')router.push(`/projects/${projectId}/tickets/${response.ticket.id}`);
+    else {void loadAll(true);setSuccess('Request cancelled. Its reference, files and history are retained.');}
+  });
+  const uncertain = [saveAttempt.current,submitAttempt.current,deleteAttempt.current].some(attempt=>!!attempt.command&&!attempt.stale);
+  const working = saving || submittingDraft || deleting || uploadingFile || workflow.active || Boolean(deleteReview);
   const dirty = Boolean(ticket && (editArea !== (ticket.aorNodeId ?? '') || editType !== (ticket.ticketType ?? '') ||
     editCraft !== ticket.craft || editFieldContact !== (ticket.fieldContact ?? '') || editFieldChannel !== (ticket.fieldChannel ?? '') ||
     editDescription !== ticket.description || editRequestedDate !== (ticket.requestedDate?.slice(0,10) ?? '')));
@@ -71,7 +77,7 @@ export default function TicketDetailPage() {
   useUnsavedProgress(dirty || uncertain);
 
   async function loadAll(discard = false) {
-    if (!discard && (busy.current || uncertain)) return;
+    if (!discard && (busy.current || uncertain || workflow.active)) return;
     if (!discard && dirty && !window.confirm('Discard your unsaved field changes and reload the saved request?')) return;
     setLoading(true);
     setError(null);
@@ -90,11 +96,14 @@ export default function TicketDetailPage() {
       setEditDescription(ticketResponse.ticket.description);
       setEditRequestedDate(ticketResponse.ticket.requestedDate?.slice(0, 10) ?? '');
       setEditArea(ticketResponse.ticket.aorNodeId ?? ''); setEditType(ticketResponse.ticket.ticketType ?? '');
+      saveAttempt.current.reload();submitAttempt.current.reload();deleteAttempt.current.reload();workflow.owner.release('requester-fields');
       setStale(false);
       setAttachments(attachmentsResponse.attachments);
       setHistoryRevision((revision) => revision + 1);
+      return true;
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load ticket details.'));
+      return false;
     } finally {
       setLoading(false);
     }
@@ -106,86 +115,72 @@ export default function TicketDetailPage() {
   }, [ticketId]);
 
   async function submitDraft() {
-    if (!ticket || busy.current || dirty || stale || saveAttempt.current.pending || deleteAttempt.current.pending) return;
+    if (!ticket || busy.current || dirty || stale || saveAttempt.current.command || deleteAttempt.current.command) return;
+    if(!workflow.owner.claim('requester-fields'))return;
     busy.current = true;
     setError(null);
     setSuccess(null);
     setSubmittingDraft(true);
     try {
-      await submitAttempt.current.run({ expectedVersion:ticket.rowVersion ?? 0, urgentReason:urgentReason.trim() },
-        (input, key) => apiClient.submitTicket(ticketId, undefined, input.urgentReason || undefined, input.expectedVersion, key));
+      const command=submitAttempt.current.begin({ticketId,expectedVersion:ticket.rowVersion??0,urgentReason:urgentReason.trim()},createIdempotencyKey());
+      if(!command)return;
+      await apiClient.submitTicket(command.body.ticketId,undefined,command.body.urgentReason||undefined,command.body.expectedVersion,command.key);
+      submitAttempt.current.success();
       await loadAll(true);
       setSuccess('Request submitted for approval.');
     } catch (err) {
+      submitAttempt.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err, 'Unable to submit draft.'));
-      if (err instanceof ApiClientError && err.code === 'WORKFLOW_STALE_STATE') setStale(true);
+      if (err instanceof ApiClientError && err.status === 409) setStale(true);
     } finally {
-      busy.current = false; setSubmittingDraft(false);
+      busy.current = false;if(!submitAttempt.current.locked)workflow.owner.release('requester-fields');setSubmittingDraft(false);
     }
   }
 
   async function saveCorrection() {
-    if (!ticket || busy.current || stale || submitAttempt.current.pending || deleteAttempt.current.pending) return;
+    if (!ticket || busy.current || stale || submitAttempt.current.command || deleteAttempt.current.command) return;
+    if(!workflow.owner.claim('requester-fields'))return;
     busy.current = true;
     setSaving(true); setError(null); setSuccess(null);
     try {
-      const response = await saveAttempt.current.run({
+      const command = saveAttempt.current.begin({ticketId,input:{
         aorNodeId: editArea || null, ticketType: editType || null, expectedVersion: ticket.rowVersion ?? 0,
         craft: editCraft, fieldContact: editFieldContact, fieldChannel: editFieldChannel,
         description: editDescription, requestedDate: editRequestedDate || null,
-      }, (input, key) => apiClient.updateRequesterTicket(ticketId, input, key));
+      }},createIdempotencyKey());
+      if(!command)return;
+      const response=await apiClient.updateRequesterTicket(command.body.ticketId,command.body.input,command.key);saveAttempt.current.success();
       setTicket(response.ticket);
       setHistoryRevision((revision) => revision + 1);
       setSuccess('Requester fields saved. Review attachments, then submit for fresh approval.');
       setEditCraft(response.ticket.craft); setEditFieldContact(response.ticket.fieldContact ?? '');
       setEditFieldChannel(response.ticket.fieldChannel ?? ''); setEditDescription(response.ticket.description);
     } catch (err) {
+      saveAttempt.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err, 'Unable to save requester changes.'));
-      if (err instanceof ApiClientError && err.code === 'WORKFLOW_STALE_STATE') setStale(true);
+      if (err instanceof ApiClientError && err.status === 409) setStale(true);
     } finally {
-      busy.current = false; setSaving(false);
+      busy.current = false;if(!saveAttempt.current.locked)workflow.owner.release('requester-fields');setSaving(false);
     }
   }
 
-  async function createFollowUp() {
-    if (busy.current || uncertain) return;
-    busy.current = true;
-    setCreatingFollowUp(true); setError(null); setSuccess(null);
-    try {
-      const response = await apiClient.createFollowUpTicket(ticketId);
-      router.push(`/projects/${projectId}/tickets/${response.ticket.id}`);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to create a follow-up SWR.'));
-      setCreatingFollowUp(false);
-    } finally { busy.current = false; }
-  }
-
-  async function cancelRequest() {
-    if (busy.current || uncertain) return;
-    if (!window.confirm('Cancel this SWR? This action is permanent.')) return;
-    busy.current = true;
-    setCanceling(true); setError(null); setSuccess(null);
-    try {
-      await apiClient.requesterCancel(ticketId);
-      await loadAll(true);
-      setSuccess('SWR canceled.');
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to cancel this SWR.'));
-    } finally {
-      busy.current = false; setCanceling(false);
-    }
+  function reviewRequesterAction(action:'follow-up'|'requester-cancel') {
+    if(ticket&&!busy.current&&!uncertain&&!stale&&!dirty)workflow.open(ticket,action);
   }
 
   async function deleteCurrentDraft() {
-    if (!ticket || busy.current || stale || saveAttempt.current.pending || submitAttempt.current.pending) return;
+    if (!deleteReview || !deleteConsent || busy.current || stale || saveAttempt.current.command || submitAttempt.current.command) return;
+    if(!workflow.owner.claim('requester-fields'))return;
     busy.current = true; setDeleting(true); setError(null);
     try {
-      await deleteAttempt.current.run({ expectedVersion:ticket.rowVersion ?? 0 }, (input,key) => apiClient.deleteDraft(ticketId,input.expectedVersion,key));
+      const command=deleteAttempt.current.begin({ticketId:deleteReview.id,expectedVersion:deleteReview.rowVersion??0},createIdempotencyKey());if(!command)return;
+      await apiClient.deleteDraft(command.body.ticketId,command.body.expectedVersion,command.key);deleteAttempt.current.success();
       router.push(`/projects/${projectId}/drafts`);
     } catch (err) {
+      deleteAttempt.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err,'Unable to confirm deletion. Retry the same action.'));
-      if (err instanceof ApiClientError && err.code === 'WORKFLOW_STALE_STATE') setStale(true);
-    } finally { busy.current = false; setDeleting(false); }
+      if (err instanceof ApiClientError && err.status === 409) setStale(true);
+    } finally { busy.current = false;if(!deleteAttempt.current.locked)workflow.owner.release('requester-fields');setDeleting(false); }
   }
 
   const areaPath = ticket?.aorNodeId && areaTree ? buildAreaNames(areaTree.nodes).get(ticket.aorNodeId)?.path : undefined;
@@ -200,6 +195,7 @@ export default function TicketDetailPage() {
 
   return (
     <div className="stack">
+      {workflow.dialog}
       <div className="toolbar">
         <Link href={`/projects/${projectId}/${returnPath}`} className="back-link"><Icon name="back" />{returnLabel}</Link>
         <div className="toolbar-group">
@@ -211,6 +207,20 @@ export default function TicketDetailPage() {
       </div>
       {error ? <ErrorBanner message={error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
+      {deleteReview?<AdministrationDialog title="Delete Draft" locked={deleteAttempt.current.locked||deleting||loading} onDismiss={()=>{workflow.owner.release('requester-fields');setDeleteReview(null);setDeleteConsent(false);}}>
+        <form className="stack" onSubmit={event=>{event.preventDefault();void deleteCurrentDraft();}}>
+          <p><strong>Saved Draft</strong> · {deleteReview.id}</p>
+          <p>{deleteReview.description||'No request details entered.'}</p>
+          <p>Remove this saved draft from your working list. Its record, files and history are retained for the existing 30-day Project Admin recovery period. No request number has been assigned.</p>
+          <p>You return to Drafts. Any unsaved field changes will be discarded.</p>
+          <label className="tm-check"><input type="checkbox" checked={deleteConsent} disabled={deleteAttempt.current.locked||deleting||loading} onChange={event=>setDeleteConsent(event.target.checked)}/><span>I confirm deletion of this saved draft.</span></label>
+          {error?<ErrorBanner message={error}/>:null}
+          {deleteAttempt.current.command&&!deleteAttempt.current.stale&&!deleting?<p role="status">The result is uncertain. Retry unchanged deletion to recover its recorded result.</p>:null}
+          {stale?<p role="status">The saved draft or your access changed. Reload it before reviewing deletion again.</p>:null}
+          <div className="row"><Button type="submit" variant="danger" disabled={!deleteConsent||stale||deleting||loading}>{deleting?'Deleting…':deleteAttempt.current.command?'Retry Delete Draft':'Confirm Draft Deletion'}</Button>
+          {stale?<Button type="button" variant="secondary" disabled={loading} onClick={()=>void loadAll(true).then(ok=>{if(ok){setDeleteReview(null);setDeleteConsent(false);}})}>Reload Request</Button>:<Button type="button" variant="secondary" disabled={deleteAttempt.current.locked||deleting||loading} onClick={()=>{workflow.owner.release('requester-fields');setDeleteReview(null);setDeleteConsent(false);}}>Keep Draft</Button>}</div>
+        </form>
+      </AdministrationDialog>:null}
       {stale ? <ErrorBanner message="The saved request changed. Your entered fields are retained; use Refresh to deliberately reload before editing." /> : null}
       {uncertain ? <p role="status" className="notice">The last action is unconfirmed. Retry that action before editing or refreshing.</p> : null}
 
@@ -234,7 +244,7 @@ export default function TicketDetailPage() {
                 <Field label="Request Details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
                 <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
               </fieldset>
-              <Button disabled={working || stale || Boolean(submitAttempt.current.pending || deleteAttempt.current.pending)} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.pending ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
+              <Button disabled={working || stale || Boolean(submitAttempt.current.command || deleteAttempt.current.command)} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.command ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
             </Card>
           ) : null}
 
@@ -277,20 +287,20 @@ export default function TicketDetailPage() {
           <Card title="Actions">
             <div className="action-panel">
               {capabilities.canSubmit ? (
-                <Button disabled={working || dirty || stale || Boolean(saveAttempt.current.pending || deleteAttempt.current.pending)} onClick={() => void submitDraft()}>
+                <Button disabled={working || dirty || stale || Boolean(saveAttempt.current.command || deleteAttempt.current.command)} onClick={() => void submitDraft()}>
                   {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
                 </Button>
               ) : null}
-              {dirty ? <p role="status" className="muted">Unsaved changes. Save them before submitting; submission uses the saved record.</p> : null}
+              {dirty ? <p role="status" className="muted">Unsaved changes. Save or deliberately reload them before submitting or reviewing another request action.</p> : null}
               {capabilities.canCreateFollowUp ? (
-                <Button disabled={working || uncertain} onClick={() => void createFollowUp()}>
-                  {creatingFollowUp ? 'Creating Follow-Up…' : 'Create Follow-Up SWR'}
+                <Button disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('follow-up')}>
+                  Create Follow-Up Request
                 </Button>
               ) : null}
-              {ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.pending || submitAttempt.current.pending)} onClick={() => void deleteCurrentDraft()}>{deleting ? 'Deleting…' : deleteAttempt.current.pending ? 'Retry Delete Draft' : 'Delete Draft'}</Button> : null}
+              {ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.command || submitAttempt.current.command)} onClick={() => {if(ticket&&!uncertain&&workflow.owner.claim('requester-fields')){setDeleteConsent(false);setDeleteReview(ticket);}}}>Delete Draft</Button> : null}
               {capabilities.canRequesterCancel ? (
-                <Button variant="secondary" disabled={working || uncertain || stale} onClick={() => void cancelRequest()}>
-                  {canceling ? 'Canceling…' : 'Cancel SWR'}
+                <Button variant="secondary" disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('requester-cancel')}>
+                  Cancel My Request
                 </Button>
               ) : null}
               {noActions ? <p className="muted">{loading ? 'Loading available actions…' : 'No actions are available to you for this request right now.'}</p> : null}

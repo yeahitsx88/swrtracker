@@ -8,7 +8,6 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type {
   LocalNotificationPreviewRecord,
-  ProjectMemberRecord,
   TicketRecord,
 } from '@/lib/contracts';
 import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
@@ -27,6 +26,7 @@ import { humanizeCode, priorityLabel } from '@/lib/display-labels';
 import {TeamDelegation} from '@/components/ui/team-delegation';
 import {useProjectWorkspace} from '@/components/ui/project-shell-header';
 import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
+import type {CommandOwner} from '@/lib/frozen-command';
 import {CrewAssignment} from '@/components/ui/crew-assignment';
 
 export default function SurveyOperationsPage() {
@@ -35,7 +35,6 @@ export default function SurveyOperationsPage() {
   const workflow = useTicketWorkflowReview(() => setRevision(current => current + 1));
   const workspace=useProjectWorkspace();
   const actionDisabled=workflow.active||workspace?.project.status!=='ACTIVE';
-  const [members, setMembers] = useState<ProjectMemberRecord[]>([]);
   const [metrics, setMetrics] = useState<AmeliaMetrics | null>(null);
   const [scopeSnapshot, setScopeSnapshot] = useState<Awaited<ReturnType<typeof apiClient.getKpiCharts>> | null>(null);
   const superintendent = scopeSnapshot?.analytics.supportsLinkedCrewScope === true;
@@ -69,15 +68,6 @@ export default function SurveyOperationsPage() {
     return () => { active = false; };
   }, [projectId, revision]);
 
-  useEffect(() => {
-    if (!metrics || superintendent || tab !== 'assignment') return;
-    let active = true;
-    setMembers([]);
-    apiClient.listProjectMembers(projectId).then(response => { if (active) setMembers(response.members); })
-      .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load crew choices.')); });
-    return () => { active = false; };
-  }, [projectId, metrics, superintendent, tab]);
-
   const [messagesLoading, setMessagesLoading] = useState(false);
   useEffect(() => {
     if (!metrics || tab !== 'messages') return;
@@ -97,8 +87,6 @@ export default function SurveyOperationsPage() {
   useEffect(() => {
     if (ticketQuery.data && page > Math.max(1, Math.ceil(ticketQuery.data.total / pageSize))) setPage(Math.max(1, Math.ceil(ticketQuery.data.total / pageSize)));
   }, [ticketQuery.data, page, pageSize]);
-  const partyChiefs = members.filter((member) => member.role === 'PARTY_CHIEF');
-  const instrumentMen = members.filter((member) => member.role === 'INSTRUMENT_MAN');
   const areas = [...new Map(metrics?.openByAreaStatus.map(row => [row.areaId, row.areaName]) ?? []).entries()];
   const filteredMessages = messages.filter(message => (!delivery || message.deliveryState === delivery) &&
     [message.subject, message.body, message.recipientName, message.recipientEmail, message.ticketNumber].some(value => value?.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())));
@@ -167,9 +155,9 @@ export default function SurveyOperationsPage() {
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
           <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
-            <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket} partyChiefs={partyChiefs} instrumentMen={instrumentMen}
+            <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket}
               readOnly={superintendent} projectId={projectId}
-              busy={busy === ticket.id || members.length === 0} onDelegated={()=>void loadOperations()} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
+              disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>void loadOperations()} />
           ))}</>}/>
         </div>
       </Card> : null}
@@ -223,26 +211,14 @@ export default function SurveyOperationsPage() {
   );
 }
 
-function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign, readOnly, projectId,onDelegated }: {
-  ticket: TicketRecord; partyChiefs: ProjectMemberRecord[]; instrumentMen: ProjectMemberRecord[]; busy: boolean;
-  onAssign: (partyChiefId: string | null, instrumentManId: string | null) => Promise<void>;
-  readOnly?: boolean; projectId: string;onDelegated:()=>void;
+function AssignmentRow({ ticket,disabled,owner,readOnly,projectId,onDelegated }: {
+  ticket: TicketRecord; disabled:boolean; owner:CommandOwner; readOnly?:boolean; projectId:string;onDelegated:()=>void;
 }) {
-  const [partyChiefId, setPartyChiefId] = useState(ticket.assignedPartyChiefId ?? '');
-  const [instrumentManId, setInstrumentManId] = useState(ticket.assignedInstrumentManId ?? '');
-  useEffect(()=>{setPartyChiefId(ticket.assignedPartyChiefId??'');setInstrumentManId(ticket.assignedInstrumentManId??'');},[ticket.assignedPartyChiefId,ticket.assignedInstrumentManId]);
-  return (
-    <details className="ops-queue-row">
-      <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
-      <div className="stack ops-row-body">
-        <p>{ticket.description}</p>
-        <TeamDelegation ticketId={ticket.id} canDelegate={!readOnly} onDelegated={onDelegated}/>
-        {readOnly ? <div className="row"><CrewAssignment ticketId={ticket.id} allowChiefOnly={ticket.status === 'APPROVED'} onSaved={onDelegated}/><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link></div> : <div className="row">
-          <label>Party Chief <select value={partyChiefId} onChange={(event) => setPartyChiefId(event.target.value)}><option value="">None</option>{partyChiefs.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
-          <label>Instrument Man <select value={instrumentManId} onChange={(event) => setInstrumentManId(event.target.value)}><option value="">Unassigned</option>{instrumentMen.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
-          <Button disabled={busy} onClick={() => void onAssign(partyChiefId || null, instrumentManId || null)}>{busy ? 'Saving…' : 'Save Assignment'}</Button>
-        </div>}
-      </div>
-    </details>
-  );
+  return <details className="ops-queue-row">
+    <summary><span>{ticket.ticketNumber??'Request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
+    <div className="stack ops-row-body"><p>{ticket.description}</p>
+      <TeamDelegation ticket={ticket} canDelegate={!readOnly} disabled={disabled} owner={owner} onDelegated={onDelegated}/>
+      <div className="row"><CrewAssignment ticket={ticket} owner={owner} disabled={disabled} restrictToSelectedTeam={readOnly} allowChiefOnly={ticket.status==='APPROVED'} onSaved={onDelegated}/><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link></div>
+    </div>
+  </details>;
 }

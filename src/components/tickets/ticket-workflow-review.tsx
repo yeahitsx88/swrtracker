@@ -1,7 +1,7 @@
 'use client';
 
 import {useRef,useState} from 'react';
-import type {TicketRecord} from '@/lib/contracts';
+import type {TicketRecord,TicketResponse} from '@/lib/contracts';
 import {apiClient,createIdempotencyKey} from '@/lib/apiClient';
 import {operationsStatusLabel} from '@/lib/operations-view';
 import {formatCalendarDate} from '@/lib/calendar-date';
@@ -14,16 +14,16 @@ import {Button,ErrorBanner} from '@/components/ui';
 
 type Selection={ticket:TicketRecord;action:TicketWorkflowAction};
 /** One page-wide owner prevents another row or action from replacing an uncertain attempt. */
-export function useTicketWorkflowReview(onReload:()=>void) {
+export function useTicketWorkflowReview(onReload:()=>void,onSuccess?:(response:TicketResponse,action:TicketWorkflowAction)=>void) {
   const owner=useRef(new CommandOwner()),selection=useRef<Selection|null>(null);
   const [selected,setSelected]=useState<Selection|null>(null);
   function close(){selection.current=null;owner.current.release('ticket-workflow');setSelected(null);}
-  return {active:!!selected,open:(ticket:TicketRecord,action:TicketWorkflowAction)=>{
+  return {active:!!selected,owner:owner.current,open:(ticket:TicketRecord,action:TicketWorkflowAction)=>{
     if(selection.current||!owner.current.claim('ticket-workflow'))return;
     selection.current={ticket,action};setSelected(selection.current);
-  },dialog:selected?<WorkflowReview key={selected.ticket.id+selected.action} selection={selected} close={close} reloaded={()=>{close();onReload();}}/>:null};
+  },dialog:selected?<WorkflowReview key={selected.ticket.id+selected.action} selection={selected} close={close} completed={response=>{close();if(onSuccess)onSuccess(response,selected.action);else onReload();}} reloaded={()=>{close();onReload();}}/>:null};
 }
-function WorkflowReview({selection:{ticket,action},close,reloaded}:{selection:Selection;close:()=>void;reloaded:()=>void}) {
+function WorkflowReview({selection:{ticket,action},close,reloaded,completed}:{selection:Selection;close:()=>void;reloaded:()=>void;completed:(response:TicketResponse)=>void}) {
   const gate=useRef(new FrozenCommand<TicketWorkflowIntent>());
   const [reason,setReason]=useState(''),[requestedDate,setDate]=useState(ticket.requestedDate?.slice(0,10)??'');
   const [confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null);
@@ -34,7 +34,7 @@ function WorkflowReview({selection:{ticket,action},close,reloaded}:{selection:Se
     const frozen=command.begin({ticketId:ticket.id,action,reason,requestedDate},createIdempotencyKey());
     if(!frozen)return;
     setBusy(true);setError(null);
-    try {await executeTicketWorkflow(frozen.body,frozen.key);command.success();reloaded();}
+    try {const response=await executeTicketWorkflow(frozen.body,frozen.key);command.success();completed(response);}
     catch(err){command.fail(err instanceof ApiClientError?err.status:undefined);setError(getErrorMessage(err,'The response was not received. Retry the unchanged action to recover its result.'));}
     finally{setBusy(false);}
   }

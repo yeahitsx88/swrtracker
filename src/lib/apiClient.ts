@@ -246,10 +246,10 @@ export const apiClient = {
     });
   },
 
-  createFollowUpTicket(ticketId: string): Promise<TicketResponse> {
+  createFollowUpTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/follow-up`, {
       method: 'POST',
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
@@ -347,10 +347,10 @@ export const apiClient = {
     });
   },
 
-  requesterCancel(ticketId: string): Promise<TicketResponse> {
+  requesterCancel(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/requester-cancel`, {
       method: 'POST',
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 

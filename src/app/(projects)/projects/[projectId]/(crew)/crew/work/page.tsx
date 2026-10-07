@@ -65,7 +65,7 @@ function CrewWorkContent() {
             emptyTitle="No actionable crew work"
             emptyMessage="Work assigned to you will appear here, including requests awaiting your crew selection."
             renderActions={(ticket) => role==='PARTY_CHIEF'&&ticket.assignedPartyChiefId===actorId?(<div className="row">
-              {['APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<CrewAssignment disabled={actionDisabled} ticketId={ticket.id} fixedChiefId={actorId} onSaved={()=>setRevision(n=>n+1)}/>:null}
+              {['APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<CrewAssignment disabled={actionDisabled} ticket={ticket} owner={workflow.owner} fixedChiefId={actorId} onSaved={()=>setRevision(n=>n+1)}/>:null}
               {ticket.status==='DELAYED'?<Button disabled={actionDisabled} onClick={()=>workflow.open(ticket,'restart')}>Restart Delayed Work</Button>:null}
               {['IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="danger" disabled={actionDisabled||!!ticket.surveyCancelRequestedAt} onClick={()=>workflow.open(ticket,'stop')}>Flag Stop Work</Button>:null}
               {ticket.surveyCancelRequestedAt?<p role="status">Stop-work review is pending.</p>:null}

@@ -583,6 +583,24 @@
         "Retained demos/data untouched; inherited release-image blocker separate; no push/deploy."
       ],
       "live_demo_changed": false
+    },
+    {
+      "id": 27,
+      "date": "2026-10-07",
+      "summary": "Protected crew/delegation and Requester mutation controls",
+      "status": "verified_local_increment",
+      "evidence": "protected-controls-evidence.json",
+      "verification": [
+        "616 units,44 focused,strict types and pinned production compilation",
+        "92 actual owned PostgreSQL/HTTP/Edge checks,24 theme/viewport captures",
+        "Independent reviewer scored2 listed fixes resolved; final whole-role journeys pending"
+      ],
+      "remaining": [
+        "Scoped survey roles",
+        "Submitted-request recovery",
+        "Explicit-destination intact crew transfers",
+        "Current all-role Alpha acceptance"
+      ]
     }
   ],
   "annotations": [
