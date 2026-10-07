@@ -41,6 +41,8 @@ export interface SurveyTeamsRepository {
   members(db: DbClient, tenantId: UUID, projectId: UUID, userIds: UUID[]): Promise<TeamPersonnel[]>;
   nameExists(db: DbClient, tenantId: UUID, projectId: UUID, name: string, exceptTeamId: UUID | null): Promise<boolean>;
   save(db: DbClient, actor: TeamActor, teamId: UUID, input: SaveSurveyTeamInput, previous: SurveyTeamDetail | null): Promise<void>;
+  /** Null coverage counts all pending work; supplied coverage counts only work it no longer covers. */
+  delegationObligations(db: DbClient, actor: TeamActor, teamId: UUID, retainedAreaIds: UUID[] | null): Promise<number>;
   deactivate(db: DbClient, actor: TeamActor, team: SurveyTeamDetail): Promise<void>;
   recordTeamEvent(db: DbClient, actor: TeamActor, event: TeamEvent, payload: Record<string, unknown>): Promise<void>;
 }
@@ -106,6 +108,11 @@ export async function saveSurveyTeam(repo: SurveyTeamsRepository, db: DbClient, 
   const unchanged = previous && previous.name === input.name && JSON.stringify((previous.areas?.map(area => area.id) ?? [previous.areaId]).sort()) === JSON.stringify(areaIds) && previous.lead.userId === input.leadUserId &&
     previous.members.length === input.memberIds.length && previous.members.every(member => input.memberIds.includes(member.userId));
   if (unchanged) return { teamId: previous.id, rowVersion: previous.rowVersion, changed: false };
+  if (previous) {
+    const changesOwnership = previous.lead.userId !== input.leadUserId || previous.members.some(member => !input.memberIds.includes(member.userId));
+    const count = await repo.delegationObligations(db, actor, previous.id, changesOwnership ? null : areaIds);
+    if (count) throw new ConflictError(`${count} approved request(s) are awaiting this team's crew selection. Resolve them through Survey Operations by assigning a crew, redelegating, returning or cancelling before removing people, changing the lead or removing required coverage.`, 'TEAM_DELEGATION_OBLIGATIONS');
+  }
   const teamId = input.teamId ?? randomUUID() as UUID;
   await repo.save(db, actor, teamId, input, previous);
   const rowVersion = (previous?.rowVersion ?? 0) + 1;
@@ -122,6 +129,8 @@ export async function deactivateSurveyTeam(repo: SurveyTeamsRepository, db: DbCl
   const team = await repo.team(db, actor.tenantId, actor.projectId, teamId);
   if (!team) throw new NotFoundError('Team not found');
   if (team.rowVersion !== expectedVersion) throw new ConflictError('This team changed; reload before deleting', 'STALE_TEAM');
+  const count = await repo.delegationObligations(db, actor, team.id, null);
+  if (count) throw new ConflictError(`${count} approved request(s) are awaiting this team's crew selection. Resolve them through Survey Operations by assigning a crew, redelegating, returning or cancelling before deleting the team.`, 'TEAM_DELEGATION_OBLIGATIONS');
   await repo.deactivate(db, actor, team);
   await repo.recordTeamEvent(db, actor, 'survey.team_deactivated', { teamId, name: team.name, areaId: team.areaId,
     leadUserId: team.lead.userId, memberIds: team.members.map(member => member.userId), rowVersion: team.rowVersion + 1 });

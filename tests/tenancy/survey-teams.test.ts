@@ -22,7 +22,7 @@ const input = () => ({ teamId:null, expectedVersion:null, name:'Train 1 Team', a
 function fixture() {
   const writes: string[]=[];
   const events: Record<string, unknown>[]=[];
-  const obligations={leadsTeam:false,areaAssignments:0,crewLinks:0,reportingLinks:0,responsibilityGrants:0,actingGrants:0};
+  const obligations={activeRequests:0,pendingDelegations:0,leadsTeam:false,areaAssignments:0,crewLinks:0,reportingLinks:0,responsibilityGrants:0,actingGrants:0};
   let current: SurveyTeamDetail | null=null;
   const people: [TeamPersonnel, TeamPersonnel]=[{...chief},{...im}];
   const repo: SurveyRoleRepository = {
@@ -35,6 +35,7 @@ function fixture() {
     activeArea:async()=>true,members:async(_db,t,p,ids)=>t===tenantId&&p===projectId?people.filter(person=>ids.includes(person.userId)):[],
     nameExists:async()=>false,
     save:async(_db,_actor,newId,value)=>{ writes.push('save'); current={id:newId,name:value.name,areaId:value.areaId,areaName:'Train 1',areas:(value.areaIds??[value.areaId]).map(id=>({id,name:'Train 1'})),lead:people.find(person=>person.userId===value.leadUserId)!,memberCount:value.memberIds.length,rowVersion:(current?.rowVersion??0)+1,members:people.filter(person=>value.memberIds.includes(person.userId))}; },
+    delegationObligations:async()=>0,
     deactivate:async()=>{writes.push('deactivate');current=null;}, recordTeamEvent:async(_db,_actor,event,payload)=>{writes.push(event);events.push(payload);},
     roleObligations:async()=>obligations,
     changeOperationalRole:async(_db,_actor,value)=>{const member=people.find(p=>p.userId===value.userId)!;member.role=value.role;member.roleVersion++;writes.push('role');return member.roleVersion;},
@@ -280,3 +281,27 @@ test('team and survey-role commands recheck current session before any domain or
   await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...input(),areaIds:[id(80)]}),ValidationError);
   assert.deepEqual(f.writes,[]);
  });
+
+
+test('pending team delegations block deletion, ownership removal and lost coverage before state or audit writes',async()=>{
+ const f=fixture(),created=await saveSurveyTeam(f.repo,db,actor,input());
+ const before=[...f.writes],values={...input(),teamId:created.teamId,expectedVersion:1};
+ let inspected:UUID[]|null|undefined;
+ f.repo.delegationObligations=async(_db,_actor,_team,areas)=>{inspected=areas;return 1;};
+ await assert.rejects(deactivateSurveyTeam(f.repo,db,actor,created.teamId,1),/awaiting this team's crew selection/);assert.equal(inspected,null);
+ await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...values,memberIds:[chiefId]}),/Survey Operations/);assert.equal(inspected,null);
+ await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...values,leadUserId:imId}),/Survey Operations/);assert.equal(inspected,null);
+ await assert.rejects(saveSurveyTeam(f.repo,db,actor,{...values,areaId:id(80),areaIds:[id(80)]}),/required coverage/);assert.deepEqual(inspected,[id(80)]);
+ assert.deepEqual(f.writes,before);
+ f.repo.delegationObligations=async(_db,_actor,_team,areas)=>areas?.includes(areaId)?0:1;
+ await saveSurveyTeam(f.repo,db,actor,{...values,name:'Renamed safely',areaIds:[areaId,id(80)]});
+ assert.equal(f.current()!.name,'Renamed safely');
+});
+
+test('roles retain current assigned work and pending delegation ownership even without roster or Area links',async()=>{
+ const f=fixture();
+ for(const obligation of ['activeRequests','pendingDelegations'] as const){
+  f.obligations[obligation]=1;await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput()),/Survey Operations/);f.obligations[obligation]=0;
+ }
+ assert.deepEqual(f.writes,[]);
+});

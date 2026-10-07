@@ -80,7 +80,7 @@ async function transact<T>(req: NextRequest, ctx: Context, deps: TeamDeps, fn: (
   const projectId = uuid((await ctx.params).projectId, 'Project');
   return deps.withTransaction(async db => {
     if(req.method!=='GET'){
-      await acquireTenantLifecycleLock(db,auth.tenantId,req.method==='PATCH'?'EXCLUSIVE':'SHARED');
+      await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
       assertMutationIdentity(await deps.requireAuth(req,db),auth);
     }
     const actorRole = await deps.getProjectRole(db, auth.tenantId, projectId, auth.userId, auth.sessionVersion);

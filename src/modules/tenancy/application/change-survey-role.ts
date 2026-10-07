@@ -12,7 +12,7 @@ export interface ChangeSurveyRoleInput {
   confirmRoleChanges: boolean;
 }
 export interface SurveyRoleObligations {
-  leadsTeam: boolean; areaAssignments: number; crewLinks: number; reportingLinks: number; responsibilityGrants: number; actingGrants: number;
+  activeRequests: number; pendingDelegations: number; leadsTeam: boolean; areaAssignments: number; crewLinks: number; reportingLinks: number; responsibilityGrants: number; actingGrants: number;
 }
 export interface SurveyRoleRepository extends SurveyTeamsRepository {
   roleObligations(db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID): Promise<SurveyRoleObligations>;
@@ -37,6 +37,7 @@ export async function changeSurveyRole(repo: SurveyRoleRepository, db: DbClient,
   if (member.role === input.role) return { userId: input.userId, role: input.role, roleVersion: member.roleVersion, changed: false };
   if (!input.confirmRoleChanges) throw new ValidationError('Confirm this project-role change and the affected person’s session invalidation');
   const obligations = await repo.roleObligations(db, actor.tenantId, actor.projectId, input.userId);
+  if (obligations.activeRequests || obligations.pendingDelegations) throw new ConflictError('Resolve this person’s assigned field work, field-report reviews and team delegations through Survey Operations before changing their role', 'SURVEY_WORK_OBLIGATIONS');
   if (obligations.crewLinks || obligations.reportingLinks) {
     throw new ConflictError('Resolve this person’s active crew and reporting assignments before changing their role');
   }

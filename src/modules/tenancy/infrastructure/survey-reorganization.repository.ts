@@ -52,6 +52,7 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
    state.oldTeam=oldTeam;state.newTeam=newTeam;
    if(oldTeam&&!newTeam||oldTeam&&sourceId&&!oldTeam.members.some(member=>member.userId===sourceId))blockers.push('The Instrument Man and current Chief must belong to the same team, and the destination Chief must have a team.');
    if(oldTeam?.lead.userId===subject&&oldTeam.id!==newTeam?.id)blockers.push('Choose another lead for the current team before moving this person.');
+   if(oldTeam&&oldTeam.id!==newTeam?.id){const count=await teamRepo.delegationObligations(db,actor,oldTeam.id,null);if(count)blockers.push(`Resolve ${count} delegated request(s) awaiting crew selection through Survey Operations before removing this team member.`);}
    if(sourceId===destination.chiefId)blockers.push('This Instrument Man already belongs to the selected Chief.');
    summary.push(`Move this Instrument Man from ${oldTeam?.name??(sourceId?'the current crew':'the unassigned personnel pool')} to ${newTeam?.name??'the destination crew'}. Existing request assignments stay with their recorded Chief and Instrument Man.`);
   }

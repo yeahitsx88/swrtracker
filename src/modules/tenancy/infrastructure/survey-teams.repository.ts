@@ -153,6 +153,10 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
        (SELECT COUNT(*)::int FROM crew_rosters WHERE tenant_id=$1 AND project_id=$2 AND (party_chief_id=$3 OR instrument_man_id=$3) AND deactivated_at IS NULL) AS "crewLinks",
        (SELECT COUNT(*)::int FROM survey_reporting_links WHERE tenant_id=$1 AND project_id=$2 AND (superintendent_id=$3 OR party_chief_id=$3) AND deactivated_at IS NULL) AS "reportingLinks",
        (SELECT COUNT(*)::int FROM project_responsibility_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND revoked_at IS NULL) AS "responsibilityGrants",
+       (SELECT COUNT(*)::int FROM tickets WHERE tenant_id=$1 AND project_id=$2
+         AND status IN ('APPROVED','ASSIGNED','IN_PROGRESS','DELAYED','PENDING_PC_APPROVAL','PENDING_FIELD_VALIDATION')
+         AND (assigned_party_chief_id=$3 OR assigned_instrument_man_id=$3 OR field_validation_reviewer_id=$3)) AS "activeRequests",
+       (SELECT COUNT(*)::int FROM survey_work_delegations WHERE tenant_id=$1 AND project_id=$2 AND lead_user_id=$3 AND ended_at IS NULL) AS "pendingDelegations",
        (SELECT COUNT(*)::int FROM acting_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND revoked_at IS NULL) AS "actingGrants"`,
       [tenantId, projectId, userId]);
     return rows[0]!;
@@ -211,6 +215,25 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
        ON CONFLICT (tenant_id,project_id,team_id,user_id) DO UPDATE SET
          assigned_at=CASE WHEN survey_team_members.deactivated_at IS NOT NULL THEN NOW() ELSE survey_team_members.assigned_at END,
          deactivated_at=NULL`, [actor.tenantId, actor.projectId, teamId, input.memberIds]);
+  }
+
+  async delegationObligations(db: DbClient, actor: TeamActor, teamId: UUID, retainedAreaIds: UUID[] | null): Promise<number> {
+    // The caller's EXCLUSIVE lifecycle barrier keeps ticket delegation/assignment
+    // and organizational writes stable together; a row lock alone cannot do that.
+    const { rows } = await db.query<{ count: number }>(`WITH RECURSIVE work AS (
+      SELECT t.id,t.aor_node_id FROM survey_work_delegations d
+      JOIN tickets t ON t.tenant_id=d.tenant_id AND t.project_id=d.project_id AND t.id=d.ticket_id
+      WHERE d.tenant_id=$1 AND d.project_id=$2 AND d.team_id=$3 AND d.ended_at IS NULL
+        AND t.status='APPROVED' AND t.assigned_instrument_man_id IS NULL
+    ), coverage AS (
+      SELECT w.id AS ticket_id,n.id,n.parent_id FROM work w
+      JOIN aor_nodes n ON n.tenant_id=$1 AND n.project_id=$2 AND n.id=w.aor_node_id AND n.retired_at IS NULL
+      UNION SELECT c.ticket_id,n.id,n.parent_id FROM coverage c
+      JOIN aor_nodes n ON n.tenant_id=$1 AND n.project_id=$2 AND n.id=c.parent_id AND n.retired_at IS NULL
+    ) SELECT COUNT(*)::int AS count FROM work w WHERE $4::uuid[] IS NULL OR NOT EXISTS (
+      SELECT 1 FROM coverage c WHERE c.ticket_id=w.id AND c.id=ANY($4::uuid[]))`,
+      [actor.tenantId,actor.projectId,teamId,retainedAreaIds]);
+    return rows[0]!.count;
   }
 
   async deactivate(db: DbClient, actor: TeamActor, team: SurveyTeamDetail): Promise<void> {

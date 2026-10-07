@@ -564,6 +564,25 @@
         "Inherited source-map-js release-image blocker separate; retained demos/data untouched; no push/deploy."
       ],
       "live_demo_changed": false
+    },
+    {
+      "id": 26,
+      "date": "2026-10-07",
+      "changes": [
+        "Pending delegated approved work blocks team deletion, lead/member removal and removal of coverage actually required by requests. Safe rename and unused coverage changes remain allowed; existing resolution paths are presented.",
+        "Existing role changes now protect current assigned work, captured field reviews and delegation lead duties even without crew/Area links.",
+        "Structural team writers use the existing EXCLUSIVE lifecycle barrier; transfers preview pending delegation blockers. Approved active Instrument Man transfer ownership and destination coverage remain unchanged."
+      ],
+      "verification": [
+        "Strict/unused types,616 units,91 focused regressions and pinnedNode22.23.3/pnpm11.19 production compilation pass.",
+        "New owned PostgreSQL22cases: actual current route guards/scopes, ancestor coverage, audit/ledger rollback, separate-connection delegation versus delete and revoked-session replay after lock wait, active assignment/history-preserving Instrument Man transfer.",
+        "Actual production HTTP/Edge21checks: role/scope refusals, visible blocker/409 latch/reload, real committed response loss with identical structural retry and one event/version, desktop/mobile contained error presentation, zero page errors."
+      ],
+      "limitations": [
+        "Final connected all-role/team lifecycle journeys and remaining approved capabilities remain open. No new staffing/role authority or assignment/history rewrite.",
+        "Retained demos/data untouched; inherited release-image blocker separate; no push/deploy."
+      ],
+      "live_demo_changed": false
     }
   ],
   "annotations": [

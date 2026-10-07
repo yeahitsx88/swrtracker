@@ -9,7 +9,7 @@
   "src/modules/identity/infrastructure/company-access.repository.ts": "Invitation and company-grant handlers own EXCLUSIVE transaction; effective subjects rechecked; revoke preserves evidence.",
   "src/modules/identity/infrastructure/account-lifecycle.repository.ts": "Append-only transition evidence; caller must own EXCLUSIVE lifecycle transaction; no independent entry point.",
   "src/modules/tenancy/infrastructure/tenancy.repository.ts": "EXCLUSIVE setup/configuration/member/tenant/whitelist/template handlers; effective subjects checked. Legacy Area writes refuse; company type/account company changes have no production writer.",
-  "src/modules/tenancy/infrastructure/survey-teams.repository.ts": "Team save/delete SHARED, role changes EXCLUSIVE; effective actor and selected members checked before domain writes/replay.",
+  "src/modules/tenancy/infrastructure/survey-teams.repository.ts": "Team save/delete and role changes EXCLUSIVE; fresh actor and selected members before replay. Current pending delegation/coverage/ownership and live work obligations precede structural or role writes; lifecycle barrier serializes ticket assignment/delegation.",
   "src/modules/tenancy/infrastructure/survey-staffing.repository.ts": "Staffing/link handlers EXCLUSIVE; locked effective members, coverage witnesses and snapshot checked before roles/links/audit.",
   "src/modules/tenancy/infrastructure/superintendent-areas.repository.ts": "Unlink handler EXCLUSIVE; actual Manager, current subject, replacement grants/coverage and snapshot before unlink.",
   "src/modules/tenancy/infrastructure/protected-obligations.repository.ts": "Handover handler EXCLUSIVE; current actor, subjects, coverage and snapshot before grant/assignment/revoke/audit.",
