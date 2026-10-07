@@ -25,11 +25,16 @@ import { Icon } from '@/components/ui/icon';
 import { formatCalendarDate } from '@/lib/calendar-date';
 import { humanizeCode, priorityLabel } from '@/lib/display-labels';
 import {TeamDelegation} from '@/components/ui/team-delegation';
+import {useProjectWorkspace} from '@/components/ui/project-shell-header';
+import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
 import {CrewAssignment} from '@/components/ui/crew-assignment';
 
 export default function SurveyOperationsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [revision, setRevision] = useState(0);
+  const workflow = useTicketWorkflowReview(() => setRevision(current => current + 1));
+  const workspace=useProjectWorkspace();
+  const actionDisabled=workflow.active||workspace?.project.status!=='ACTIVE';
   const [members, setMembers] = useState<ProjectMemberRecord[]>([]);
   const [metrics, setMetrics] = useState<AmeliaMetrics | null>(null);
   const [scopeSnapshot, setScopeSnapshot] = useState<Awaited<ReturnType<typeof apiClient.getKpiCharts>> | null>(null);
@@ -119,10 +124,11 @@ export default function SurveyOperationsPage() {
 
   return (
     <div className="stack ops-workspace">
+      {workflow.dialog}
       {error ? <ErrorBanner message={error} /> : null}
       {ticketQuery.error ? <ErrorBanner message={ticketQuery.error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
-      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><Button variant="secondary" disabled={loading} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
+      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><Button variant="secondary" disabled={loading||workflow.active} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
 
       {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} areaWide={scopeSnapshot?.analytics.supportsLinkedCrewScope} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
       <div className="ops-tabs" role="tablist" aria-label="Operations views">
@@ -182,27 +188,11 @@ export default function SurveyOperationsPage() {
                 <p>{ticket.description}</p>
                 <p className="muted">Need-By {ticket.requestedDate ? formatCalendarDate(ticket.requestedDate) : 'Not set'} · {priorityLabel(ticket.priority)} priority</p>
                 {!superintendent ? <div className="row">
-                  {ticket.status === 'SUBMITTED' ? <Button disabled={busy === ticket.id} onClick={() => void run(ticket.id, () => apiClient.approveTicket(ticket.id), 'SWR approved.')}>Approve</Button> : null}
-                  {['SUBMITTED', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED'].includes(ticket.status) ? (
-                    <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                      const reason = window.prompt('Return reason');
-                      if (reason?.trim()) void run(ticket.id, () => apiClient.returnForCorrection(ticket.id, reason), 'SWR returned for correction.');
-                    }}>Return</Button>
-                  ) : null}
-                  <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                    const next = ticket.priority === 'HIGH' ? 'NORMAL' : 'HIGH';
-                    const reason = window.prompt(`Reason to set priority ${next}`);
-                    if (reason?.trim()) void run(ticket.id, () => apiClient.revisePriority(ticket.id, next, reason), 'Priority revised.');
-                  }}>Set {ticket.priority === 'HIGH' ? 'Normal' : 'High'}</Button>
-                  <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                    const date = window.prompt('New Need-By date (YYYY-MM-DD)');
-                    const reason = date ? window.prompt('Reason for Need-By change') : null;
-                    if (date && reason?.trim()) void run(ticket.id, () => apiClient.reviseNeedBy(ticket.id, date, reason), 'Need-By revised.');
-                  }}>Revise Need-By</Button>
-                  <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                    const reason = window.prompt('Cancellation reason');
-                    if (reason?.trim()) void run(ticket.id, () => apiClient.surveyCancel(ticket.id, reason), 'SWR canceled.');
-                  }}>Cancel</Button>
+                  {ticket.status === 'SUBMITTED' ? <Button disabled={actionDisabled||busy===ticket.id} onClick={() => workflow.open(ticket,'approve')}>Approve Request</Button> : null}
+                  {['SUBMITTED','APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'return')}>Return for Correction</Button>:null}
+                  <Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,ticket.priority==='HIGH'?'normal':'high')}>Set {ticket.priority==='HIGH'?'Normal':'High'} Priority</Button>
+                  <Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'need-by')}>Revise Need-By Date</Button>
+                  <Button variant="danger" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'cancel')}>Cancel Request</Button>
                 </div> : null}
               </div>
             </details>

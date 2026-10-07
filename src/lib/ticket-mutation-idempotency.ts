@@ -60,6 +60,8 @@ export async function executeAuthorizedTicketMutation<T>(
        previousChiefId:ticket.assigned_party_chief_id,previousInstrumentId:ticket.assigned_instrument_man_id});break;
   case 'start': case 'complete': case 'delay': case 'field-inability':
    allowed(['INSTRUMENT_MAN'],ticket.assigned_instrument_man_id===scope.actorId);break;
+  case 'pc-approve': case 'pc-reject':
+   allowed(['PARTY_CHIEF','SURVEY_MANAGER','SURVEY_SUPERINTENDENT'],role!=='PARTY_CHIEF'||ticket.assigned_party_chief_id===scope.actorId);break;
   case 'restart-delay':allowed(['PARTY_CHIEF','SURVEY_MANAGER','SURVEY_SUPERINTENDENT'],role!=='PARTY_CHIEF'||ticket.assigned_party_chief_id===scope.actorId);break;
   case 'priority': case 'need-by':allowed(['SURVEY_MANAGER']);break;
   case 'requester-cancel': case 'follow-up':

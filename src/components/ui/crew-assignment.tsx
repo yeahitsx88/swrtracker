@@ -5,9 +5,9 @@ import {Button,ErrorBanner} from '@/components/ui';
 import {AdministrationDialog} from './administration-dialog';
 import {useTeamCommand} from './team-management';
 import type {AssignmentChoice} from '@/modules/ticket/application/assignment-choices';
-export function CrewAssignment({ticketId,onSaved,fixedChiefId,allowChiefOnly=false}:{ticketId:string;onSaved:()=>void;fixedChiefId?:string;allowChiefOnly?:boolean}){
+export function CrewAssignment({ticketId,onSaved,fixedChiefId,allowChiefOnly=false,disabled=false}:{ticketId:string;onSaved:()=>void;fixedChiefId?:string;allowChiefOnly?:boolean;disabled?:boolean}){
  const [open,setOpen]=useState(false);
- return <><Button variant="secondary" onClick={()=>setOpen(true)}>Choose a crew</Button>{open?<CrewDialog ticketId={ticketId} fixedChiefId={fixedChiefId} allowChiefOnly={allowChiefOnly} close={()=>setOpen(false)} saved={()=>{setOpen(false);onSaved();}}/>:null}</>;
+ return <><Button variant="secondary" disabled={disabled} onClick={()=>{if(!disabled)setOpen(true);}}>Choose a crew</Button>{open?<CrewDialog ticketId={ticketId} fixedChiefId={fixedChiefId} allowChiefOnly={allowChiefOnly} close={()=>setOpen(false)} saved={()=>{setOpen(false);onSaved();}}/>:null}</>;
 }
 function CrewDialog({ticketId,close,saved,fixedChiefId,allowChiefOnly}:{ticketId:string;close:()=>void;saved:()=>void;fixedChiefId?:string;allowChiefOnly:boolean}){
  const command=useTeamCommand(),[people,setPeople]=useState<AssignmentChoice[]>(),[error,setError]=useState(false);

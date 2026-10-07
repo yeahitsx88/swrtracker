@@ -5,7 +5,7 @@ import { findProjectLandingHref, getProjectLandingHref, getProjectNavigation, ge
 test('Home navigation preserves role-specific work and authorized scoped team views', () => {
   assert.deepEqual(getProjectNavigation('REQUESTER').map(i => i.label), ['Home','New Request','Requests','Drafts','Help Desk']);
   assert.deepEqual(getProjectNavigation('SURVEY_MANAGER').map(i => i.label), ['Home','Survey Operations','Team Management','All Requests','Review Requests','Notifications','Help Desk']);
-  assert.deepEqual(getProjectNavigation('PARTY_CHIEF').map(i => i.label), ['Home','Crew Work','PC Approvals','Team Management','Review Requests','Notifications','Help Desk']);
+  assert.deepEqual(getProjectNavigation('PARTY_CHIEF').map(i => i.label), ['Home','Crew Work','Field Report Review','Team Management','Review Requests','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('INSTRUMENT_MAN').map(i => i.label), ['Home','Crew Work','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('SURVEY_SUPERINTENDENT').map(i => i.label), ['Home','All Requests','Survey Operations','Crew Work','Team Management','Review Requests','Notifications','Help Desk']);
 });

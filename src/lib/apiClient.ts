@@ -295,29 +295,29 @@ export const apiClient = {
     });
   },
 
-  surveyCancel(ticketId: string, reason: string): Promise<TicketResponse> {
+  surveyCancel(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/survey-cancel`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  startTicket(ticketId: string): Promise<TicketResponse> {
+  startTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/start`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  completeTicket(ticketId: string): Promise<TicketResponse> {
+  completeTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/complete`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  delayTicket(ticketId: string, reason: string): Promise<TicketResponse> {
+  delayTicket(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/delay`, {
       method: 'POST',
       body: { reason },
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
@@ -329,20 +329,21 @@ export const apiClient = {
     });
   },
 
-  restartDelayedTicket(ticketId: string): Promise<TicketResponse> {
+  restartDelayedTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/restart-delay`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  approvePcStatus(ticketId: string): Promise<TicketResponse> {
-    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/pc-approve`, { method: 'POST' });
+  approvePcStatus(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/pc-approve`, { method: 'POST', headers: { 'Idempotency-Key': retryKey } });
   },
 
-  rejectPcStatus(ticketId: string, reason?: string): Promise<TicketResponse> {
+  rejectPcStatus(ticketId: string, reason?: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/pc-reject`, {
       method: 'POST',
       body: reason ? { reason } : {},
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
@@ -353,39 +354,39 @@ export const apiClient = {
     });
   },
 
-  returnForCorrection(ticketId: string, reason: string): Promise<TicketResponse> {
+  returnForCorrection(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/return`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  reportFieldInability(ticketId: string, reason: string): Promise<TicketResponse> {
+  reportFieldInability(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-inability`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  validateFieldInability(ticketId: string, reason: string): Promise<TicketResponse> {
+  validateFieldInability(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-inability/validate`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  rejectFieldInability(ticketId: string, reason: string): Promise<TicketResponse> {
+  rejectFieldInability(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-inability/reject`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  reviseNeedBy(ticketId: string, requestedDate: string, reason: string): Promise<TicketResponse> {
+  reviseNeedBy(ticketId: string, requestedDate: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/need-by`, {
-      method: 'POST', body: { requestedDate, reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { requestedDate, reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  revisePriority(ticketId: string, priority: 'NORMAL' | 'HIGH', reason: string): Promise<TicketResponse> {
+  revisePriority(ticketId: string, priority: 'NORMAL' | 'HIGH', reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/priority`, {
-      method: 'POST', body: { priority, reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { priority, reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 

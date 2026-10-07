@@ -43,7 +43,7 @@ test('post-lock visibility loss rejects role-only Chief replay before ledger',as
  for(const action of ['restart-delay','survey-cancel','field-cancel'])await assert.rejects(f.run(action),NotFoundError);
  assert.equal(f.state.ledgerWrites,0);
 });
-const cases:readonly [string,ProjectRole][]=[['approve','SURVEY_MANAGER'],['return','SURVEY_MANAGER'],['assign','PARTY_CHIEF'],['start','INSTRUMENT_MAN'],['complete','INSTRUMENT_MAN'],['delay','INSTRUMENT_MAN'],['field-inability','INSTRUMENT_MAN'],['restart-delay','PARTY_CHIEF'],['priority','SURVEY_MANAGER'],['need-by','SURVEY_MANAGER'],['requester-cancel','REQUESTER'],['follow-up','REQUESTER'],['survey-cancel','INSTRUMENT_MAN'],['field-cancel','INSTRUMENT_MAN'],['field-inability/validate','PARTY_CHIEF'],['field-inability/reject','PARTY_CHIEF']];
+const cases:readonly [string,ProjectRole][]=[['pc-approve','PARTY_CHIEF'],['pc-reject','PARTY_CHIEF'],['approve','SURVEY_MANAGER'],['return','SURVEY_MANAGER'],['assign','PARTY_CHIEF'],['start','INSTRUMENT_MAN'],['complete','INSTRUMENT_MAN'],['delay','INSTRUMENT_MAN'],['field-inability','INSTRUMENT_MAN'],['restart-delay','PARTY_CHIEF'],['priority','SURVEY_MANAGER'],['need-by','SURVEY_MANAGER'],['requester-cancel','REQUESTER'],['follow-up','REQUESTER'],['survey-cancel','INSTRUMENT_MAN'],['field-cancel','INSTRUMENT_MAN'],['field-inability/validate','PARTY_CHIEF'],['field-inability/reject','PARTY_CHIEF']];
 for(const[action,role]of cases){
  test(action+' checks current action authority before ledger (uppercase ticket UUID)',async()=>{
   const f=fixture(role);assert.equal((await f.run(action)).status,200);assert.equal(f.state.ledgerWrites,2);
@@ -52,7 +52,7 @@ for(const[action,role]of cases){
   const f=fixture('VIEWER');await assert.rejects(f.run(action),ForbiddenError);assert.equal(f.state.ledgerWrites,0);assert.equal(f.state.ledgerReads,0);
  });
 }
-for(const action of ['assign','start','complete','delay','field-inability','survey-cancel','field-cancel','requester-cancel','follow-up','field-inability/validate','field-inability/reject']){
+for(const action of ['pc-approve','pc-reject','assign','start','complete','delay','field-inability','survey-cancel','field-cancel','requester-cancel','follow-up','field-inability/validate','field-inability/reject']){
  test(action+' rejects lost current relationship',async()=>{
   const role=cases.find(row=>row[0]===action)![1],f=fixture(role);
   f.state.row={...f.state.row,requester_id:'other' as UUID,assigned_party_chief_id:'other' as UUID,assigned_instrument_man_id:'other' as UUID,field_validation_reviewer_id:'other' as UUID};

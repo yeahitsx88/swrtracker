@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {assertRecommissioningMutation} from '../../src/lib/recommissioning-gate';
+import type {DbClient,UUID} from '../../src/shared/types';
+const tenant='tenant' as UUID,project='project' as UUID;
+function db(status:string,pending=false):DbClient{return {query:async<T extends object>(sql:string,params?:unknown[])=>{assert.match(sql,/p.tenant_id=\$1 AND p.id=\$2/);assert.deepEqual(params,[tenant,project]);return {rows:[{status,id:pending?'preparation':null}] as unknown as T[]};}};}
+test('archived projects refuse ordinary work, cancellation and reassignment before replay',async()=>{
+ for(const path of ['start','delay','complete','pc-approve','pc-reject','assign','survey-cancel','requester-cancel','field-inability/validate'])await assert.rejects(()=>assertRecommissioningMutation(db('ARCHIVED'),tenant,project,'/api/tickets/11111111-1111-4111-8111-111111111111/'+path),{name:'ConflictError',code:'PROJECT_ARCHIVED'});
+});
+test('active work remains available and preparation retains only its already-approved resolution paths',async()=>{
+ await assertRecommissioningMutation(db('ACTIVE'),tenant,project);
+ for(const path of ['assign','requester-cancel','field-cancel','survey-cancel','survey-cancel/approve'])await assertRecommissioningMutation(db('SETUP',true),tenant,project,'/api/tickets/11111111-1111-4111-8111-111111111111/'+path);
+ await assert.rejects(()=>assertRecommissioningMutation(db('SETUP',true),tenant,project,'/api/tickets/11111111-1111-4111-8111-111111111111/delay'),{name:'ConflictError',code:'PROJECT_RECOMMISSIONING'});
+});

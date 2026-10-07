@@ -34,7 +34,7 @@ const surveyOperations: ProjectNavigationItem = {
   href: (projectId) => `/projects/${projectId}/survey/operations`,
 };
 const pcApprovals: ProjectNavigationItem = {
-  label: 'PC Approvals',
+  label: 'Field Report Review',
   href: (projectId) => `/projects/${projectId}/crew/approvals`,
 };
 const teamManagement: ProjectNavigationItem = {

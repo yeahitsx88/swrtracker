@@ -53,7 +53,7 @@ try {
       check(labels.includes('Team Management'),false,'No requester crew destination');
       check(await page.getByRole('link',{name:'Submit a new survey request'}).count(),1,'Prominent requester action');
     }
-    if(label==='instrument')check(labels.includes('PC Approvals'),false,'No Instrument Man approval destination');
+    if(label==='instrument')check(labels.includes('Field Report Review'),false,'No Instrument Man approval destination');
     check(await nav.getByRole('link',{name:'Home',exact:true}).getAttribute('aria-current'),'page','Current Home destination');
     check(await nav.getByRole('link',{name:'Home',exact:true}).evaluate(node=>getComputedStyle(node).borderRadius),'0px','Square navigation');
     check(await nav.locator('a').evaluateAll(nodes=>nodes.every(node=>node.getBoundingClientRect().height>=44)),true,'Navigation target sizes');

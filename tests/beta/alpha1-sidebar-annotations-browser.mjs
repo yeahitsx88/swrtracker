@@ -55,7 +55,7 @@ try {
     const nav=page.locator('.project-sidebar nav');
     const links=await nav.locator('a').allTextContents();
     check(links.includes('Project Administration'),role==='admin'||role.startsWith('combined-'),'Additive current administration');
-    check(links.includes('PC Approvals'),role==='chief','Approval role boundary');
+    check(links.includes('Field Report Review'),role==='chief','Approval role boundary');
     if(role!=='admin'){
       await page.locator('.home-stats').waitFor();
       check(await page.locator('.home-status-column .badge').evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).whiteSpace==='nowrap'&&node.getBoundingClientRect().right<=node.closest('td').getBoundingClientRect().right-2)),true,'Single-line status fits column');
