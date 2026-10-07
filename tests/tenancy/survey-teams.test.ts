@@ -305,3 +305,9 @@ test('roles retain current assigned work and pending delegation ownership even w
  }
  assert.deepEqual(f.writes,[]);
 });
+
+test('current team leadership blocks operational role changes before role, session or evidence writes',async()=>{
+ const f=fixture();f.obligations.leadsTeam=true;
+ await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput()),/replacement team lead/);
+ assert.deepEqual(f.writes,[]);assert.deepEqual(f.events,[]);
+});

@@ -1,7 +1,7 @@
 import type {AuthContext} from '@/lib/auth';
 import {assertProjectAdministrator} from '@/lib/project-capabilities';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
-import {ConflictError,NotFoundError,ValidationError} from '@/shared/errors';
+import {ConflictError,ForbiddenError,NotFoundError,ValidationError} from '@/shared/errors';
 import type {DbClient,UUID} from '@/shared/types';
 import {resolveCustomRoleSelection} from './custom-roles';
 import type {CustomRoleBase} from '../domain/custom-role';
@@ -18,6 +18,7 @@ export async function assignTemplateRole(db:DbClient,auth:AuthContext,projectId:
   if(member.status==='ARCHIVED'||member.deactivated_at||member.access_disabled_at)throw new ConflictError('Only active members of an open project can receive a role.');
   if(member.session_version!==input.sessionVersion)throw new ConflictError('This member changed. Reload and review their current access.');
   if(!['REQUESTER','VIEWER'].includes(member.role))throw new ValidationError('Survey role changes require the survey staffing workflow and obligation checks.');
+  if(userId===auth.userId&&member.role!==input.role)throw new ForbiddenError('Another authorized administrator must change your operational role');
   if(member.type==='SUBCONTRACTOR'&&input.role!=='REQUESTER')throw new ValidationError('Subcontractor accounts receive Requester access only.');
   const role=await resolveCustomRoleSelection(db,auth.tenantId,input);
   await db.query('UPDATE project_memberships SET role=$3,custom_role_id=$4 WHERE project_id=$1 AND user_id=$2',[projectId,userId,input.role,role?.id??null]);

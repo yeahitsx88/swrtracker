@@ -601,6 +601,25 @@
         "Explicit-destination intact crew transfers",
         "Current all-role Alpha acceptance"
       ]
+    },
+    {
+      "id": 28,
+      "date": "2026-10-07",
+      "summary": "Independent administrative survey-role changes with no self-removal and current duty/continuity gates",
+      "status": "verified_local_increment",
+      "evidence": "administrative-survey-roles-evidence.json",
+      "verification": [
+        "Strict types,617 units,38 focused and pinned production compilation",
+        "38 actual owned PostgreSQL/handler checks;26 HTTP/Edge cases/four valid reviewed theme/viewport captures;14 final-server runtime rechecks",
+        "Independent width fix scored resolved; documentary comparison preserves incumbent system"
+      ],
+      "remaining": [
+        "Scoped Superintendent role changes and atomic subordinate removal (owner decision resolved)",
+        "Explicit Manager survey-role removal",
+        "Submitted recovery",
+        "Explicit-destination intact crew transfers",
+        "Current all-role Alpha acceptance"
+      ]
     }
   ],
   "annotations": [

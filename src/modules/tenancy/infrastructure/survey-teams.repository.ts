@@ -5,7 +5,7 @@ import { ConflictError } from '@/shared/errors';
 import type { SaveSurveyTeamInput, SurveyTeamDetail, SurveyTeamSummary, SurveyTeamsRepository,
   TeamActor, TeamEvent, TeamPageQuery, TeamPersonnel, TeamPerson, TeamProjectContext, TeamArea } from '../application/survey-teams';
 import { SurveyStaffingPgRepository } from './survey-staffing.repository';
-import type { ChangeSurveyRoleInput, SurveyRoleObligations, SurveyRoleRepository } from '../application/change-survey-role';
+import type { OperationalRoleChangeInput, SurveyRoleObligations, SurveyRoleRepository } from '../application/change-survey-role';
 
 interface TeamRow {
   id: UUID; name: string; aor_node_id: UUID; area_name: string; lead_user_id: UUID;
@@ -156,15 +156,30 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
        (SELECT COUNT(*)::int FROM tickets WHERE tenant_id=$1 AND project_id=$2
          AND status IN ('APPROVED','ASSIGNED','IN_PROGRESS','DELAYED','PENDING_PC_APPROVAL','PENDING_FIELD_VALIDATION')
          AND (assigned_party_chief_id=$3 OR assigned_instrument_man_id=$3 OR field_validation_reviewer_id=$3)) AS "activeRequests",
-       (SELECT COUNT(*)::int FROM survey_work_delegations WHERE tenant_id=$1 AND project_id=$2 AND lead_user_id=$3 AND ended_at IS NULL) AS "pendingDelegations",
+       (SELECT COUNT(*)::int FROM survey_work_delegations d WHERE d.tenant_id=$1 AND d.project_id=$2 AND d.ended_at IS NULL
+         AND (d.lead_user_id=$3 OR EXISTS(SELECT 1 FROM survey_team_members m JOIN survey_teams t
+           ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id AND t.deactivated_at IS NULL
+           WHERE m.tenant_id=d.tenant_id AND m.project_id=d.project_id AND m.team_id=d.team_id
+             AND m.user_id=$3 AND m.deactivated_at IS NULL))) AS "pendingDelegations",
        (SELECT COUNT(*)::int FROM acting_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND revoked_at IS NULL) AS "actingGrants"`,
       [tenantId, projectId, userId]);
     return rows[0]!;
   }
 
-  async changeOperationalRole(db: DbClient, actor: TeamActor, input: ChangeSurveyRoleInput): Promise<number> {
+  async anotherCurrentManager(db:DbClient,tenantId:UUID,projectId:UUID,subjectId:UUID):Promise<boolean>{
+    const {rows}=await db.query(`SELECT pm.user_id FROM project_memberships pm
+      JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
+      JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id
+      JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+      WHERE pm.project_id=$2 AND pm.user_id<>$3 AND pm.role='SURVEY_MANAGER'
+        AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL AND c.type IN ('GC','OWNER_REP')
+      ORDER BY pm.user_id LIMIT 1 FOR SHARE OF pm,u,c`,[tenantId,projectId,subjectId]);
+    return rows.length===1;
+  }
+
+  async changeOperationalRole(db: DbClient, actor: Pick<TeamActor,'tenantId'|'projectId'|'actorId'>, input: OperationalRoleChangeInput): Promise<number> {
     const membership = await db.query<{ user_id: UUID }>(
-      `UPDATE project_memberships pm SET role=$4 WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$5 AND pm.access_disabled_at IS NULL
+      `UPDATE project_memberships pm SET role=$4,custom_role_id=NULL WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$5 AND pm.access_disabled_at IS NULL
        AND EXISTS(SELECT 1 FROM projects p WHERE p.id=pm.project_id AND p.tenant_id=$1)
        RETURNING pm.user_id`, [actor.tenantId, actor.projectId, input.userId, input.role, input.expectedRole]);
     if (!membership.rows[0]) throw new ConflictError('This person’s role changed; reload before saving', 'STALE_SURVEY_ROLE');
