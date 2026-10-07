@@ -1,3 +1,4 @@
+import type {SubmittedRecoveryInput,SubmittedRecoveryPage} from '@/lib/contracts/submitted-recovery';
 import type {
   AttachmentResponse,
   AttachmentsListResponse,
@@ -98,6 +99,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export const apiClient = {
+  listSubmittedRecovery(projectId:string,limit=20,offset=0):Promise<SubmittedRecoveryPage>{return apiRequest(withQuery(`/api/projects/${projectId}/request-recovery`,{limit,offset}));},
+  recoverSubmittedRequest(projectId:string,ticketId:string,body:SubmittedRecoveryInput,retryKey:string):Promise<{recovered:true;status:'RETURNED_FOR_CORRECTION'}>{return apiRequest(`/api/projects/${projectId}/request-recovery/${ticketId}`,{method:'POST',body,headers:{'Idempotency-Key':retryKey}});},
   getSurveyOrganization(projectId: string): Promise<import('@/modules/tenancy/application/read-survey-organization').SurveyOrganization> {
     return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/organization`);
   },

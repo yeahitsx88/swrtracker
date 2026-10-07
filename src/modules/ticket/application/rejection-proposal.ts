@@ -59,7 +59,7 @@ export async function assertProposalDecision(db:DbClient,actor:Actor):Promise<vo
 }
 
 /** Called after a successful leadership transition, in the same transaction. */
-export async function resolveRejectionProposal(db:DbClient,actor:Actor,outcome:'CONFIRMED'|'DECLINED'|'SUPERSEDED'):Promise<void>{
+export async function resolveRejectionProposal(db:DbClient,actor:Omit<Actor,'actorRole'> & {actorRole?:ProjectRole},outcome:'CONFIRMED'|'DECLINED'|'SUPERSEDED'):Promise<void>{
   const {rows}=await db.query<{id:UUID;proposedBy:UUID}>(`UPDATE survey_rejection_proposals SET resolved_at=now(),resolved_by=$3,outcome=$4
     WHERE tenant_id=$1 AND ticket_id=$2 AND resolved_at IS NULL RETURNING id,proposed_by AS "proposedBy"`,[actor.tenantId,actor.ticketId,actor.actorId,outcome]);
   for(const proposal of rows){await db.query(`INSERT INTO ticket_events(tenant_id,ticket_id,actor_id,event_type,payload)

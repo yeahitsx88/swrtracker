@@ -99,3 +99,10 @@ Every authenticated account has personal LIGHT/DARK/SYSTEM Appearance. Eligible 
 ### Reviewed Survey Role Decisions — 2026-10-07
 
 No person may remove their own operational role. Current Superintendents may review supported role changes for active Chief/Instrument Man subordinates in a named team they currently lead; current team leads are excluded. After work, crew, reporting, leadership and Area duties resolve, one confirmed Superintendent removal atomically ends that subordinate's reviewed team membership and changes their project role to Requester. Manager removal requires prior named-team exit. Complete team coverage, account/files and request/assignment history remain; the member signs in again and the Superintendent's Manager receives a notice. Team membership creates no additional reporting or operational grant. Existing independent administration remains separate.
+
+
+### Submitted Request Recovery — 2026-10-07
+
+Decision51 recovery returns eligible rejected or canceled requests with recorded first submission and an immutable number to Returned for Correction. Current eligible Tenant Admin, independent Project Admin, actual Survey Manager, covered Superintendent or verified last recorded Chief acts within server-checked scope. Administrative recovery exposes bounded summaries without ordinary request/history/file access. Draft recovery and removed-member restoration remain separate.
+
+Preserve the same ID, number, requester/company, files, dates and history. Clear current approval, staffing and cancellation; do not reinstate prior staffing. The original eligible requester receives a notification, corrects the same record and resubmits for fresh Survey review. Reason and explicit consent are required. Uncertain decisions retain the original body/key and block competing actions. Every409 requires a successful deliberate current read, fresh selection and renewed consent; failed reads retain the decision. Current authority and ACTIVE project eligibility remain mandatory before execution/replay. Contract/evidence: docs/SUBMITTED_REQUEST_RECOVERY_INCREMENT.md.

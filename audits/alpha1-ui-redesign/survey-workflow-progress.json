@@ -638,6 +638,23 @@
         "Residual protected controls",
         "Current full-role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 30,
+      "date": "2026-10-07",
+      "summary": "Submitted-request recovery to same-record correction with current scoped authority and protected reviewed intent",
+      "status": "verified_local_increment",
+      "evidence": "submitted-recovery-evidence.json",
+      "verification": [
+        "Strict types,624 units,23 workflow/lifecycle +41 Team Management/reorganization/Org Chart focused and pinned compilation",
+        "66 owned PostgreSQL/handler,79 accepted production Edge and13 current team/chart regression cases;13 final Light/Dark desktop/mobile captures",
+        "Connected actual-file requester submission/cancellation/recovery/correction/resubmission retains identity/files/history; two named UI fixes independently scored resolved"
+      ],
+      "remaining": [
+        "Explicit-destination intact crew transfers",
+        "Residual protected controls",
+        "Current full-role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [

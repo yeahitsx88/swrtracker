@@ -8,6 +8,7 @@ import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui
 import { Field } from '@/components/forms';
 import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
+import {SubmittedRequestRecovery} from '@/components/tickets/submitted-request-recovery';
 import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
 import {AdministrationArea,AdministrationWorkspace} from '@/components/ui/administration-workspace';
 import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
@@ -137,7 +138,7 @@ export function AdminProjectWorkspace() {
       </Card></AdministrationArea>}
       {archived&&error?<ErrorBanner message={error}/>:null}
       <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Transfer Area Review Responsibility" description="Before removing or changing a Superintendent, transfer their Area review responsibility to a replacement. This keeps unfinished requests covered; it does not transfer crew membership or remove access."><ProtectedSurveyObligations key={projectId} projectId={projectId} owner={owner}/></Card>
-      <DraftRecovery projectId={projectId} owner={owner} /></AdministrationArea>
+      <DraftRecovery projectId={projectId} owner={owner} /><SubmittedRequestRecovery projectId={projectId} owner={owner}/></AdministrationArea>
       <AdministrationArea id="admin-access-recovery"><MemberAccessRecovery projectId={projectId} owner={owner} readOnly={loading||archived}/></AdministrationArea>
       <AdministrationArea id="admin-companies"><SubcontractorAccess projectId={projectId} owner={owner} companiesRevision={companiesRevision}/></AdministrationArea>
     </AdministrationWorkspace>

@@ -7,4 +7,8 @@
 @media(max-width:600px){.administration-dialog { --popout-inset:1rem; width:calc(100vw - 1rem); max-height:calc(100dvh - 1rem); }}
 
 /* Keep keyboard-focused actions visible when the existing scroll helper mounts. */
-.administration-dialog.survey-role-dialog { padding-bottom:60px; }
+.administration-dialog.survey-role-dialog, .administration-dialog.request-recovery-dialog { padding-bottom:60px; }
+
+/* Recovery facts, consent and actions keep their natural height inside the scrolling body. */
+.request-recovery-dialog > .popout-body { display:flex; flex-direction:column; }
+.request-recovery-dialog > .popout-body > * { flex-shrink:0; }
