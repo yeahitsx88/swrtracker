@@ -1,6 +1,6 @@
 {
   "objective": "Implement the full agreed survey workflow, all five survey annotations, connected role pages, visible actions and plain-language descriptions.",
-  "status": "paused_at_user_request",
+  "status": "in_progress",
   "requirements": [
     {
       "id": "personnel",
@@ -50,7 +50,7 @@
     {
       "id": "onboarding",
       "requirement": "Contextual team setup guidance with dismissible prompt and persistent setup access",
-      "status": "pending"
+      "status": "implemented_pending_final_review"
     },
     {
       "id": "dashboard",
@@ -523,6 +523,28 @@
         "Chief/intact-team transfers, crew reconciliation, team/delegation lifecycle obligations and full final role/annotation/release audits remain.",
         "Retained3147 unchanged;3150 is the current checkpoint demo."
       ]
+    },
+    {
+      "id": 24,
+      "date": "2026-10-07",
+      "changes": [
+        "Current user resumed standard Alpha development from local 3e8deba; Org Chart follow-ons are not the default queue.",
+        "Same-Area intact-crew reporting moves preserve the independent named team, complete coverage, primary Area and version.",
+        "Onboarding is implemented at checkpoint23; its previous top-level pending label was stale. Final full-goal review remains open."
+      ],
+      "verification": [
+        "Regression fails against the prior repository apply path and passes after the minimal same-Area guard.",
+        "Pinned Node22.23.3/pnpm11.19.0 strict/unused types,603 units,59 focused regressions and production compilation pass.",
+        "Launcher/editor and denied-role gates,37 ACTIVE/ARCHIVED Team Management checks,22 standalone and23 overlay fixture groups pass with zero writes/browser errors. New empty loopback15497 PostgreSQL acceptance applies current migrations within a rolled-back transaction; verifies actual reporting/audit change with active work, exact team/coverage/roster/request/history preservation, authority/scope/stale/revoked/company/archive refusals and audit rollback."
+      ],
+      "limitations": [
+        "This completes only same-Area reporting-move preservation. Broader Chief/intact-team transfers, crew reconciliation, team/delegation lifecycle obligations and final connected role/annotation/release gates remain open.",
+        "Broader transfer support needs explicit destination named-team, multi-Area coverage and reporting reconciliation before changing those semantics.",
+        "Org Chart live writes, shared-department provenance, former-Chief/headcount expansion, UX and scale work remain separate open/deferred items; Batch182 suggestions do not promote them.",
+        "The inherited source-map-js/GHSA-68fv-2mgg-jv7q release-image blocker remains unchanged. Production compilation is a separate passing gate.",
+        "Retained demos3147/3150 and all prior data are preserved; no push or deployment."
+      ],
+      "live_demo_changed": false
     }
   ],
   "annotations": [

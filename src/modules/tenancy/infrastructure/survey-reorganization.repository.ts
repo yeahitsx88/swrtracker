@@ -67,7 +67,8 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
    await this.setReportingLink(db,actor.tenantId,actor.projectId,actor.actorId,crew.chiefId,selection.superintendentId,selection.areaId);
    if(crew.areas[0]?.areaId!==selection.areaId){await db.query('UPDATE aor_assignments SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND department_id IS NULL AND deactivated_at IS NULL',[...scope,crew.chiefId]);await this.addArea(db,actor.tenantId,actor.projectId,crew.chiefId,selection.areaId);}
    const team=preview.state.team as Awaited<ReturnType<SurveyTeamsPgRepository['team']>>;
-   if(team)await saveSurveyTeam(teamRepo,db,actor,{teamId:team.id,expectedVersion:team.rowVersion,name:team.name,areaId:selection.areaId,leadUserId:team.lead.userId,memberIds:team.members.map(m=>m.userId)});
+   // A reporting-only move must retain independent named-team coverage and its version.
+   if(team&&crew.areas[0]?.areaId!==selection.areaId)await saveSurveyTeam(teamRepo,db,actor,{teamId:team.id,expectedVersion:team.rowVersion,name:team.name,areaId:selection.areaId,leadUserId:team.lead.userId,memberIds:team.members.map(m=>m.userId)});
   }else{
    await this.addInstrumentMan(db,actor.tenantId,actor.projectId,selection.partyChiefId,selection.instrumentManId);
    const oldTeam=preview.state.oldTeam as Awaited<ReturnType<SurveyTeamsPgRepository['team']>>,newTeam=preview.state.newTeam as typeof oldTeam;
