@@ -671,6 +671,22 @@
         "Residual protected staffing/administration controls",
         "Current full-role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 32,
+      "date": "2026-10-07",
+      "summary": "Protected staffing decisions require successful current reads before stale release; paged Chief identities and exact retry retained",
+      "status": "verified_local_increment",
+      "evidence": "protected-staffing-controls-evidence.json",
+      "verification": [
+        "Strict/unused types625units78focused and pinned production compilation",
+        "78 authenticated production/Edge cases12 current Team Management/Org Chart regressions8 final Light/Dark/desktop/mobile/failure captures",
+        "Actual lost committed responses retry exact body/key; failed current reads hold intent and competing/navigation controls; active request/assignment/event history retained through reassignment/direct completion; two independent fixes scored resolved"
+      ],
+      "remaining": [
+        "Legacy independent administration and rejection-proposal controls",
+        "Current full-role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [
