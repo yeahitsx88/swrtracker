@@ -5,3 +5,6 @@
 .administration-dialog .popout-body { overflow-wrap:anywhere; }
 .administration-dialog .row { flex-wrap:wrap; }
 @media(max-width:600px){.administration-dialog { --popout-inset:1rem; width:calc(100vw - 1rem); max-height:calc(100dvh - 1rem); }}
+
+/* Keep keyboard-focused actions visible when the existing scroll helper mounts. */
+.administration-dialog.survey-role-dialog { padding-bottom:60px; }

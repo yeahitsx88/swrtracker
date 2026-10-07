@@ -7,6 +7,7 @@ import { deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamConte
   type SurveyTeamDetail, type TeamActor, type TeamPersonnel } from '@/modules/tenancy/application/survey-teams';
 import { handleDeleteSurveyTeam, handleGetSurveyTeams, handlePostSurveyTeam, parseTeamInput, parseTeamPage,
   handlePatchSurveyRole, parseSurveyRoleInput, type TeamDeps } from '@/app/api/projects/[projectId]/survey/teams/handler';
+import {changeSupervisedSurveyRole,removeSurveyRole} from '@/modules/tenancy/application/change-supervised-survey-role';
 import { changeSurveyRole, type ChangeSurveyRoleInput, type SurveyRoleRepository } from '@/modules/tenancy/application/change-survey-role';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
@@ -310,4 +311,44 @@ test('current team leadership blocks operational role changes before role, sessi
  const f=fixture();f.obligations.leadsTeam=true;
  await assert.rejects(changeSurveyRole(f.repo,db,actor,roleInput()),/replacement team lead/);
  assert.deepEqual(f.writes,[]);assert.deepEqual(f.events,[]);
+});
+
+async function supervisedFixture(){
+ const f=fixture();f.people[0].role='SURVEY_SUPERINTENDENT';
+ const created=await saveSurveyTeam(f.repo,db,actor,input());for(const p of f.people)p.teamId=created.teamId;
+ f.writes.length=0;f.events.length=0;
+ const supervisor={...actor,actorId:chiefId,actorRole:'SURVEY_SUPERINTENDENT' as const};
+ const review={userId:imId,expectedRole:'INSTRUMENT_MAN' as const,expectedRoleVersion:1,role:'REQUESTER' as const,confirmRoleChanges:true,reviewedTeamId:created.teamId,expectedTeamVersion:1};
+ return {...f,supervisor,review};
+}
+test('Superintendent subordinate removal atomically uses reviewed team exit plus Requester role, preserving all team coverage',async()=>{
+ const f=await supervisedFixture();
+ await changeSupervisedSurveyRole(f.repo,db,f.supervisor,f.review);
+ assert.deepEqual(f.writes,['save','survey.team_updated','role','survey.role_changed']);
+ assert.deepEqual(f.current()!.members.map(p=>p.userId),[chiefId]);assert.equal(f.current()!.rowVersion,2);
+ assert.deepEqual(f.current()!.areas,[{id:areaId,name:'Train 1'}]);assert.equal(f.people[1].role,'REQUESTER');assert.equal(f.people[1].roleVersion,2);
+ assert.equal(f.events[1]!.removedTeamId,f.review.reviewedTeamId);assert.equal(f.events[1]!.historicalTicketAssignmentsUnchanged,true);
+});
+test('Superintendent role change retains team membership; stale role/team, no consent, foreign team and own role never write',async()=>{
+ const f=await supervisedFixture();
+ for(const review of [{...f.review,expectedTeamVersion:2},{...f.review,expectedRoleVersion:2},{...f.review,confirmRoleChanges:false},{...f.review,reviewedTeamId:id(99)},{...f.review,userId:chiefId,expectedRole:'SURVEY_SUPERINTENDENT' as const},{...f.review,role:'SURVEY_SUPERINTENDENT' as const}]){
+  // The fixture's scoped team reader refuses the foreign reviewed ID explicitly.
+  const original=f.repo.team;f.repo.team=async(db,t,p,id)=>id===f.review.reviewedTeamId?original(db,t,p,id):null;
+  await assert.rejects(changeSupervisedSurveyRole(f.repo,db,f.supervisor,review));assert.deepEqual(f.writes,[]);
+ }
+ f.people[1].teamId=id(99);await assert.rejects(changeSupervisedSurveyRole(f.repo,db,f.supervisor,f.review),ForbiddenError);assert.deepEqual(f.writes,[]);f.people[1].teamId=f.review.reviewedTeamId;
+ await changeSupervisedSurveyRole(f.repo,db,f.supervisor,{...f.review,role:'PARTY_CHIEF'});
+ assert.deepEqual(f.writes,['role','survey.role_changed']);assert.equal(f.current()!.rowVersion,1);assert.deepEqual(f.current()!.members.map(p=>p.userId),[chiefId,imId]);
+});
+test('all unresolved work and staffing obligations block supervised role removal before team or role writes',async()=>{
+ const f=await supervisedFixture();
+ for(const key of ['activeRequests','pendingDelegations','areaAssignments','crewLinks','reportingLinks','responsibilityGrants','actingGrants'] as const){f.obligations[key]=1;await assert.rejects(changeSupervisedSurveyRole(f.repo,db,f.supervisor,f.review),ConflictError);f.obligations[key]=0;assert.deepEqual(f.writes,[]);}
+ f.obligations.leadsTeam=true;await assert.rejects(changeSupervisedSurveyRole(f.repo,db,f.supervisor,f.review),ConflictError);assert.deepEqual(f.writes,[]);
+});
+test('Manager explicit removal requires prior named-team exit and cannot remove Manager authority',async()=>{
+ const f=fixture();f.people[0].teamId=teamId;
+ await assert.rejects(removeSurveyRole(f.repo,db,actor,{...roleInput(),role:'REQUESTER'}),ConflictError);assert.deepEqual(f.writes,[]);
+ f.people[0].teamId=null;await removeSurveyRole(f.repo,db,actor,{...roleInput(),role:'REQUESTER'});
+ assert.deepEqual(f.writes,['role','survey.role_changed']);assert.equal(f.people[0].role,'REQUESTER');
+ f.people[0].role='SURVEY_MANAGER';await assert.rejects(removeSurveyRole(f.repo,db,actor,{...roleInput({expectedRole:'SURVEY_MANAGER',expectedRoleVersion:2}),role:'REQUESTER'}),ForbiddenError);
 });

@@ -4,7 +4,7 @@ import type { DbClient, Page, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { CrewBuild, ProjectStatus } from '../domain/types';
 
-export interface TeamPerson { userId: UUID; name: string; email: string; role: ProjectRole; active: boolean }
+export interface TeamPerson { userId: UUID; name: string; email: string; role: ProjectRole; active: boolean; roleVersion?:number }
 export interface SurveyTeamSummary {
   id: UUID; name: string; areaId: UUID; areaName: string; areas?: TeamArea[]; lead: TeamPerson; memberCount: number; rowVersion: number;
 }

@@ -20,7 +20,7 @@ const summary = (row: TeamRow): SurveyTeamSummary => ({
   lead: { userId: row.lead_user_id, name: row.lead_name, email: row.lead_email, role: row.lead_role, active: row.lead_active },
   memberCount: row.member_count, rowVersion: row.row_version,
 });
-const person = (row: PersonRow): TeamPerson => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role, active: row.active });
+const person = (row: PersonRow): TeamPerson => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role, active: row.active, ...(row.role_version===undefined?{}:{roleVersion:row.role_version}) });
 const teamSelect = `SELECT t.id,t.name,t.aor_node_id,n.name AS area_name,t.lead_user_id,
   COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a.name) ORDER BY lower(a.name),a.id)
     FROM survey_team_areas ta JOIN aor_nodes a ON a.tenant_id=ta.tenant_id AND a.project_id=ta.project_id AND a.id=ta.area_id
@@ -89,7 +89,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     if (!rows[0]) return null;
     const members = await db.query<PersonRow>(
       `SELECT u.id AS user_id,u.name,u.email,pm.role,(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AS active,
-         m.team_id,t.name AS team_name FROM survey_team_members m
+         m.team_id,t.name AS team_name,u.session_version AS role_version FROM survey_team_members m
        JOIN survey_teams t ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id
        JOIN users u ON u.tenant_id=m.tenant_id AND u.id=m.user_id
        JOIN project_memberships pm ON pm.project_id=m.project_id AND pm.user_id=m.user_id
@@ -269,6 +269,15 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
         AND pm.access_disabled_at IS NULL AND recipient.deactivated_at IS NULL
         ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`,[actor.tenantId,actor.projectId,actor.actorId,
         'team:'+String(payload.teamId)+':'+String(payload.rowVersion),String(payload.name)]);
+    }
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&event==='survey.role_changed'&&!payload.removedTeamId){
+      await db.query(`INSERT INTO survey_notifications(tenant_id,project_id,recipient_id,actor_id,event_key,title,message)
+        SELECT $1,$2,pm.user_id,$3,$4,'Survey role updated',u.name || ' changed ' || $5 || ' from ' || $6 || ' to ' || $7 || '. Request history is retained.'
+        FROM project_memberships pm JOIN users recipient ON recipient.id=pm.user_id AND recipient.tenant_id=$1
+        JOIN users u ON u.id=$3 AND u.tenant_id=$1 WHERE pm.project_id=$2 AND pm.role='SURVEY_MANAGER'
+        AND pm.access_disabled_at IS NULL AND recipient.deactivated_at IS NULL
+        ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`,[actor.tenantId,actor.projectId,actor.actorId,
+        'survey-role:'+String(payload.userId)+':'+String(payload.roleVersion),String(payload.name),String(payload.previousRole).replaceAll('_',' '),String(payload.role).replaceAll('_',' ')]);
     }
     await db.query(`INSERT INTO survey_staffing_events (tenant_id,project_id,actor_id,event_type,payload)
       VALUES ($1,$2,$3,$4,$5::jsonb)`, [actor.tenantId, actor.projectId, actor.actorId, event, JSON.stringify(payload)]);

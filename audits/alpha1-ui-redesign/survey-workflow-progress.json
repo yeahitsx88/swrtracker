@@ -620,6 +620,24 @@
         "Explicit-destination intact crew transfers",
         "Current all-role Alpha acceptance"
       ]
+    },
+    {
+      "id": 29,
+      "date": "2026-10-07",
+      "summary": "Scoped Superintendent role changes/atomic subordinate removal and explicit Manager removal",
+      "status": "verified_local_increment",
+      "evidence": "scoped-survey-roles-evidence.json",
+      "verification": [
+        "Strict types,621 units,46 focused and pinned production compilation",
+        "54 actual owned PostgreSQL/handler checks,70 final browser+15 runtime cases,13 valid final captures",
+        "Independent short-mobile keyboard fix scored resolved; documentary comparison preserves incumbent system"
+      ],
+      "remaining": [
+        "Submitted recovery",
+        "Explicit-destination intact crew transfers",
+        "Residual protected controls",
+        "Current full-role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [

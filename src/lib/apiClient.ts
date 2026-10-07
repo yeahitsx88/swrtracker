@@ -155,6 +155,10 @@ export const apiClient = {
   changeSurveyRole(projectId: string, input: import('@/modules/tenancy/application/change-survey-role').ChangeSurveyRoleInput, idempotencyKey: string): Promise<{ changed: boolean }> {
     return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { method: 'PATCH', body: { action: 'set-role', ...input }, headers: { 'Idempotency-Key': idempotencyKey } });
   },
+  changeReviewedSurveyRole(projectId:string,input:import('@/modules/tenancy/application/change-survey-role').OperationalRoleChangeInput & Partial<Pick<import('@/modules/tenancy/application/change-supervised-survey-role').SupervisedSurveyRoleInput,'reviewedTeamId'|'expectedTeamVersion'>>,idempotencyKey:string):Promise<{changed:boolean}> {
+    const {role,...review}=input;
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`,{method:'PATCH',body:role==='REQUESTER'?{action:'remove-role',...review}:{action:'set-role',role,...review},headers:{'Idempotency-Key':idempotencyKey}});
+  },
   reviewTickets(projectId: string, query: Record<string, string | number | undefined>): Promise<import('@/modules/ticket/application/review-tickets').ReviewResult> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/review`, query));
   },
