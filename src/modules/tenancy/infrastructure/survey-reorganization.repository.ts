@@ -27,7 +27,7 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
  }
  async preview(db:DbClient,actor:StaffingActor,input:ReorganizationSelection):Promise<ReorganizationPreview>{
   // Canonical selection excludes command-only fields from the checksum.
-  const selection:ReorganizationSelection=input.kind==='CREW'?{kind:'CREW',partyChiefId:input.partyChiefId,areaId:input.areaId,superintendentId:input.superintendentId}:{kind:'INSTRUMENT_MAN',instrumentManId:input.instrumentManId,partyChiefId:input.partyChiefId};
+  const selection:ReorganizationSelection=input.kind==='CREW'?{kind:'CREW',partyChiefId:input.partyChiefId,areaId:input.areaId,superintendentId:input.superintendentId,...(input.destinationTeamId?{destinationTeamId:input.destinationTeamId}:{})}:{kind:'INSTRUMENT_MAN',instrumentManId:input.instrumentManId,partyChiefId:input.partyChiefId};
   const project=await this.lockProject(db,actor.tenantId,actor.projectId);if(!project)throw new NotFoundError('Project not found');
   const teamRepo=new SurveyTeamsPgRepository(),destination=await this.crew(db,actor,selection.partyChiefId),blockers:string[]=[],summary:string[]=[];
   const state:Record<string,unknown>={destination};let subject:UUID;
@@ -40,9 +40,44 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
     if(!await this.superintendentCoversArea(db,actor.tenantId,actor.projectId,selection.superintendentId,selection.areaId))throw new ConflictError('The selected Superintendent must already cover this Area');
    }else if(selection.superintendentId)throw new ConflictError('This crew build has no Superintendent tier');
    if(destination.teams.length>1)blockers.push('Resolve multiple named teams before moving this crew');
-   const team=destination.teams[0]?await teamRepo.team(db,actor.tenantId,actor.projectId,destination.teams[0]):null;state.team=team;
-   if(team&&(team.members.length!==destination.roster.length+1||team.members.some(m=>!m.active||m.role!=='PARTY_CHIEF'&&m.role!=='INSTRUMENT_MAN'||m.userId!==subject&&!destination.roster.includes(m.userId))))blockers.push('Named team and current crew roster must match before an intact crew move');
-   summary.push(`Retain this Party Chief and ${destination.roster.length} Instrument Men; coordinate Area, reporting and ${team?'named team '+team.name:'no named team'} in one transaction.`);
+   const cohort=[subject,...destination.roster],members=await teamRepo.members(db,actor.tenantId,actor.projectId,cohort);
+   state.cohort=members;
+   if(members.length!==cohort.length||members.some(m=>m.role!==(m.userId===subject?'PARTY_CHIEF':'INSTRUMENT_MAN')))blockers.push('Every included crew member must have their current eligible survey role and project access.');
+   const areaNames=(await db.query<{id:UUID;name:string}>('SELECT id,name FROM aor_nodes WHERE tenant_id=$1 AND project_id=$2 AND id=ANY($3::uuid[]) ORDER BY id',[actor.tenantId,actor.projectId,[...new Set([...destination.areas.map(a=>a.areaId),...destination.reporting.map(r=>r.areaId),selection.areaId])]])).rows;
+   const superintendentNames=(await db.query<{id:UUID;name:string}>(`SELECT u.id,u.name FROM users u JOIN project_memberships pm ON pm.user_id=u.id AND pm.project_id=$2 JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1 WHERE u.tenant_id=$1 AND u.id=ANY($3::uuid[]) ORDER BY u.id`,[actor.tenantId,actor.projectId,[...new Set([...destination.reporting.map(r=>r.superintendentId),...(selection.superintendentId?[selection.superintendentId]:[])])]])).rows;
+   state.reviewNames={areas:areaNames,superintendents:superintendentNames};
+   const areaLabel=(id:UUID)=>`${areaNames.find(a=>a.id===id)?.name??'Area unavailable'} (${id})`,superintendentLabel=(id:UUID)=>`${superintendentNames.find(p=>p.id===id)?.name??'Superintendent unavailable'} (${id})`;
+
+   if(selection.destinationTeamId){
+    const sourceTeam=await this.memberTeam(db,actor,subject),destinationTeam=await teamRepo.team(db,actor.tenantId,actor.projectId,selection.destinationTeamId);
+    if(!destinationTeam)throw new NotFoundError('Current destination named team not found');
+    state.sourceTeam=sourceTeam;state.destinationTeam=destinationTeam;
+    if(members.some(m=>(m.teamId??null)!==(sourceTeam?.id??null)))blockers.push('The whole current crew must belong to the same source named team, or all have no named team. Resolve conflicting membership first.');
+    if(!destinationTeam.lead.active||!destinationTeam.members.some(m=>m.userId===destinationTeam.lead.userId&&m.active))blockers.push('Resolve the destination team lead vacancy before this transfer.');
+    if(!(destinationTeam.areas??[{id:destinationTeam.areaId}]).some(a=>a.id===selection.areaId))blockers.push('The explicit destination named team must already cover the selected Area. Use existing Team Management to resolve coverage first.');
+    for(const team of [sourceTeam,destinationTeam])if(team){
+     if(!team.lead.active||!team.members.some(m=>m.userId===team.lead.userId&&m.active))blockers.push('Resolve the current named-team lead vacancy before this transfer.');
+     const current=await teamRepo.members(db,actor.tenantId,actor.projectId,team.members.map(m=>m.userId));
+     if(current.length!==team.members.length||current.some(m=>!['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(m.role)||project.crewBuild!=='FULL'&&m.role==='SURVEY_SUPERINTENDENT'))blockers.push('Resolve ineligible current named-team members before this transfer.');
+     for(const a of team.areas??[{id:team.areaId}])if(!await this.activeArea(db,actor.tenantId,actor.projectId,a.id))blockers.push('Resolve retired named-team coverage before transferring this crew.');
+    }
+    if(sourceTeam&&sourceTeam.id!==destinationTeam.id){
+     if(cohort.includes(sourceTeam.lead.userId))blockers.push('Choose a separate current source team lead before moving this crew; the transfer cannot leave a lead vacancy.');
+     const count=await teamRepo.delegationObligations(db,actor,sourceTeam.id,null);
+     if(count)blockers.push(`Resolve ${count} source-team delegated request(s) awaiting crew selection through Survey Operations before transferring this crew.`);
+    }
+    summary.push(`Source named team: ${sourceTeam?.name??'No named team'} (${sourceTeam?.id??'unassigned'}). Destination: ${destinationTeam.name} (${destinationTeam.id}).`,
+     `Keep every source Area: ${(sourceTeam?.areas??(sourceTeam?[{id:sourceTeam.areaId,name:sourceTeam.areaName}]:[])).map(a=>`${a.name} (${a.id})`).join(', ')||'No named-team coverage'}.`,
+     `Keep every destination Area: ${(destinationTeam.areas??[{id:destinationTeam.areaId,name:destinationTeam.areaName}]).map(a=>`${a.name} (${a.id})`).join(', ')}. Keep its existing primary Area and team lead.`,
+     `Chief current individual Area: ${destination.areas.map(a=>areaLabel(a.areaId)).join(', ')||'Unresolved'}. New individual Area: ${areaLabel(selection.areaId)}. Other individual assignments stay unchanged.`);
+   }else{
+    if(destination.areas[0]?.areaId!==selection.areaId)blockers.push('Select an explicit destination named team before changing the Chief’s individual Area.');
+    const team=destination.teams[0]?await teamRepo.team(db,actor.tenantId,actor.projectId,destination.teams[0]):null;state.team=team;
+    if(team&&(team.members.length!==destination.roster.length+1||team.members.some(m=>!m.active||m.role!=='PARTY_CHIEF'&&m.role!=='INSTRUMENT_MAN'||m.userId!==subject&&!destination.roster.includes(m.userId))))blockers.push('Named team and current crew roster must match before an intact crew move');
+    summary.push('Same-Area reporting-only movement: retain all current named-team membership, coverage, primary Area and team version.');
+   }
+   summary.push(`Included Chief: ${members.find(m=>m.userId===subject)?.name??subject} (${subject}). Included Instrument Men: ${members.filter(m=>m.userId!==subject).map(m=>`${m.name} (${m.userId})`).join(', ')||'None'}.`,
+    `Current reporting: ${destination.reporting.map(r=>`${superintendentLabel(r.superintendentId)} in ${areaLabel(r.areaId)}`).join(', ')||'None'}. New reporting: ${selection.superintendentId?superintendentLabel(selection.superintendentId):'No Superintendent tier'} in ${areaLabel(selection.areaId)}. Keep all current roster links in one transaction.`);
   }else{
    subject=selection.instrumentManId;
    if((await this.member(db,actor.tenantId,actor.projectId,subject))?.role!=='INSTRUMENT_MAN')throw new NotFoundError('Active Instrument Man not found');
@@ -56,8 +91,13 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
    if(sourceId===destination.chiefId)blockers.push('This Instrument Man already belongs to the selected Chief.');
    summary.push(`Move this Instrument Man from ${oldTeam?.name??(sourceId?'the current crew':'the unassigned personnel pool')} to ${newTeam?.name??'the destination crew'}. Existing request assignments stay with their recorded Chief and Instrument Man.`);
   }
-  const work=(await db.query<{id:UUID;status:string;row_version:number}>(`SELECT id,status,row_version FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND ${selection.kind==='CREW'?'assigned_party_chief_id':'assigned_instrument_man_id'}=$3 AND status NOT IN ('DRAFT','COMPLETED','REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED') ORDER BY id`,[actor.tenantId,actor.projectId,subject])).rows;
-  if(selection.kind==='CREW'&&destination.areas.some(a=>a.areaId!==selection.areaId)&&work.length)blockers.push(`Resolve or explicitly reassign ${work.length} open crew requests before changing Area`);
+  const explicitCrew=selection.kind==='CREW'&&!!selection.destinationTeamId;
+  const work=(await db.query<{id:UUID;status:string;row_version:number}>(`SELECT id,status,row_version FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND ${explicitCrew?'(assigned_party_chief_id=$3 OR field_validation_reviewer_id=$3 OR assigned_instrument_man_id=ANY($4::uuid[]))':`${selection.kind==='CREW'?'assigned_party_chief_id':'assigned_instrument_man_id'}=$3`} AND status NOT IN ('DRAFT','COMPLETED',${explicitCrew?"'REJECTED',":''}'REQUESTER_CANCELED','FIELD_CANCELED','SURVEY_CANCELED') ORDER BY id`,explicitCrew?[actor.tenantId,actor.projectId,subject,destination.roster]:[actor.tenantId,actor.projectId,subject])).rows;
+  if(explicitCrew){
+   if(work.length)blockers.push(`Resolve or explicitly reassign ${work.length} open crew requests before an explicit crew transfer.`);
+   const pending=(await db.query<{count:number}>(`SELECT COUNT(*)::int AS count FROM survey_work_delegations d JOIN tickets t ON t.tenant_id=d.tenant_id AND t.project_id=d.project_id AND t.id=d.ticket_id WHERE d.tenant_id=$1 AND d.project_id=$2 AND d.lead_user_id=$3 AND d.ended_at IS NULL AND t.status='APPROVED' AND t.assigned_instrument_man_id IS NULL`,[actor.tenantId,actor.projectId,subject])).rows[0]!.count;
+   if(pending)blockers.push(`Resolve ${pending} Chief delegation(s) awaiting crew selection before this transfer.`);
+  }else if(selection.kind==='CREW'&&destination.areas.some(a=>a.areaId!==selection.areaId)&&work.length)blockers.push(`Resolve or explicitly reassign ${work.length} open crew requests before changing Area`);
   summary.push(`${work.length} active assignments retained. Historical tickets, assignment snapshots, files and events are unchanged. Current roster visibility will follow the new structure.`);
   const snapshot=createHash('sha256').update(JSON.stringify({selection,token:await this.snapshot(db,actor.tenantId,actor.projectId),state,work})).digest('hex');
   return {snapshot,selection,summary,blockers,activeWork:work.length,state};
@@ -67,9 +107,14 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
   if(selection.kind==='CREW'){
    await this.setReportingLink(db,actor.tenantId,actor.projectId,actor.actorId,crew.chiefId,selection.superintendentId,selection.areaId);
    if(crew.areas[0]?.areaId!==selection.areaId){await db.query('UPDATE aor_assignments SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND department_id IS NULL AND deactivated_at IS NULL',[...scope,crew.chiefId]);await this.addArea(db,actor.tenantId,actor.projectId,crew.chiefId,selection.areaId);}
-   const team=preview.state.team as Awaited<ReturnType<SurveyTeamsPgRepository['team']>>;
-   // A reporting-only move must retain independent named-team coverage and its version.
-   if(team&&crew.areas[0]?.areaId!==selection.areaId)await saveSurveyTeam(teamRepo,db,actor,{teamId:team.id,expectedVersion:team.rowVersion,name:team.name,areaId:selection.areaId,leadUserId:team.lead.userId,memberIds:team.members.map(m=>m.userId)});
+   if(selection.destinationTeamId){
+    const sourceTeam=preview.state.sourceTeam as Awaited<ReturnType<SurveyTeamsPgRepository['team']>>,destinationTeam=preview.state.destinationTeam as NonNullable<typeof sourceTeam>,cohort=[crew.chiefId,...crew.roster];
+    if(sourceTeam?.id!==destinationTeam.id){
+     if(sourceTeam)await saveSurveyTeam(teamRepo,db,actor,{teamId:sourceTeam.id,expectedVersion:sourceTeam.rowVersion,name:sourceTeam.name,areaId:sourceTeam.areaId,areaIds:sourceTeam.areas?.map(a=>a.id)??[sourceTeam.areaId],leadUserId:sourceTeam.lead.userId,memberIds:sourceTeam.members.filter(m=>!cohort.includes(m.userId)).map(m=>m.userId)});
+     await saveSurveyTeam(teamRepo,db,actor,{teamId:destinationTeam.id,expectedVersion:destinationTeam.rowVersion,name:destinationTeam.name,areaId:destinationTeam.areaId,areaIds:destinationTeam.areas?.map(a=>a.id)??[destinationTeam.areaId],leadUserId:destinationTeam.lead.userId,memberIds:[...destinationTeam.members.map(m=>m.userId),...cohort]});
+    }
+   }
+   // Omitted destination is legacy same-Area reporting only: no named-team write.
   }else{
    await this.addInstrumentMan(db,actor.tenantId,actor.projectId,selection.partyChiefId,selection.instrumentManId);
    const oldTeam=preview.state.oldTeam as Awaited<ReturnType<SurveyTeamsPgRepository['team']>>,newTeam=preview.state.newTeam as typeof oldTeam;

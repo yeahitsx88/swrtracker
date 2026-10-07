@@ -33,3 +33,12 @@ test('same-Area crew reporting changes preserve the complete named team without 
  assert.deepEqual(events[0]!.previous,preview.state);
  assert.equal(events[0]!.historicalWorkUnchanged,true);
 });
+
+test('explicit destination binds the crew review without widening reporting-only or Instrument Man payloads',()=>{
+ const chosen={...selection,destinationTeamId:id(17)};
+ assert.deepEqual(parseReorganization(chosen),chosen);
+ assert.deepEqual(parseReorganization({...chosen,snapshot,reason:'Move the complete reviewed crew',confirmed:true},true),{...chosen,snapshot,reason:'Move the complete reviewed crew',confirmed:true});
+ assert.throws(()=>parseReorganization({...selection,destinationTeamId:null}),ValidationError);
+ assert.throws(()=>parseReorganization({kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8),destinationTeamId:id(17)}),ValidationError);
+ assert.deepEqual(parseReorganization(selection),selection);
+});

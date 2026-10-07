@@ -655,6 +655,22 @@
         "Residual protected controls",
         "Current full-role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 31,
+      "date": "2026-10-07",
+      "summary": "Explicit destination intact-crew transfer preserves all team coverage and request history with reviewed atomic reconciliation",
+      "status": "verified_local_increment",
+      "evidence": "intact-crew-transfer-evidence.json",
+      "verification": [
+        "Strict types625units43focused and pinned production compilation",
+        "49 owned PostgreSQL/handler;46 final production Edge;12 current Team Management/Org Chart regression cases;6 final Light/Dark desktop/mobile captures",
+        "Connected actual-file approval/Chief/crew/start/direct completion then transfer preserves request, assignment/event/file metadata and downloaded file bytes; independent naming fix scored resolved"
+      ],
+      "remaining": [
+        "Residual protected staffing/administration controls",
+        "Current full-role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [
