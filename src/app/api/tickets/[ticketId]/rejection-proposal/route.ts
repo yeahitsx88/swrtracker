@@ -1,16 +1,16 @@
 import {NextResponse,type NextRequest} from 'next/server';
 import {observeProjectRoute} from '@/lib/observe-project-route';
 import {errorResponse} from '@/lib/api-error';
-import {getTicketRouteContext,withTicketMutation} from '@/lib/ticket-route-helpers';
+import {getTicketRouteContext,withTicketMutation,withTransaction} from '@/lib/ticket-route-helpers';
 import {requireIdempotencyKey} from '@/lib/idempotency';
 import {executeAuthorizedTicketMutation} from '@/lib/ticket-mutation-idempotency';
-import {proposeRejection,readRejectionProposal} from '@/modules/ticket/application/rejection-proposal';
+import {proposeRejection,readReviewDecision} from '@/modules/ticket/application/rejection-proposal';
 import {ValidationError} from '@/shared/errors';
-import {pool} from '@/lib/db';
 export const dynamic='force-dynamic';
 async function get(req:NextRequest,{params}:{params:Promise<{ticketId:string}>}){
-  try{const {ticketId}=await params;const ctx=await getTicketRouteContext(req,ticketId);
-    return NextResponse.json({proposal:await readRejectionProposal(pool,ctx.tenantId,ctx.ticketId)});
+  try{const {ticketId}=await params;
+    const result=await withTransaction(async db=>readReviewDecision(db,await getTicketRouteContext(req,ticketId,db)));
+    return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}});
   }catch(error){return errorResponse(error);}
 }
 async function post(req:NextRequest,{params}:{params:Promise<{ticketId:string}>}){

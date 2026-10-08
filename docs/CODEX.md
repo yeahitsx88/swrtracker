@@ -4241,3 +4241,13 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Newly demonstrated ALPHA-ACCEPTANCE-02: unauthorized review decision still enabled for readable Area without exact reviewer grant; actual403and unchanged Submitted request. Highest next authorized UI correction uses existing server authority. Separate ALPHA-LIFECYCLE-REPLAY-218: Archived exact Manager retry returns original200without new transition; contract reconciliation needed before labeling/fixing. No new owner decision established.
 - Known gaps: remaining notices/cancellation/role/visual journeys and whole Alpha acceptance. Inherited source-map-js/GHSA-68fv-2mgg-jv7q release blocker untouched; no push/main/deployment/Alpha2.
 - Production behavior changed: no.
+
+
+### 2026-10-08 - Batch219
+- Intent: close confirmed ALPHA-ACCEPTANCE-02 under existing review authority; IMPLEMENTER ticket/read-dialog scope, Alpha cross-module exception.
+- Files touched: ticket rejection-proposal application/read route; Survey review dialog; targeted unit and owned fixture/browser tests; E219 receipt and completion registers.
+- Behavior changed: additive read-only decision advice reuses current server authority; unavailable/loading/error decision confirmation stays disabled with explanatory copy. GET preserves prior proposal/read visibility and is private/no-store. Mutation payloads, transitions, persistent history, retry and authorization boundaries unchanged.
+- Verification: baseline648units; current host/pinned656units and strict-unused types; Node22.23.3 Next15.5.27 compilation;33current PostgreSQL suites;34authenticated production browser checks;4theme/size captures opened, no page errors; current568source/migration raw bytes match artifact. Scoped detector recorded separately.
+- Limitations: corrected pinned copied-harness missing unchanged test artifacts; direct pinned commands avoid pnpm install check. Observer corrected Chief non-disclosure, named consent loading selector and full revocation actor evidence; same owned UUID fixture resumed. No retained customer data changed. Prior retry browser receipts retained as historical; current SQL replay gates pass.
+- Known queue: Manager lifecycle replay/preparation reconciliation, notices/cancellation, remaining current role/keyboard/visual and requirement-by-requirement acceptance. Full Alpha acceptance and release remain open; no owner decision inferred.
+- Production behavior changed: yes, narrow decision read and permission UI only; no schema/dependency change, push/main/deploy/Alpha2.

@@ -52,6 +52,25 @@ export async function readRejectionProposal(db:DbClient,tenantId:UUID,ticketId:U
   return rows[0]??null;
 }
 
+export interface ReviewDecisionRead {proposal:RejectionProposal|null;decision:{available:boolean;reason:string|null}}
+
+/** Read-only advice after current ticket visibility; mutations independently recheck authority. */
+export async function readReviewDecision(db:DbClient,actor:Actor):Promise<ReviewDecisionRead>{
+  const {rows}=await db.query<{project_id:UUID;aor_node_id:UUID|null;status:string;project_status:string}>(
+    `SELECT t.project_id,t.aor_node_id,t.status,p.status AS project_status FROM tickets t
+      JOIN projects p ON p.id=t.project_id AND p.tenant_id=t.tenant_id
+      WHERE t.tenant_id=$1 AND t.id=$2`,[actor.tenantId,actor.ticketId]);
+  const ticket=rows[0];if(!ticket)throw new NotFoundError('Request not found');
+  const proposal=await readRejectionProposal(db,actor.tenantId,actor.ticketId);
+  const unavailable=(reason:string):ReviewDecisionRead=>({proposal,decision:{available:false,reason}});
+  if(ticket.project_status!=='ACTIVE')return unavailable('This project is read-only for request review.');
+  if(ticket.status!=='SUBMITTED')return unavailable('This request is no longer awaiting review. Close this dialog and refresh requests.');
+  try{await requireSurveyReviewAuthority(db,{tenantId:actor.tenantId,projectId:ticket.project_id,aorNodeId:ticket.aor_node_id},actor);}
+  catch(error){if(error instanceof ForbiddenError)return unavailable('You can view this request, but your current review authority does not cover its Area.');throw error;}
+  if(actor.actorRole==='PARTY_CHIEF'&&proposal)return unavailable('A Superintendent or Survey Manager must decide the pending rejection proposal.');
+  return {proposal,decision:{available:true,reason:null}};
+}
+
 /** Only leadership may override a pending Chief proposal by approving the request. */
 export async function assertProposalDecision(db:DbClient,actor:Actor):Promise<void>{
   if(actor.actorRole==='PARTY_CHIEF'&&await readRejectionProposal(db,actor.tenantId,actor.ticketId))
