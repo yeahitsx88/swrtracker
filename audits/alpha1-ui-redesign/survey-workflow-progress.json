@@ -687,6 +687,23 @@
         "Legacy independent administration and rejection-proposal controls",
         "Current full-role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 33,
+      "date": "2026-10-07",
+      "summary": "Protected access-removal/handover/project/batch/invitation controls retain stale decisions until successful current reads, exact uncertain retry and completed batch progress",
+      "status": "verified_local_increment",
+      "evidence": "protected-administration-controls-evidence.json",
+      "verification": [
+        "625units55focused strict/unused and pinned matching-lock production compilation",
+        "102actual production/Edge cases12current Team/chart regressions13 current Light/Dark/desktop/mobile/failure captures",
+        "Actual lost committed effects exact retry; failed current reads preserve reason/consent/ownership/completed batches; request/draft/history/files retained; existing company eligibility matches server; named independent review fix scored resolved"
+      ],
+      "remaining": [
+        "Survey request rejection-proposal controls",
+        "Remaining independent administration creation/recovery/support/configuration controls",
+        "Full current role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [

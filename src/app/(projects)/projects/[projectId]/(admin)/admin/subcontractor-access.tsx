@@ -15,7 +15,7 @@ import { Field } from '@/components/forms';
 export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { projectId: string;owner:CommandOwner;companiesRevision?:number }) {
   const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const token='subcontractor-invite',gate=useRef(new FrozenCommand<{companyId:string;email:string}>()).current;
-  const [,render]=useState(0);const blocked=owner.blocked(token);
+  const [,render]=useState(0),generation=useRef(0),[loading,setLoading]=useState(false),[readFailed,setReadFailed]=useState(false);const blocked=owner.blocked(token);
   const [selected,setSelected]=useState<string[]>([]),[batch,setBatch]=useState<AdministrationAction[]>(),[archived,setArchived]=useState(false);
   const [overview, setOverview] = useState<ProjectCompanyAccessResponse | null>(null);
   const [companyId, setCompanyId] = useState('');
@@ -25,22 +25,24 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setError(null);
+  const load = useCallback(async (recover=false) => {
+    if(gate.locked&&!recover)return false;const epoch=++generation.current;setLoading(true);setError(null);
     try {
-      const next = await apiClient.getProjectCompanyAccess(projectId);
-      setOverview(next);
-      const context=await apiRequest<{project:{status:string}}>(`/api/projects/${projectId}/template`);setArchived(context.project.status==='ARCHIVED');
-      setCompanyId((current) => next.companies.some(c=>c.id===current)?current:next.companies[0]?.id || '');
+      const [next,context]=await Promise.all([apiClient.getProjectCompanyAccess(projectId),apiRequest<{project:{status:string}}>(`/api/projects/${projectId}/template`)]);if(epoch!==generation.current)return false;setOverview(next);setArchived(context.project.status==='ARCHIVED');
+      setCompanyId((current) => next.companies.some(c=>c.id===current)?current:next.companies[0]?.id || '');return true;
     } catch (err) {
-      setError(getErrorMessage(err, 'Unable to load subcontractor access.'));
-    }
+      if(epoch===generation.current)setError(getErrorMessage(err, 'Unable to load subcontractor access.'));return false;
+    }finally{if(epoch===generation.current)setLoading(false);}
   }, [projectId]);
 
-  useEffect(() => { void load(); }, [load,companiesRevision]);
+  useEffect(() => { void load();return()=>{generation.current++;}; }, [load,companiesRevision]);
 
+  async function reloadInvitation(){if(loading||busy!==null||owner.blocked(token)||gate.pending||gate.command&&!gate.stale||!owner.claim(token))return;setBusy('reload');
+    try{if(!await load(true)){setReadFailed(true);return;}if(!gate.reload())return;setEmail('');setInviteUrl(null);setReadFailed(false);setError(null);}
+    finally{if(!gate.locked)owner.release(token);setBusy(null);render(n=>n+1);}
+  }
   async function invite() {
-    if(archived||busy!==null||!owner.claim(token))return;
+    if(loading||archived||busy!==null||!owner.claim(token))return;
     const command=gate.begin({companyId,email},crypto.randomUUID());if(!command){if(!gate.locked)owner.release(token);return;}
     setBusy('invite');render(n=>n+1);
     setError(null);
@@ -73,19 +75,21 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
         {overview ? (
           <>
             <Field label="Subcontractor Company">
-              <Select disabled={busy!==null||ownerToken!==null} value={companyId} onChange={(event) => setCompanyId(event.target.value)}>
+              <Select disabled={loading||busy!==null||ownerToken!==null} value={companyId} onChange={(event) => setCompanyId(event.target.value)}>
                 {overview.companies.map((company) => (
                   <option key={company.id} value={company.id}>{company.name}</option>
                 ))}
               </Select>
             </Field>
             <Field label="Requester Email">
-              <Input disabled={busy!==null||ownerToken!==null} type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+              <Input disabled={loading||busy!==null||ownerToken!==null} type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
             </Field>
-            <Button disabled={busy !== null || blocked || gate.stale || archived || !companyId || !email.trim()} onClick={() => void invite()}>
-              {busy === 'invite' ? 'Creating...' : gate.command?'Retry Unchanged Invitation':'Create Invitation'}
+            <Button disabled={loading||busy !== null || blocked || gate.stale || archived || !companyId || !email.trim()} onClick={() => void invite()}>
+              {busy === 'invite' ? 'Creating...' : gate.command&&!gate.stale?'Retry Unchanged Invitation':'Create Invitation'}
             </Button>
-            {gate.stale&&<Button variant="secondary" disabled={blocked||busy!==null} onClick={()=>{if(gate.reload()){owner.release(token);setError(null);void load();}}}>Reload Invitation</Button>}
+            {gate.stale&&<p role="alert">{readFailed?'Current invitation records could not be loaded.':'Invitation state changed.'} Your reviewed invitation remains held. Reload Invitation must successfully read current access and project context before another invitation.</p>}
+            {loading&&<p role="status">Loading current subcontractor access…</p>}
+            {gate.stale&&<Button variant="secondary" disabled={loading||blocked||busy!==null} onClick={()=>void reloadInvitation()}>Reload Invitation</Button>}
             {inviteUrl ? (
               <Field label="Registration Link (shown for this new invitation)">
                 <Input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} />
@@ -93,9 +97,9 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
             ) : null}
 
             <AdministrationSection title="Subcontractor Requesters" locked={ownerToken!==null}>
-            <AdministrationRecords scrollable label="subcontractor requesters" rows={overview.requesters} id={r=>r.userId} columns={[{key:'name',label:'Name',text:r=>r.name},{key:'email',label:'Email',text:r=>r.email},{key:'company',label:'Company',text:r=>r.companyName},{key:'view',label:'Company view',text:r=>r.authorityGrantId?'Granted':'Own requests'}]} selected={selected} onSelection={setSelected} disabled={busy!==null||ownerToken!==null} eligible={()=>true} actions={r=><Button disabled={busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch([{url:r.authorityGrantId?`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`:`/api/projects/${projectId}/company-authority`,method:r.authorityGrantId?'DELETE':'POST',body:r.authorityGrantId?{}:{userId:r.userId},label:`${r.authorityGrantId?'Revoke':'Grant'} ${r.companyName} view for ${r.name} (${r.email})`}])}>{r.authorityGrantId?'Revoke Company View':'Grant Company View'}</Button>}/>
+            <AdministrationRecords scrollable label="subcontractor requesters" rows={overview.requesters} id={r=>r.userId} columns={[{key:'name',label:'Name',text:r=>r.name},{key:'email',label:'Email',text:r=>r.email},{key:'company',label:'Company',text:r=>r.companyName},{key:'view',label:'Company view',text:r=>r.authorityGrantId?'Granted':'Own requests'}]} selected={selected} onSelection={setSelected} disabled={loading||busy!==null||ownerToken!==null} eligible={()=>true} actions={r=><Button disabled={loading||busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch([{url:r.authorityGrantId?`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`:`/api/projects/${projectId}/company-authority`,method:r.authorityGrantId?'DELETE':'POST',body:r.authorityGrantId?{}:{userId:r.userId},label:`${r.authorityGrantId?'Revoke':'Grant'} ${r.companyName} view for ${r.name} (${r.email})`}])}>{r.authorityGrantId?'Revoke Company View':'Grant Company View'}</Button>}/>
             <div className="row">{[true,false].map(enabled=><Button key={String(enabled)} variant="secondary" disabled={!selected.length||busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch(overview.requesters.filter(r=>selected.includes(r.userId)&&!!r.authorityGrantId!==enabled).map(r=>({url:enabled?`/api/projects/${projectId}/company-authority`:`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`,method:enabled?'POST':'DELETE',body:enabled?{userId:r.userId}:{},label:`${enabled?'Grant':'Revoke'} ${r.companyName} view for ${r.name} (${r.email})`})))}>{enabled?'Review selected Company View grants':'Review selected Company View revocations'}</Button>)}</div>
-            {batch&&<AdministrationBatch actions={batch} owner={owner} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setSelected([]);void load();}}/>}
+            {batch&&<AdministrationBatch actions={batch} owner={owner} reload={()=>load(true)} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setSelected([]);}}/>}
             </AdministrationSection>
 
             <AdministrationSection title="Pending Invitations" locked={ownerToken!==null}>

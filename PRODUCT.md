@@ -117,3 +117,10 @@ Current authorized Survey Manager confirms the existing scoped command, reason a
 ### Protected Staffing Current-Read Recovery — 2026-10-07
 
 Existing Area/team/staffing/unlink and same-team crew controls retain the reviewed decision after every409 and failed read. Applicable current context, evidence and choices must load successfully before fresh selection/consent. Back/Keep and navigation cannot discard stale or uncertain intent; uncertainty offers the same original payload/key only. Current and replacement Chief names and UUIDs remain visible across candidate pages. Survey-only staffing copy reflects existing eligibility; independent administration remains separate. Existing server authorization/transitions, assignment/history and live read-only chart are unchanged. Evidence: audits/alpha1-ui-redesign/protected-staffing-controls-evidence.json. Administration controls and full current role/state Alpha acceptance remain open.
+
+
+### Protected Administration Current-Read Recovery — 2026-10-07
+
+Existing access-removal, Manager handover, project/company review, sequential administrator/company-view batches and invitation controls now hold every409 until successful applicable current evidence/context reads. Failed reads retain reason, consent, completed batch progress and sibling/navigation ownership. Successful reads discard the old review and require fresh applicable selection/preview/consent; reason edits renew consent. Uncertainty retains the original exact body/key. Current companyType eligibility excludes legacy subcontractor Manager/coverage choices and incoming action while retaining eligible General Contractor/Owner Representative choices. Existing endpoint payloads, independent administration/current-role/company/tenant/project/session boundaries, server transitions, request/history/files and live read-only Org Chart remain unchanged.
+
+Evidence: audits/alpha1-ui-redesign/protected-administration-controls-evidence.json. Remaining independent administration/review/recovery/support/configuration/creation controls and full current role/state Alpha acceptance remain open.
