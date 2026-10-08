@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server';
 import { getPool } from '../../src/lib/db';
 import { signToken } from '../../src/lib/auth';
 import { resolveVisibility } from '../../src/lib/resolve-visibility';
-import { getTicketRouteContext, withTicketMutation } from '../../src/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketRead } from '../../src/lib/ticket-route-helpers';
 import { TicketRepository } from '../../src/modules/ticket/infrastructure/ticket.repository';
 import { listLocalNotificationPreviews } from '../../src/modules/notification/application/local-preview';
 import { GET as detail, PATCH as edit } from '../../src/app/api/tickets/[ticketId]/route';
@@ -83,7 +83,7 @@ async function main(){
     const downloadDeps={getTicketRouteContext,createTicketRepo:()=>repo,
       findAttachment:async(tid:string,ticket:string,file:string,held:DbClient)=>(await held.query<NonNullable<Awaited<ReturnType<TicketAttachmentDownloadDeps['findAttachment']>>>>('SELECT * FROM pg_temp.attachments WHERE tenant_id=$1 AND ticket_id=$2 AND id=$3',[tid,ticket,file])).rows[0]??null,
       createStorage:()=>({read:async()=>{storageReads++;return Buffer.from('Synthetic file bytes');}}),
-      withTicketMutation};
+      withTicketRead};
     const file=(user:UUID,ticket=sharedTicket)=>download(request(user,ticket),{params:Promise.resolve({ticketId:ticket,attachmentId})},downloadDeps);
     const surfaces=async(user:UUID,ticket=sharedTicket)=>[
       await detail(request(user,ticket),context(ticket)),await history(request(user,ticket),context(ticket)),

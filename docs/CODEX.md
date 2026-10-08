@@ -4329,3 +4329,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Git: fetched development0/0 and main182/7 before checkpoint; no base integration; commit/push under owner standing directive. No deployment/Alpha2/release remediation; inherited source-map-js blocker separate.
 - Next: fresh D6 completion-only/history journey with original evidence captured before lifecycle start.
 - Production behavior changed: yes (presentation/navigation only).
+
+
+### 2026-10-08 - Batch227
+- Intent: verify fresh D6 original history/completion-only journey and fix its demonstrated authorized file-read refusal (Decision54/R10/history preservation).
+- Role/scope: sequential AUDITOR/IMPLEMENTER, authorized Alpha cross-module exception; Attachment handler plus shared current ticket coordination and directly tied tests/writer inventory/docs only.
+- Files touched: ticket-route-helpers.ts, attachments/handler.ts; attachment-read unit test; assessment-authorization and lifecycle-writer PG dependencies/cases; lifecycle writer inventory; four preparation227 acceptance helpers; E227 receipt; CLAUDE/completion register/acceptance closure; this append.
+- Behavior changed: explicit audited read transaction preserves SHARED barrier, current session/role/visibility and same-client access audit while omitting workflow-mutation eligibility for downloads. Upload/workflow restrictions unchanged. Actual cancellation-mode owner download previously409; current original bytes available under same authority in cancellation and Archived. No new event/schema/dependency or business rule.
+- Verification: baseline672units; strict673units,22focused, pinned Node22.23.3/Next15.5.27 compilation and33PG suites pass.339lifecycle writer checks include12new read/upload cases.87connected checks:69D6 across E226 start/cleanup and final E227 resumed finish,12current file boundaries including observed tenant-lock/session revocation and actual audit rollback,6current immutable retention checks.568production/migration bytes match final artifact. Four viewports opened; no page errors.
+- History: actual nine requests/file before lifecycle; original witness saved before archive. Same original case resumed after observer expected403from a stale replacement Viewer cookie and after discovering actual file409. No reset. Original event hash, staffing/attachments, immutable assignment fields and terminal records retained; Central start/finish/period/archive evidence atomic. Viewer operational read scope preserved; independent Admin-only visibility denied.
+- Limitations: current full Alpha acceptance remains open. Initial Setup/outstanding invitation D6 and remaining full role/state/visual/keyboard acceptance not claimed. Mobile captures show section starts, actual controls reached below. E209 missing historical witness not fabricated; fixture byte storage preserved before runtime replacement. Initial injected-test typing corrected before final full pass.
+- Git: fetched development0/0, main183/7 before checkpoint; no integration. Commit/push under standing owner directive. No deploy/main/Alpha2; inherited source-map-js release blocker separate.
+- Next: current remaining approval/cancellation and legacy field-review affordances, then requirement-level closure.
+- Production behavior changed: yes (authorized historical read eligibility only).

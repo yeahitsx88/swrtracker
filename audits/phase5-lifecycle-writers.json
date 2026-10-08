@@ -14,7 +14,7 @@
   "src/modules/tenancy/infrastructure/superintendent-areas.repository.ts": "Unlink handler EXCLUSIVE; actual Manager, current subject, replacement grants/coverage and snapshot before unlink.",
   "src/modules/tenancy/infrastructure/protected-obligations.repository.ts": "Handover handler EXCLUSIVE; current actor, subjects, coverage and snapshot before grant/assignment/revoke/audit.",
   "src/modules/audit/infrastructure/administrative-event.repository.ts": "Held-client atomic administrative evidence in coordinated identity/tenancy handlers; no independent writer.",
-  "src/modules/attachment/infrastructure/index.ts": "Upload/download handlers SHARED via withTicketMutation; actor/visibility before attachment persistence/read/audit, same client.",
+  "src/modules/attachment/infrastructure/index.ts": "Upload handler SHARED via withTicketMutation; authorized download/access audit SHARED via withTicketRead. Fresh actor/visibility before attachment persistence/read/audit, same client. Read access remains available during preparation/archive; workflow mutation eligibility is not inferred.",
   "src/modules/audit/infrastructure/audit.repository.ts": "Held-client ticket events from coordinated ticket mutations and per-tenant notification workers; no independent authority writer.",
   "src/modules/ticket/application/amelia-notifications.ts": "Indirect ticket mutation SHARED; enqueue SQL rechecks same-tenant effective recipient membership/global activity/company eligibility before insertion.",
   "src/modules/ticket/application/assign-ticket.ts": "Assignment route SHARED; current actor role/visibility and effective Chief/IM on held client before ticket/history/notification writes.",

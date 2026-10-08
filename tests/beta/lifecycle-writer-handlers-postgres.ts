@@ -40,7 +40,7 @@ import {POST as startTicket} from '../../src/app/api/tickets/[ticketId]/start/ro
 import {POST as createTicket} from '../../src/app/api/tickets/route';
 import {DELETE as deleteDraft} from '../../src/app/api/tickets/[ticketId]/draft/route';
 import {handlePostTicketAttachments,handleDownloadTicketAttachment} from '../../src/app/api/tickets/[ticketId]/attachments/handler';
-import {getTicketRouteContext,withTicketMutation} from '../../src/lib/ticket-route-helpers';
+import {getTicketRouteContext,withTicketMutation,withTicketRead} from '../../src/lib/ticket-route-helpers';
 import {TicketRepository} from '../../src/modules/ticket/infrastructure/ticket.repository';
 import {AttachmentRepository,validateAttachmentObjectMetadata} from '../../src/modules/attachment/infrastructure';
 import type {UUID} from '../../src/shared/types';
@@ -240,7 +240,7 @@ async function main(){
   assert.equal(stagedObjects.size,1,'replay removes only duplicate staged bytes');checks++;
   const attachmentRows=(await pg.query('SELECT * FROM attachments')).rows;
   assert.equal(attachmentRows.length,1);checks++;assert.equal(attachmentRows[0].uploaded_by,actor);checks++;
-  const downloadDeps={getTicketRouteContext,withTicketMutation,createTicketRepo:()=>new TicketRepository(),
+  const downloadDeps={getTicketRouteContext,withTicketRead,createTicketRepo:()=>new TicketRepository(),
    findAttachment:async(tid:string,ticketId:string,file:string,db:import('../../src/shared/types').DbClient)=>
     (await db.query<NonNullable<Awaited<ReturnType<import('../../src/app/api/tickets/[ticketId]/attachments/handler').TicketAttachmentDownloadDeps['findAttachment']>>>>('SELECT * FROM attachments WHERE tenant_id=$1 AND ticket_id=$2 AND id=$3',[tid,ticketId,file])).rows[0]??null,
    createStorage:uploadDeps.createStorage};
@@ -250,6 +250,21 @@ async function main(){
   assert.equal(downloaded.status,200);checks++;assert.equal(await downloaded.text(),'synthetic bytes');checks++;
   const downloadEvents=(await pg.query("SELECT * FROM ticket_events WHERE event_type='attachment.downloaded'")).rows;
   assert.equal(downloadEvents.length,1);checks++;assert.equal(downloadEvents[0].actor_id,actor);checks++;
+  // Historical reads retain fresh authority and atomic access auditing in both
+  // archived projects and actual completion-only preparation cancellation.
+  for (const status of ['ARCHIVED','SETUP']) {
+   await pg.query('UPDATE projects SET status=$2 WHERE id=$1',[project,status]);
+   if(status==='SETUP')await pg.query(`INSERT INTO project_preparation_cancellations(id,tenant_id,project_id,started_by,reason,reviewed_evidence) VALUES($1,$2,$3,$4,'Owned existing completion cleanup',$5)`,[randomUUID(),tenant,project,actor,JSON.stringify({work:[{id:ticket}]})]);
+   const count:number=(await pg.query("SELECT count(*)::int n FROM ticket_events WHERE event_type='attachment.downloaded'")).rows[0].n;
+   const historical=await handleDownloadTicketAttachment(downloadRequest(),downloadParams,downloadDeps);
+   assert.equal(historical.status,200);checks++;
+   assert.equal(await historical.text(),'synthetic bytes');checks++;
+   assert.equal((await pg.query("SELECT count(*)::int n FROM ticket_events WHERE event_type='attachment.downloaded'")).rows[0].n,count+1);checks++;
+   const beforeUpload=await rowsBefore();
+   assert.equal((await handlePostTicketAttachments(uploadRequest(),attachmentParams,uploadDeps)).status,409);checks++;
+   assert.deepEqual(await rowsBefore(),beforeUpload);checks++;
+   assert.equal(stagedObjects.size,1);checks++;
+  }
   // Audit failure rejects the download response, without returning buffered bytes.
   await pg.query('CREATE TRIGGER reject_file_audit BEFORE INSERT ON ticket_events FOR EACH ROW EXECUTE FUNCTION reject_metadata_audit()');
   const beforeDownloadFailure=await rowsBefore();

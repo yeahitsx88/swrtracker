@@ -235,7 +235,7 @@ test('attachment download checks ticket visibility, streams bytes, and records t
       content_sha256: 'a'.repeat(64), created_at: new Date('2026-03-04T12:00:00Z'),
     }),
     createStorage: () => ({ read: async () => Buffer.from('pdf bytes') }),
-    withTicketMutation: async (_req, ctx, fn) => fn({
+    withTicketRead: async (_req, ctx, fn) => fn({
       query: async (sql: string) => { auditSql.push(sql); return { rows: [] }; },
     }, ctx),
   };
@@ -399,7 +399,7 @@ test('Unicode filenames download with RFC8187 headers and invalid headers never 
    getTicketRouteContext:makeDeps().getTicketRouteContext,createTicketRepo:()=>makeTicketRepo(),
    findAttachment:async()=>({id:'86000000-0000-4000-8000-000000000001',ticket_id:ticketId,tenant_id:tenantId,uploaded_by:actorId,filename,mime_type:'application/pdf',storage_key:'synthetic-file',size_bytes:3,purpose:'REQUEST_INSTRUCTION',return_cycle:0,content_sha256:'a'.repeat(64),created_at:new Date()}),
    createStorage:()=>({read:async()=>Buffer.from('pdf')}),
-   withTicketMutation:async (_req,ctx,fn)=>fn({query:async()=>{events++;return{rows:[]};}},ctx),
+   withTicketRead:async (_req,ctx,fn)=>fn({query:async()=>{events++;return{rows:[]};}},ctx),
   };
   const params={params:Promise.resolve({ticketId,attachmentId:'86000000-0000-4000-8000-000000000001'})};
   const response=await handleDownloadTicketAttachment(makeRequest(),params,deps);
@@ -424,7 +424,22 @@ test('download revalidates lifecycle authority before bytes or successful audit'
  findAttachment:async()=>{reads++;throw new Error('Must not load attachment');},
  createStorage:()=>({read:async()=>{reads++;return Buffer.from('private');}}),
  withTransaction:async()=>{audits++;throw new Error('Must not append audit');},
- withTicketMutation:async()=>{coordinated++;throw new UnauthorizedError('Session revoked','AUTH_SESSION_REVOKED');}};
+ withTicketRead:async()=>{coordinated++;throw new UnauthorizedError('Session revoked','AUTH_SESSION_REVOKED');}};
  const response=await handleDownloadTicketAttachment(makeRequest(),{params:Promise.resolve({ticketId,attachmentId:'86000000-0000-4000-8000-000000000001'})},deps);
  assert.equal(response.status,401);assert.equal(coordinated,1);assert.equal(reads,0);assert.equal(audits,0);
+});
+
+test('download checks renewed company visibility before metadata, bytes or audit', async () => {
+ let metadata=0,bytes=0,audits=0;
+ const expected=await makeDeps().getTicketRouteContext(makeRequest(),ticketId);
+ const renewed={...expected,visibility:{...expected.visibility,companyId:'company-2' as UUID,companyType:'SUBCONTRACTOR' as const}};
+ const deps:TicketAttachmentDownloadDeps={
+  getTicketRouteContext:async()=>expected,
+  withTicketRead:async(_req,initial,fn)=>{assert.equal(initial,expected);return fn({query:async()=>{audits++;return{rows:[]};}},renewed);},
+  createTicketRepo:()=>makeTicketRepo({findById:async(_db,tenant,id,scope)=>{assert.equal(tenant,tenantId);assert.equal(id,ticketId);assert.equal(scope,renewed.visibility);return null;}}),
+  findAttachment:async()=>{metadata++;throw new Error('Must not read metadata');},
+  createStorage:()=>({read:async()=>{bytes++;return Buffer.from('private');}}),
+ };
+ const response=await handleDownloadTicketAttachment(makeRequest(),{params:Promise.resolve({ticketId,attachmentId:'86000000-0000-4000-8000-000000000001'})},deps);
+ assert.equal(response.status,404);assert.equal(metadata,0);assert.equal(bytes,0);assert.equal(audits,0);
 });
