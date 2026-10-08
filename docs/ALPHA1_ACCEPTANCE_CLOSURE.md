@@ -2,7 +2,7 @@
 
 Current authority: approved requirements, Decisions51-54, D1-D8 reconciliation and owner active Alpha closure objective. Preserve conventional Team Management, Visual5866772 and prior history. This register records current evidence and outstanding acceptance; passing counts do not replace connected role/task/state requirements.
 
-Current execution baseline: `alpha1-ui-redesign` at pushed checkpoint `9de9a61`. [E222](../audits/alpha1-ui-redesign/alpha-closure222-reviewed-revision-evidence.json) verifies strict host/pinned types,665units, pinned Node22.23.3 production compilation, all33PostgreSQL suites and19focused browser checks at digest `581580ade760a1233d6744bc240861618fb027deef1952f655e63baf8089ddc1`. Older entries below are chronological receipts at their recorded source, not current whole-system acceptance.
+Current verified source: Batch225 on `alpha1-ui-redesign`, based on pushed `c2175b4`. [E225](../audits/alpha1-ui-redesign/alpha-closure225-stop-work-evidence.json) verifies strict host/pinned types,671units, pinned Node22.23.3 production compilation, all33PostgreSQL suites and72current connected/browser/HTTP checks at digest `09425214672ae03bf03274ef81782a11d62e87eea71d7c8ae041c1bbdb211158`. Older entries below are chronological receipts at their recorded source, not current whole-system acceptance.
 
 | Workstream | Reconciled state | Evidence / remaining acceptance |
 |---|---|---|
@@ -128,3 +128,8 @@ Owner standing checkpoint directive now authorizes regular commits and branch pu
 ## Batch224 - current rejected recovery actor journeys
 
 [E224](../audits/alpha1-ui-redesign/alpha-closure224-submitted-recovery-evidence.json) establishes107actual connected/browser/current-authority checks at unchanged E222 production source for Manager, covered Superintendent, independent Project Admin, Tenant Admin, combined administration and current last-recorded Chief. Each actual rejected record recovers with unchanged lost-response retry, retained identity/number/files/prior history and no staffing reinstatement. Concurrent held review, two-actor race, real audit rollback and13scope/revocation/lifecycle/session refusals pass. Strict665units and unchanged568production/migration/runtime bytes retain E222 pinned compile/full33SQL evidence. Four captures opened; timestamp observer resume and mobile/keyboard limits explicit. Whole Alpha acceptance remains open. Next: remaining cancellation/captured field-review/D6 role-state journeys and wording/navigation/visual reconciliation.
+
+
+## Batch225 - current stop-work hardening
+
+Two actual production defects now fixed under existing approved rules: new field stop-work flags on completed requests, and cancellation approval whose committed result could not be retried unchanged. Reuse current domain cancellation validation and current-Manager-before-ledger authorization; fresh pending-chain checks remain in application. Final671units/strict types/pinned compilation/33SQL and72production checks pass with568source/migration bytes matched. Current field flags and actual cancellation notices/rollback preserved. Four dialog viewports opened, no page errors; broad role/state and keyboard/visual acceptance remain open. First approval-gap committed record retained and final explicit new-request run documented. Next: remaining captured Manager/Superintendent field-review and D6 completion-only/history journeys. No new owner decision or release/deployment/Alpha2 acceptance.

@@ -43,7 +43,7 @@ test('post-lock visibility loss rejects role-only Chief replay before ledger',as
  for(const action of ['restart-delay','survey-cancel','field-cancel'])await assert.rejects(f.run(action),NotFoundError);
  assert.equal(f.state.ledgerWrites,0);
 });
-const cases:readonly [string,ProjectRole][]=[['pc-approve','PARTY_CHIEF'],['pc-reject','PARTY_CHIEF'],['approve','SURVEY_MANAGER'],['return','SURVEY_MANAGER'],['assign','PARTY_CHIEF'],['start','INSTRUMENT_MAN'],['complete','INSTRUMENT_MAN'],['delay','INSTRUMENT_MAN'],['field-inability','INSTRUMENT_MAN'],['restart-delay','PARTY_CHIEF'],['priority','SURVEY_MANAGER'],['need-by','SURVEY_MANAGER'],['requester-cancel','REQUESTER'],['follow-up','REQUESTER'],['survey-cancel','INSTRUMENT_MAN'],['field-cancel','INSTRUMENT_MAN'],['field-inability/validate','PARTY_CHIEF'],['field-inability/reject','PARTY_CHIEF']];
+const cases:readonly [string,ProjectRole][]=[['pc-approve','PARTY_CHIEF'],['pc-reject','PARTY_CHIEF'],['approve','SURVEY_MANAGER'],['return','SURVEY_MANAGER'],['assign','PARTY_CHIEF'],['start','INSTRUMENT_MAN'],['complete','INSTRUMENT_MAN'],['delay','INSTRUMENT_MAN'],['field-inability','INSTRUMENT_MAN'],['restart-delay','PARTY_CHIEF'],['priority','SURVEY_MANAGER'],['need-by','SURVEY_MANAGER'],['requester-cancel','REQUESTER'],['follow-up','REQUESTER'],['survey-cancel','INSTRUMENT_MAN'],['survey-cancel/approve','SURVEY_MANAGER'],['field-cancel','INSTRUMENT_MAN'],['field-inability/validate','PARTY_CHIEF'],['field-inability/reject','PARTY_CHIEF']];
 for(const[action,role]of cases){
  test(action+' checks current action authority before ledger (uppercase ticket UUID)',async()=>{
   const f=fixture(role);assert.equal((await f.run(action)).status,200);assert.equal(f.state.ledgerWrites,2);
@@ -78,3 +78,21 @@ for(const action of ['field-inability/validate','field-inability/reject']){
   await assert.rejects(f.run(action),ForbiddenError);
  });
 }
+
+
+test('stop-work approval keeps Manager-only current authority when the pending flag has already cleared', async () => {
+  for (const role of ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT', 'REQUESTER', 'VIEWER'] as const) {
+    const f = fixture(role);
+    await assert.rejects(f.run('survey-cancel/approve'), ForbiddenError);
+    assert.equal(f.state.ledgerReads, 0);
+    assert.equal(f.state.ledgerWrites, 0);
+  }
+  const current = fixture('SURVEY_MANAGER');
+  current.state.row.assigned_party_chief_id = null;
+  current.state.row.assigned_instrument_man_id = null;
+  assert.equal((await current.run('survey-cancel/approve')).status, 200);
+  const hidden = fixture('SURVEY_MANAGER');
+  hidden.state.visible = false;
+  await assert.rejects(hidden.run('survey-cancel/approve'), NotFoundError);
+  assert.equal(hidden.state.ledgerWrites, 0);
+});

@@ -66,6 +66,7 @@ export async function executeAuthorizedTicketMutation<T>(
   case 'priority': case 'need-by':allowed(['SURVEY_MANAGER']);break;
   case 'requester-cancel': case 'follow-up':
    allowed(['REQUESTER'],ticket.requester_id===scope.actorId);break;
+  case 'survey-cancel/approve':allowed(['SURVEY_MANAGER']);break;
   case 'survey-cancel':
    allowed(['PARTY_CHIEF','INSTRUMENT_MAN','SURVEY_MANAGER'],(role!=='INSTRUMENT_MAN'||ticket.assigned_instrument_man_id===scope.actorId)&&(role!=='PARTY_CHIEF'||ticket.assigned_party_chief_id===scope.actorId));break;
   case 'field-cancel':
