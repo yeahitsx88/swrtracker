@@ -48,11 +48,11 @@ const admin: ProjectNavigationItem = {
 
 const navigationByRole: Record<ProjectRole, readonly ProjectNavigationItem[]> = {
   REQUESTER: [newRequest, myRequests, drafts],
-  SURVEY_MANAGER: [surveyOperations, teamManagement, allRequests],
+  SURVEY_MANAGER: [surveyOperations, pcApprovals, teamManagement, allRequests],
   PARTY_CHIEF: [crewWork, pcApprovals],
   INSTRUMENT_MAN: [crewWork],
   PROJECT_ADMIN: [admin],
-  SURVEY_SUPERINTENDENT: [allRequests, surveyOperations, crewWork],
+  SURVEY_SUPERINTENDENT: [allRequests, surveyOperations, crewWork, pcApprovals],
   CAD_TECHNICIAN: [allRequests],
   CAD_LEAD: [allRequests],
   DEPARTMENT_MANAGER: [allRequests],

@@ -31,7 +31,7 @@ export default function CrewApprovalsPage() {
   return (
     <Card
       title="Field Report Review"
-      description="Review inability reports from your assigned crew. Retained legacy field reports remain available; new successful completions need no approval."
+      description="Review inability reports when you are the recorded reviewer. Other reports you can see remain read-only. Retained legacy field reports remain available; new successful completions need no approval."
       actions={<>
         <label className="toolbar-select"><span>Rows</span><select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
         <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={approvals.loading||workflow.active}>
@@ -51,10 +51,13 @@ export default function CrewApprovalsPage() {
             emptyTitle="Nothing waiting for you"
             emptyMessage="Field reports that need your decision will appear here."
             renderActions={(ticket) => ticket.status === 'PENDING_FIELD_VALIDATION' ? (
+              workspace?.actorId === ticket.fieldValidationReviewerId &&
+              ['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF'].includes(workspace.capabilities.operationalRole ?? '') ? (
               <>
                 <Button disabled={actionDisabled} onClick={() => workflow.open(ticket,'validate-inability')}>Validate and Return</Button>
                 <Button variant="secondary" disabled={actionDisabled} onClick={() => workflow.open(ticket,'reject-inability')}>Reject Report and Resume</Button>
               </>
+              ) : <span className="muted">Review is reserved for the recorded reviewer.</span>
             ) : (
               <ApprovalActions
                 ticket={ticket}

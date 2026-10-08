@@ -4317,3 +4317,15 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Invariants verified: active flags retain work pending Manager-only approval; frozen uncertain browser reason/body/key; wrong-role/personal scope; one approval effect/notices; current-role/session/Archived before replay; audit flag failure and actual approval outbox failure roll back all state/evidence/ledger; same key succeeds after rollback. Synthetic authority changes restored.
 - Git: fetched baselinec2175b4development0/0 and main181/7; no base integration. Commit/push coherent verified increment under owner standing instruction.
 - Known gaps/next: broader cancellation/captured-reviewer/D6 role-state/history and full visual/keyboard/navigation/wording acceptance. No new owner decision; whole Alpha acceptance remains open. source-map-js/GHSA-68fv-2mgg-jv7q independent release blocker unchanged; no main/deploy/Alpha2.
+
+
+### 2026-10-08 - Batch226
+- Intent: finish authorized Manager/Superintendent captured field-review paths and reconcile current navigation/action affordances (R06/R10; approved Alpha finalization).
+- Role: sequential AUDITOR / IMPLEMENTER with authorized project-wide Alpha shared UI/test/documentation scope.
+- Files touched: crew/approvals/page.tsx, project-navigation.ts, project-nav.tsx, project-navigation.test.ts; four alpha-field-review acceptance helpers; E226 receipt; completion register/acceptance closure; this append.
+- Behavior changed: add existing Field Report Review navigation for Manager/Superintendent and matching check icon; pending-inability actions only for current recorded actor in existing eligible operational roles, other visible reports read-only. Preserve server scope, queue populations, legacy behavior, transitions, history and schema.
+- Verification: baseline strict671units; final strict672units,63focused, pinned Node22.23.3/Next15.5.27 production compilation,33PG suites and115actual owned-fixture checks (8setup/93browser/14boundaries);568production/migration bytes match compiled artifact. Eight Light/Dark desktop/mobile dialog captures opened; no page errors; one empty scoped detector.
+- Limitations: initial artifact missing unchanged test inputs restored before final full pass; navigation wait and boundary expectations corrected without resetting original cases or changing rules. Current Area visibility is separate from initial-review grants; plain Setup is not an actual recommissioning period. Wider role/state/visual/keyboard/whole Alpha acceptance remains open. No new owner decision.
+- Git: fetched development0/0 and main182/7 before checkpoint; no base integration; commit/push under owner standing directive. No deployment/Alpha2/release remediation; inherited source-map-js blocker separate.
+- Next: fresh D6 completion-only/history journey with original evidence captured before lifecycle start.
+- Production behavior changed: yes (presentation/navigation only).

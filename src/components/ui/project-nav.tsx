@@ -11,7 +11,7 @@ import { accountNavigation } from './account-navigation';
 import { AccountSignOut } from './account-sign-out';
 import { closePopup } from './popup-motion';
 
-const ICONS: Record<string, IconName> = { 'Review Requests':'check', Notifications: 'alert', Home: 'home', 'New Request': 'plus', Requests: 'list', Drafts: 'draft', 'All Requests': 'search', 'Crew Work': 'crew', 'Survey Operations': 'gauge', 'PC Approvals': 'check', 'Team Management': 'team', Admin: 'settings', 'Help Desk': 'support', Appearance: 'sliders', Profile: 'user', 'Assignment Details': 'crew' };
+const ICONS: Record<string, IconName> = { 'Review Requests':'check', Notifications: 'alert', Home: 'home', 'New Request': 'plus', Requests: 'list', Drafts: 'draft', 'All Requests': 'search', 'Crew Work': 'crew', 'Survey Operations': 'gauge', 'Field Report Review': 'check', 'Team Management': 'team', Admin: 'settings', 'Help Desk': 'support', Appearance: 'sliders', Profile: 'user', 'Assignment Details': 'crew' };
 
 export function ProjectNav({ projectId, role, canAdminister, canCreateProject = false, status, projectName }: {
   projectId?: string; role: ProjectRole | null; canAdminister?: boolean; canCreateProject?: boolean;
