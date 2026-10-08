@@ -38,7 +38,7 @@ export async function handleGetSurveyOrganization(req: NextRequest, { params }: 
       const actorRole = await deps.getProjectRole(db, current.tenantId, projectId, current.userId, current.sessionVersion);
       if(actorRole==='SURVEY_SUPERINTENDENT'){
         if(!deps.superintendent)throw new Error('Superintendent organization repository required');
-        return readSuperintendentOrganization(deps.superintendent,deps.repos.teams,db,{tenantId:current.tenantId,projectId,actorId:current.userId,actorRole,sessionVersion:current.sessionVersion});
+        return readSuperintendentOrganization(deps.superintendent,db,{tenantId:current.tenantId,projectId,actorId:current.userId,actorRole,sessionVersion:current.sessionVersion});
       }
       return readSurveyOrganization(deps.repos, db, { tenantId: current.tenantId, projectId, actorId: current.userId, actorRole, sessionVersion: current.sessionVersion }, current);
     });

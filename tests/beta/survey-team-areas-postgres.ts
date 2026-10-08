@@ -68,9 +68,9 @@ async function main(){
   assert.equal((await repo.team(db,tenant,project,saved.teamId))!.areas!.length,2);
   const workforce=new SurveyWorkforcePgRepository();
   const ss={...actor,actorId:superintendent,actorRole:'SURVEY_SUPERINTENDENT' as const};
-  assert.equal(await workforce.sameTeam(db,ss,[superintendent,chief]),true);
-  assert.equal(await workforce.sameTeam(db,ss,[chief,otherChief]),false,'Cross-team reassignment is forbidden even within one project');
   const ssPeople=await workforce.personnel(db,ss,{search:'',limit:10,offset:0});
+  assert.equal(await workforce.assertTransferScope(db,ss,{instrumentManId:instrument,partyChiefId:chief,destinationTeamId:saved.teamId,expectedSnapshot:ssPeople.snapshotToken}),true);
+  await assert.rejects(workforce.assertTransferScope(db,ss,{instrumentManId:instrument,partyChiefId:otherChief,destinationTeamId:destination.teamId,expectedSnapshot:ssPeople.snapshotToken}),/supervised structure/);
   assert.deepEqual(ssPeople.data.map(p=>p.userId).sort(),[chief,instrument].sort(),'Named team establishes assigned personnel without separate reporting grants');
   assert.equal((await workforce.person(db,ss,instrument))!.partyChiefId,null);
   await db.query('SAVEPOINT unassigned_transfer');
@@ -91,7 +91,7 @@ async function main(){
   }
   await db.query('ROLLBACK TO SAVEPOINT unassigned_transfer');
   await db.query('SAVEPOINT initial_assignment');
-  await moveWorkforceMember(workforce,db,ss,{instrumentManId:instrument,partyChiefId:chief,expectedSnapshot:ssPeople.snapshotToken});
+  await moveWorkforceMember(workforce,db,ss,{instrumentManId:instrument,partyChiefId:chief,destinationTeamId:saved.teamId,expectedSnapshot:ssPeople.snapshotToken});
   assert.equal((await workforce.person(db,ss,instrument))!.partyChiefId,chief,'Superintendent can assign an unassigned team Instrument Man');
   assert.equal((await readSurveyInbox(db,actor,0)).messages.length,1);
   const pc={...actor,actorId:chief,actorRole:'PARTY_CHIEF' as const};

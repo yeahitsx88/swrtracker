@@ -70,3 +70,9 @@ Final bounded198 evidence: 629units51focused, strict host/pinned compilation;67 
 
 ## D4 Manager Instrument Man destination - Decision54, 2026-10-08
 Bounded extension of the same conventional and Visual Editor governed review. Instrument Man movement now requires deliberately selected existing Destination Named Team; choosing a Chief leaves the team blank. Server independently verifies Chief membership in the selected team. No coverage, request ownership, history, layout, tokens or Visual Editor replacement. Preserve same-Area crew reporting-only behavior as distinct. Existing native selection, current preview, reason/consent, FrozenCommand and shared ownership remain. Inherit the six code-led Operate direction blocks; no new comp/world/seed/raster. Superintendent D1/D4/D5 extension remains open.
+
+## Scoped Superintendent explicit team transfer — Decision54
+
+Preserve current Axiom code-led Operate direction and approved optional Visual Editor. Shared AssignedWorkforce review names the current person/Chief, deliberately selected existing destination team and complete current coverage. It changes membership and current crew link atomically while retaining requests/history/all coverage; no Chief or Area choice infers a team. Current supervised Chief-led team evidence comes from actual reporting plus Area authority. Search/pagination remains bounded; uncertain body/key and all fields stay frozen, stale consent requires successful current reads. No new token, asset, motion or visual action.
+
+Finish evidence: matching-current production3220,36actual Edge checks/eight LightDark1440/390 document-top conventional/dialog-top visual captures opened by executor and fresh reviewers. Full reviewer ship/no fixes, documenter No changes, single current detector empty. Existing design drift remains outside the extension. No whole-Alpha acceptance claim.

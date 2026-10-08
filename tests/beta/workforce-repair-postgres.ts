@@ -21,6 +21,8 @@ async function main(){
  check((await pg.query('SELECT name FROM tenants WHERE id=$1',[actor.tenantId])).rows[0]?.name,'Increment');
  const assignments=(await pg.query('SELECT id FROM aor_assignments WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL',[actor.tenantId,actor.projectId,actor.actorId])).rows;check(assignments.length,1);
  const grant=assignments[0].id;
+ const destinationTeamId=(await pg.query('SELECT id FROM survey_teams WHERE tenant_id=$1 AND project_id=$2 AND lead_user_id=$3 AND deactivated_at IS NULL',[actor.tenantId,actor.projectId,actor.actorId])).rows[0]?.id;
+ assert(destinationTeamId,'A deliberately selected current supervised team fixture is required');
  for(const kind of ['grant','node'] as const){
   const transfer=await pg.connect(),revoker=await pg.connect();
   const transferPid=(await transfer.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
@@ -29,7 +31,7 @@ async function main(){
   const target=oldChief===id(14)?id(24):id(14),beforeEvents=await events(),beforeHistory=await history();
   let revoked:Promise<void>|undefined,finished=false,revocationError:unknown;
   class PausedRepository extends SurveyWorkforcePgRepository{
-   override async move(db:DbClient,current:TeamActor,im:UUID,chief:UUID){
+   override async move(db:DbClient,current:TeamActor,im:UUID,chief:UUID,destinationTeamId:UUID){
     revoked=(async()=>{
      await revoker.query('BEGIN');await revoker.query("SET LOCAL statement_timeout='8000ms'");
      if(kind==='grant')await deactivateAorUserAssignment(new TenancyRepository(),revoker,{tenantId:actor.tenantId,projectId:actor.projectId,assignmentId:grant,actorRole:'PROJECT_ADMIN'});
@@ -45,20 +47,20 @@ async function main(){
     }
     check(blocked,true,`${kind} revocation must wait for the authorized transfer transaction`);
     check(finished,false,'Authority cannot disappear between snapshot validation and the roster write');
-    await super.move(db,current,im,chief);
+    await super.move(db,current,im,chief,destinationTeamId);
    }
   }
   const repo=new PausedRepository();
   try{
    const expectedSnapshot=(await repo.snapshot(pg,actor.tenantId,actor.projectId))!;
    await transfer.query('BEGIN');await transfer.query("SET LOCAL statement_timeout='8000ms'");
-   check(await moveWorkforceMember(repo,transfer,actor,{instrumentManId:id(17),partyChiefId:target,expectedSnapshot}),{changed:true});
+   check(await moveWorkforceMember(repo,transfer,actor,{instrumentManId:id(17),destinationTeamId,partyChiefId:target,expectedSnapshot}),{changed:true});
    await transfer.query('COMMIT');await revoked;if(revocationError)throw revocationError;
    check((await pg.query('SELECT party_chief_id FROM crew_rosters WHERE project_id=$1 AND instrument_man_id=$2 AND deactivated_at IS NULL',[actor.projectId,id(17)])).rows[0].party_chief_id,target);
    check(await events(),beforeEvents+1);check(await history(),beforeHistory);
    // Once the winning revocation has committed, a later command cannot write or replay authority.
    const now=(await repo.snapshot(pg,actor.tenantId,actor.projectId))!;
-   await transfer.query('BEGIN');await assert.rejects(moveWorkforceMember(new SurveyWorkforcePgRepository(),transfer,actor,{instrumentManId:id(17),partyChiefId:oldChief,expectedSnapshot:now}),NotFoundError);checks++;
+   await transfer.query('BEGIN');await assert.rejects(moveWorkforceMember(new SurveyWorkforcePgRepository(),transfer,actor,{instrumentManId:id(17),destinationTeamId,partyChiefId:oldChief,expectedSnapshot:now}),NotFoundError);checks++;
    await transfer.query('ROLLBACK');check(await events(),beforeEvents+1);
   }finally{
    await transfer.query('ROLLBACK');if(revoked)await revoked.catch(()=>{});await revoker.query('ROLLBACK');
@@ -83,7 +85,7 @@ async function main(){
    override async saveAorAssignment(db:DbClient,assignment:Parameters<TenancyRepository['saveAorAssignment']>[1]){
     replacementId=assignment.id;
     await waitingTransfer.query('BEGIN');await waitingTransfer.query("SET LOCAL statement_timeout='8000ms'");
-    pending=moveWorkforceMember(new SurveyWorkforcePgRepository(),waitingTransfer,actor,{instrumentManId:id(17),partyChiefId:oldChief===id(14)?id(24):id(14),expectedSnapshot}).then(value=>value,error=>error);
+    pending=moveWorkforceMember(new SurveyWorkforcePgRepository(),waitingTransfer,actor,{instrumentManId:id(17),destinationTeamId,partyChiefId:oldChief===id(14)?id(24):id(14),expectedSnapshot}).then(value=>value,error=>error);
     let blocked=false;const deadline=Date.now()+3000;
     while(Date.now()<deadline){
      const state=(await pg.query("SELECT wait_event_type='Lock' AND $2::int=ANY(pg_blocking_pids(pid)) AS blocked FROM pg_stat_activity WHERE pid=$1",[waitingPid,replacementPid])).rows[0];
