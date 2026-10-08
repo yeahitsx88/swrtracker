@@ -144,17 +144,17 @@ export default function SurveyOperationsPage() {
       </div>
       <div className="ops-pagination">
         <span role="status">{currentPage.first}–{currentPage.last} of {currentPage.total} {tab === 'messages' ? 'messages' : 'requests'}</span>
-        <label>Items per page<select value={pageSize} onChange={event => { setPageSize(Number(event.target.value)); setPage(1); }}>{[10,25,50,100].map(size => <option key={size}>{size}</option>)}</select></label>
-        <Button variant="secondary" disabled={currentPage.page === 1} onClick={() => setPage(currentPage.page - 1)}>Previous</Button>
+        <label>{tab === 'messages' ? 'Messages per page' : 'Requests per page'}<select value={pageSize} onChange={event => { setPageSize(Number(event.target.value)); setPage(1); }}>{[10,25,50,100].map(size => <option key={size}>{size}</option>)}</select></label>
+        <Button variant="secondary" disabled={currentPage.page === 1} onClick={() => setPage(currentPage.page - 1)}>Previous {tab === 'messages' ? 'message' : 'request'} page</Button>
         <span>Page {currentPage.page} of {currentPage.pages}</span>
-        <Button variant="secondary" disabled={currentPage.page === currentPage.pages} onClick={() => setPage(currentPage.page + 1)}>Next</Button>
+        <Button variant="secondary" disabled={currentPage.page === currentPage.pages} onClick={() => setPage(currentPage.page + 1)}>Next {tab === 'messages' ? 'message' : 'request'} page</Button>
       </div>
       <div className="ops-disclosure-controls"><Button variant="secondary" onClick={() => expandRows(true)}>Expand page</Button><Button variant="secondary" onClick={() => expandRows(false)}>Collapse all</Button></div>
 
       {tab === 'assignment' ? <Card className="ops-list" title="Need Assignment" description={superintendent ? 'Area-wide approved requests awaiting an Instrument Man. Expand a row to review the request.' : 'Approved requests awaiting an Instrument Man. Expand a row to assign crew.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          <RecordCollection preserveOrder label="operation requests" records={<>{ticketPage.items.map((ticket) => (
+          <RecordCollection preserveOrder label="operation requests on this page" records={<>{ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket}
               readOnly={superintendent} projectId={projectId}
               disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>void loadOperations()} />
@@ -165,7 +165,7 @@ export default function SurveyOperationsPage() {
       {tab === 'open' ? <Card className="ops-list" title="Open Requests" description={superintendent ? 'Area-wide workload, high priority first, then earliest Need-By. Open a request for applicable actions.' : 'High priority first, then earliest Need-By. Expand a row for review actions.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          <RecordCollection preserveOrder label="operation requests" records={<>{ticketPage.items.map((ticket) => (
+          <RecordCollection preserveOrder label="operation requests on this page" records={<>{ticketPage.items.map((ticket) => (
             <details className="ops-queue-row" key={ticket.id}>
               <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
               <div className="stack ops-row-body">

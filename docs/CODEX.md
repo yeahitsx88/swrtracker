@@ -4475,3 +4475,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Git: pre-checkpoint fetch development0/0, main194local/7remote; routine verified commit/push, no base integration.
 - Known gaps/next: whole Alpha open; clarify loaded-record versus whole-query controls and verify mobile long-reference readability/project/direct-link context. Current mobile internal table scroll can partially clip caption/reference; no full mobile/role-state/navigation acceptance claim. Org/main/deploy/Alpha2/source-map-js release boundaries unchanged.
 - Production behavior changed: yes, default displayed Survey queue order only.
+
+
+### 2026-10-08 - Batch239
+- Intent: close demonstrated Survey mobile queue clipping and ambiguous paging/control scope under approved Alpha finalization.
+- Ownership: sequential IMPLEMENTER frontend-only exception authorized by project-wide Alpha hardening; two Survey Operations files, three owned beta verification helpers, E239 receipt and acceptance documents. No concurrent writers.
+- Files touched: Survey Operations operations.css/page.tsx; tests/beta/alpha-queue239-{fixture,browser,captures}.mjs; audits/alpha1-ui-redesign/alpha-closure239-queue-mobile-evidence.json; docs/ALPHA1_COMPLETION_REGISTER.md; docs/ALPHA1_ACCEPTANCE_CLOSURE.md; docs/CODEX.md (append only).
+- Behavior changed: Survey-local mobile single-record table wraps full references; label loaded-page filters and request/message page controls. Existing server/default operations order and deliberate local sort preserved. Shared tables, identifiers, workflow/payload/role/tenant/company/session/persistence/history semantics unchanged.
+- Baseline: clean pushed d7c2de3 alpha1-ui-redesign; strict types and690units pass. Five actual before criteria establish retained ordering,640px table inside332px view and missing local-page wording.
+- Verification: strict-unused host/pinned types;690host/pinned units;14focused operations/query/FrozenCommand tests; fresh Node22.23.3 Next15.5.27 compilation;33actual PostgreSQL suites terminal pass. Fresh independently owned43actual request HTTP/browser queue:32current named role/order/filter/paging/keyboard/mobile/history criteria, four opened Light1440/Dark390 captures, no page errors. All576production/migration bytes match final runtime; digest45097e40ec898e85652a6e8d4f17f897f920789161ceb825d8988a6d93c2f50f.
+- Limitations: synthetic owned signed sessions rather than interactive sign-in; named Manager/Superintendent queues only; full role/state/navigation, zoom/contrast and whole Alpha acceptance remain open. Initial shots framed controls; additional same-data shots show full references without repeating workflows. Current SQL/unit auth, tenancy, Team Management and Org regressions pass; no new broad HTTP authority matrix claimed.
+- Known gaps/next: project/direct-link/back-context navigation and remaining role/task visual acceptance. Org mutations/provenance/expansions/performance deferred; inherited source-map-js release blocker separate. No deploy/main merge/Alpha2/release-ready claim.
+- Git: fetched dev0/0 and main195/7 before checkpoint; existing history preserved; coherent commit/push under standing directive, remote confirmation after commit.
+- Production behavior changed: yes, existing two-file Survey presentation only.
