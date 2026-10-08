@@ -10,6 +10,7 @@ export type OrganizationPerson = Pick<TeamPerson, 'userId' | 'name' | 'role' | '
 export type OrganizationLinkedPerson = Pick<StaffingPerson, 'userId' | 'name' | 'role' | 'active'>;
 export interface SurveyOrganization {
   projectId: UUID;
+  scope?: 'SUPERINTENDENT';
   project: Awaited<ReturnType<typeof readTeamContext>>['project'];
   personnel: Array<OrganizationPerson & Pick<TeamPersonnel, 'teamId' | 'teamName'>>;
   teams: Array<Omit<SurveyTeamDetail, 'lead' | 'members'> & { lead: OrganizationPerson; members: OrganizationPerson[] }>;

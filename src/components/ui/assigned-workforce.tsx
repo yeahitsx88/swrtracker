@@ -17,15 +17,16 @@ function useWorkforcePage(projectId:string,search:string,offset:number,limit:num
  useEffect(()=>{let active=true;setData(undefined);setError(undefined);apiClient.workforce(projectId,{search,offset,limit}).then(value=>{if(active)setData(value);}).catch(cause=>{if(active)setError(getErrorMessage(cause,'Unable to load current assigned personnel.'));});return()=>{active=false;};},[projectId,search,offset,limit,revision]);
  return {data,error};
 }
-export function AssignedWorkforce({projectId,role,archived,onEditingChange}:{projectId:string;role:ProjectRole;archived:boolean;onEditingChange?:(editing:boolean)=>void}){
+export function AssignedWorkforce({projectId,role,archived,onEditingChange,initialReview,onCommitted,onReviewReloaded}:{initialReview?:{person:WorkforcePerson;target:WorkforcePerson;snapshot:string};onCommitted?:()=>void;onReviewReloaded?:()=>void;projectId:string;role:ProjectRole;archived:boolean;onEditingChange?:(editing:boolean)=>void}){
  const [search,setSearch]=useState(''),[draft,setDraft]=useState(''),[offset,setOffset]=useState(0),[limit,setLimit]=useState(10),[revision,setRevision]=useState(0);
- const [moving,setMoving]=useState<WorkforcePerson>(),[snapshot,setSnapshot]=useState<string>(),[target,setTarget]=useState<WorkforcePerson>(),[chiefOffset,setChiefOffset]=useState(0);
+ const [moving,setMoving]=useState<WorkforcePerson|undefined>(initialReview?.person),[snapshot,setSnapshot]=useState<string|undefined>(initialReview?.snapshot),[target,setTarget]=useState<WorkforcePerson|undefined>(initialReview?.target),[chiefOffset,setChiefOffset]=useState(0);
  const [busy,setBusy]=useState(false),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[confirmed,setConfirmed]=useState(false),[closed,setClosed]=useState(archived),[currentChief,setCurrentChief]=useState<WorkforcePerson>(),[readFailed,setReadFailed]=useState(false);
  const gate=useRef(new FrozenCommand<WorkforceMove>()).current,owner=useRef(new CommandOwner()).current;
  useAdministrationProgress(owner,`/projects/${projectId}/survey/teams`);
  const page=useWorkforcePage(projectId,search,offset,limit,revision);
  const chiefs=useWorkforcePage(projectId,'PARTY CHIEF',chiefOffset,10,revision);
  const superintendent=role==='SURVEY_SUPERINTENDENT';
+ useEffect(()=>{if(initialReview)onEditingChange?.(true);},[]);
  useEffect(()=>{let active=true;setCurrentChief(undefined);if(!moving?.partyChiefId)return;apiRequest<{person:WorkforcePerson}>(`/api/projects/${projectId}/survey/workforce?mode=person&personId=${moving.partyChiefId}`).then(value=>{if(active)setCurrentChief(value.person);}).catch(cause=>{if(active)setError(getErrorMessage(cause,'Unable to read the current Chief identity. Reload workforce before reviewing this move.'));});return()=>{active=false;};},[projectId,moving?.partyChiefId]);
  function openMove(person:WorkforcePerson,expectedSnapshot:string){
  onEditingChange?.(true);
@@ -33,7 +34,7 @@ export function AssignedWorkforce({projectId,role,archived,onEditingChange}:{pro
  }
  async function reload(){
  if(busy||gate.pending||gate.command&&!gate.stale)return;setBusy(true);setError(undefined);setReadFailed(false);
- try{const [context]=await Promise.all([apiClient.workforceContext(projectId),apiClient.workforce(projectId,{search:'',offset:0,limit}),apiClient.workforce(projectId,{search:'PARTY CHIEF',offset:0,limit:10})]);if(!gate.reload())return;setClosed(context.project.status==='ARCHIVED');setMoving(undefined);setSnapshot(undefined);setTarget(undefined);setConfirmed(false);setChiefOffset(0);setRevision(n=>n+1);owner.release('crew');onEditingChange?.(false);}
+ try{const [context]=await Promise.all([apiClient.workforceContext(projectId),apiClient.workforce(projectId,{search:'',offset:0,limit}),apiClient.workforce(projectId,{search:'PARTY CHIEF',offset:0,limit:10})]);if(!gate.reload())return;setClosed(context.project.status==='ARCHIVED');setMoving(undefined);setSnapshot(undefined);setTarget(undefined);setConfirmed(false);setChiefOffset(0);setRevision(n=>n+1);owner.release('crew');onEditingChange?.(false);onReviewReloaded?.();}
  catch(cause){setReadFailed(true);setError(getErrorMessage(cause,'Unable to read current workforce. Keep this reassignment open and try again.'));}
  finally{setBusy(false);}
  }
@@ -41,7 +42,7 @@ export function AssignedWorkforce({projectId,role,archived,onEditingChange}:{pro
  if(!moving||!snapshot||!target||busy||gate.stale||(!gate.command&&!confirmed)||closed||moving.partyChiefId&&!currentChief)return;
  const command=gate.begin({instrumentManId:moving.userId,partyChiefId:target.userId,expectedSnapshot:snapshot},crypto.randomUUID());if(!command)return;
  owner.claim('crew');setBusy(true);setError(undefined);
- try{await apiClient.moveWorkforceMember(projectId,command.body,command.key);gate.success();owner.release('crew');setSuccess('Crew reassignment saved. Your assigned workforce and request history are retained.');setMoving(undefined);setConfirmed(false);setRevision(n=>n+1);onEditingChange?.(false);}
+ try{await apiClient.moveWorkforceMember(projectId,command.body,command.key);gate.success();owner.release('crew');setSuccess('Crew reassignment saved. Your assigned workforce and request history are retained.');setMoving(undefined);setConfirmed(false);setRevision(n=>n+1);onEditingChange?.(false);onCommitted?.();}
  catch(cause){gate.fail(cause instanceof ApiClientError?cause.status:undefined);setError(getErrorMessage(cause,'Unable to save. Retry the unchanged reassignment or reload current staffing.'));if(!gate.locked)owner.release('crew');}
  finally{setBusy(false);}
  }

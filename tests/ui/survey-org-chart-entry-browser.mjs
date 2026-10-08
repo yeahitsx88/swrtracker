@@ -24,8 +24,8 @@ try {
       } : { error: { type: 'Forbidden', message: 'Fixture access denied' } }) });
     });
     await page.goto(`${origin}/prototypes/survey-team/workspace?entry=1`);
-    const launcher = page.getByRole('button', { name: 'Open Survey Organization Chart (Read-Only)', exact: true });
-    if (role === 'SURVEY_MANAGER') {
+    const launcher = page.getByRole('button', { name: 'Open Visual Editor', exact: true });
+    if (role) {
       await launcher.waitFor();
       assert.equal(await launcher.isEnabled(), true);
       await launcher.click();
@@ -35,11 +35,13 @@ try {
       await page.screenshot({ path: '.local/org-poc/team-management-overlay-mobile.png', animations: 'disabled' });
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.getByRole('button', { name: 'Close organization chart', exact: true }).click();
+      if(role === 'SURVEY_MANAGER') {
       await page.locator('#tm-tab-teams').click();
       await page.getByRole('button', { name: 'Create team', exact: true }).click();
       assert.equal(await launcher.isDisabled(), true);
       await page.getByRole('button', { name: 'Cancel', exact: true }).click();
       assert.equal(await launcher.isEnabled(), true);
+      }
     } else {
       if (role) await page.getByRole('heading').first().waitFor();
       else await page.getByRole('button', { name: 'Retry project access', exact: true }).waitFor();
@@ -49,5 +51,5 @@ try {
     assert.deepEqual(errors, []);
     await context.close();
   }
-  console.log('Manager launcher, editor exclusion, Superintendent/denied-context exclusion: pass; zero writes/errors');
+  console.log('Manager/Superintendent visual launchers, Manager editor exclusion, denied-context exclusion: pass; zero writes/errors');
 } finally { await browser.close(); }

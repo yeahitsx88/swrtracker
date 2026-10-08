@@ -26,7 +26,7 @@ Authority: approved requirements ADCQ-260923-001, approved decision log through 
 | Tenant Admin alone restoring deleted drafts | Superseded by current explicit grant-only rule | Current repository instructions/workflow invariants require actual independent Project Admin grant | Historical Batch143 code bypass contradicted Decision23 and current instructions; corrected and verified in protected-recovery-controls-evidence.json. Older role-audit wording is not authority to expand this path |
 | General promotion through Manager Team Management | Superseded | Later Survey-only queue restrictions | Existing Requester/Viewer are excluded; separately authorized administrative enrollment/promotion only |
 | Preparation cancellation shortcut | Decision-blocked; separate | Current governance; no cancellation contract approved | No shortcut; does not promote itself into ordinary UI finalization |
-| Org Chart dedicated UX/live writes/provenance/former-Chief/headcount/scale | Deferred | Owner finalization boundaries | Preserve current behavior and disclosed limits |
+| Org Chart dedicated UX/provenance/former-Chief/headcount/scale | Deferred | Owner finalization boundaries | Preserve current behavior and disclosed limits |
 | Print/report exports; generalized RBAC/integrations/SSO/automatic purge | Deferred | Existing product queue/current invariants | No new scope inferred |
 | Retained demo refresh, push/deploy, Alpha2 integration | Deferred pending independent authorization | Owner current boundary | New isolated verification only |
 | source-map-js/GHSA-68fv-2mgg-jv7q release-image gate | Separate known blocker | Batch181-183; owner explicitly excludes unrelated remediation | Production compilation and local acceptance do not clear release gate |
@@ -49,3 +49,10 @@ Each row must be checked in ACTIVE/SETUP/ARCHIVED and current revoked/denied acc
 ## Completion rule
 
 Keep overall acceptance OPEN until every still-valid approved item has current-source executable and visual evidence, no blocking owner decision remains, and refreshed queue dispositions link those receipts. Preserve historical artifacts without relabeling them. Append each coherent increment to CODEX and commit normally; never reset retained fixtures or rewrite checkpoints.
+
+
+### Owner steering - optional visual editor, Decision53
+
+Verified complete at bounded Batch198: integrate accepted V1 as a second Team Management editing method for Manager and Superintendent using current governed operations and authorized scope. The earlier blanket live-write deferral is superseded only for supported visual actions in this increment; other Org Chart follow-ons remain deferred. Acceptance criteria and operation map: docs/VISUAL_TEAM_EDITOR_INCREMENT.md. Conventional controls and historical receipts remain intact.
+
+Current authority/evidence: Decision53 and docs/VISUAL_TEAM_EDITOR_INCREMENT.md; audits/alpha1-ui-redesign/visual-team-editor-evidence.json. Supported Manager IM/Chief moves and Superintendent same-team IM moves use existing reviews, APIs and persistence. Other visual actions remain conventional-only. Full Alpha current-source role/state and connected journeys remain OPEN; Batch197 historical full30 PostgreSQL runner still needs continuity-recovery fixture reconciliation. No acceptance of older captures is implied.

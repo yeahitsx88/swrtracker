@@ -23,8 +23,8 @@ export function organizationChartPeople(data: SurveyOrganization): LiveChartPers
       if (coverage.sharedDepartmentAssignmentCount) details.push(`${coverage.sharedDepartmentAssignmentCount} shared department Area assignment(s); this chart does not expand department coverage.`);
     }
     if (detail) {
-      details.push(`Assigned Areas: ${detail.areas.data.map(areaLabel).join(', ') || 'none'}`);
-      details.push(detail.reporting ? `Explicit reporting: ${detail.reporting.superintendent.name} · ${areaLabel(detail.reporting.area)}${!detail.reporting.superintendent.active || detail.reporting.superintendent.role !== 'SURVEY_SUPERINTENDENT' || !data.personnel.some(member => member.userId === detail.reporting!.superintendent.userId && member.active && member.role === 'SURVEY_SUPERINTENDENT') ? ' (outside current Superintendent population)' : ''}` : 'Explicit Superintendent reporting link: none');
+      if(!data.scope)details.push(`Assigned Areas: ${detail.areas.data.map(areaLabel).join(', ') || 'none'}`);
+      details.push(detail.reporting ? `Explicit reporting: ${detail.reporting.superintendent.name} · ${areaLabel(detail.reporting.area)}${!detail.reporting.superintendent.active || detail.reporting.superintendent.role !== 'SURVEY_SUPERINTENDENT' || !data.personnel.some(member => member.userId === detail.reporting!.superintendent.userId && member.active && member.role === 'SURVEY_SUPERINTENDENT') ? ' (outside current Superintendent population)' : ''}` : data.scope ? 'No explicit reporting link to you is shown; named-team membership does not create one.' : 'Explicit Superintendent reporting link: none');
     }
     const retainedCrew = detail?.instrumentMen.filter(member => !member.active || member.role !== 'INSTRUMENT_MAN' || !data.personnel.some(value => value.userId === member.userId && value.role === 'INSTRUMENT_MAN' && value.active))
       .map(member => `${member.name} (${member.role?.replaceAll('_', ' ') ?? 'no project role'}${member.active ? '' : ', inactive access'})`) ?? [];
