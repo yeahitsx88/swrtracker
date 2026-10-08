@@ -4342,3 +4342,14 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Git: fetched development0/0, main183/7 before checkpoint; no integration. Commit/push under standing owner directive. No deploy/main/Alpha2; inherited source-map-js release blocker separate.
 - Next: current remaining approval/cancellation and legacy field-review affordances, then requirement-level closure.
 - Production behavior changed: yes (authorized historical read eligibility only).
+
+
+### 2026-10-08 - Batch228
+- Intent: align retained legacy field-report actions with existing authorized role/assignment/outcome rules; reconcile current Alpha queue.
+- Role/scope: sequential AUDITOR/IMPLEMENTER under authorized shared Alpha UI/test/documentation exception; two existing UI files, directly tied three owned-fixture helpers and evidence/docs.
+- Behavior changed: current Manager/Superintendent or assigned Chief can review existing retained reports; other read-visible reports explain read-only access; absent recorded outcome no longer implies completion. No API/domain/schema/event/notification change. Modern successful work still completes directly.
+- Verification: baseline/final strict673units,61focused, pinned Node22.23.3/Next15.5.27 compilation and33PG suites pass;119production browser/HTTP checks. All568production/migration bytes match artifact. Six Light/Dark desktop/mobile captures opened; exact keyboard retry, concurrent review, audit rollback and historical identity retained; scoped detector empty.
+- Evidence: audits/alpha1-ui-redesign/alpha-closure228-legacy-review-evidence.json. Fresh guarded owned UUID schema uses explicitly seeded legacy compatibility records, not modern reporting transitions; completed run retained.
+- Limitations/next: D6 witnessed completion-only field controls remain disabled by broad project-status UI guard; investigate minimal server-derived scoped eligibility. Legacy approval notice promise lacks application enqueue and requires contract reconciliation. Whole role/state/initial Setup/invitation/visual acceptance remains open. No new owner decision.
+- Git: fetch/check divergence then coherent verified commit/push under standing instruction; no main integration/deploy/Alpha2. Inherited source-map-js release blocker separate.
+- Production behavior changed: yes (presentation only).

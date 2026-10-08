@@ -59,11 +59,14 @@ export default function CrewApprovalsPage() {
               </>
               ) : <span className="muted">Review is reserved for the recorded reviewer.</span>
             ) : (
+              workspace && (['SURVEY_MANAGER','SURVEY_SUPERINTENDENT'].includes(workspace.capabilities.operationalRole ?? '') ||
+              workspace.capabilities.operationalRole === 'PARTY_CHIEF' && ticket.assignedPartyChiefId === workspace.actorId) ? (
               <ApprovalActions
                 ticket={ticket}
                 busy={actionDisabled}
                 onReview={action => workflow.open(ticket,action)}
               />
+              ) : <span className="muted">Legacy review requires the assigned Party Chief or authorized survey leadership.</span>
             )}
           />
         ) : null}
