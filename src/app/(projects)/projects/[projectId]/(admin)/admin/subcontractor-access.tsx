@@ -14,7 +14,7 @@ import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
 import {apiRequest} from '@/lib/apiClient';
 import { Field } from '@/components/forms';
 
-export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { projectId: string;owner:CommandOwner;companiesRevision?:number }) {
+export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvitesChanged }: { projectId: string;owner:CommandOwner;companiesRevision?:number;onInvitesChanged?:()=>void }) {
   const centralIT=useProjectWorkspace()?.capabilities.centralIT===true;
   const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const token='subcontractor-invite',gate=useRef(new FrozenCommand<{companyId:string;email:string}>()).current;
@@ -57,7 +57,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
       setInviteUrl(`${window.location.origin}/invite/${response.inviteToken}`);
       setEmail('');
       setSuccess('Requester invitation created. Share the registration link with the intended recipient.');
-      await load();
+      await load();onInvitesChanged?.();
     } catch (err) {
       gate.fail(err instanceof ApiClientError?err.status:undefined);if(!gate.locked)owner.release(token);setError(getErrorMessage(err,'Outcome uncertain. Retry the unchanged invitation.'));
     } finally {
@@ -113,7 +113,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
                 <div className="muted">
                   {inviteRecord.companyName} · expires {new Date(inviteRecord.expiresAt).toLocaleDateString()}
                 </div>
-                {centralIT&&<InvitationCancellationReview projectId={projectId} inviteId={inviteRecord.id} email={inviteRecord.email} owner={owner} disabled={loading||busy!==null||archived||gate.locked||!!batch} onSaved={()=>{setSuccess('Invitation cancelled. Its record and history are retained.');void load();}}/>}
+                {centralIT&&<InvitationCancellationReview projectId={projectId} inviteId={inviteRecord.id} email={inviteRecord.email} owner={owner} disabled={loading||busy!==null||archived||gate.locked||!!batch} onSaved={()=>{setSuccess('Invitation cancelled. Its record and history are retained.');void load();onInvitesChanged?.();}}/>}
               </div>
             ))}</>}/>
             </AdministrationSection>

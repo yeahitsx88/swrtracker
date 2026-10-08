@@ -1,3 +1,7 @@
+import {parseInvitationHistoryQuery} from '@/modules/identity/application/project-invitation-history';
+import {readProjectInvitationHistory} from '@/modules/identity/infrastructure/project-invitation-history.reader';
+import {requireInvitationCancellationAuthority} from '@/modules/identity/application/cancel-project-invitation';
+import {requireResourceUuid} from '@/lib/resource-uuid';
 import {observeProjectRoute} from '@/lib/observe-project-route';
 import {administrationRetry} from '@/lib/administration-retry';
 import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
@@ -71,3 +75,13 @@ async function observedPOST(
 }
 
 export const POST=observeProjectRoute(observedPOST);
+
+async function observedGET(req:NextRequest,{params}:{params:Promise<{projectId:string}>}){
+ try{
+  const auth=await requireAuth(req),projectId=(await params).projectId as UUID;requireResourceUuid(projectId,'projectId');
+  const query=parseInvitationHistoryQuery(req.nextUrl.searchParams);
+  const history=await withTransaction(db=>readProjectInvitationHistory(db,auth.tenantId,projectId,query),{req,auth,mode:'SHARED',authorize:db=>requireInvitationCancellationAuthority(db,auth,projectId)});
+  return NextResponse.json(history,{headers:{'Cache-Control':'private, no-store'}});
+ }catch(error){return errorResponse(error);}
+}
+export const GET=observeProjectRoute(observedGET);

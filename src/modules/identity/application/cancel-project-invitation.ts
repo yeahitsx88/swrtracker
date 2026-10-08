@@ -16,7 +16,7 @@ export function parseInvitationCancellation(value:unknown):InvitationCancellatio
  return {snapshot:b.snapshot,reason:b.reason.trim(),confirmed:true};
 }
 export async function requireInvitationCancellationAuthority(db:DbClient,auth:AuthContext,projectId:UUID){
- if(!(await resolveProjectCapabilities(db,auth,projectId)).centralIT)throw new ForbiddenError('Only Central IT may cancel pending invitations.');
+ if(!(await resolveProjectCapabilities(db,auth,projectId)).centralIT)throw new ForbiddenError('Only Central IT may review project invitations or cancel pending invitations.');
 }
 /** Current authority and phase precede the ledger; only fresh execution checks pending state. */
 export async function authorizeInvitationCancellation(db:DbClient,auth:AuthContext,projectId:UUID,inviteId:UUID){
