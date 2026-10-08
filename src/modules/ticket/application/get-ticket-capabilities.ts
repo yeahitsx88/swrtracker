@@ -29,6 +29,7 @@ function transitionIsAllowed(ticket: Ticket, to: 'REQUESTER_CANCELED'): boolean 
 export function getTicketCapabilities(
   ticket: Ticket,
   actor: { id: UUID; role: ProjectRole },
+  uploadsAvailable: boolean,
 ): TicketCapabilities {
   const ownsRequest = actor.role === 'REQUESTER' && ticket.requesterId === actor.id;
   const requesterEditable = ownsRequest && REQUESTER_EDITABLE.has(ticket.status);
@@ -44,7 +45,7 @@ export function getTicketCapabilities(
     canSubmit: requesterEditable,
     canRequesterCancel: ownsRequest && transitionIsAllowed(ticket, 'REQUESTER_CANCELED'),
     canCreateFollowUp: ownsRequest && ticket.status === 'COMPLETED',
-    canUploadRequestInstruction: requesterEditable,
-    canUploadFieldSupport,
+    canUploadRequestInstruction: requesterEditable && uploadsAvailable,
+    canUploadFieldSupport: canUploadFieldSupport && uploadsAvailable,
   };
 }

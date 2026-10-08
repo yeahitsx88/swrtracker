@@ -7,10 +7,10 @@ import {observeProjectRoute} from '@/lib/observe-project-route';
  * tickets — no information leakage.
  */
 import { NextResponse, type NextRequest } from 'next/server';
-import { NotFoundError } from '@/shared/errors';
+import { ConflictError, NotFoundError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { pool } from '@/lib/db';
-import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
+import { assertRecommissioningMutation } from '@/lib/recommissioning-gate';
+import { getTicketRouteContext, withTicketMutation, withTicketRead } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { updateRequesterTicket } from '@/modules/ticket/application/update-requester-ticket';
@@ -29,21 +29,32 @@ async function observedGET(
   try {
     const { ticketId } = await params;
     const ctx  = await getTicketRouteContext(req, ticketId);
-    const repo = new TicketRepository();
+    return await withTicketRead(req, ctx, async (db, ctx) => {
+      const repo = new TicketRepository();
 
-    const ticket = await repo.findById(pool, ctx.tenantId, ctx.ticketId, ctx.visibility);
-    if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
-    const requester = await new UserRepository().findById(
-      pool, ctx.tenantId, ticket.requesterId,
-    );
+      const ticket = await repo.findById(db, ctx.tenantId, ctx.ticketId, ctx.visibility);
+      if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
+      const requester = await new UserRepository().findById(
+        db, ctx.tenantId, ticket.requesterId,
+      );
 
-    return NextResponse.json({
-      ticket: {
-        ...ticket,
-        requesterName: requester?.name ?? 'Unknown requester',
-        isOwnRequest: ticket.requesterId === ctx.actorId,
-      },
-      capabilities: getTicketCapabilities(ticket, { id: ctx.actorId, role: ctx.actorRole }),
+      // Availability uses the upload writer's read-only lifecycle gate; it grants no authority.
+      let uploadsAvailable = true;
+      try {
+        await assertRecommissioningMutation(db, ctx.tenantId, ctx.projectId, `/api/tickets/${ticketId}/attachments`);
+      } catch (err) {
+        if (!(err instanceof ConflictError)) throw err;
+        uploadsAvailable = false;
+      }
+
+      return NextResponse.json({
+        ticket: {
+          ...ticket,
+          requesterName: requester?.name ?? 'Unknown requester',
+          isOwnRequest: ticket.requesterId === ctx.actorId,
+        },
+        capabilities: getTicketCapabilities(ticket, { id: ctx.actorId, role: ctx.actorRole }, uploadsAvailable),
+      });
     });
   } catch (err) {
     return errorResponse(err);

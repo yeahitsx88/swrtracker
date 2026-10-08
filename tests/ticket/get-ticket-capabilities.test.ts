@@ -19,7 +19,7 @@ const baseTicket: Ticket = {
 };
 
 test('original requester receives edit, submit, instruction upload, and cancel capabilities on a draft', () => {
-  const capabilities = getTicketCapabilities(baseTicket, { id: id('requester-1'), role: 'REQUESTER' });
+  const capabilities = getTicketCapabilities(baseTicket, { id: id('requester-1'), role: 'REQUESTER' }, true);
   assert.equal(capabilities.canEditRequesterFields, true);
   assert.equal(capabilities.canSubmit, true);
   assert.equal(capabilities.canUploadRequestInstruction, true);
@@ -28,7 +28,7 @@ test('original requester receives edit, submit, instruction upload, and cancel c
 });
 
 test('company authority viewing another requester draft receives no mutation capabilities', () => {
-  const capabilities = getTicketCapabilities(baseTicket, { id: id('authority-1'), role: 'REQUESTER' });
+  const capabilities = getTicketCapabilities(baseTicket, { id: id('authority-1'), role: 'REQUESTER' }, true);
   assert.deepEqual(capabilities, {
     canEditRequesterFields: false,
     canSubmit: false,
@@ -41,17 +41,36 @@ test('company authority viewing another requester draft receives no mutation cap
 
 test('active-work field upload follows Survey Lead and assignment boundaries', () => {
   const ticket = { ...baseTicket, status: 'IN_PROGRESS' as const };
-  assert.equal(getTicketCapabilities(ticket, { id: id('lead-1'), role: 'SURVEY_MANAGER' }).canUploadFieldSupport, true);
-  assert.equal(getTicketCapabilities(ticket, { id: id('chief-1'), role: 'PARTY_CHIEF' }).canUploadFieldSupport, true);
-  assert.equal(getTicketCapabilities(ticket, { id: id('instrument-1'), role: 'INSTRUMENT_MAN' }).canUploadFieldSupport, true);
-  assert.equal(getTicketCapabilities(ticket, { id: id('other-chief'), role: 'PARTY_CHIEF' }).canUploadFieldSupport, false);
+  assert.equal(getTicketCapabilities(ticket, { id: id('lead-1'), role: 'SURVEY_MANAGER' }, true).canUploadFieldSupport, true);
+  assert.equal(getTicketCapabilities(ticket, { id: id('chief-1'), role: 'PARTY_CHIEF' }, true).canUploadFieldSupport, true);
+  assert.equal(getTicketCapabilities(ticket, { id: id('instrument-1'), role: 'INSTRUMENT_MAN' }, true).canUploadFieldSupport, true);
+  assert.equal(getTicketCapabilities(ticket, { id: id('other-chief'), role: 'PARTY_CHIEF' }, true).canUploadFieldSupport, false);
 });
 
 test('completed owner can create a follow-up but cannot mutate the sealed parent', () => {
   const ticket = { ...baseTicket, status: 'COMPLETED' as const, completedAt: new Date() };
-  const capabilities = getTicketCapabilities(ticket, { id: id('requester-1'), role: 'REQUESTER' });
+  const capabilities = getTicketCapabilities(ticket, { id: id('requester-1'), role: 'REQUESTER' }, true);
   assert.equal(capabilities.canCreateFollowUp, true);
   assert.equal(capabilities.canEditRequesterFields, false);
   assert.equal(capabilities.canRequesterCancel, false);
   assert.equal(capabilities.canUploadRequestInstruction, false);
+});
+
+
+test('lifecycle upload restrictions do not grant role authority or alter cleanup capabilities', () => {
+  const actors = [
+    {id: id('requester-1'), role: 'REQUESTER' as const},
+    {id: id('lead-1'), role: 'SURVEY_MANAGER' as const},
+    {id: id('chief-1'), role: 'PARTY_CHIEF' as const},
+    {id: id('instrument-1'), role: 'INSTRUMENT_MAN' as const},
+    {id: id('viewer-1'), role: 'VIEWER' as const},
+  ];
+  for (const status of ['DRAFT', 'RETURNED_FOR_CORRECTION', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'] as const) {
+    for (const actor of actors) {
+      const ticket = {...baseTicket, status};
+      const ordinary = getTicketCapabilities(ticket, actor, true);
+      const restricted = getTicketCapabilities(ticket, actor, false);
+      assert.deepEqual(restricted, {...ordinary, canUploadRequestInstruction: false, canUploadFieldSupport: false});
+    }
+  }
 });
