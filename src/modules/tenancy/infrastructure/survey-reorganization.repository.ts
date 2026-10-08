@@ -27,7 +27,7 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
  }
  async preview(db:DbClient,actor:StaffingActor,input:ReorganizationSelection):Promise<ReorganizationPreview>{
   // Canonical selection excludes command-only fields from the checksum.
-  const selection:ReorganizationSelection=input.kind==='CREW'?{kind:'CREW',partyChiefId:input.partyChiefId,areaId:input.areaId,superintendentId:input.superintendentId,...(input.destinationTeamId?{destinationTeamId:input.destinationTeamId}:{})}:{kind:'INSTRUMENT_MAN',instrumentManId:input.instrumentManId,partyChiefId:input.partyChiefId};
+  const selection:ReorganizationSelection=input.kind==='CREW'?{kind:'CREW',partyChiefId:input.partyChiefId,areaId:input.areaId,superintendentId:input.superintendentId,...(input.destinationTeamId?{destinationTeamId:input.destinationTeamId}:{})}:{kind:'INSTRUMENT_MAN',instrumentManId:input.instrumentManId,partyChiefId:input.partyChiefId,destinationTeamId:input.destinationTeamId};
   const project=await this.lockProject(db,actor.tenantId,actor.projectId);if(!project)throw new NotFoundError('Project not found');
   const teamRepo=new SurveyTeamsPgRepository(),destination=await this.crew(db,actor,selection.partyChiefId),blockers:string[]=[],summary:string[]=[];
   const state:Record<string,unknown>={destination};let subject:UUID;
@@ -83,7 +83,10 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
    if((await this.member(db,actor.tenantId,actor.projectId,subject))?.role!=='INSTRUMENT_MAN')throw new NotFoundError('Active Instrument Man not found');
    const sourceId=await this.rosterChief(db,actor.tenantId,actor.projectId,subject);
    const source=sourceId?await this.crew(db,actor,sourceId):null;state.source=source;
-   const oldTeam=await this.memberTeam(db,actor,subject),newTeam=await this.memberTeam(db,actor,destination.chiefId);
+   const oldTeam=await this.memberTeam(db,actor,subject),newTeam=await teamRepo.team(db,actor.tenantId,actor.projectId,selection.destinationTeamId);
+   if(!newTeam)throw new NotFoundError('Current explicit destination named team not found');
+   if(!newTeam.members.some(member=>member.userId===destination.chiefId&&member.active))blockers.push('The selected destination Chief must already belong to the explicitly selected named team.');
+   if(!newTeam.lead.active||!newTeam.members.some(member=>member.userId===newTeam.lead.userId&&member.active))blockers.push('Resolve the explicit destination team lead vacancy before this transfer.');
    state.oldTeam=oldTeam;state.newTeam=newTeam;
    if(oldTeam&&!newTeam||oldTeam&&sourceId&&!oldTeam.members.some(member=>member.userId===sourceId))blockers.push('The Instrument Man and current Chief must belong to the same team, and the destination Chief must have a team.');
    if(oldTeam?.lead.userId===subject&&oldTeam.id!==newTeam?.id)blockers.push('Choose another lead for the current team before moving this person.');

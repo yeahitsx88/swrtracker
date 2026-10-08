@@ -11,7 +11,7 @@ function fixture(){const writes:unknown[]=[];const repo:ReorganizationRepository
 test('coordinated movement accepts explicit selection, current preview and reason',async()=>{const f=fixture();const input=parseReorganization({...selection,snapshot,reason:'Confirmed normal manpower rotation',confirmed:true},true);assert.deepEqual(await reorganizeSurvey(f.repo,db,actor,input as Parameters<typeof reorganizeSurvey>[3]),{changed:true});assert.equal(f.writes.length,1);});
 test('stale work/staffing and unresolved continuity blockers cause no writes',async()=>{for(const stale of [true,false]){const f=fixture();const previous=f.repo.preview;f.repo.preview=async(...args)=>({...await previous(...args),snapshot:stale?'b'.repeat(64):snapshot,blockers:stale?[]:['Resolve open crew requests']});await assert.rejects(reorganizeSurvey(f.repo,db,actor,{...selection,snapshot,reason:'Confirmed manpower change',confirmed:true}),ConflictError);assert.equal(f.writes.length,0);}});
 test('operational movement does not substitute administrator or Chief authority',async()=>{for(const role of ['PARTY_CHIEF','PROJECT_ADMIN','SURVEY_SUPERINTENDENT','REQUESTER'] as const){const f=fixture();await assert.rejects(reorganizeSurvey(f.repo,db,{...actor,actorRole:role},{...selection,snapshot,reason:'Confirmed manpower change',confirmed:true}),ForbiddenError);assert.equal(f.writes.length,0);}});
-test('preview and confirmation normalize the same selection and reject unsupported intent',()=>{assert.deepEqual(parseReorganization(selection),selection);assert.throws(()=>parseReorganization({...selection,transferTickets:true}),ValidationError);for(const patch of [{confirmed:false},{reason:'short'},{snapshot:'broken'},{reason:'valid reason\ncontrol'}])assert.throws(()=>parseReorganization({...selection,snapshot,reason:'Confirmed manpower movement',confirmed:true,...patch},true),ValidationError);assert.deepEqual(parseReorganization({kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8)}),{kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8)});});
+test('preview and confirmation normalize the same selection and reject unsupported intent',()=>{assert.deepEqual(parseReorganization(selection),selection);assert.throws(()=>parseReorganization({...selection,transferTickets:true}),ValidationError);for(const patch of [{confirmed:false},{reason:'short'},{snapshot:'broken'},{reason:'valid reason\ncontrol'}])assert.throws(()=>parseReorganization({...selection,snapshot,reason:'Confirmed manpower movement',confirmed:true,...patch},true),ValidationError);assert.deepEqual(parseReorganization({kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8),destinationTeamId:id(17)}),{kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8),destinationTeamId:id(17)});});
 
 test('same-Area crew reporting changes preserve the complete named team without a team write',async()=>{
  const {SurveyReorganizationPgRepository}=await import('@/modules/tenancy/infrastructure/survey-reorganization.repository');
@@ -34,11 +34,12 @@ test('same-Area crew reporting changes preserve the complete named team without 
  assert.equal(events[0]!.historicalWorkUnchanged,true);
 });
 
-test('explicit destination binds the crew review without widening reporting-only or Instrument Man payloads',()=>{
+test('explicit destination binds the crew review without changing reporting-only and requires explicit Instrument Man destination',()=>{
  const chosen={...selection,destinationTeamId:id(17)};
  assert.deepEqual(parseReorganization(chosen),chosen);
  assert.deepEqual(parseReorganization({...chosen,snapshot,reason:'Move the complete reviewed crew',confirmed:true},true),{...chosen,snapshot,reason:'Move the complete reviewed crew',confirmed:true});
  assert.throws(()=>parseReorganization({...selection,destinationTeamId:null}),ValidationError);
- assert.throws(()=>parseReorganization({kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8),destinationTeamId:id(17)}),ValidationError);
+ assert.deepEqual(parseReorganization({kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8),destinationTeamId:id(17)}),{kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8),destinationTeamId:id(17)});
+ assert.throws(()=>parseReorganization({kind:'INSTRUMENT_MAN',instrumentManId:id(7),partyChiefId:id(8)}),ValidationError);
  assert.deepEqual(parseReorganization(selection),selection);
 });

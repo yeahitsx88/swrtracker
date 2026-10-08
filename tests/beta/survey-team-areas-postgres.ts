@@ -59,7 +59,7 @@ async function main(){
   const saved=await saveSurveyTeam(repo,db,actor,input);
   assert.deepEqual((await repo.team(db,tenant,project,saved.teamId))!.areas!.map(a=>a.name),['Area A','Area B']);
   assert.equal((await repo.list(db,tenant,project,{search:'Area B',limit:10,offset:0})).total,1);
-  await saveSurveyTeam(repo,db,actor,{...input,name:'Team 2',leadUserId:otherChief,memberIds:[otherChief]});
+  const destination=await saveSurveyTeam(repo,db,actor,{...input,name:'Team 2',leadUserId:otherChief,memberIds:[otherChief]});
   assert.equal((await repo.list(db,tenant,project,{search:'Area B',limit:10,offset:0})).total,2,'Teams may overlap Areas');
   assert.equal((await repo.personnel(db,tenant,project,{search:'',limit:10,offset:0})).data.some(p=>p.userId===requester),false);
   await saveSurveyTeam(repo,db,actor,{...input,teamId:saved.teamId,expectedVersion:1,areaIds:[areaA]});
@@ -75,7 +75,7 @@ async function main(){
   assert.equal((await workforce.person(db,ss,instrument))!.partyChiefId,null);
   await db.query('SAVEPOINT unassigned_transfer');
   {
-    const transfers=new SurveyReorganizationPgRepository(),selection={kind:'INSTRUMENT_MAN' as const,instrumentManId:instrument,partyChiefId:otherChief};
+    const transfers=new SurveyReorganizationPgRepository(),selection={kind:'INSTRUMENT_MAN' as const,instrumentManId:instrument,partyChiefId:otherChief,destinationTeamId:destination.teamId};
     const preview=await transfers.preview(db,actor,selection);
     assert.deepEqual(preview.blockers,[],'Team member without a Chief can be transferred');
     await reorganizeSurvey(transfers,db,actor,{...selection,snapshot:preview.snapshot,reason:'Assign available surveyor to crew',confirmed:true});
@@ -97,7 +97,7 @@ async function main(){
   const pc={...actor,actorId:chief,actorRole:'PARTY_CHIEF' as const};
   assert.deepEqual((await workforce.personnel(db,pc,{search:'',limit:10,offset:0})).data.map(p=>p.userId),[instrument]);
   const transfers=new SurveyReorganizationPgRepository();
-  const move={kind:'INSTRUMENT_MAN' as const,instrumentManId:instrument,partyChiefId:otherChief};
+  const move={kind:'INSTRUMENT_MAN' as const,instrumentManId:instrument,partyChiefId:otherChief,destinationTeamId:destination.teamId};
   await assert.rejects(transfers.authorize(db,ss),/Only the Survey Manager/);
   const transferPreview=await transfers.preview(db,actor,move);
   assert.deepEqual(transferPreview.blockers,[],'Manager can transfer out of a Superintendent-led team');
