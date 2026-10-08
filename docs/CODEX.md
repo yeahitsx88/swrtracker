@@ -4451,3 +4451,15 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Git: pre-checkpoint fetch development0/0 and main192local/7remote; routine commit/push, no base integration.
 - Known gaps/next: named R05 Superintendent team handoff verified; broader Chief-only/no-Chief/combined-admin/role-state and full navigation/visual acceptance remain open. Next current Survey queue role information, navigation/context and refusal wording, then final evidence reconciliation. Deferred Org work and main/deploy/Alpha2/source-map-js release blocker remain separate.
 - Production behavior changed: no.
+
+
+### 2026-10-08 - Batch 237
+- Intent: IMPLEMENTER; close the recorded shared technical error-prefix wording candidate under existing Alpha finalization/Decision51 workflows.
+- Files touched: src/lib/errors.ts; existing errors contract tests; three owned beta helpers; E237 receipt; completion/closure registers and append-only work log. Shared frontend utility ownership claimed; approved Alpha cross-module exception, no other production file changed.
+- Behavior changed: display the exact useful Error/server message through the existing fallback path, retaining ApiClientError status/type/code/correlation and all status-based FrozenCommand decisions. Empty API messages use supplied recovery wording. No API/domain/authorization/schema/history/layout/brand/sidebar/dependency change.
+- Verification: baseline strict689units; final host/pinned strict690units,13focused; fresh Node22.23.3/Next15.5.27 production compilation; all33PostgreSQL suites at exact final artifact. Earlier unchanged-server SQL run preserved separately. All576source/migration bytes match live final source, digest in E237.
+- Actual evidence:7before checks demonstrate409 CONFLICT prefix;14current checks establish actual requester cancellation followed by held crew409, exact readable server wording/metadata, refusal witness, frozen consent/crew, Escape hold, injected failed-read hold, successful keyboard current reload, no assignment event/ledger and cancelled queue exclusion. Two Light1440/Dark390captures opened; no page errors.
+- Observer correction: broad snapshot included intentional appearance PUT ledger changes. Narrowed to request-specific records; continued only remaining read/queue assertions after already completed deliberate reload. Original before/confirmation fixtures retained; no repeated cancellation/stale mutation, reset or historical repair.
+- Git: pre-checkpoint fetch development0/0, main193local/7remote; routine verified commit/push, no base integration.
+- Known gaps/next: whole Alpha open; next multi-page Survey queue navigation, role/context and loaded-record control clarity. Whole-query and loaded-page controls serve different scopes; verify actual multi-page behavior before any refinement. Full role/state/visual acceptance and Org/main/deploy/Alpha2/release boundaries unchanged.
+- Production behavior changed: yes, human-facing shared error text only.

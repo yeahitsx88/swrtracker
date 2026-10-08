@@ -1,0 +1,77 @@
+{
+  "batch": 237,
+  "baseline": "eec7e629384173305d2a0370d4217a7908cd80a8",
+  "authority": [
+    "Owner Alpha finalization: clear wording and labels; Decision51 dependable protected workflows; preserve existing Axiom components and approval/domain/authorization/retry/history contracts.",
+    "Existing completion register records shared technical error prefixes as an approved usability candidate; standing checkpoint/push directive."
+  ],
+  "classification": "Verified shared human-facing error prefix correction and named actual crew conflict/read-recovery criteria; wider role/navigation/visual and whole Alpha acceptance remain open.",
+  "production": {
+    "files": 576,
+    "sha256": "a2a16421a9106c66d2bd5e6fa662a6c1bd0bbeef2b8d4106e8aea8b133507393",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/lib/errors.ts"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Use the existing Error message/fallback path for ApiClientError display; preserve status/type/code/correlation properties, API payloads, server messages, FrozenCommand decisions and logs."
+  },
+  "verification": {
+    "baselineUnits": 689,
+    "strictUnusedTypes": "pass current host and fresh pinned",
+    "unitTests": 690,
+    "focusedTests": 13,
+    "pinnedProductionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "postgresIdentity": "Final exact-source237artifact passes all33 suites; earlier unchanged-server236artifact run separately preserved.",
+    "actualBeforeChecks": [
+      "Actual requester cancellation makes held crew review ineligible",
+      "Actual HTTP conflict retains status/code/correlation metadata",
+      "Before source shows technical409 CONFLICT prefix",
+      "Definitive conflict preserves cancelled request/events/ledger",
+      "Definitive conflict retains reviewed consent/crew ownership",
+      "Escape cannot discard definitive conflict intent",
+      "No browser page errors"
+    ],
+    "actualCurrentChecks": [
+      "Actual requester cancellation makes held crew review ineligible",
+      "Actual HTTP conflict retains status/code/correlation metadata",
+      "Human-facing conflict shows exact actionable server wording without technical prefix",
+      "Definitive conflict preserves cancelled request/events/ledger",
+      "Definitive conflict retains reviewed consent/crew ownership",
+      "Escape cannot discard definitive conflict intent",
+      "Readable conflict LIGHT1440 dialog contained",
+      "Readable conflict DARK390 dialog contained",
+      "Injected failed current read cannot clear conflict or renew consent",
+      "Completed deliberate keyboard reload created no crew assignment event",
+      "Conflict and reload created no crew assignment ledger result",
+      "Cancelled request is absent from refreshed assignment queue",
+      "Current authenticated reads retain request-specific state/history/ledger witness",
+      "No browser page errors"
+    ],
+    "capturesOpenedAndReviewed": [
+      ".local/alpha-closure237-confirmation/conflict-light-1440.png",
+      ".local/alpha-closure237-confirmation/conflict-dark-390.png"
+    ],
+    "pageErrors": [],
+    "liveFinalArtifactBytesMatch": true
+  },
+  "before": {
+    "displayed": "409 CONFLICT: Assignments may only change on approved or active work",
+    "actualHttpStatus": 409,
+    "actualErrorCode": "CONFLICT"
+  },
+  "limitations": [
+    "Original before and current confirmation fixtures are separately owned and retained; no reset or historical evidence repair.",
+    "Final observer originally compared every tenant ledger row across intentional appearance PUT commands. Request-specific filtering corrected; continuation checks finish reads/queue from the same cancelled request without repeating cancellation or stale assignment. Successful keyboard reload had already closed the dialog before that observer assertion failed.",
+    "14current cases comprise9captured conflict/held failed-read checks and5continued read/queue/no-assignment checks. Before7 demonstrates old behavior, not current acceptance.",
+    "The failed current-read attempt is an explicitly injected browser transport abort. Request cancellation and assignment409 are real authorized HTTP/server transitions/refusals.",
+    "Two opened Light1440/Dark390captures prove bounded readable conflict and recovery controls; no broad WCAG or complete role/state/visual acceptance claim.",
+    "Blank API messages now use the caller existing recovery fallback rather than an empty technical prefix. Diagnostic metadata and status-based command ownership remain tested.",
+    "No change to authorization, API endpoint/payload, server transition, schema, audit/event/assignment/staffing history, branding/sidebar/component design or dependencies.",
+    "Inherited source-map-js release blocker remains separate; compilation does not establish release readiness. Org follow-ons, main/deployment and Alpha2 remain deferred."
+  ],
+  "next": "Exercise multi-page Survey queue navigation and role/context parity; distinguish whole-query paging from loaded-page table controls before any refinement."
+}
