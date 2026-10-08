@@ -88,6 +88,7 @@ export default function TicketDetailPage() {
         apiClient.getTicket(ticketId),
         apiClient.listAttachments(ticketId),
       ]);
+      if (ticketResponse.ticket.projectId !== projectId) throw new Error('This request belongs to a different project. Open it from that project’s request list.');
       setTicket(ticketResponse.ticket);
       setCapabilities(ticketResponse.capabilities ?? NO_CAPABILITIES);
       setEditCraft(ticketResponse.ticket.craft);
@@ -112,7 +113,7 @@ export default function TicketDetailPage() {
   useEffect(() => {
     void loadAll(true);
     void apiClient.listAorTree(projectId).then(setAreaTree).catch(err => setError(getErrorMessage(err, 'Unable to load Areas. Retry Refresh.')));
-  }, [ticketId]);
+  }, [projectId, ticketId]);
 
   async function submitDraft() {
     if (!ticket || busy.current || dirty || stale || saveAttempt.current.command || deleteAttempt.current.command) return;

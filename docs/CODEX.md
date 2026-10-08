@@ -4488,3 +4488,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Known gaps/next: project/direct-link/back-context navigation and remaining role/task visual acceptance. Org mutations/provenance/expansions/performance deferred; inherited source-map-js release blocker separate. No deploy/main merge/Alpha2/release-ready claim.
 - Git: fetched dev0/0 and main195/7 before checkpoint; existing history preserved; coherent commit/push under standing directive, remote confirmation after commit.
 - Production behavior changed: yes, existing two-file Survey presentation only.
+
+
+### 2026-10-08 - Batch240
+- Intent: diagnose and close demonstrated wrong-project request-detail presentation, preserving approved fixed-role returns.
+- Ownership: sequential AUDITOR/IMPLEMENTER in authorized Alpha frontend hardening exception; only request detail page production edit, two owned beta fixture/browser helpers and current evidence/docs. No parallel writers.
+- Files touched: src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx; tests/beta/alpha-navigation240-{fixture,browser}.mjs; audits/alpha1-ui-redesign/alpha-closure240-request-context-evidence.json; docs/ALPHA1_COMPLETION_REGISTER.md; docs/ALPHA1_ACCEPTANCE_CLOSURE.md; docs/CODEX.md (append only).
+- Behavior changed: refuse request whose actual project differs from current URL before accepting ticket/capabilities/files; rerun load on project or request parameter change. Approved role returns, current API visibility and business/assignment/history semantics preserved.
+- Baseline: clean pushed2fba9c2 alpha1-ui-redesign, strict690units pass. Three actual before checks establish legitimate second-project access, wrong-project detail display and conflicting return path.
+- Verification: strict-unused host/pinned types;690host/pinned units;9actual focused navigation/retry cases; fresh Node22.23.3 Next15.5.27 production compile;33PostgreSQL suites terminal pass. Fresh actual two-project request creation/submission/approval and Manager crew assignment;36named current visibility/context/role/direct-link/return criteria, two opened Light1440/Dark390 captures, no page errors and exact request/event/assignment/delegation witnesses.576production/migration bytes match runtime; digest3676e2604feb49b7f5b81d8028f3eeebc346af53d1bdd89f532405f4e5d787a1.
+- Evidence limits: owned signed fixtures rather than interactive sign-in; named Active-project paths only. Tenant Admin actor also has Viewer; read not granted by tenant administration. Independent Project Admin alone and combined Requester/Admin cannot read another requester record. Initial obsolete focused navigation path only ran3retry cases; corrected current paths ran9. Full state/foreign/company/revoked/browser and Alpha acceptance remain open.
+- Known gap/next: generic failed-load attachment guidance and stale attachment presentation require verification; then remaining role/state navigation. No origin-specific return/filter restoration added. Retain deferred Org and separate release/main/deploy/Alpha2 boundaries.
+- Git: fetched dev0/0, main196/7 before checkpoint; coherent commit/push authorized, exact remote confirmation after commit. Existing history preserved.
+- Production behavior changed: yes, one page guard/effect dependency only.
