@@ -4463,3 +4463,15 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Git: pre-checkpoint fetch development0/0, main193local/7remote; routine verified commit/push, no base integration.
 - Known gaps/next: whole Alpha open; next multi-page Survey queue navigation, role/context and loaded-record control clarity. Whole-query and loaded-page controls serve different scopes; verify actual multi-page behavior before any refinement. Full role/state/visual acceptance and Org/main/deploy/Alpha2/release boundaries unchanged.
 - Production behavior changed: yes, human-facing shared error text only.
+
+
+### 2026-10-08 - Batch 238
+- Intent: IMPLEMENTER/audit-and-fix of demonstrated Survey queue order mismatch under existing R07/R11/Alpha usability scope.
+- Files touched: existing AdministrationRecords/RecordCollection and Survey Operations page; three owned beta fixture/browser/capture helpers; E238 receipt; completion/closure registers and append-only work log. Shared frontend paths serialized; authorized Alpha ownership exception, no module/server/schema/dependency change.
+- Before:43actual approved requests plus actual Manager HIGH priority revision; server puts last-created HIGH request first, but loaded table automatically sorts an older NORMAL request first. Original separate fixture retained.
+- Behavior changed: opt-in preserveOrder on existing shared table/wrapper, defaultfalse for unrelated callers; only two Survey request collections opt in. Existing column sorting remains a deliberate user choice, with local filtering/selection/export/paging retained. No server/API/order definition/priority value/Need-By/authorization/assignment/reporting/team/Area/history or branding/sidebar change.
+- Verification: baseline/final host strict690units; pinned strict690units and fresh Node22.23.3/Next15.5.27 production compilation;14focused; all33PostgreSQL suites at final source. All576production/migration bytes match live final artifact, digest in E238.19current criteria verify exact Manager first25/remaining18rows, explicit column sort, server next-page order, independently scoped42Superintendent rows excluding uncovered Area, role tabs, keyboard navigation, visible logo readiness and unchanged request/history. Two final Light1440/Dark390captures opened; no page errors.
+- Observer correction: first mobile capture preceded logo load; wait for actual visible supplied image before recapture on same data/source. Initial images retained; no workflow repetition/reset/history repair.
+- Git: pre-checkpoint fetch development0/0, main194local/7remote; routine verified commit/push, no base integration.
+- Known gaps/next: whole Alpha open; clarify loaded-record versus whole-query controls and verify mobile long-reference readability/project/direct-link context. Current mobile internal table scroll can partially clip caption/reference; no full mobile/role-state/navigation acceptance claim. Org/main/deploy/Alpha2/source-map-js release boundaries unchanged.
+- Production behavior changed: yes, default displayed Survey queue order only.

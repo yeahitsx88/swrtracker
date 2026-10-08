@@ -154,7 +154,7 @@ export default function SurveyOperationsPage() {
       {tab === 'assignment' ? <Card className="ops-list" title="Need Assignment" description={superintendent ? 'Area-wide approved requests awaiting an Instrument Man. Expand a row to review the request.' : 'Approved requests awaiting an Instrument Man. Expand a row to assign crew.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
+          <RecordCollection preserveOrder label="operation requests" records={<>{ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket}
               readOnly={superintendent} projectId={projectId}
               disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>void loadOperations()} />
@@ -165,7 +165,7 @@ export default function SurveyOperationsPage() {
       {tab === 'open' ? <Card className="ops-list" title="Open Requests" description={superintendent ? 'Area-wide workload, high priority first, then earliest Need-By. Open a request for applicable actions.' : 'High priority first, then earliest Need-By. Expand a row for review actions.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
+          <RecordCollection preserveOrder label="operation requests" records={<>{ticketPage.items.map((ticket) => (
             <details className="ops-queue-row" key={ticket.id}>
               <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
               <div className="stack ops-row-body">
