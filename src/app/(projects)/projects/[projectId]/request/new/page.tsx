@@ -4,7 +4,8 @@ import {RecordCollection} from '@/components/ui/record-collection';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/apiClient';
+import { FrozenCommand } from '@/lib/frozen-command';
+import { apiClient, createIdempotencyKey } from '@/lib/apiClient';
 import { ApiClientError, getErrorMessage } from '@/lib/errors';
 import { RetryableMutation } from '@/lib/retryable-mutation';
 import { formatCalendarDate } from '@/lib/calendar-date';
@@ -66,9 +67,12 @@ export default function NewRequestPage() {
   const busy = useRef(false);
   const saveAttempt = useRef(new RetryableMutation<UpdateRequesterTicketRequest>());
   const submitAttempt = useRef(new RetryableMutation<{ expectedVersion: number; urgentReason: string }>());
+  const uploadAttempt = useRef(new FrozenCommand<{ purpose: UploadAttachmentRequest['purpose'] }>());
+  const uploadQueue = useRef<UploadAttachmentRequest[] | null>(null);
+  const actionIntent = useRef<boolean | null>(null);
   const [stale, setStale] = useState(false);
   const [setupRevision, setSetupRevision] = useState(0);
-  const locked = submitting || stale || Boolean(saveAttempt.current.pending || submitAttempt.current.pending);
+  const locked = submitting || stale || Boolean(saveAttempt.current.pending || submitAttempt.current.pending || uploadAttempt.current.locked);
 
   const needsUrgentReason = Boolean(requestedDate) && !doesRequestedDateMeetLeadTime(
     new Date(`${requestedDate}T00:00:00Z`), new Date(), {
@@ -80,7 +84,7 @@ export default function NewRequestPage() {
     [craft, customCraft],
   );
 
-  useUnsavedProgress(Boolean(attachments.length || saveAttempt.current.pending || submitAttempt.current.pending ||
+  useUnsavedProgress(Boolean(attachments.length || saveAttempt.current.pending || submitAttempt.current.pending || uploadAttempt.current.locked ||
     aorNodeId !== (draft?.aorNodeId ?? '') || ticketType !== (draft?.ticketType ?? '') ||
     requestedDate !== (draft?.requestedDate?.slice(0,10) ?? '') || resolvedCraft !== (draft?.craft ?? '') ||
     fieldContact.trim() !== (draft?.fieldContact ?? '') || fieldChannel.trim() !== (draft?.fieldChannel ?? '') ||
@@ -137,35 +141,54 @@ export default function NewRequestPage() {
   );
 
   async function persistDraft(): Promise<TicketRecord> {
-    const input: UpdateRequesterTicketRequest = { aorNodeId: aorNodeId || null, ticketType: ticketType || null,
-      craft: resolvedCraft, fieldContact, fieldChannel, description, requestedDate: requestedDate || null,
-      ...(draftRef.current ? { expectedVersion: draftRef.current.rowVersion ?? 0 } : {}) };
-    const current = draftRef.current;
-    const response = await saveAttempt.current.run(input, (payload, key) => current
-      ? apiClient.updateRequesterTicket(current.id, payload, key) : apiClient.saveNewDraft(projectId, payload, key));
-    draftRef.current = response.ticket; setDraft(response.ticket);
-    router.replace(`/projects/${projectId}/request/new?draft=${response.ticket.id}`, { scroll: false });
-    for (const attachment of attachments) {
-      const uploaded = await apiClient.uploadAttachment(response.ticket.id, attachment);
-      setSavedAttachments(items => [...items.filter(item => item.id !== uploaded.attachment.id), uploaded.attachment]);
-      setAttachments(items => items.filter(item => item !== attachment));
+    if (!uploadQueue.current) {
+      const input: UpdateRequesterTicketRequest = { aorNodeId: aorNodeId || null, ticketType: ticketType || null,
+        craft: resolvedCraft, fieldContact, fieldChannel, description, requestedDate: requestedDate || null,
+        ...(draftRef.current ? { expectedVersion: draftRef.current.rowVersion ?? 0 } : {}) };
+      const current = draftRef.current;
+      const response = await saveAttempt.current.run(input, (payload, key) => current
+        ? apiClient.updateRequesterTicket(current.id, payload, key) : apiClient.saveNewDraft(projectId, payload, key));
+      draftRef.current = response.ticket; setDraft(response.ticket);
+      router.replace(`/projects/${projectId}/request/new?draft=${response.ticket.id}`, { scroll: false });
+      uploadQueue.current = [...attachments];
     }
-    return response.ticket;
+    const saved = draftRef.current!;
+    while (uploadQueue.current.length) {
+      const attachment = uploadQueue.current[0]!;
+      const command = uploadAttempt.current.begin({ purpose: attachment.purpose }, attachment.retryKey ?? createIdempotencyKey());
+      if (!command) throw new Error('Reload the saved draft before changing this upload.');
+      try {
+        const uploaded = await apiClient.uploadAttachment(saved.id, { file: attachment.file, ...command.body, retryKey: command.key });
+        uploadAttempt.current.success();
+        uploadQueue.current.shift();
+        setSavedAttachments(items => [...items.filter(item => item.id !== uploaded.attachment.id), uploaded.attachment]);
+        setAttachments(items => items.filter(item => item !== attachment));
+      } catch (err) {
+        const status = err instanceof ApiClientError && err.status !== 408 && err.code !== 'IDEMPOTENCY_IN_PROGRESS' ? err.status : undefined;
+        uploadAttempt.current.fail(status);
+        if (!uploadAttempt.current.locked) uploadQueue.current = null;
+        throw err;
+      }
+    }
+    uploadQueue.current = null;
+    return saved;
   }
 
   async function saveOrSubmit(submit: boolean) {
-    if (busy.current || stale) return;
+    if (busy.current || stale || actionIntent.current !== null && actionIntent.current !== submit) return;
     if (submit && !submitAttempt.current.pending && (
       !aorNodeId ||
       !ticketType ||
       !requestedDate ||
       !fieldContact.trim() ||
-      !description.trim()
+      !description.trim() ||
+      needsUrgentReason && !urgentReason.trim()
     )) {
-      setError('Complete all required fields before submission.');
+      setError(needsUrgentReason && !urgentReason.trim() ? 'Enter an urgent request reason on the Need-By step before submission.' : 'Complete all required fields before submission.');
       return;
     }
 
+    actionIntent.current = submit;
     busy.current = true; setSubmitting(true);
     setError(null);
     setSuccess(null);
@@ -179,9 +202,10 @@ export default function NewRequestPage() {
         router.push(`/projects/${projectId}/tickets/${saved.id}`);
       } else setSuccess('Draft and selected files saved. You can leave and resume from Drafts.');
     } catch (err) {
-      if (err instanceof ApiClientError && err.code === 'WORKFLOW_STALE_STATE') setStale(true);
+      if (err instanceof ApiClientError && err.status === 409 && err.code !== 'IDEMPOTENCY_IN_PROGRESS') setStale(true);
       setError(getErrorMessage(err, 'Unable to confirm the action. Retry to check the same request; your fields and remaining files are retained.'));
     } finally {
+      if (!saveAttempt.current.pending && !submitAttempt.current.pending && !uploadAttempt.current.locked) actionIntent.current = null;
       busy.current = false; setSubmitting(false);
     }
   }
@@ -292,6 +316,7 @@ export default function NewRequestPage() {
               <div><dt>Area</dt><dd>{buildAreaNames(aorNodes).get(aorNodeId)?.path ?? 'Not selected'}</dd></div>
               <div><dt>Request type</dt><dd>{ticketType ? ticketTypeLabel(ticketType) : 'Not selected'}</dd></div>
               <div><dt>Need-By</dt><dd>{formatCalendarDate(requestedDate)}</dd></div>
+              {needsUrgentReason ? <div><dt>Urgent request reason</dt><dd className="detail-description">{urgentReason.trim() || 'Required — enter a reason on the Need-By step'}</dd></div> : null}
               <div><dt>Craft / discipline</dt><dd>{resolvedCraft || 'Not specified'}</dd></div>
               <div><dt>Point of contact</dt><dd>{fieldContact || 'Not provided'}</dd></div>
               <div><dt>Phone / radio channel</dt><dd>{fieldChannel || 'Not provided'}</dd></div>
@@ -313,7 +338,7 @@ export default function NewRequestPage() {
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
         {draft ? <p className="muted">Saved draft · <Link className="app-link" href={`/projects/${projectId}/tickets/${draft.id}`}>Open saved details and files</Link></p> : null}
-        {locked && !submitting ? <p role="status" className="muted">{stale ? 'Another change was saved. Open draft details and reload before editing.' : 'The last action is unconfirmed. Retry it before editing or leaving this page.'}</p> : null}
+        {locked && !submitting ? <p role="status" className="muted">{stale ? 'The action conflicted with current state. Open draft details and reload before editing.' : 'The last action is unconfirmed. Retry it before editing or leaving this page.'}</p> : null}
         <fieldset className="form-narrow" disabled={locked} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>{renderStepBody()}</fieldset>
         {error && !draft && !saveAttempt.current.pending ? <Button variant="secondary" onClick={() => setSetupRevision(value => value+1)}>Retry setup</Button> : null}
         <div className="row">
@@ -332,14 +357,14 @@ export default function NewRequestPage() {
               Next
             </Button>
           ) : (
-            <Button disabled={submitting || stale || Boolean(saveAttempt.current.pending)} onClick={() => void saveOrSubmit(true)}>
-              {submitting ? 'Submitting…' : submitAttempt.current.pending ? 'Retry Submit' : 'Submit Request'}
+            <Button disabled={submitting || stale || actionIntent.current === false} onClick={() => void saveOrSubmit(true)}>
+              {submitting ? 'Submitting…' : actionIntent.current === true ? 'Retry Submit' : 'Submit Request'}
             </Button>
           )}
-          <Button variant="secondary" disabled={submitting || stale || Boolean(submitAttempt.current.pending)} onClick={() => void saveOrSubmit(false)}>
-            {submitting ? 'Saving…' : saveAttempt.current.pending ? 'Retry Save Draft' : 'Save Draft'}
+          <Button variant="secondary" disabled={submitting || stale || actionIntent.current === true} onClick={() => void saveOrSubmit(false)}>
+            {submitting ? 'Saving…' : actionIntent.current === false ? 'Retry Save Draft' : 'Save Draft'}
           </Button>
-          {submitAttempt.current.pending && activeStep < STEP_TITLES.length-1 ? <Button disabled={submitting} onClick={() => void saveOrSubmit(true)}>Retry Submit</Button> : null}
+          {actionIntent.current === true && activeStep < STEP_TITLES.length-1 ? <Button disabled={submitting} onClick={() => void saveOrSubmit(true)}>Retry Submit</Button> : null}
         </div>
       </div>
     </Card>
