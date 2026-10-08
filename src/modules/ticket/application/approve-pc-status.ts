@@ -1,3 +1,4 @@
+import {notifyLegacyFieldReview} from './legacy-field-review-notifications';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import { appendAuditEvent } from '@/modules/audit/application/index';
 import type { DbClient, UUID } from '@/shared/types';
@@ -83,6 +84,8 @@ export async function approvePcStatus(
       ? { responderRole: params.actorRole, reason: ticket.pendingPcReason }
       : { reason: ticket.pendingPcReason },
   });
+
+  await notifyLegacyFieldReview(db,{ticket,actorId:params.actorId,actorRole:params.actorRole,finalStatus:finalStatus,reason:ticket.pendingPcReason});
 
   return {
     ...ticket,
