@@ -9,7 +9,7 @@ import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ConflictError, NotFoundError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { assertRecommissioningMutation } from '@/lib/recommissioning-gate';
+import { assertRecommissioningMutation, findPreparationCleanupTickets } from '@/lib/recommissioning-gate';
 import { getTicketRouteContext, withTicketMutation, withTicketRead } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
@@ -39,8 +39,8 @@ async function observedGET(
       );
 
       // These read-only writer gates restrict availability; they grant no actor authority.
-      const availability = { ordinary: true, submit: false, requesterCancel: true, deleteDraft: true };
-      for (const [action, suffix] of [['ordinary', ''], ['requesterCancel', '/requester-cancel'], ['deleteDraft', '/draft']] as const) {
+      const availability = { ordinary: true, submit: false, requesterCancel: true, deleteDraft: true, approveSurveyCancel: true };
+      for (const [action, suffix] of [['ordinary', ''], ['requesterCancel', '/requester-cancel'], ['deleteDraft', '/draft'], ['approveSurveyCancel', '/survey-cancel/approve']] as const) {
         try {
           await assertRecommissioningMutation(db, ctx.tenantId, ctx.projectId, `/api/tickets/${ticketId}${suffix}`);
         } catch (err) {
@@ -51,15 +51,17 @@ async function observedGET(
       const projectStatus = await repo.findProjectStatus(db, ctx.tenantId, ctx.projectId);
       if (!projectStatus) throw new NotFoundError('Project not found');
       availability.submit = availability.ordinary && projectStatus === 'ACTIVE';
+      const cleanup = await findPreparationCleanupTickets(db, ctx.tenantId, ctx.projectId, [ticket.id]);
 
       return NextResponse.json({
         ticket: {
           ...ticket,
           requesterName: requester?.name ?? 'Unknown requester',
           isOwnRequest: ticket.requesterId === ctx.actorId,
+          preparationCleanupAllowed: cleanup.has(ticket.id),
         },
         capabilities: getTicketCapabilities(ticket, { id: ctx.actorId, role: ctx.actorRole }, availability),
-      });
+      }, {headers: {'Cache-Control': 'private, no-store'}});
     });
   } catch (err) {
     return errorResponse(err);

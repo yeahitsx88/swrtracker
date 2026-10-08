@@ -2,7 +2,7 @@
 
 Current authority: approved requirements, Decisions51-54, D1-D8 reconciliation and owner active Alpha closure objective. Preserve conventional Team Management, Visual5866772 and prior history. This register records current evidence and outstanding acceptance; passing counts do not replace connected role/task/state requirements.
 
-Current verified source: Batch247 on `alpha1-ui-redesign`, based on pushed `3c7aa61`. [E247](../audits/alpha1-ui-redesign/alpha-closure247-cancelled-recovery-evidence.json) records strict692units (693pinned integrated invocations),23focused tests,fresh pinned compilation/full33SQL suites and381current cancelled-recovery/company/authority/lifecycle/persisted-evidence checks at unchanged digest `06d1b2e46d929475b5742038ac2d325eca51a1d872cc113c286e9bac7dc4e83e`. E246 requester cleanup-to-terminal and E243-E245 uploads are preserved. No production change;whole Alpha acceptance remains open.
+Current verified source: Batch248 on `alpha1-ui-redesign`, based on pushed `496d550`. [E248](../audits/alpha1-ui-redesign/alpha-closure248-stop-approval-evidence.json) records strict693units (694pinned integrated invocations),17focused tests,fresh pinned compilation/full33SQL suites and82current stop-work approval/role/lifecycle/isolation checks at digest `e225123e88c397fcfcf26a572d200a6f75c8b8ded324557ff11e93bab0237188`. Existing Manager approval is now reachable through protected review with saved flag reason/provenance and exact retry. E247 recovery behavior remains preserved. Whole Alpha acceptance remains open.
 
 | Workstream | Reconciled state | Evidence / remaining acceptance |
 |---|---|---|
@@ -25,7 +25,7 @@ The [completion register](ALPHA1_COMPLETION_REGISTER.md) now aligns its summary 
 ## Current technical queue
 
 1. E247 verifies18actual cancelled-terminal browser recoveries across six eligible authorities,company/current-replay/lifecycle refusals and atomic evidence. E224 REJECTED browser proof keeps its historical source. Reconcile residual recovery criteria during final requirement review;do not repeat these verified named combinations as wholly missing.
-2. Complete remaining cancellation/field-review role and project-state journeys, including D6 completion-only boundaries and original history witnesses on a new fixture.
+2. E248 closes the demonstrated missing Manager stop-work approval integration and verifies named current role/Archived/reopening/D6/exact-retry boundaries. Reconcile residual cancellation/field-review actor/state criteria against E226/E228/E229/E247/E248; keep source limits and original history-witness requirements explicit.
 3. Complete current wording/navigation/role information and Light/Dark desktop/mobile/keyboard/table acceptance. Fix demonstrated defects within existing approved scope.
 4. Reconcile final current evidence requirement by requirement before declaring local Alpha acceptance.
 
@@ -312,3 +312,8 @@ Failed staging key typing/pinned artifact retained and corrected; observer stagi
 ## Batch247 cancelled-request recovery checkpoint
 
 [E247](../audits/alpha1-ui-redesign/alpha-closure247-cancelled-recovery-evidence.json) records243actual browser/core,66company/authority/lifecycle and72read-only persisted-evidence criteria. Three cancelled terminals created through actual workflows are recovered by each of six eligible authorities with frozen lost-response review/body/key and keyboard retry. Same ID/number/files/prior events remain;one reviewed event/cycle/requester notice and retained closed canonical assignment per case. Actual concurrency/stale review/event rollback and current foreign/project/company/authority/archive/reopening/D6 refusals pass. Four Light1440/Dark390captures opened;mobile dialog continues vertically. No production defect/rule change. Strict692units (693pinned invocations)/23focused/pinned compilation/full33SQL suites pass;576production/migration rawbytes match runtime. E224 and missing old E209 witness keep source limits. Whole Alpha open;next remaining cancellation/field-review actor/state reconciliation,then full visual/requirement audit. Fetcheddevelopment0/0,main203/7;no integration.
+
+
+## Batch248 stop-work approval integration checkpoint
+
+[E248](../audits/alpha1-ui-redesign/alpha-closure248-stop-approval-evidence.json) closes ALPHA-STOP-APPROVAL-UI-248. Actual Chief/IM flags exposed no Manager approval control or saved reason. Existing Manager approval now uses the protected review/caller-owned retry key; pending reason, flagger role/ID/time, permanent consequence and notice recipients are visible. Additive capability requires current Manager, recognized pending chain,cancellable state and existing writer availability. Detail carries existing scoped cleanup marker/private no-store under its current read barrier, so D6restriction remains visible. No mutation payload/chain/transition/schema/event/persistence change.82current checks,693units/17focused/pinned build/full33SQL,six opened Light1440/Dark390captures pass. Exact lost-response retry,concurrent stale reload,audit rollback,current negative roles/foreign/company/read-wait session401,Archived readonly/reopening/D6approval pass. Whole Alpha remains open;next integrated role/task/state and visual/requirement reconciliation. Fetcheddevelopment0/0,main204/7;no integration.

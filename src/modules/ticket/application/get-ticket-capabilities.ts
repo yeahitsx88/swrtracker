@@ -7,6 +7,7 @@ export interface TicketCapabilities {
   canEditRequesterFields: boolean;
   canSubmit: boolean;
   canDeleteDraft: boolean;
+  canApproveSurveyCancel: boolean;
   canRequesterCancel: boolean;
   canCreateFollowUp: boolean;
   canUploadRequestInstruction: boolean;
@@ -18,7 +19,7 @@ const FIELD_SUPPORT_ACTIVE = new Set([
   'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'PENDING_FIELD_VALIDATION', 'DELAYED',
 ]);
 
-function transitionIsAllowed(ticket: Ticket, to: 'REQUESTER_CANCELED'): boolean {
+function transitionIsAllowed(ticket: Ticket, to: 'REQUESTER_CANCELED' | 'SURVEY_CANCELED'): boolean {
   try {
     assertValidTransition(ticket.workflowVariant, ticket.status, to);
     return true;
@@ -30,7 +31,7 @@ function transitionIsAllowed(ticket: Ticket, to: 'REQUESTER_CANCELED'): boolean 
 export function getTicketCapabilities(
   ticket: Ticket,
   actor: { id: UUID; role: ProjectRole },
-  availability: { ordinary: boolean; submit: boolean; requesterCancel: boolean; deleteDraft: boolean },
+  availability: { ordinary: boolean; submit: boolean; requesterCancel: boolean; deleteDraft: boolean; approveSurveyCancel: boolean },
 ): TicketCapabilities {
   const ownsRequest = actor.role === 'REQUESTER' && ticket.requesterId === actor.id;
   const requesterEditable = ownsRequest && REQUESTER_EDITABLE.has(ticket.status);
@@ -45,6 +46,9 @@ export function getTicketCapabilities(
     canEditRequesterFields: requesterEditable && availability.ordinary,
     canSubmit: requesterEditable && availability.submit,
     canDeleteDraft: ownsRequest && ticket.status === 'DRAFT' && availability.deleteDraft,
+    canApproveSurveyCancel: actor.role === 'SURVEY_MANAGER' && availability.approveSurveyCancel &&
+      !!ticket.surveyCancelRequestedAt && ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'SURVEY_SUPERINTENDENT'].includes(ticket.surveyCancelRequestedRole ?? '') &&
+      transitionIsAllowed(ticket, 'SURVEY_CANCELED'),
     canRequesterCancel: ownsRequest && transitionIsAllowed(ticket, 'REQUESTER_CANCELED') && availability.requesterCancel,
     canCreateFollowUp: ownsRequest && ticket.status === 'COMPLETED' && availability.ordinary,
     canUploadRequestInstruction: requesterEditable && availability.ordinary,

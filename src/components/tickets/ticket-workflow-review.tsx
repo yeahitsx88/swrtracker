@@ -4,6 +4,7 @@ import {useRef,useState} from 'react';
 import type {TicketRecord,TicketResponse} from '@/lib/contracts';
 import {apiClient,createIdempotencyKey} from '@/lib/apiClient';
 import {operationsStatusLabel} from '@/lib/operations-view';
+import {roleLabel} from '@/lib/display-labels';
 import {formatCalendarDate} from '@/lib/calendar-date';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
@@ -54,6 +55,7 @@ function WorkflowReview({selection:{ticket,action},close,reloaded,completed}:{se
       {ticket.preparationCleanupAllowed?<p role="status">Preparation cancellation is in progress. Only reviewed cleanup is available; new work and resubmission remain unavailable.</p>:null}
       <p>{ticket.preparationCleanupAllowed&&action==='validate-inability'?'The returned request remains part of preparation cancellation. Resolve it through its existing authorized cancellation path; its identity and history are retained.':review.next}</p>
       {['validate-inability','reject-inability','approve-legacy','reject-legacy'].includes(action)&&ticket.pendingPcReason?<p><strong>Recorded Report:</strong> {ticket.pendingPcReason}</p>:null}
+      {action==='approve-stop'?<div className="stack"><p><strong>Recorded Stop-Work Reason:</strong> {ticket.surveyCancelReason}</p><p>Flagged by {roleLabel(ticket.surveyCancelRequestedRole??'')} · {ticket.surveyCancelRequestedBy}</p><p>Recorded at {ticket.surveyCancelRequestedAt?new Date(ticket.surveyCancelRequestedAt).toLocaleString():'Not recorded'}</p></div>:null}
       {review.date?<p>Current Need-By: {ticket.requestedDate?formatCalendarDate(ticket.requestedDate):'Not set'}</p>:null}
       {review.date?<label className="field"><span className="field-label">New Need-By Date</span><input className="input" type="date" required value={requestedDate} disabled={command.locked||busy} onChange={event=>{setDate(event.target.value);setConfirmed(false);}}/></label>:null}
       {review.reason?<label className="field"><span className="field-label">{review.reason==='required'?'Reason':'Reason (Optional)'}</span><textarea className="input" required={review.reason==='required'} rows={4} value={reason} disabled={command.locked||busy} onChange={event=>{setReason(event.target.value);setConfirmed(false);}}/></label>:null}

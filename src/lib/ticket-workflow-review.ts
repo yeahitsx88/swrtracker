@@ -1,7 +1,7 @@
 import type { TicketRecord } from './contracts';
 import { apiClient } from './apiClient';
 
-export type TicketWorkflowAction = 'start' | 'complete' | 'delay' | 'inability' | 'stop' | 'restart' |
+export type TicketWorkflowAction = 'start' | 'complete' | 'delay' | 'inability' | 'stop' | 'approve-stop' | 'restart' |
   'validate-inability' | 'reject-inability' | 'approve-legacy' | 'reject-legacy' |
   'requester-cancel' | 'follow-up' | 'approve' | 'return' | 'cancel' | 'need-by' | 'high' | 'normal';
 export interface TicketWorkflowIntent { ticketId: string; action: TicketWorkflowAction; reason: string; requestedDate: string; expectedVersion?: number }
@@ -15,6 +15,7 @@ export function ticketWorkflowReview(action: TicketWorkflowAction, ticket: Pick<
     case 'delay': return {title:'Mark Delayed',consequence:'Record why this work is delayed. The request remains open.',next:'Your Party Chief or authorized survey lead can restart the work.',reason:'required'};
     case 'inability': return {title:'Report Unable to Perform',consequence:'Send the reason this work cannot proceed for field-report review.',next:'The responsible Party Chief or authorized survey lead reviews the report before a return for requester correction.',reason:'required'};
     case 'stop': return {title:'Flag Stop Work',consequence:'Request permanent cancellation and record your reason. This does not immediately cancel the request.',next:'Authorized survey leadership must review the stop-work request.',reason:'required',danger:true};
+    case 'approve-stop': return {title:'Approve Stop-Work Cancellation',consequence:'Approve the recorded stop-work flag and permanently cancel this request using its recorded reason. Its reference, files and history remain.',next:'The requester and assigned field staff will be notified. This does not return the request for correction.',reason:false,danger:true};
     case 'restart': return {title:'Restart Delayed Work',consequence:'Return this delayed request to work in progress.',next:'The assigned Instrument Man can continue the field work.',reason:false};
     case 'validate-inability': return {title:'Validate and Return',consequence:'Validate the inability report and return this same request for correction.',next:'The requester corrects and resubmits it with the same reference and retained history.',reason:'required'};
     case 'reject-inability': return {title:'Reject Report and Resume',consequence:'Reject the inability report and return the request to work in progress.',next:'The assigned Instrument Man can resume work. Your reason is retained.',reason:'required'};
@@ -40,6 +41,7 @@ export function executeTicketWorkflow(intent: TicketWorkflowIntent, key: string)
     case 'delay': return apiClient.delayTicket(ticketId,reason,key);
     case 'inability': return apiClient.reportFieldInability(ticketId,reason,key);
     case 'stop': case 'cancel': return apiClient.surveyCancel(ticketId,reason,key);
+    case 'approve-stop': return apiClient.approveSurveyCancel(ticketId,key);
     case 'restart': return apiClient.restartDelayedTicket(ticketId,key);
     case 'validate-inability': return apiClient.validateFieldInability(ticketId,reason,key);
     case 'reject-inability': return apiClient.rejectFieldInability(ticketId,reason,key);

@@ -308,6 +308,12 @@ export const apiClient = {
     });
   },
 
+  approveSurveyCancel(ticketId: string, retryKey: string): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/survey-cancel/approve`, {
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
+    });
+  },
+
   startTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/start`, {
       method: 'POST', headers: { 'Idempotency-Key': retryKey },

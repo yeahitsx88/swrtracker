@@ -5,7 +5,7 @@ import type { Ticket } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';
 
 const id = (value: string) => value as UUID;
-const ALL_AVAILABLE = {ordinary: true, submit: true, requesterCancel: true, deleteDraft: true};
+const ALL_AVAILABLE = {ordinary: true, submit: true, requesterCancel: true, deleteDraft: true, approveSurveyCancel: true};
 const baseTicket: Ticket = {
   id: id('ticket-1'), tenantId: id('tenant-1'), projectId: id('project-1'),
   aorNodeId: id('area-1'), departmentId: null, companyId: id('company-1'), ticketNumber: 'SWR-1',
@@ -34,6 +34,7 @@ test('company authority viewing another requester draft receives no mutation cap
     canEditRequesterFields: false,
     canSubmit: false,
     canDeleteDraft: false,
+    canApproveSurveyCancel: false,
     canRequesterCancel: false,
     canCreateFollowUp: false,
     canUploadRequestInstruction: false,
@@ -79,7 +80,7 @@ test('ordinary work restrictions retain separate cleanup capabilities and role a
 
 
 test('witnessed draft cleanup stays separate from edit/submit and immutable history', () => {
-  const blocked = {ordinary: false, submit: false, requesterCancel: true, deleteDraft: true};
+  const blocked = {ordinary: false, submit: false, requesterCancel: true, deleteDraft: true, approveSurveyCancel: true};
   const cleanup = getTicketCapabilities(baseTicket, {id: id('requester-1'), role: 'REQUESTER'}, blocked);
   assert.equal(cleanup.canEditRequesterFields, false);
   assert.equal(cleanup.canSubmit, false);
@@ -87,10 +88,23 @@ test('witnessed draft cleanup stays separate from edit/submit and immutable hist
   assert.equal(cleanup.canRequesterCancel, true);
   const returned = getTicketCapabilities({...baseTicket, status: 'RETURNED_FOR_CORRECTION'}, {id: id('requester-1'), role: 'REQUESTER'}, blocked);
   assert.equal(returned.canDeleteDraft, false);
-  const archived = getTicketCapabilities(baseTicket, {id: id('requester-1'), role: 'REQUESTER'}, {ordinary: false, submit: false, requesterCancel: false, deleteDraft: false});
+  const archived = getTicketCapabilities(baseTicket, {id: id('requester-1'), role: 'REQUESTER'}, {ordinary: false, submit: false, requesterCancel: false, deleteDraft: false, approveSurveyCancel: false});
   assert(Object.values(archived).every(value => value === false));
   const initial = getTicketCapabilities(baseTicket, {id: id('requester-1'), role: 'REQUESTER'}, {...ALL_AVAILABLE, submit: false});
   assert.equal(initial.canEditRequesterFields, true);
   assert.equal(initial.canSubmit, false);
   assert.equal(initial.canDeleteDraft, true);
+});
+
+
+test('stop-work approval availability requires current Manager, recorded chain, cancellable state and writer availability', () => {
+  const pending = {...baseTicket, status: 'IN_PROGRESS' as const, surveyCancelRequestedAt: new Date(), surveyCancelRequestedRole: 'PARTY_CHIEF'};
+  const manager = {id: id('lead-1'), role: 'SURVEY_MANAGER' as const};
+  assert.equal(getTicketCapabilities(pending, manager, ALL_AVAILABLE).canApproveSurveyCancel, true);
+  assert.equal(getTicketCapabilities(pending, manager, {...ALL_AVAILABLE, ordinary: false}).canApproveSurveyCancel, true);
+  assert.equal(getTicketCapabilities(pending, manager, {...ALL_AVAILABLE, approveSurveyCancel: false}).canApproveSurveyCancel, false);
+  assert.equal(getTicketCapabilities({...pending, surveyCancelRequestedAt: null}, manager, ALL_AVAILABLE).canApproveSurveyCancel, false);
+  assert.equal(getTicketCapabilities({...pending, surveyCancelRequestedRole: null}, manager, ALL_AVAILABLE).canApproveSurveyCancel, false);
+  assert.equal(getTicketCapabilities({...pending, status: 'COMPLETED'}, manager, ALL_AVAILABLE).canApproveSurveyCancel, false);
+  for (const role of ['REQUESTER','VIEWER','PROJECT_ADMIN','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'] as const) assert.equal(getTicketCapabilities(pending,{id:id('other-actor'),role},ALL_AVAILABLE).canApproveSurveyCancel,false);
 });

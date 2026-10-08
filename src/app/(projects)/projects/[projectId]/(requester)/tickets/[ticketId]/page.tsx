@@ -25,6 +25,7 @@ const NO_CAPABILITIES: TicketCapabilities = {
   canEditRequesterFields: false,
   canSubmit: false,
   canDeleteDraft: false,
+  canApproveSurveyCancel: false,
   canRequesterCancel: false,
   canCreateFollowUp: false,
   canUploadRequestInstruction: false,
@@ -174,7 +175,7 @@ export default function TicketDetailPage() {
     }
   }
 
-  function reviewRequesterAction(action:'follow-up'|'requester-cancel') {
+  function reviewRequesterAction(action:'follow-up'|'requester-cancel'|'approve-stop') {
     if(ticket&&!busy.current&&!uncertain&&!stale&&!dirty)workflow.open(ticket,action);
   }
 
@@ -201,7 +202,7 @@ export default function TicketDetailPage() {
   const returnPath = requester ? fromDraft ? 'drafts' : 'my-requests' : fieldRole ? 'crew/work' : reviewRole ? 'requests' : 'home';
   const returnLabel = requester ? fromDraft ? 'Back to Drafts' : 'Back to My Requests' : fieldRole ? 'Back to Crew Work' : reviewRole ? 'Back to All Requests' : 'Back to Home';
   const noActions = !capabilities.canSubmit && !capabilities.canCreateFollowUp && !capabilities.canRequesterCancel &&
-    !capabilities.canDeleteDraft;
+    !capabilities.canDeleteDraft && !capabilities.canApproveSurveyCancel;
 
   return (
     <div className="stack">
@@ -304,6 +305,7 @@ export default function TicketDetailPage() {
         <aside className="detail-aside" aria-label="Request actions">
           <Card title="Actions">
             <div className="action-panel">
+              {capabilities.canApproveSurveyCancel ? <Button variant="danger" disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('approve-stop')}>Approve Stop-Work Cancellation</Button> : null}
               {capabilities.canSubmit ? (
                 <Button disabled={working || dirty || stale || Boolean(saveAttempt.current.command || deleteAttempt.current.command)} onClick={() => void submitDraft()}>
                   {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}

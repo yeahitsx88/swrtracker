@@ -86,6 +86,7 @@ export interface TicketCapabilities {
   canEditRequesterFields: boolean;
   canSubmit: boolean;
   canDeleteDraft: boolean;
+  canApproveSurveyCancel: boolean;
   canRequesterCancel: boolean;
   canCreateFollowUp: boolean;
   canUploadRequestInstruction: boolean;
