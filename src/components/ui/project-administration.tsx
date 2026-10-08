@@ -1,4 +1,5 @@
 'use client';
+import {ProjectPreparationCancellation} from './project-preparation-cancellation';
 import type {ProjectCompanyRecord,MatchingTenantCompany} from '@/modules/tenancy/infrastructure/project-companies.reader';
 import {companyNameKey} from '@/modules/tenancy/domain/company-name';
 import {AdministrationDialog} from './administration-dialog';
@@ -115,6 +116,7 @@ export function ProjectAdministration({projectId,owner,onCompaniesChanged}:{proj
  <label className="field"><span className="field-label">Priority whitelist email</span><Input type="email" value={email} disabled={locked||closed} onChange={e=>setEmail(e.target.value)}/></label><div className="row">{(['POST','DELETE'] as const).map(method=><Button key={method} variant="secondary" disabled={!email||locked||closed} onClick={()=>propose({url:`${base}/whitelist`,method,body:{email},label:`${method==='POST'?'Add':'Remove'} ${email} ${method==='POST'?'to':'from'} priority whitelist`})}>{method==='POST'?'Review whitelist addition':'Review whitelist removal'}</Button>)}</div>
  <Button variant="danger" disabled={locked||template?.project.status!=='ACTIVE'} onClick={()=>propose({url:`${base}/archive`,method:'POST',body:{},label:'Archive this project; historical work is retained'})}>Review project archive</Button>
  </div></Card>}
+ {centralIT&&template?.project.status==='SETUP'&&<ProjectPreparationCancellation projectId={projectId} owner={owner} onFinished={()=>{setSuccess('Preparation cancelled. The project is Archived; identity, Setup changes, files and history are retained.');workspace?.refresh();}}/>}
  </AdministrationArea><AdministrationArea id="admin-diagnostics"><ProjectDiagnostics projectId={projectId} owner={owner}/></AdministrationArea>
  {batch&&<AdministrationBatch actions={batch} owner={owner} reload={load} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setMemberSelection([]);setAdminSelection([]);}}/>}
  {intent&&(companyDialog?<AdministrationDialog title={intent.companyRemoval?"Review Company Removal":intent.body.name?"Review Company Registration":"Review Company Association"} locked={locked} onDismiss={dismissReview}>{review}</AdministrationDialog>:review)}

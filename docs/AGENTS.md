@@ -30,7 +30,7 @@ AUDITOR normally reports; IMPLEMENTER fixes authorized scope; TEST_WRITER adds c
 - Request transitions and ticket_events are atomic. Administrative transitions use their established administrative/lifecycle evidence tables in the same transaction. Retain append-only evidence.
 - Draft deletion is soft. Thirty-day recovery requires an actual independent Project Admin grant; TENANT_ADMIN alone is insufficient. Number requests only at first submission.
 - Exact uncertain body/key survives retry; every definitive 409 requires deliberate reload and renewed consent. Siblings cannot discard uncertain intent.
-- Recommissioning preparation blocks ordinary workflow. Migration033 must precede runtime; older runtimes cannot resume against preparing projects. No preparation-cancel shortcut is approved.
+- Recommissioning preparation blocks ordinary workflow. Migration033 must precede runtime; older runtimes cannot resume against preparing projects. No preparation-cancel shortcut is approved. Decision54 separately authorizes governed Central preparation cancellation with reviewed start/completion evidence and completion-only guards; ordinary activation/archive cannot substitute for it.
 
 ## Migrations and verification
 

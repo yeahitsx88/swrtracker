@@ -33,7 +33,7 @@ async function observedDELETE(req: NextRequest, { params }: { params: Promise<{ 
       expectedVersion: body.expectedVersion as number };
     const result = await withTransaction(async db => {
       await coordinateAuthenticatedMutation(db, req, auth, 'SHARED', requireActiveAuth);
-      await lockDraftActor(db, scope, 'REQUESTER');
+      await lockDraftActor(db, scope, 'REQUESTER', true, req.nextUrl.pathname);
       return executeIdempotentHttpMutation(db, { tenantId: scope.tenantId, actorId: scope.actorId,
         endpoint: `DELETE:/api/tickets/${ticketId}/draft`, idempotencyKey: key }, body,
         async () => { await deleteDraft(db, scope); return { status: 200, body: { deleted: true } }; });

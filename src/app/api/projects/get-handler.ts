@@ -50,7 +50,7 @@ export async function handleGetProjects(
         AND c.tenant_id = u.tenant_id
        WHERE p.tenant_id = $1
          AND pm.user_id = $2
-         AND (p.status IN ('ACTIVE','ARCHIVED') OR (p.status='SETUP' AND EXISTS(SELECT 1 FROM project_recommissioning pr WHERE pr.tenant_id=p.tenant_id AND pr.project_id=p.id AND pr.opened_at IS NULL)))
+         AND (p.status IN ('ACTIVE','ARCHIVED') OR (p.status='SETUP' AND EXISTS(SELECT 1 FROM project_recommissioning pr WHERE pr.tenant_id=p.tenant_id AND pr.project_id=p.id AND pr.opened_at IS NULL AND pr.cancelled_at IS NULL)) OR (p.status='SETUP' AND EXISTS(SELECT 1 FROM project_preparation_cancellations pc WHERE pc.tenant_id=p.tenant_id AND pc.project_id=p.id AND pc.completed_at IS NULL)))
          AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
          AND (pm.role <> 'PROJECT_ADMIN' OR EXISTS(
            SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=p.tenant_id

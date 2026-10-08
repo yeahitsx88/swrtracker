@@ -13,6 +13,7 @@ import './project-workspace.css';
 
 interface WorkspaceContext {
   actorId:string;
+  refresh:()=>void;
   project: Pick<ProjectMembershipRecord, 'id' | 'name' | 'status'>;
   capabilities: ProjectCapabilities;
 }
@@ -40,7 +41,7 @@ export function ProjectShellHeader({ projectId, requireProject = true, canCreate
         throw new Error('Current access to this project is unavailable. Return to Projects to review your access.');
       }
       if (active) {
-        setSnapshot({ key, context: { project, capabilities,actorId } });
+        setSnapshot({ key, context: { project, capabilities,actorId,refresh:()=>setRevision(value=>value+1) } });
         try { window.sessionStorage.setItem('swr-workspace-project', project.id); } catch { /* Explicit navigation links retain context. */ }
       }
     }

@@ -37,7 +37,7 @@ async function main() {
       'tickets','ticket_events','ticket_sequences','cad_work','ticket_assignment_history','departments','department_memberships',
       'department_titles','priority_whitelist','api_idempotency','attachments','revoked_auth_sessions',
       'ticket_return_cycles','ticket_need_by_revisions','notification_outbox','project_recommissioning',
-      'survey_teams','survey_team_members','survey_team_areas','survey_work_delegations','survey_notifications'];
+      'survey_teams','survey_team_members','survey_team_areas','survey_work_delegations','survey_notifications','project_preparation_cancellations'];
     tables.push('tenants','tenant_memberships','project_admin_grants','project_companies','project_responsibility_grants','company_authority_grants','acting_grants');
     const source=(await db.query('SELECT current_schema() AS name')).rows[0].name;
     assert.match(source,/^phase5_regression_[a-f0-9]{32}$/);

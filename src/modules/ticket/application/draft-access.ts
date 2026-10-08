@@ -5,7 +5,7 @@ import type { DbClient, UUID } from '@/shared/types';
 /** Hold current identity, company, membership and lifecycle evidence until commit/replay. */
 export async function lockDraftActor(db: DbClient, scope: {
   tenantId: UUID; projectId: UUID; actorId: UUID; sessionVersion: number;
-}, role: 'REQUESTER' | 'PROJECT_ADMIN', mutation = true): Promise<{ companyId: UUID }> {
+}, role: 'REQUESTER' | 'PROJECT_ADMIN', mutation = true, completionPath?: string): Promise<{ companyId: UUID }> {
   const { rows } = await db.query<{ company_id: UUID; status: string }>(
     `SELECT u.company_id, p.status FROM project_memberships pm
      JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1
@@ -22,7 +22,7 @@ export async function lockDraftActor(db: DbClient, scope: {
     [scope.tenantId, scope.projectId, scope.actorId, role, scope.sessionVersion]);
   if (!rows[0]) throw new ForbiddenError('Current project authority is required');
   if (mutation && rows[0].status === 'ARCHIVED') throw new ConflictError('Archived projects are read-only');
-  if(mutation)await assertRecommissioningMutation(db,scope.tenantId,scope.projectId);
+  if(mutation)await assertRecommissioningMutation(db,scope.tenantId,scope.projectId,completionPath);
   return { companyId: rows[0].company_id };
 }
 

@@ -1,3 +1,4 @@
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -79,7 +80,8 @@ export async function handlePostProjectActivation(
         auth.userId,
         auth.sessionVersion,
       );
-      if((await client.query('SELECT id FROM project_recommissioning WHERE tenant_id=$1 AND project_id=$2 AND opened_at IS NULL',[auth.tenantId,projectId])).rows.length)throw new ConflictError('Use the guarded recommissioning review before reopening.');
+      if((await client.query('SELECT id FROM project_recommissioning WHERE tenant_id=$1 AND project_id=$2 AND opened_at IS NULL AND cancelled_at IS NULL',[auth.tenantId,projectId])).rows.length)throw new ConflictError('Use the guarded recommissioning review before reopening.');
+      await assertPreparationNotCancelling(client, auth.tenantId, projectId as UUID);
       const changed = await activateProject(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,

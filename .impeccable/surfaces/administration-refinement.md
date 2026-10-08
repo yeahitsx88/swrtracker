@@ -203,3 +203,10 @@ Host/pinned strict626units36focused, matching-lock Node22.23.3 compilation,120 a
 ### Approved established-project template boundary (Decision54 D7)
 
 Narrow ordinary Operate extension: existing Project Settings displays the governing template reference and persisted crew build as read-only. Remove the rejected template-switch form for Project Admin and Central alike on an existing project. Central selects at project establishment; later adoption is a separately governed migration. Existing catalog editing remains Central-only and non-retroactive. Preserve incumbent Axiom sidebar, typography, themes, task routes, other administration controls and command owner. No new visual world, comp, raster, token or staffing semantics. Current evidence is pending; earlier acceptance remains historical.
+
+
+### Governed preparation cancellation (Decision54 D6)
+
+Central IT-only initial/reopening SETUP cancellation review within existing Project Settings. Start records witnessed work; authorized operational users resolve only completion/cancellation/cleanup, Central finishes to Archived. Retain identity, Setup changes and history; no snapshot restore or access grant. Inherit incumbent Axiom Operate components/themes; explicit reason/consent, current blockers, unchanged FrozenCommand retry and shared sibling/navigation owner, successful current-read prerequisite for stale release. No new world, asset, token or dependency. Current UI/browser/concurrency acceptance pending.
+
+D6 bounded verification: current639unit/production compilation,43PostgreSQL/9Team regressions,44actual browser checks and10current raw captures. Full reviewer material vocabulary fix resolved through existing display labels; final bounded verdict ship, documenter No changes. Existing system retained; no new canon. Whole Alpha acceptance remains open.

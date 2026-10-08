@@ -11,7 +11,7 @@ export interface RecoveryActor {kind:'TENANT_ADMIN'|'PROJECT_ADMIN'|'SURVEY_MANA
 /** Caller holds the tenant lifecycle barrier and has revalidated the cookie/session. */
 export async function authorizeRecoveryActor(db:DbClient,auth:AuthContext,projectId:UUID,mutation=false):Promise<RecoveryActor>{
  const caps=await resolveProjectCapabilities(db,auth,projectId);
- const project=(await db.query<{status:string;preparing:boolean}>(`SELECT p.status,EXISTS(SELECT 1 FROM project_recommissioning r WHERE r.tenant_id=p.tenant_id AND r.project_id=p.id AND r.opened_at IS NULL) AS preparing FROM projects p WHERE p.tenant_id=$1 AND p.id=$2 FOR SHARE OF p`,[auth.tenantId,projectId])).rows[0];
+ const project=(await db.query<{status:string;preparing:boolean}>(`SELECT p.status,EXISTS(SELECT 1 FROM project_recommissioning r WHERE r.tenant_id=p.tenant_id AND r.project_id=p.id AND r.opened_at IS NULL AND r.cancelled_at IS NULL) AS preparing FROM projects p WHERE p.tenant_id=$1 AND p.id=$2 FOR SHARE OF p`,[auth.tenantId,projectId])).rows[0];
  if(!project)throw new NotFoundError('Project not found');
  const role=caps.operationalRole;
  const kind=caps.canAdminister?(caps.centralIT?'TENANT_ADMIN':'PROJECT_ADMIN'):role;
