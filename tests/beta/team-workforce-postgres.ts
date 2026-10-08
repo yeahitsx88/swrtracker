@@ -8,7 +8,7 @@ import {GET as workforceGet,POST as workforcePost} from '../../src/app/api/proje
 import {GET as metricsGet} from '../../src/app/api/projects/[projectId]/metrics/route';
 import {POST as projectPost} from '../../src/app/api/projects/route';
 import {GET as administrationGet} from '../../src/app/api/projects/administration/route';
-import {GET as teamsGet,POST as teamsPost,DELETE as teamsDelete} from '../../src/app/api/projects/[projectId]/survey/teams/route';
+import {GET as teamsGet,POST as teamsPost,DELETE as teamsDelete,PATCH as teamsPatch} from '../../src/app/api/projects/[projectId]/survey/teams/route';
 import {SurveyWorkforcePgRepository} from '../../src/modules/tenancy/infrastructure/survey-workforce.repository';
 import {randomUUID} from 'node:crypto';
 import type {UUID} from '../../src/shared/types';
@@ -155,11 +155,42 @@ async function main(){
  await pg.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[f.project]);
  const repo=new SurveyWorkforcePgRepository();assert.equal(await repo.person(pg,{tenantId:f.foreignTenant,projectId:f.project,actorId:f.superA,actorRole:'SURVEY_SUPERINTENDENT',sessionVersion:1},f.imA),null);checks++;
  await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.admin]);
+ // D5 existing team/role controls must share current explicit supervised scope.
+ const roleSubject=id(26);
+ await pg.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,'supervised-role@example.test','Supervised unassigned IM','not-a-login-hash')",[roleSubject,f.tenant,f.company]);
+ await pg.query("INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,'INSTRUMENT_MAN')",[f.project,roleSubject]);
+ await checked(teamsPost(req(f.manager,`/api/projects/${f.project}/survey/teams`,'POST',{teamId:destination.teamId,expectedVersion:6,name:'Explicit supervised destination',areaId:f.otherArea,areaIds:[f.area,f.otherArea].sort(),leadUserId:transferChief,memberIds:[transferChief,roleSubject]}),ctx()),200);
+ const scopedTeam=(await checked(teamsGet(req(f.superA,`/api/projects/${f.project}/survey/teams?teamId=${destination.teamId}`),ctx()),200)).team;
+ assert.equal(scopedTeam.rowVersion,7);checks++;
+ const roleCoverageBefore=await fingerprint('survey_team_areas');
+ const roleInput={action:'set-role',userId:roleSubject,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:1,role:'PARTY_CHIEF',confirmRoleChanges:true,reviewedTeamId:destination.teamId,expectedTeamVersion:7};
+ const roleKey=randomUUID(),roleChange=(input:unknown,key=randomUUID())=>teamsPatch(req(f.superA,`/api/projects/${f.project}/survey/teams`,'PATCH',input,key),ctx());
+ await checked(roleChange(roleInput,roleKey),200);await checked(roleChange(roleInput,roleKey),200);
+ await checked(roleChange({...roleInput,expectedRole:'PARTY_CHIEF',expectedRoleVersion:2,role:'INSTRUMENT_MAN'}),200);
+ await pg.query('UPDATE survey_reporting_links SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND party_chief_id=$3',[f.tenant,f.project,transferChief]);
+ await checked(roleChange(roleInput,roleKey),403);await checked(teamsGet(req(f.superA,`/api/projects/${f.project}/survey/teams?teamId=${destination.teamId}`),ctx()),403);
+ await pg.query('UPDATE survey_reporting_links SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND party_chief_id=$3',[f.tenant,f.project,transferChief]);
+ await pg.query('UPDATE aor_assignments SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND aor_node_id=$4',[f.tenant,f.project,f.superA,f.otherArea]);
+ await checked(roleChange(roleInput,roleKey),403);
+ await pg.query('UPDATE aor_assignments SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND aor_node_id=$4',[f.tenant,f.project,f.superA,f.otherArea]);
+ await checked(roleChange({...roleInput,userId:transferChief,expectedRole:'PARTY_CHIEF',role:'INSTRUMENT_MAN'}),403);
+ await pg.query('UPDATE survey_team_members SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND user_id=$4',[f.tenant,f.project,destination.teamId,transferChief]);
+ await checked(roleChange(roleInput,roleKey),403);
+ await pg.query('UPDATE survey_team_members SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND user_id=$4',[f.tenant,f.project,destination.teamId,transferChief]);
+ const removal={...roleInput,action:'remove-role',expectedRoleVersion:3,role:undefined},removeKey=randomUUID(),teamBefore=await fingerprint('survey_teams');
+ await pg.query("CREATE FUNCTION fail_supervised_role() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.event_type='survey.role_changed' THEN RAISE EXCEPTION 'owned supervised role rollback'; END IF; RETURN NEW; END $$");
+ await pg.query('CREATE TRIGGER fail_supervised_role BEFORE INSERT ON survey_staffing_events FOR EACH ROW EXECUTE FUNCTION fail_supervised_role()');
+ await checked(roleChange(removal,removeKey),500);
+ await pg.query('DROP TRIGGER fail_supervised_role ON survey_staffing_events');await pg.query('DROP FUNCTION fail_supervised_role()');
+ assert.equal(await fingerprint('survey_teams'),teamBefore);assert.equal((await pg.query('SELECT role FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,roleSubject])).rows[0].role,'INSTRUMENT_MAN');assert.equal((await pg.query('SELECT session_version FROM users WHERE tenant_id=$1 AND id=$2',[f.tenant,roleSubject])).rows[0].session_version,3);checks+=3;
+ await checked(roleChange(removal,removeKey),200);await checked(roleChange(removal,removeKey),200);
+ assert.equal((await pg.query('SELECT COUNT(*)::int n FROM survey_team_members WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL',[f.tenant,f.project,roleSubject])).rows[0].n,0);assert.equal((await pg.query('SELECT role FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,roleSubject])).rows[0].role,'REQUESTER');assert.equal(await fingerprint('survey_team_areas'),roleCoverageBefore);assert.equal(await fingerprint('tickets'),requestsBefore);checks+=4;
  // Synthetic cancellation witness stages only the new workforce gate; lifecycle
  // START/FINISH acceptance belongs to the separately verified D6 helper.
  await pg.query("UPDATE projects SET status='SETUP' WHERE tenant_id=$1 AND id=$2",[f.tenant,f.project]);
  await pg.query("INSERT INTO project_preparation_cancellations(id,tenant_id,project_id,started_by,reason,reviewed_evidence) VALUES($1,$2,$3,$4,'Owned workforce gate only','{}'::jsonb)",[randomUUID(),f.tenant,f.project,f.admin]);
  const cancelling=await checked(move(f.superA,base,key),409);assert.equal(cancelling.error.code,'PROJECT_PREPARATION_CANCELLING');checks++;
+ const roleCancelling=await checked(roleChange(roleInput,roleKey),409);assert.equal(roleCancelling.error.code,'PROJECT_PREPARATION_CANCELLING');checks++;
  console.log(JSON.stringify({result:'passed',checks,fixture:f}));
  }finally{await pg.end();await getPool().end();}
 }

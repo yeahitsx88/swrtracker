@@ -1,26 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import {ConflictError,ForbiddenError,NotFoundError} from '@/shared/errors';
-import {SurveyTeamsPgRepository} from './survey-teams.repository';
+import {SurveyTeamsPgRepository,supervisedTeamsCte} from './survey-teams.repository';
 import type { DbClient, UUID } from '@/shared/types';
 import type { TeamActor, TeamPageQuery, TeamProjectContext } from '../application/survey-teams';
 import type { WorkforcePerson, WorkforcePage, WorkforceRepository, WorkforceMove } from '../application/survey-workforce';
 import { SurveyStaffingPgRepository, snapshotCte } from './survey-staffing.repository';
 /** Named teams establish Superintendent responsibility. Legacy unteamed people retain explicit reporting until organized. */
-const population=`covered AS (
- SELECT n.id FROM aor_assignments aa JOIN aor_nodes n ON n.tenant_id=aa.tenant_id AND n.project_id=aa.project_id AND n.id=aa.aor_node_id
- WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL AND n.retired_at IS NULL
- UNION SELECT n.id FROM aor_nodes n JOIN covered parent ON n.parent_id=parent.id WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.retired_at IS NULL
-), supervised_teams AS (
- SELECT t.id FROM survey_teams t
- JOIN users lead ON lead.tenant_id=t.tenant_id AND lead.id=t.lead_user_id AND lead.deactivated_at IS NULL
- JOIN companies lc ON lc.tenant_id=t.tenant_id AND lc.id=lead.company_id AND lc.type<>'SUBCONTRACTOR'
- JOIN project_memberships lp ON lp.project_id=t.project_id AND lp.user_id=lead.id AND lp.access_disabled_at IS NULL
- WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL AND
- ((t.lead_user_id=$3 AND lp.role='SURVEY_SUPERINTENDENT') OR
- (lp.role='PARTY_CHIEF' AND EXISTS(SELECT 1 FROM survey_reporting_links rl JOIN covered ca ON ca.id=rl.aor_node_id WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.party_chief_id=t.lead_user_id AND rl.superintendent_id=$3 AND rl.deactivated_at IS NULL)
- AND EXISTS(SELECT 1 FROM survey_team_areas ta WHERE ta.tenant_id=$1 AND ta.project_id=$2 AND ta.team_id=t.id AND ta.deactivated_at IS NULL)
- AND NOT EXISTS(SELECT 1 FROM survey_team_areas ta WHERE ta.tenant_id=$1 AND ta.project_id=$2 AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND ta.area_id NOT IN(SELECT id FROM covered))))
-), led_members AS (
+const population=`${supervisedTeamsCte}, led_members AS (
  SELECT m.user_id FROM survey_team_members m JOIN supervised_teams t ON t.id=m.team_id
  WHERE m.tenant_id=$1 AND m.project_id=$2 AND m.deactivated_at IS NULL
 ), named_members AS (

@@ -4,6 +4,7 @@ import type { DbClient, UUID } from '@/shared/types';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import { withTransaction } from '@/lib/with-transaction';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
@@ -90,6 +91,7 @@ async function transact<T>(req: NextRequest, ctx: Context, deps: TeamDeps, fn: (
       assertMutationIdentity(await deps.requireAuth(req,db),auth);
     }
     const actorRole = await deps.getProjectRole(db, auth.tenantId, projectId, auth.userId, auth.sessionVersion);
+    if(req.method!=='GET')await assertPreparationNotCancelling(db,auth.tenantId,projectId);
     return fn(db, { tenantId: auth.tenantId, projectId, actorId: auth.userId, actorRole, sessionVersion: auth.sessionVersion });
   });
 }

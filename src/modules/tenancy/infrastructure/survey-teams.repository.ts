@@ -7,6 +7,25 @@ import type { SaveSurveyTeamInput, SurveyTeamDetail, SurveyTeamSummary, SurveyTe
 import { SurveyStaffingPgRepository } from './survey-staffing.repository';
 import type { OperationalRoleChangeInput, SurveyRoleObligations, SurveyRoleRepository } from '../application/change-survey-role';
 
+/** Shared current structural scope for team, workforce and supervised-role operations.
+ * Area overlap alone never supplies the reporting link. Caller validates current actor.
+ */
+export const supervisedTeamsCte=`covered AS (
+ SELECT n.id FROM aor_assignments aa JOIN aor_nodes n ON n.tenant_id=aa.tenant_id AND n.project_id=aa.project_id AND n.id=aa.aor_node_id
+ WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL AND n.retired_at IS NULL
+ UNION SELECT n.id FROM aor_nodes n JOIN covered parent ON n.parent_id=parent.id WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.retired_at IS NULL
+), supervised_teams AS (
+ SELECT t.id FROM survey_teams t
+ JOIN users lead ON lead.tenant_id=t.tenant_id AND lead.id=t.lead_user_id AND lead.deactivated_at IS NULL
+ JOIN companies lc ON lc.tenant_id=t.tenant_id AND lc.id=lead.company_id AND lc.type<>'SUBCONTRACTOR'
+ JOIN project_memberships lp ON lp.project_id=t.project_id AND lp.user_id=lead.id AND lp.access_disabled_at IS NULL
+ WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL
+ AND EXISTS(SELECT 1 FROM survey_team_members lm WHERE lm.tenant_id=t.tenant_id AND lm.project_id=t.project_id AND lm.team_id=t.id AND lm.user_id=t.lead_user_id AND lm.deactivated_at IS NULL) AND
+ ((t.lead_user_id=$3 AND lp.role='SURVEY_SUPERINTENDENT') OR
+ (lp.role='PARTY_CHIEF' AND EXISTS(SELECT 1 FROM survey_reporting_links rl JOIN covered ca ON ca.id=rl.aor_node_id WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.party_chief_id=t.lead_user_id AND rl.superintendent_id=$3 AND rl.deactivated_at IS NULL)
+ AND EXISTS(SELECT 1 FROM survey_team_areas ta WHERE ta.tenant_id=$1 AND ta.project_id=$2 AND ta.team_id=t.id AND ta.deactivated_at IS NULL)
+ AND NOT EXISTS(SELECT 1 FROM survey_team_areas ta WHERE ta.tenant_id=$1 AND ta.project_id=$2 AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND ta.area_id NOT IN(SELECT id FROM covered))))
+)`;
 interface TeamRow {
   id: UUID; name: string; aor_node_id: UUID; area_name: string; lead_user_id: UUID;
   lead_name: string; lead_email: string; lead_role: ProjectRole; lead_active: boolean;
@@ -84,6 +103,14 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     return result.rows.length===1;
   }
 
+  async lockSuperintendentScope(db:DbClient,actor:TeamActor){
+    await db.query('SELECT id FROM aor_nodes WHERE tenant_id=$1 AND project_id=$2 ORDER BY id FOR SHARE',[actor.tenantId,actor.projectId]);
+    await db.query('SELECT id FROM aor_assignments WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL ORDER BY id FOR SHARE',[actor.tenantId,actor.projectId,actor.actorId]);
+    await db.query('SELECT id FROM survey_reporting_links WHERE tenant_id=$1 AND project_id=$2 AND superintendent_id=$3 AND deactivated_at IS NULL ORDER BY id FOR SHARE',[actor.tenantId,actor.projectId,actor.actorId]);
+  }
+  async supervisedTeam(db:DbClient,actor:TeamActor,teamId:UUID){
+    const {rows}=await db.query(`WITH RECURSIVE ${supervisedTeamsCte} SELECT id FROM supervised_teams WHERE id=$4 AND EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1 AND c.type<>'SUBCONTRACTOR' WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='SURVEY_SUPERINTENDENT' AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL AND u.session_version=$5)`,[actor.tenantId,actor.projectId,actor.actorId,teamId,actor.sessionVersion]);return rows.length===1;
+  }
   async team(db: DbClient, tenantId: UUID, projectId: UUID, teamId: UUID): Promise<SurveyTeamDetail | null> {
     const { rows } = await db.query<TeamRow>(`${teamSelect} AND t.id=$3`, [tenantId, projectId, teamId]);
     if (!rows[0]) return null;
@@ -100,15 +127,15 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
 
   async list(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery, leadUserId?: UUID): Promise<Page<SurveyTeamSummary>> {
     const search = `%${query.search}%`;
-    const filter = ` AND ($4::uuid IS NULL OR t.lead_user_id=$4) AND (t.name ILIKE $3 OR EXISTS (SELECT 1 FROM survey_team_areas ta
+    const filter = ` AND ($3::uuid IS NULL OR t.id IN(SELECT id FROM supervised_teams)) AND (t.name ILIKE $4 OR EXISTS (SELECT 1 FROM survey_team_areas ta
       JOIN aor_nodes a ON a.tenant_id=ta.tenant_id AND a.project_id=ta.project_id AND a.id=ta.area_id
-      WHERE ta.tenant_id=t.tenant_id AND ta.project_id=t.project_id AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND a.name ILIKE $3))`;
+      WHERE ta.tenant_id=t.tenant_id AND ta.project_id=t.project_id AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND a.name ILIKE $4))`;
     const count = await db.query<{ total: number }>(
-      `SELECT COUNT(*)::int AS total FROM survey_teams t
+      `WITH RECURSIVE ${supervisedTeamsCte} SELECT COUNT(*)::int AS total FROM survey_teams t
        JOIN aor_nodes n ON n.tenant_id=t.tenant_id AND n.project_id=t.project_id AND n.id=t.aor_node_id
-       WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL${filter}`, [tenantId, projectId, search,leadUserId??null]);
-    const { rows } = await db.query<TeamRow>(`${teamSelect}${filter} ORDER BY lower(t.name),t.id LIMIT $5 OFFSET $6`,
-      [tenantId, projectId, search,leadUserId??null, query.limit, query.offset]);
+       WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL${filter}`, [tenantId, projectId, leadUserId??null,search]);
+    const { rows } = await db.query<TeamRow>(`WITH RECURSIVE ${supervisedTeamsCte} ${teamSelect}${filter} ORDER BY lower(t.name),t.id LIMIT $5 OFFSET $6`,
+      [tenantId, projectId, leadUserId??null,search, query.limit, query.offset]);
     return { data: rows.map(summary), total: count.rows[0]!.total, limit: query.limit, offset: query.offset };
   }
 

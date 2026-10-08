@@ -12,8 +12,9 @@ export async function authorizeSupervisedSurveyRole(repo:SurveyRoleRepository,db
  if(!project)throw new NotFoundError('Project not found');
  if(!await repo.lockSuperintendent(db,actor))throw new ForbiddenError('Your Superintendent role or session changed');
  if(project.status==='ARCHIVED')throw new ConflictError('Closed projects cannot receive role changes');
+ await repo.lockSuperintendentScope(db,actor);
  const team=await repo.team(db,actor.tenantId,actor.projectId,teamId);
- if(!team||team.lead.userId!==actor.actorId||!team.lead.active)throw new ForbiddenError('You may change roles only in a current named team you lead');
+ if(!team||!team.lead.active||!await repo.supervisedTeam(db,actor,team.id))throw new ForbiddenError('You may change roles only in a current named team in your supervised structure');
  // Retain the existing named-team Area scope; never create individual/reporting grants.
  for(const area of team.areas??[{id:team.areaId,name:team.areaName}])if(!await repo.activeArea(db,actor.tenantId,actor.projectId,area.id))throw new ConflictError('Ask your Survey Manager to resolve retired team Area coverage first');
  return {project,team};

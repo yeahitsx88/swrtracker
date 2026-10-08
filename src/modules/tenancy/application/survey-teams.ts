@@ -34,6 +34,8 @@ export interface SurveyTeamsRepository {
   lockProject(db: DbClient, tenantId: UUID, projectId: UUID): Promise<{ status: ProjectStatus; crewBuild: CrewBuild } | null>;
   lockManager(db: DbClient, actor: TeamActor): Promise<boolean>;
   lockSuperintendent(db: DbClient, actor: TeamActor): Promise<boolean>;
+  lockSuperintendentScope(db:DbClient,actor:TeamActor):Promise<void>;
+  supervisedTeam(db:DbClient,actor:TeamActor,teamId:UUID):Promise<boolean>;
   team(db: DbClient, tenantId: UUID, projectId: UUID, teamId: UUID): Promise<SurveyTeamDetail | null>;
   list(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery, leadUserId?: UUID): Promise<Page<SurveyTeamSummary>>;
   personnel(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery): Promise<Page<TeamPersonnel>>;
@@ -74,8 +76,9 @@ export async function authorizeTeamSave(repo: SurveyTeamsRepository, db: DbClien
   const project=await repo.lockProject(db,actor.tenantId,actor.projectId);
   if(!project)throw new NotFoundError('Project not found');
   if(!await repo.lockSuperintendent(db,actor))throw new ForbiddenError('Your Superintendent role or session has changed.');
+  await repo.lockSuperintendentScope(db,actor);
   const team=await repo.team(db,actor.tenantId,actor.projectId,input.teamId);
-  if(!team||team.lead.userId!==actor.actorId)throw new ForbiddenError('You can edit only a team you lead.');
+  if(!team||!await repo.supervisedTeam(db,actor,team.id))throw new ForbiddenError('You can edit only a team in your current supervised structure.');
   if(project.status==='ARCHIVED')throw new ConflictError('Closed projects cannot be changed');
   if(input.leadUserId!==team.lead.userId||JSON.stringify(selectedTeamAreas(input))!==JSON.stringify((team.areas?.map(area=>area.id)??[team.areaId]).sort())) {
     throw new ForbiddenError('The Survey Manager sets team leadership and Area coverage.');
@@ -142,7 +145,7 @@ export async function readSurveyTeams(repo: SurveyTeamsRepository, db: DbClient,
   if (teamId) {
     const team = await repo.team(db, actor.tenantId, actor.projectId, teamId);
     if (!team) throw new NotFoundError('Team not found');
-    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&team.lead.userId!==actor.actorId)throw new ForbiddenError('You can view only a team you lead.');
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&!await repo.supervisedTeam(db,actor,team.id))throw new ForbiddenError('You can view only a team in your current supervised structure.');
     return { team };
   }
   return repo.list(db, actor.tenantId, actor.projectId, query,actor.actorRole==='SURVEY_SUPERINTENDENT'?actor.actorId:undefined);

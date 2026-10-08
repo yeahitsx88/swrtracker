@@ -13,7 +13,7 @@ import { changeSurveyRole, type ChangeSurveyRoleInput, type SurveyRoleRepository
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
 const tenantId=id(1), projectId=id(2), actorId=id(3), chiefId=id(4), imId=id(5), areaId=id(6), teamId=id(7);
 const db:DbClient={query:async<T extends object>(sql:string)=>({
- rows:[sql.includes('pg_current_xact_id')?{transaction_id:'teams-route'}:{id:tenantId}] as T[],
+ rows:(sql.includes('project_preparation_cancellations')?[]:[sql.includes('pg_current_xact_id')?{transaction_id:'teams-route'}:{id:tenantId}]) as T[],
 })};
 const actor: TeamActor = { tenantId, projectId, actorId, actorRole: 'SURVEY_MANAGER', sessionVersion: 1 };
 const chief: TeamPersonnel = { userId: chiefId, name:'Chief',email:'chief@example.test',role:'PARTY_CHIEF',active:true,teamId:null,teamName:null,roleVersion:1 };
@@ -30,6 +30,7 @@ function fixture() {
     projectContext:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
     areas:async(_db,t,p,q)=>({data:t===tenantId&&p===projectId?[{id:areaId,name:'Train 1'}]:[],total:1,limit:q.limit,offset:q.offset}),
     lockProject: async()=>({status:'ACTIVE',crewBuild:'FULL'}), lockManager:async()=>true, lockSuperintendent:async()=>true,
+    lockSuperintendentScope:async()=>{},supervisedTeam:async(_db,a)=>current?.lead.userId===a.actorId,
     team:async(_db,t,p)=> t===tenantId && p===projectId ? current : null,
     list:async(_db,t,p,q)=>({data:t===tenantId&&p===projectId&&current?[current]:[],total:current?1:0,limit:q.limit,offset:q.offset}),
     personnel:async(_db,_t,_p,q)=>({data:people,total:people.length,limit:q.limit,offset:q.offset}),
@@ -351,4 +352,12 @@ test('Manager explicit removal requires prior named-team exit and cannot remove 
  f.people[0].teamId=null;await removeSurveyRole(f.repo,db,actor,{...roleInput(),role:'REQUESTER'});
  assert.deepEqual(f.writes,['role','survey.role_changed']);assert.equal(f.people[0].role,'REQUESTER');
  f.people[0].role='SURVEY_MANAGER';await assert.rejects(removeSurveyRole(f.repo,db,actor,{...roleInput({expectedRole:'SURVEY_MANAGER',expectedRoleVersion:2}),role:'REQUESTER'}),ForbiddenError);
+});
+
+test('explicit current supervised Chief-led scope permits resolved role changes without granting leadership or coverage',async()=>{
+ const f=fixture(),created=await saveSurveyTeam(f.repo,db,actor,input());for(const person of f.people)person.teamId=created.teamId;
+ const supervisor={...actor,actorRole:'SURVEY_SUPERINTENDENT' as const};f.repo.supervisedTeam=async()=>true;f.writes.length=0;
+ const review={userId:imId,expectedRole:'INSTRUMENT_MAN' as const,expectedRoleVersion:1,role:'PARTY_CHIEF' as const,confirmRoleChanges:true,reviewedTeamId:created.teamId,expectedTeamVersion:1};
+ await changeSupervisedSurveyRole(f.repo,db,supervisor,review);assert.equal(f.people[1].role,'PARTY_CHIEF');assert.equal(f.current()!.lead.userId,chiefId);assert.equal(f.current()!.rowVersion,1);
+ f.repo.supervisedTeam=async()=>false;f.writes.length=0;await assert.rejects(changeSupervisedSurveyRole(f.repo,db,supervisor,{...review,expectedRole:'PARTY_CHIEF',expectedRoleVersion:2,role:'INSTRUMENT_MAN'}),ForbiddenError);assert.deepEqual(f.writes,[]);
 });
