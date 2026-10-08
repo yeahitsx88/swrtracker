@@ -1520,3 +1520,8 @@ POST /api/tickets/:ticketId/survey-cancel/approve requires a caller-owned Idempo
 
 ### Audited historical attachment reads (Alpha hardening Batch227)
 Existing authorized attachment downloads remain available during preparation, governed preparation cancellation and Archived history. The explicit read transaction retains SHARED lifecycle coordination and revalidates the current session, operational role, tenant/project/company/owner visibility after waiting and before file bytes or access audit. It does not apply workflow-mutation eligibility. Existing attachment.downloaded is atomic with the successful response; an audit failure returns no bytes. Uploads retain the workflow mutation gate and current upload/state permissions. No new role or administration-derived file permission is added.
+
+
+### Alpha Batch229: read-only preparation cleanup availability
+- Existing visible paginated request reads may include optional preparationCleanupAllowed, derived only from matching tenant/project Setup and open preparation-cancellation reviewed work. It is lifecycle availability, not actor authority, and discloses no witness IDs outside the current visible page. Use private/no-store caching.
+- Existing personally assigned/captured/operational guards and mutation endpoints remain authoritative. Only existing allowed completion/cancellation controls may bypass the ordinary Active-only UI guard for witnessed work; new work, restart, reassignment, delay and report rejection remain blocked. No workflow transition, schema, audit event or permission addition.

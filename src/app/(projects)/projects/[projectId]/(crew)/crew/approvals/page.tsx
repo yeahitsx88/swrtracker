@@ -41,6 +41,7 @@ export default function CrewApprovalsPage() {
     >
       <div className="stack">
         {workflow.dialog}
+        {approvals.data?.data.some(ticket=>ticket.preparationCleanupAllowed)?<p role="status">Preparation cancellation: validate the reviewed inability report or confirm its recorded legacy outcome. Resuming work is unavailable.</p>:null}
         {approvals.error ? <ErrorBanner message={approvals.error} /> : null}
         {approvals.loading ? <p className="muted" role="status">Loading approval queue…</p> : null}
         {!approvals.loading && !approvals.error ? (
@@ -54,7 +55,7 @@ export default function CrewApprovalsPage() {
               workspace?.actorId === ticket.fieldValidationReviewerId &&
               ['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF'].includes(workspace.capabilities.operationalRole ?? '') ? (
               <>
-                <Button disabled={actionDisabled} onClick={() => workflow.open(ticket,'validate-inability')}>Validate and Return</Button>
+                <Button disabled={workflow.active||(workspace?.project.status!=='ACTIVE'&&!(workspace?.project.status==='SETUP'&&ticket.preparationCleanupAllowed))} onClick={() => workflow.open(ticket,'validate-inability')}>Validate and Return</Button>
                 <Button variant="secondary" disabled={actionDisabled} onClick={() => workflow.open(ticket,'reject-inability')}>Reject Report and Resume</Button>
               </>
               ) : <span className="muted">Review is reserved for the recorded reviewer.</span>
@@ -63,7 +64,8 @@ export default function CrewApprovalsPage() {
               workspace.capabilities.operationalRole === 'PARTY_CHIEF' && ticket.assignedPartyChiefId === workspace.actorId) ? (
               <ApprovalActions
                 ticket={ticket}
-                busy={actionDisabled}
+                busy={workflow.active||(workspace.project.status!=='ACTIVE'&&!(workspace.project.status==='SETUP'&&ticket.preparationCleanupAllowed))}
+                completionOnly={workspace.project.status!=='ACTIVE'}
                 onReview={action => workflow.open(ticket,action)}
               />
               ) : <span className="muted">Legacy review requires the assigned Party Chief or authorized survey leadership.</span>

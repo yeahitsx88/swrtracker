@@ -21,3 +21,14 @@ export async function assertRecommissioningMutation(db:DbClient,tenantId:UUID,pr
  const pending=rows.some(row=>row.id!==null&&row.id!==undefined);
  if(pending&&!path?.match(/\/tickets\/[0-9a-f-]+\/(assign|requester-cancel|field-cancel|survey-cancel(?:\/approve)?)$/i))throw new ConflictError('Project recommissioning preparation is in progress. Resolve work through authorized reassignment or cancellation; reopen before ordinary operations.','PROJECT_RECOMMISSIONING');
 }
+
+/** Read-only lifecycle availability for already-visible requests; never grants actor authority. */
+export async function findPreparationCleanupTickets(db:DbClient,tenantId:UUID,projectId:UUID,visibleIds:UUID[]):Promise<Set<UUID>>{
+ if(!visibleIds.length)return new Set();
+ const {rows}=await db.query<{id:UUID}>(`SELECT t.id FROM tickets t
+  JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP'
+  JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL
+  WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.id=ANY($3::uuid[])
+   AND EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(c.reviewed_evidence->'work','[]'::jsonb)) w WHERE w->>'id'=t.id::text)`,[tenantId,projectId,visibleIds]);
+ return new Set(rows.map(row=>row.id));
+}

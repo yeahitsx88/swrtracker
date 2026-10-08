@@ -31,6 +31,8 @@ export interface TicketRecord {
   requesterId: string;
   requesterName?: string;
   isOwnRequest?: boolean;
+  /** Visible request is witnessed in current completion-only preparation cancellation; not actor authority. */
+  preparationCleanupAllowed?: boolean;
   assignedPartyChiefId: string | null;
   assignedInstrumentManId: string | null;
   surveyLeadId: string | null;

@@ -55,6 +55,7 @@ function CrewWorkContent() {
         {parsed.error && <ErrorBanner message={parsed.error} />}
         <ScopedKpiEntry projectId={projectId} audience="field" />
         {workflow.dialog}
+        {work.data?.data.some(ticket=>ticket.preparationCleanupAllowed)?<p role="status">Preparation cancellation: only finishing or cancelling the reviewed work is available.</p>:null}
         {work.error ? <ErrorBanner message={work.error} /> : null}
         {work.loading ? <p className="muted" role="status">Loading crew work queue…</p> : null}
         {!work.loading && !work.error && !parsed.error ? (
@@ -67,12 +68,13 @@ function CrewWorkContent() {
             renderActions={(ticket) => role==='PARTY_CHIEF'&&ticket.assignedPartyChiefId===actorId?(<div className="row">
               {['APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<CrewAssignment disabled={actionDisabled} ticket={ticket} owner={workflow.owner} fixedChiefId={actorId} onSaved={()=>setRevision(n=>n+1)}/>:null}
               {ticket.status==='DELAYED'?<Button disabled={actionDisabled} onClick={()=>workflow.open(ticket,'restart')}>Restart Delayed Work</Button>:null}
-              {['IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="danger" disabled={actionDisabled||!!ticket.surveyCancelRequestedAt} onClick={()=>workflow.open(ticket,'stop')}>Flag Stop Work</Button>:null}
+              {['IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="danger" disabled={workflow.active||(workspace?.project.status!=='ACTIVE'&&!(workspace?.project.status==='SETUP'&&ticket.preparationCleanupAllowed))||!!ticket.surveyCancelRequestedAt} onClick={()=>workflow.open(ticket,'stop')}>Flag Stop Work</Button>:null}
               {ticket.surveyCancelRequestedAt?<p role="status">Stop-work review is pending.</p>:null}
               </div>):role==='INSTRUMENT_MAN'&&ticket.assignedInstrumentManId===actorId?(
               <CrewWorkActions
                 ticket={ticket}
-                busy={actionDisabled}
+                busy={workflow.active||(workspace?.project.status!=='ACTIVE'&&!(workspace?.project.status==='SETUP'&&ticket.preparationCleanupAllowed))}
+                completionOnly={workspace?.project.status!=='ACTIVE'}
                 onReview={action => workflow.open(ticket,action)}
               />
             ):<Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request</Link>}
