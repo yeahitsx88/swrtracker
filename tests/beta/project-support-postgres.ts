@@ -57,7 +57,14 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
  assert.equal((await db.query('SELECT count(*)::int n FROM administrative_events')).rows[0].n,beforeArchived);checks++;
  await db.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[project]);
  const central=randomUUID() as UUID;await db.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Central only','fixture')",[central,f.tenant,company,central+'@example.test']);await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,central]);
- await lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:central,sessionVersion:1},'PROJECT_ADMIN');checks++;
+ // Decision23 requires an actual independent grant, even for Tenant Admin.
+ await refuses(()=>lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:central,sessionVersion:1},'PROJECT_ADMIN'),'ForbiddenError');
+ await db.query("INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,'VIEWER')",[project,central]);
+ await refuses(()=>lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:central,sessionVersion:1},'PROJECT_ADMIN'),'ForbiddenError');
+ await setProjectAdministrator(db,admin,project,central,true);
+ assert.equal((await db.query('SELECT session_version FROM users WHERE id=$1',[central])).rows[0].session_version,2);checks++;
+ await refuses(()=>lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:central,sessionVersion:1},'PROJECT_ADMIN'),'ForbiddenError');
+ await lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:central,sessionVersion:2},'PROJECT_ADMIN');checks++;
  await refuses(()=>lockDraftActor(db,{tenantId:admin.tenantId,projectId:project,actorId:actors.SURVEY_MANAGER!.userId,sessionVersion:1},'PROJECT_ADMIN'),'ForbiddenError');
  const previous=(await db.query('SELECT count(*)::int n FROM project_support_tickets')).rows[0].n;
  await db.query('SAVEPOINT support_fault');await db.query(`CREATE FUNCTION fail_support_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.event_type='support.created' THEN RAISE EXCEPTION 'synthetic support audit failure'; END IF; RETURN NEW; END $$`);await db.query('CREATE TRIGGER support_audit_fault BEFORE INSERT ON administrative_events FOR EACH ROW EXECUTE FUNCTION fail_support_audit()');

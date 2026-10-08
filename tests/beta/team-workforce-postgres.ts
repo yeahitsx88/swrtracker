@@ -8,7 +8,7 @@ import {GET as workforceGet,POST as workforcePost} from '../../src/app/api/proje
 import {GET as metricsGet} from '../../src/app/api/projects/[projectId]/metrics/route';
 import {POST as projectPost} from '../../src/app/api/projects/route';
 import {GET as administrationGet} from '../../src/app/api/projects/administration/route';
-import {GET as teamsGet,POST as teamsPost} from '../../src/app/api/projects/[projectId]/survey/teams/route';
+import {GET as teamsGet,POST as teamsPost,DELETE as teamsDelete} from '../../src/app/api/projects/[projectId]/survey/teams/route';
 import {SurveyWorkforcePgRepository} from '../../src/modules/tenancy/infrastructure/survey-workforce.repository';
 import {randomUUID} from 'node:crypto';
 import type {UUID} from '../../src/shared/types';
@@ -60,12 +60,18 @@ async function main(){
  await checked(metricsGet(req(f.superA,`/api/projects/${f.project}/metrics?view=charts&cohort=linkedCrews&instrumentManId=${f.imB}`),ctx()),404);
  await checked(kpi(f.superA,f.imA,'&cohort=areaWorkload'),400);
  await checked(kpi(f.superA,f.imA,'',f.sameProject),403);
+ // Same-team reorganization now requires an explicit Superintendent-led named team.
+ const workforceTeam=await checked(teamsPost(req(f.manager,`/api/projects/${f.project}/survey/teams`,'POST',{name:'Owned scoped workforce',areaId:f.area,leadUserId:f.superA,memberIds:[f.superA,f.chiefA,f.chiefA2,f.imA]}),ctx()),201);
  const base={instrumentManId:f.imA,partyChiefId:f.chiefA2,expectedSnapshot:await snapshot()};
- const count=async()=>Number((await pg.query('SELECT count(*) AS n FROM survey_staffing_events WHERE project_id=$1',[f.project])).rows[0].n);
+ const count=async()=>Number((await pg.query("SELECT count(*) AS n FROM survey_staffing_events WHERE project_id=$1 AND payload->>'action'='reorganize-roster'",[f.project])).rows[0].n);
  for(const input of [{...base,instrumentManId:f.imB},{...base,partyChiefId:f.chiefB},{...base,instrumentManId:f.foreignIM},{...base,instrumentManId:f.outsideIM},{...base,expectedSnapshot:'0'.repeat(32)}])await checked(move(f.superA,input),input.expectedSnapshot==='0'.repeat(32)?409:404);
  await checked(move(f.chiefA,base),403);assert.equal(await count(),0);checks++;
  const key=randomUUID();await checked(move(f.superA,base,key),200);await checked(move(f.superA,base,key),200);assert.equal(await count(),1);checks++;
  await checked(read(f.chiefA,`?mode=person&personId=${f.imA}`),404);await checked(kpi(f.chiefA,f.imA),404);
+ assert.deepEqual(ids(await checked(read(f.chiefA2),200)),[f.imA]);checks++;
+ // Ending the named team retains explicit crew/reporting links and assignments;
+ // subsequent cases intentionally verify the separately retained legacy read path.
+ await checked(teamsDelete(req(f.manager,`/api/projects/${f.project}/survey/teams`,'DELETE',{teamId:workforceTeam.teamId,expectedVersion:1,confirmDelete:true}),ctx()),200);
  assert.deepEqual(ids(await checked(read(f.chiefA2),200)),[f.imA]);checks++;
  await pg.query('UPDATE crew_rosters SET deactivated_at=now() WHERE project_id=$1 AND instrument_man_id=$2',[f.project,f.imA]);
  await checked(kpi(f.superA,f.imA),404);await checked(read(f.chiefA2,`?mode=person&personId=${f.imA}`),404);await checked(move(f.superA,base,key),404);
@@ -97,7 +103,13 @@ async function main(){
  await teamDb.query('COMMIT');teamDb.release();
  await checked(read(f.superA,`?mode=person&personId=${f.imB}`),404);
  await checked(teamsPost(req(f.superA,`/api/projects/${f.project}/survey/teams`,'POST',{name:'Unauthorized',areaId:f.area,leadUserId:f.chiefA,memberIds:[f.chiefA]}),ctx()),403);
- await pg.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1",[f.project]);await checked(move(f.superA,{...base,expectedSnapshot:await snapshot()}),409);
+ // The mixed named team above removes this Superintendent's move authority;
+ // Archived project refusal precedes the later same-team move check.
+ await pg.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1",[f.project]);const archivedEvents=await count();
+ await checked(move(f.superA,{...base,expectedSnapshot:await snapshot()}),409);
+ const managerSnapshot=(await checked(read(f.manager,'?mode=context'),200)).snapshotToken;
+ await checked(move(f.manager,{...base,expectedSnapshot:managerSnapshot}),403); // Manager uses the separate reorganization command.
+ assert.equal(await count(),archivedEvents);checks++;
  await pg.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[f.project]);
  const repo=new SurveyWorkforcePgRepository();assert.equal(await repo.person(pg,{tenantId:f.foreignTenant,projectId:f.project,actorId:f.superA,actorRole:'SURVEY_SUPERINTENDENT',sessionVersion:1},f.imA),null);checks++;
  await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.admin]);

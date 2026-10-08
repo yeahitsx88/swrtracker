@@ -1,0 +1,47 @@
+{
+  "checkpoint": "Batch197 preserved acceptance baseline; whole Alpha OPEN",
+  "productionCommit": "c8a184f",
+  "productionChanged": false,
+  "verifiedRuntimeArchives": {
+    ".local/alpha-acceptance197/attempt11/source.tar": "3a9ca2eee663625c74942e4923af448148f16327d2134b2fc96c261240ee62ef",
+    ".local/alpha-acceptance197/attempt12/source.tar": "8c404ef28842c04738a6686a8557ffe0781a569fd8e218714e98d42a922ee777",
+    ".local/alpha-acceptance197/attempt13/source.tar": "8c404ef28842c04738a6686a8557ffe0781a569fd8e218714e98d42a922ee777",
+    ".local/alpha-acceptance197/production-correct/source.tar": "4c1f3a0da65788d875ca9cccf39d42adecd69ccd7c30779e4f56a40b1d374683"
+  },
+  "runtimeBytes": "All src and migration bytes equal across baseline, diagnostic, remaining-suite and compiled-role-runtime archives",
+  "verification": {
+    "hostStrict": "pass",
+    "hostUnits": 626,
+    "pinnedStrict": "pass including new TypeScript fixture",
+    "pinnedUnits": 627,
+    "pinnedToolchain": "Node22.23.3/pnpm11.19 matching lock",
+    "productionCompilation": "pass at unchanged c8a184f production source on correct runtime3210",
+    "postgres": "All14 base and9 phase5 suites pass;6 additional suites pass. Historical continuity-recovery fixture mismatch still blocks the whole30-suite command.",
+    "roleMatrix": {
+      "authenticatedChecks": 866,
+      "roles": 27,
+      "roleStateCells": 81,
+      "pageErrors": [],
+      "captures": 28,
+      "capturesReviewed": false
+    }
+  },
+  "reconciledFixtures": [
+    "042 wrapper kept within rollback-owned lifecycle migration fixture; current schema checked after each migration",
+    "named-team writer lifecycle mode and valid Survey-only race subjects",
+    "actual independent Project Admin grant and renewed session for draft authority",
+    "Survey-only role changes and explicit atomic subordinate removal",
+    "staffing does not perform role promotion; current roles established as synthetic setup before audit rollback",
+    "same-team Superintendent moves require an explicit led team; Manager uses the separate reorganization endpoint",
+    "temporary recovery tables include current Team visibility/notification dependencies"
+  ],
+  "limitations": [
+    "29 of30 PostgreSQL suites pass across same production source; full gate remains OPEN",
+    "Historical continuity fixture lacks complete named-team coverage and assumes superseded implicit Area movement; no production rule changed to make it pass",
+    "Role/status/population fixtures include synthetic raw setup and are not connected workflow journeys",
+    "28 current role captures not visually reviewed; responsive helper written but not run",
+    "Wrong initial runtime env and earlier helper/fixture expectations excluded, retained logs",
+    "New15500 owned database and fresh schemas; older retained15498 data untouched",
+    "No push/deploy/Alpha2/release remediation; inherited source-map-js blocker remains separate"
+  ]
+}
