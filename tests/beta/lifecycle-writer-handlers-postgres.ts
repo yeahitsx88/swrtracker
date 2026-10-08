@@ -58,8 +58,9 @@ async function main(){
   const db=await setup.connect();
   try{
    await db.query('BEGIN');await db.query('CREATE SCHEMA "'+schema+'"');
-   await db.query('SET LOCAL search_path TO "'+schema+'",public');
-   for(const migration of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')).sort())await db.query(await readFile('db/migrations/'+migration,'utf8'));
+  // Migration042 commits its wrapper; retain session schema for later migrations.
+   await db.query('SET search_path TO "'+schema+'",public');
+   for(const migration of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')).sort()){await db.query(await readFile('db/migrations/'+migration,'utf8'));assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name,schema,'Migration must stay in the newly owned schema');}
    await db.query('COMMIT');created=true;
   }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
   pg=new Pool({connectionString:url.href,max:5,options:'-c search_path='+schema+',public'});
@@ -110,7 +111,7 @@ async function main(){
    {name:'team-delete',method:'DELETE',handler:handleDeleteSurveyTeam,mode:'EXCLUSIVE',body:{teamId:nextId(),expectedVersion:1,confirmDelete:true}},
    {name:'protected-review-handover',method:'POST',handler:handlePostProtectedObligations,mode:'EXCLUSIVE',body:{userId:superintendent,grantId:nextId(),replacementUserId:nextId(),expectedSnapshot:snapshot,confirmResolution:true,coverageMode:'reuse'}},
    {name:'superintendent-area-unlink',method:'PATCH',handler:handlePatchSuperintendentArea,mode:'EXCLUSIVE',body:{action:'unlink-superintendent-area',superintendentId:superintendent,linkId:link,replacementUserId:nextId(),replacementGrantId:nextId(),replacementAssignmentId:nextId(),expectedSnapshot:snapshot,confirmUnlink:true}},
-   {name:'workforce-roster-move',method:'POST',handler:moveWorkforce,mode:'EXCLUSIVE',body:{instrumentManId:im,partyChiefId:chief,expectedSnapshot:snapshot}},
+   {name:'workforce-roster-move',method:'POST',handler:moveWorkforce,mode:'EXCLUSIVE',body:{instrumentManId:im,partyChiefId:chief,destinationTeamId:nextId(),expectedSnapshot:snapshot}},
    {name:'department-create',method:'POST',handler:handlePostDepartments,mode:'EXCLUSIVE',body:{name:'Race department',managerTitle:'Race manager'}},
    {name:'project-activate',method:'POST',handler:handlePostProjectActivation,mode:'EXCLUSIVE',body:{acknowledgeWarnings:true}},
    {name:'project-archive',method:'POST',handler:handlePostProjectArchive,mode:'EXCLUSIVE',body:{}},

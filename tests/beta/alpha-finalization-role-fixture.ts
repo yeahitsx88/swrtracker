@@ -7,6 +7,7 @@ import {signToken} from '../../src/lib/auth';
 import {handlePostSurveyTeam} from '../../src/app/api/projects/[projectId]/survey/teams/handler';
 import type {UUID} from '../../src/shared/types';
 async function main(){
+ const run=process.env.SWR_ALPHA_EVIDENCE??'197';assert.ok(['197','206'].includes(run));const evidenceDir=run==='206'?'.local/alpha-closure206':'.local/alpha-acceptance197';
  const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_ALPHA_ACCEPTANCE,'197');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');
  const owned=JSON.parse(await readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(owned.owner,'Alpha acceptance197');assert.equal(owned.hostPort,15500);assert.match(owned.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);
  const pool=getPool(),tenant=randomUUID(),foreignTenant=randomUUID(),project=randomUUID(),setupProject=randomUUID(),archivedProject=randomUUID(),foreignProject=randomUUID(),company=randomUUID(),scCompany=randomUUID(),foreignCompany=randomUUID(),level=randomUUID(),area=randomUUID(),area2=randomUUID(),area3=randomUUID(),department=randomUUID(),otherDepartment=randomUUID();
@@ -37,6 +38,6 @@ async function main(){
   await pool.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description,aor_node_id,department_id,ticket_type,requested_date,ticket_number,assigned_party_chief_id,assigned_instrument_man_id,field_contact,submitted_at,first_submitted_at,completed_at) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL',$6,'Survey',$7,$8,$9,'LAYOUT',$10,$11,$12,$13,'Owned contact',$14,$14,$15)",[id,tenant,project,c,r,status,'Owned population '+i,a,d,needBy,'ALPHA197-'+i,pc,im,first,completed]);population.push({id,area:a,department:d,company:c,requester:r,status,chief:pc,instrument:im,needBy,completedAt:completed,firstSubmittedAt:first});
  }
  const partial=randomUUID();await pool.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','DRAFT','','Owned partial draft')",[partial,tenant,project,company,people.requester]);
- await writeFile('.local/alpha-acceptance197/role-fixture.json',JSON.stringify({tenant,foreignTenant,project,setupProject,archivedProject,foreignProject,company,scCompany,people,tokens,roles,area,area2,area3,department,otherDepartment,team,population,partial,today}));console.log('Fresh owned Alpha role/state/population fixture created; no retained database used');await pool.end();
+ await writeFile(evidenceDir+'/role-fixture.json',JSON.stringify({tenant,foreignTenant,project,setupProject,archivedProject,foreignProject,company,scCompany,people,tokens,roles,area,area2,area3,department,otherDepartment,team,population,partial,today}));console.log('Fresh owned Alpha role/state/population fixture created; no retained database used');await pool.end();
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

@@ -38,8 +38,9 @@ async function main() {
   const publicBefore=await fingerprint(db);
   try {
     await db.query('BEGIN'); await db.query(`CREATE SCHEMA "${schema}"`);
-    await db.query(`SET LOCAL search_path TO "${schema}",public`);
-    for(const file of (await readdir('db/migrations')).filter(f=>f.endsWith('.sql')).sort()) await db.query(await readFile('db/migrations/'+file,'utf8'));
+  // Migration042 commits its wrapper; retain session schema for later migrations.
+    await db.query(`SET search_path TO "${schema}",public`);
+    for(const file of (await readdir('db/migrations')).filter(f=>f.endsWith('.sql')).sort()) {await db.query(await readFile('db/migrations/'+file,'utf8'));assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name,schema,'Migration must stay in the newly owned schema');}
     await db.query('COMMIT'); created=true;
     scoped=new Pool({connectionString:url.href,options:'-c search_path='+schema+',public',max:6});
     app.query=scoped.query.bind(scoped) as typeof app.query;

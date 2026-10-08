@@ -63,8 +63,9 @@ if(mode==='pg'){
  // Existing PostgreSQL regressions need their own committed, fully migrated schema.
  const schema='phase5_regression_'+randomUUID().replaceAll('-',''),pg=new Pool({connectionString:url.href});const db=await pg.connect();let created=false;
  try{
-  await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET LOCAL search_path TO "${schema}",public`);
-  for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort())await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));
+  // Migration042 commits its wrapper; retain session schema for later migrations.
+  await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET search_path TO "${schema}",public`);
+  for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort()){await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name,schema,'Migration must stay in the newly owned schema');}
   await db.query('COMMIT');created=true;const scoped=new URL(url);scoped.searchParams.set('options','-c search_path='+schema+',public');
   const env={...process.env,DATABASE_URL:scoped.href,JWT_SECRET:process.env.JWT_SECRET??'synthetic-regression-secret-long-enough'};
   for(const suite of ['survey-teams-postgres.ts','survey-staffing-postgres.ts','survey-staffing-safety-postgres.ts','protected-obligations-postgres.ts','protected-obligations-concurrency-postgres.ts','superintendent-area-postgres.ts','superintendent-area-concurrency-postgres.ts','team-workforce-postgres.ts','draft-recovery-postgres.ts'])result.suites[suite]=await run(suite,[],env);
