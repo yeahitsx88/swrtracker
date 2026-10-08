@@ -82,6 +82,7 @@ export default function TicketDetailPage() {
     setLoading(true);
     setError(null);
     setTicket(null);
+    setAttachments([]);
     setCapabilities(NO_CAPABILITIES);
     try {
       const [ticketResponse, attachmentsResponse] = await Promise.all([
@@ -249,7 +250,7 @@ export default function TicketDetailPage() {
             </Card>
           ) : null}
 
-          <Card title="Attachments" description="Saved files stay with the request. Uploads are available only when your role and the request state permit them.">
+          {ticket ? <Card title="Attachments" description="Saved files stay with the request. Uploads are available only when your role and the request state permit them.">
             <div className="stack">
               {canUpload ? (
                 <AttachmentUploader
@@ -275,7 +276,7 @@ export default function TicketDetailPage() {
               )}
               <AttachmentList attachments={attachments} />
             </div>
-          </Card>
+          </Card> : null}
 
           {ticket ? (
             <Card title="SWR History" description="Chronological record of review, assignment, files, messages, and field progress.">
