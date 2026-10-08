@@ -752,6 +752,21 @@
         "Membership/support/configuration controls",
         "Full current role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 37,
+      "date": "2026-10-07",
+      "summary": "Protected existing membership, support and request configuration controls; archived membership replay guard",
+      "status": "verified_local_increment",
+      "evidence": "protected-membership-support-evidence.json",
+      "verification": [
+        "Strict host/pinned626units36focused matching-lock production compilation",
+        "120actual production Edge cases12current Team/chart regressions16current captures",
+        "Current reads before stale release, exact retry/ownership, current grant/lifecycle before membership replay, actual concurrency/audit rollback; full reviewer ship/documenter complete"
+      ],
+      "remaining": [
+        "Full current all-role/state and connected-workflow Alpha acceptance"
+      ]
     }
   ],
   "annotations": [

@@ -1,4 +1,5 @@
 import {observeProjectRoute} from '@/lib/observe-project-route';
+import {authorizeWritable} from '@/modules/tenancy/application/project-administration';
 import { administrationRetry } from '@/lib/administration-retry';
 import { withTransaction } from '@/lib/with-transaction';
 import { requireResourceUuid } from '@/lib/resource-uuid';
@@ -18,7 +19,7 @@ import { addProjectMember } from '@/modules/tenancy/application/add-project-memb
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { UUID } from '@/shared/types';
-import { assertProjectAdministrator, resolveProjectCapabilities } from '@/lib/project-capabilities';
+import { resolveProjectCapabilities } from '@/lib/project-capabilities';
 import { resolveCustomRoleSelection } from '@/modules/tenancy/application/custom-roles';
 
 export const dynamic = 'force-dynamic';
@@ -104,7 +105,7 @@ async function observedPOST(
         authorityEvidence:{branch},changes:{role,customRole},
       });
     }), {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
-      branch=(await assertProjectAdministrator(db,current,projectId as UUID)).centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';
+      branch=(await authorizeWritable(db,current,projectId as UUID)).authority.centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';
     }});
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {

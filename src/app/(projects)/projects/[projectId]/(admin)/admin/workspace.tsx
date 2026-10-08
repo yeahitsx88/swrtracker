@@ -10,7 +10,7 @@ import { SubcontractorAccess } from './subcontractor-access';
 import { DraftRecovery } from './draft-recovery';
 import {SubmittedRequestRecovery} from '@/components/tickets/submitted-request-recovery';
 import { ProtectedSurveyObligations } from '@/components/ui/protected-survey-obligations';
-import {AdministrationArea,AdministrationWorkspace} from '@/components/ui/administration-workspace';
+import {AdministrationArea,AdministrationWorkspace,useAdministrationNotice} from '@/components/ui/administration-workspace';
 import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
 import {useAdministrationProgress} from '@/lib/use-administration-progress';
 import type {ProjectRequestConfig,ProjectRequestConfigResponse} from '@/lib/contracts/projects';
@@ -29,6 +29,7 @@ export function AdminProjectWorkspace() {
   const base = `/projects/${projectId}/admin`;
   useAdministrationProgress(owner,base);
   const policyBlocked=owner.blocked(policyToken),policyLocked=policy.locked||policyBlocked;
+  const readingPolicy=useRef(false);const [policyReadFailed,setPolicyReadFailed]=useState(false);
   void ownerToken;
   const tabs = [{id:'admin-personnel',icon:'team' as const,label:'Personnel',href:base},{id:'admin-companies',icon:'building' as const,label:'Companies',href:base+'/companies'},{id:'admin-settings',icon:'settings' as const,label:'Project Settings',href:base+'/settings'},{id:'admin-access-recovery',icon:'shield' as const,label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',icon:'chart' as const,label:'Diagnostics',href:base+'/diagnostics'}];
   const activeId = pathname===base+'/request-policy'?'admin-settings':tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
@@ -42,36 +43,22 @@ export function AdminProjectWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
-    async function loadConfig() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [response,context]=await Promise.all([apiClient.getProjectRequestConfig(projectId),apiRequest<{project:{status:string}}>(`/api/projects/${projectId}/template`)]);
-        if (!active) return;
-        setArchived(context.project.status==='ARCHIVED');
-        setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);
-        setLeadTimeDays(response.config.leadTimeDays);
-        setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);
-      } catch (err) {
-        if (!active) return;
-        setError(getErrorMessage(err, 'Unable to load project request configuration.'));
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadConfig();
-    return () => {
-      active = false;
-    };
-  }, [projectId]);
+  async function loadConfig(renew=false) {
+    if(readingPolicy.current||owner.blocked(policyToken)||policy.pending||policy.command&&!policy.stale)return;
+    readingPolicy.current=true;setLoading(true);setError(null);
+    try {
+      const [response,context]=await Promise.all([apiClient.getProjectRequestConfig(projectId),apiClient.projectAdministration()]);
+      const project=context.projects.find(p=>p.id===projectId);if(!project)throw new Error('Current Project Admin access is required. Return to Projects to check your access.');
+      if(renew&&!policy.reload())return;
+      setArchived(project.status==='ARCHIVED'||!!project.recommissioning);setLeadTimeEnforcementEnabled(response.config.leadTimeEnforcementEnabled);setLeadTimeDays(response.config.leadTimeDays);setMaxAttachmentsPerTicket(response.config.maxAttachmentsPerTicket);setPolicyReadFailed(false);
+      if(renew){owner.release(policyToken);setSuccess(null);renderPolicy(n=>n+1);}
+    }catch(cause){setPolicyReadFailed(policy.stale);setError(getErrorMessage(cause,'Unable to load current project request configuration and authority.'));}
+    finally{readingPolicy.current=false;setLoading(false);}
+  }
+  useEffect(()=>{void loadConfig();},[projectId]);
 
   async function saveConfig() {
-    if(loading||saving||archived||!owner.claim(policyToken))return;
+    if(loading||saving||archived||policyBlocked||policy.pending||policy.stale||!owner.claim(policyToken))return;
     const command=policy.begin({leadTimeEnforcementEnabled,leadTimeDays,maxAttachmentsPerTicket},crypto.randomUUID());
     if(!command){if(!policy.locked)owner.release(policyToken);return;}
     setSaving(true);setError(null);setSuccess(null);renderPolicy(n=>n+1);
@@ -84,6 +71,8 @@ export function AdminProjectWorkspace() {
     finally{setSaving(false);renderPolicy(n=>n+1);}
   }
 
+  useAdministrationNotice(policyToken,{source:'Request Configuration',href:base+'/settings',tone:error?'error':success?'success':'status',message:policy.pending?'Saving the reviewed configuration...':policy.stale?'Configuration changed. Return to settings, successfully reload current records and review again.':policy.command?'Outcome uncertain. Return to settings and retry the unchanged configuration.':error??success??''});
+
   return (
     <AdministrationWorkspace title="Project Administration" description="Manage this project's personnel, companies, settings and recovery. Operational roles and independent administration remain separate." sections={tabs} activeId={activeId}>
       <ProjectAdministration key={projectId} projectId={projectId} owner={owner} onCompaniesChanged={()=>setCompaniesRevision(v=>v+1)}/>
@@ -92,24 +81,25 @@ export function AdminProjectWorkspace() {
         description="Manage per-project requester submission and attachment policy."
       >
         <div className="stack">
+          {policyReadFailed&&<p role="alert">Current configuration or project authority could not be loaded. Your reviewed configuration remains held. Reload Configuration must successfully read current settings and project access before a fresh review.</p>}
           {error ? <ErrorBanner message={error} /> : null}
           {success ? <SuccessBanner message={success} /> : null}
           {loading ? <p className="muted">Loading project configuration...</p> : null}
-          {!loading ? (
+          {!loading||policy.locked ? (
             <>
-              {archived?<p className="muted">Archived project — request configuration is read-only.</p>:null}
+              {archived?<p className="muted">Archived or preparing project — request configuration is read-only.</p>:null}
               <label className="checkbox-row">
                 <input
                   type="checkbox"
                   checked={leadTimeEnforcementEnabled}
-                  disabled={policyLocked||saving||archived}
+                  disabled={loading||policyLocked||saving||archived}
                   onChange={(event) => setLeadTimeEnforcementEnabled(event.target.checked)}
                 />
                 <span>Enable lead-time enforcement for requester submit</span>
               </label>
               <Field label="Lead-Time Days">
                 <Input
-                  disabled={policyLocked||saving||archived}
+                  disabled={loading||policyLocked||saving||archived}
                   type="number"
                   min={1}
                   max={30}
@@ -120,7 +110,7 @@ export function AdminProjectWorkspace() {
               </Field>
               <Field label="Maximum Files per SWR (blank for no count cap)">
                 <Input
-                  disabled={policyLocked||saving||archived}
+                  disabled={loading||policyLocked||saving||archived}
                   type="number"
                   min={1}
                   max={100}
@@ -128,10 +118,11 @@ export function AdminProjectWorkspace() {
                   onChange={(event) => setMaxAttachmentsPerTicket(event.target.value ? Number(event.target.value) : null)}
                 />
               </Field>
-              <Button disabled={policyBlocked||saving||archived||policy.stale} onClick={() => void saveConfig()}>
-                {saving ? 'Saving...' : policy.command?'Retry Unchanged Configuration':'Save Configuration'}
+              <Button disabled={loading||policyBlocked||saving||archived||policy.stale} onClick={() => void saveConfig()}>
+                {saving ? 'Saving...' : policy.command&&!policy.stale?'Retry Unchanged Configuration':'Save Configuration'}
               </Button>
-              {policy.stale&&<><p role="alert">Configuration changed. Reload before confirming again.</p><Button variant="secondary" disabled={policyBlocked||saving} onClick={()=>{if(policy.reload()){owner.release(policyToken);setError(null);setSuccess(null);void apiClient.getProjectRequestConfig(projectId).then(r=>{setLeadTimeEnforcementEnabled(r.config.leadTimeEnforcementEnabled);setLeadTimeDays(r.config.leadTimeDays);setMaxAttachmentsPerTicket(r.config.maxAttachmentsPerTicket);}).catch(e=>setError(getErrorMessage(e,'Unable to reload configuration.')));}}}>Reload Configuration</Button></>}
+              {policy.stale&&<p role="alert">Configuration changed. Successfully reload current settings and project authority before reviewing and saving again.</p>}
+              {(policy.stale||error)&&<Button variant="secondary" disabled={loading||policyBlocked||saving||policy.pending||!!policy.command&&!policy.stale} onClick={()=>void loadConfig(policy.stale)}>Reload Configuration</Button>}
             </>
           ) : null}
         </div>
