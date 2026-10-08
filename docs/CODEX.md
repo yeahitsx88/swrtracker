@@ -4426,3 +4426,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Next: governed missing-readiness preparation repair audit/actual acceptance under Decision50; then remaining Superintendent delegation/role-state journeys and broad visuals. Whole Alpha remains open. Org follow-ons deferred; inherited source-map-js release blocker separate.
 - Git: fetched development0/0, main190/7; reviewed coherent tests/evidence commit/push under standing owner authorization. No integration/main/deploy/Alpha2.
 - Production behavior changed: no.
+
+
+### 2026-10-08 - Batch 235
+- Intent: IMPLEMENTER/audit-and-fix of demonstrated D6 setup-write/replay bypasses, then verify existing Decision50 missing-readiness repair paths.
+- Files touched: three production files in Tenancy writable administration, shared AOR setup and administrator route; lifecycle writer inventory; two focused Tenancy test files; three owned beta helpers; E235 receipt, completion/closure registers and this append-only log. Authorized Alpha cross-module exception; shared paths serialized, no migration.
+- Behavior changed: existing preparation-cancellation guard precedes setup/admin effects and recorded administrator replay. Current role/session/tenant barriers and historical reads remain. Ordinary initial Setup and ordinary reopening preserve their existing setup repair permissions. No UI, schema, payload, audit-event or authority expansion.
+- Before evidence: four actual incorrect201 writes during recorded cancellation on prior source; original unsafe fixture retained without reset or history repair.
+- Verification: baseline strict686units; final host/pinned strict689units,18focused, Node22.23.3/Next15.5.27 production compilation, all33PostgreSQL suites;54authenticated checks and four opened Light1440/Dark390readiness captures, no page errors. All576production/migration bytes match final runtime, digest in E235. Wrong-role/foreign scope, historical reads, exact recorded retries, unchanged refusal witnesses and authority/session revocation after real lifecycle waits pass.
+- Positive reopening: controlled legacy missing-readiness fixture actually archived and entered reviewed preparation; current eligible existing-account enrollment, legacy Area setup, explicit Superintendent coverage and department repair clear named blockers; fresh Central explicit retention review reopens, Active setup locks again. No every-role/new-account/Survey-staffing or interactive sign-in claim.
+- Verification corrections: initial mocks updated for extra guard query/parameter order; administrator pre-ledger guard added after first build, then all final pinned/database gates rerun. Original evidence retained.
+- Git: pre-checkpoint fetch development0/0, main191local/7remote; no base integration. Routine verified commit/push under owner directive.
+- Known gaps/next: whole Alpha acceptance remains open; Superintendent-led delegation/current role-state and broader UI/final reconciliation next. Generic role/new-account/other staffing readiness paths remain unaccepted. Org follow-ons, main/deploy/Alpha2 and source-map-js release blocker remain separate.
+- Production behavior changed: yes.

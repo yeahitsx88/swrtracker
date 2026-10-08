@@ -1,3 +1,4 @@
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import {observeProjectRoute} from '@/lib/observe-project-route';
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
@@ -30,7 +31,7 @@ async function observedPOST(req:NextRequest,ctx:Context){try{
   requireResourceUuid(body.userId,'userId');
   const result=await withTransaction(db=>executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST /api/projects/${projectId}/administrators`,idempotencyKey:key},body,
     async()=>({status:200,body:await setProjectAdministrator(db,auth,projectId as UUID,body.userId as UUID,body.enabled as boolean)})),
-    {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{if(!(await assertProjectAdministrator(db,current,projectId as UUID)).centralIT)throw new ForbiddenError('Only Tenant Admin can assign or revoke Project Admin authority.');}});
+    {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{if(!(await assertProjectAdministrator(db,current,projectId as UUID)).centralIT)throw new ForbiddenError('Only Tenant Admin can assign or revoke Project Admin authority.');await assertPreparationNotCancelling(db,current.tenantId,projectId as UUID);}});
   return NextResponse.json(result.body,{status:result.status});
 }catch(error){return errorResponse(error);}}
 

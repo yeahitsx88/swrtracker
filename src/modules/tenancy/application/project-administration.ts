@@ -2,6 +2,7 @@ import {assertCompanyNameAvailable} from '../infrastructure/company-name-availab
 import {randomUUID} from 'node:crypto';
 import type {AuthContext} from '@/lib/auth';
 import {assertProjectAdministrator} from '@/lib/project-capabilities';
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import {acquireTenantLifecycleLock} from '@/lib/tenant-lifecycle-lock';
 import type {DbClient,UUID} from '@/shared/types';
 import {ConflictError,ForbiddenError,NotFoundError,ValidationError} from '@/shared/errors';
@@ -15,6 +16,7 @@ export async function authorizeWritable(db:DbClient,auth:AuthContext,projectId:U
   const project=(await db.query<{status:string;activated_at:Date|null}>('SELECT status,activated_at FROM projects WHERE tenant_id=$1 AND id=$2 FOR UPDATE',[auth.tenantId,projectId])).rows[0];
   if(!project)throw new NotFoundError('Project not found');
   if(project.status==='ARCHIVED')throw new ConflictError('Archived projects are read-only');
+  await assertPreparationNotCancelling(db,auth.tenantId,projectId);
   return {authority,project};
 }
 export async function setProjectAdministrator(db:DbClient,auth:AuthContext,projectId:UUID,subjectUserId:UUID,enabled:boolean):Promise<{changed:boolean}>{

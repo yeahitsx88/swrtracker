@@ -13,6 +13,7 @@ function fixture(centralIT:boolean,status:string,enabled=true){
   else if(sql.includes('FROM tenants'))rows=[{id:auth.tenantId}];
   else if(sql.includes('COALESCE(session_version'))rows=[{session_version:1,deactivated_at:null}];
   else if(sql.includes('AS project_exists')){assert.deepEqual(params,[auth.tenantId,'project',auth.userId]);rows=[{project_exists:true,role:'REQUESTER',access_disabled_at:null,company_type:'GC',central_it:centralIT,project_admin:enabled}];}
+  else if(sql.includes('project_preparation_cancellations'))rows=[];
   else if(sql.includes('FROM projects'))rows=[{status,activated_at:null}];
   else assert.fail('Unexpected query: '+sql);
   return {rows:rows as T[]};
