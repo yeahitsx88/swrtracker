@@ -5,6 +5,7 @@ import {NextRequest} from 'next/server';
 import {runLifecycleSchemaAcceptance} from './account-offboarding-postgres';
 import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
+import {executeIdempotentHttpMutation} from '../../src/lib/idempotency';
 import {resolveDepartmentMembershipActorRole,handlePostDepartmentMembers} from '../../src/app/api/projects/[projectId]/departments/[departmentId]/members/handler';
 import {POST as members} from '../../src/app/api/projects/[projectId]/members/route';
 import {POST as companies,GET as readCompanies,DELETE as removeCompanies} from '../../src/app/api/projects/[projectId]/companies/route';
@@ -137,8 +138,27 @@ runLifecycleSchemaAcceptance(async(db,f)=>{
   await expect(await members(req({userId:subUser,role:'SURVEY_MANAGER'}),ctx()),403);await expect(await members(req({userId:subUser,role:'REQUESTER'}),ctx()),201);await expect(await administrators(req({userId:subUser,enabled:true,confirmed:true}),ctx()),403);
   const beforeCompanies=await count('companies'),beforeEvents=await count('administrative_events');failAudit=true;await expect(await companies(req({name:'Rollback company',type:'GC',confirmed:true}),ctx()),500);failAudit=false;assert.equal(await count('companies'),beforeCompanies);assert.equal(await count('administrative_events'),beforeEvents);checks+=2;
   await db.query("UPDATE projects SET status='SETUP' WHERE id=$1",[f.project]);const selected=randomUUID();await db.query("INSERT INTO project_templates(id,tenant_id,name,crew_build,aor_depth,aor_level_labels,discipline_groups) VALUES($1,$2,'Eligible','SLIM',1,'[\"Area\"]','[]')",[selected,f.tenant]);
-  await expect(await template(req({templateId:selected,confirmed:true},randomUUID(),'PATCH'),ctx()));assert.equal((await db.query('SELECT crew_build FROM projects WHERE id=$1',[f.project])).rows[0].crew_build,'SLIM');checks++;
-  await db.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[f.project]);await expect(await template(req({templateId:selected,confirmed:true},randomUUID(),'PATCH'),ctx()),409);
+  await expect(await template(req({templateId:selected,confirmed:true},randomUUID(),'PATCH'),ctx()),403);assert.equal((await db.query('SELECT crew_build FROM projects WHERE id=$1',[f.project])).rows[0].crew_build,'FULL');checks++;
+  await db.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[f.project]);await expect(await template(req({templateId:selected,confirmed:true},randomUUID(),'PATCH'),ctx()),403);
+  // Previously successful template commands cannot replay rejected authority.
+  const legacyTemplateKey=randomUUID(),legacyTemplateBody={templateId:selected,confirmed:true};
+  await executeIdempotentHttpMutation(db,{tenantId:f.tenant as UUID,actorId:f.actor as UUID,endpoint:`PATCH /api/projects/${f.project}/template`,idempotencyKey:legacyTemplateKey},legacyTemplateBody,async()=>({status:200,body:{selected:true}}));
+  await expect(await template(req(legacyTemplateBody,legacyTemplateKey,'PATCH'),ctx()),403);
+  await expect(await template(req(legacyTemplateBody,randomUUID(),'PATCH'),ctx(f.foreignProject)),404);
+  await db.query('UPDATE projects SET template_id=$2 WHERE id=$1',[f.project,selected]);
+  await db.query("UPDATE project_templates SET crew_build='FULL' WHERE id=$1",[selected]);
+  const beforeTemplate=(await db.query('SELECT template_id,crew_build FROM projects WHERE id=$1',[f.project])).rows[0];
+  const templateEvents=await count('administrative_events');
+  await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN') ON CONFLICT DO NOTHING",[f.tenant,f.actor]);
+  for(const status of ['SETUP','ACTIVE']){
+   await db.query('UPDATE projects SET status=$2 WHERE id=$1',[f.project,status]);
+   await expect(await template(req(legacyTemplateBody,legacyTemplateKey,'PATCH'),ctx()),409);
+   await expect(await template(req(legacyTemplateBody,randomUUID(),'PATCH'),ctx()),409);
+  }
+  await db.query("UPDATE project_templates SET crew_build='MEDIUM',name='Future establishment revision' WHERE tenant_id=$1 AND id=$2",[f.tenant,selected]);
+  assert.deepEqual((await db.query('SELECT template_id,crew_build FROM projects WHERE id=$1',[f.project])).rows[0],beforeTemplate);checks++;
+  assert.equal(await count('administrative_events'),templateEvents);checks++;
+  await db.query('DELETE FROM tenant_memberships WHERE user_id=$1',[f.actor]);
   await db.query('UPDATE project_admin_grants SET revoked_at=NOW(),revoked_by=$2 WHERE user_id=$1',[f.actor,person]);await expect(await administrators(req(grantBody,grantKey),ctx()),403);
   await db.query('UPDATE project_admin_grants SET revoked_at=NULL,revoked_by=NULL WHERE user_id=$1',[f.actor]);
   const archiveKey=randomUUID();await expect(await handlePostProjectArchive(req({},archiveKey),ctx()));await expect(await handlePostProjectArchive(req({},archiveKey),ctx()));assert.equal((await db.query('SELECT status FROM projects WHERE id=$1',[localProject])).rows[0].status,'SETUP');checks++;

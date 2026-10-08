@@ -29,7 +29,7 @@ export function ProjectAdministration({projectId,owner,onCompaniesChanged}:{proj
  const [roleMember,setRoleMember]=useState<Member>();
  const [selected,setSelected]=useState<Member>(),[promotion,setPromotion]=useState<Member>();
  const [name,setName]=useState(''),[type,setType]=useState('SUBCONTRACTOR'),[companyId,setCompanyId]=useState(''),[email,setEmail]=useState('');
- const [templateId,setTemplateId]=useState(''),[template,setTemplate]=useState<{templates:Array<{id:string;name:string}>;project:{status:string;templateId:string|null;crewBuild:import('@/modules/tenancy/domain/types').CrewBuild;hasBeenActivated?:boolean}}>();
+ const [template,setTemplate]=useState<{templates:Array<{id:string;name:string}>;project:{status:string;templateId:string|null;crewBuild:import('@/modules/tenancy/domain/types').CrewBuild;hasBeenActivated?:boolean}}>();
  const [error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[intent,setIntent]=useState<Intent>(),[consent,setConsent]=useState(false),[revision,setRevision]=useState(0),[loading,setLoading]=useState(false),[readFailed,setReadFailed]=useState(false);
  const childLock=useRef(false);
  const gate=useRef(new FrozenCommand<Intent>()),generation=useRef(0);
@@ -39,7 +39,7 @@ export function ProjectAdministration({projectId,owner,onCompaniesChanged}:{proj
  async function readAll<T>(path:string,field:string):Promise<T[]>{const all:T[]=[];for(let page=0;page<1000;page++){const result=await apiRequest<Record<string,T[]>>(`${path}?includeDisabled=true&limit=100&offset=${page*100}`);const rows=result[field];if(!Array.isArray(rows))throw new Error("Invalid administrative page");all.push(...rows);if(rows.length<100)return all;}throw new Error('Too many records; narrow the administrative population.');}
  async function load(){const epoch=++generation.current;setLoading(true);setError(undefined);
   try{const results=await Promise.all([readAll<Member>(`${base}/members`,'members'),centralIT?readAll<Member>(`${base}/administrators`,'administrators'):Promise.resolve<Member[]>([]),apiRequest<Companies>(`${base}/companies`),apiRequest<NonNullable<typeof template>>(`${base}/template`),readAll<Companies['candidates'][number]>(`${base}/companies`,'candidates')]);
-   if(epoch!==generation.current)return;setMembers(results[0]);setAdmins(results[1]);setCompanies({...results[2],candidates:results[4]});setTemplate(results[3]);setTemplateId(results[3].project.templateId??'');return true;
+   if(epoch!==generation.current)return;setMembers(results[0]);setAdmins(results[1]);setCompanies({...results[2],candidates:results[4]});setTemplate(results[3]);return true;
   }catch(cause){if(epoch===generation.current)setError(getErrorMessage(cause,'Unable to load project administration.'));return false;}
   finally{if(epoch===generation.current)setLoading(false);}
  }
@@ -105,8 +105,11 @@ export function ProjectAdministration({projectId,owner,onCompaniesChanged}:{proj
  <Button aria-haspopup="dialog" disabled={!name.trim()||duplicateCompany||checkingCompany||loading||!companies||locked||closed} onClick={()=>propose({url:`${base}/companies`,method:'POST',body:{name:name.trim(),type,confirmed:true},label:`Register ${name.trim()} for this project`})}>Review company registration</Button>
  <label className="field"><span className="field-label">Existing company ID</span><Input value={companyId} disabled={locked||closed} onChange={e=>setCompanyId(e.target.value)}/></label><Button aria-haspopup="dialog" disabled={!companyId||locked||closed} onClick={()=>propose({url:`${base}/companies`,method:'POST',body:{companyId,confirmed:true},label:'Associate existing company with this project'})}>Review company association</Button>
  </AdministrationSection>} </div></Card></AdministrationArea>
- <AdministrationArea id="admin-settings" className="administration-settings-grid">{template?.project.status==='SETUP'&&!template.project.hasBeenActivated&&<Card title="Project Setup"><div className="stack">
- <label className="field"><span className="field-label">Applicable template (Setup only)</span><select className="select" value={templateId} disabled={locked||template?.project.status!=='SETUP'} onChange={e=>setTemplateId(e.target.value)}><option value="">Choose a template</option>{template?.templates.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label><Button disabled={!templateId||locked||template?.project.status!=='SETUP'} onClick={()=>propose({url:`${base}/template`,method:'PATCH',body:{templateId,confirmed:true},label:'Select project template; existing setup is retained'})}>Review template selection</Button>
+ <AdministrationArea id="admin-settings" className="administration-settings-grid">{template&&<Card title="Project Template"><div className="stack">
+ <p>{template.project.templateId?template.templates.find(t=>t.id===template.project.templateId)?.name??'Selected template':'Established without a template'}</p>
+ <p>Governing template selection is locked. Tenant Admin selects the template when establishing a project. Catalog edits apply to future projects.</p>
+ <dl><dt>Crew Build</dt><dd>{{FULL:'Full',MEDIUM:'Medium',SLIM:'Slim'}[template.project.crewBuild]}</dd></dl>
+ {template.project.templateId&&<details><summary>Template ID</summary><span className="administration-company-id">{template.project.templateId}</span></details>}
  </div></Card>}
  {template&&!closed&&<Card title="Project Access Settings"><div className="stack">
  <label className="field"><span className="field-label">Priority whitelist email</span><Input type="email" value={email} disabled={locked||closed} onChange={e=>setEmail(e.target.value)}/></label><div className="row">{(['POST','DELETE'] as const).map(method=><Button key={method} variant="secondary" disabled={!email||locked||closed} onClick={()=>propose({url:`${base}/whitelist`,method,body:{email},label:`${method==='POST'?'Add':'Remove'} ${email} ${method==='POST'?'to':'from'} priority whitelist`})}>{method==='POST'?'Review whitelist addition':'Review whitelist removal'}</Button>)}</div>

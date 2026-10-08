@@ -24,7 +24,7 @@ async function observedPATCH(req:NextRequest,ctx:Context){try{
   if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(field=>!['templateId','confirmed'].includes(field))||typeof body.templateId!=='string'||body.confirmed!==true)throw new ValidationError('Confirm a project template selection');
   requireResourceUuid(body.templateId,'templateId');
   const result=await withTransaction(db=>executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`PATCH /api/projects/${projectId}/template`,idempotencyKey:key},body,
-    async()=>{await selectProjectTemplate(db,auth,projectId as UUID,body.templateId as UUID);return{status:200,body:{selected:true}};}),{req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{await assertProjectAdministrator(db,current,projectId as UUID);}});
+    async()=>{await selectProjectTemplate(db,auth,projectId as UUID,body.templateId as UUID);return{status:200,body:{selected:true}};}),{req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{await selectProjectTemplate(db,current,projectId as UUID,body.templateId as UUID);}});
   return NextResponse.json(result.body,{status:result.status});
 }catch(error){return errorResponse(error);}}
 

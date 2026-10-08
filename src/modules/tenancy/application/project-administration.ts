@@ -51,14 +51,12 @@ export async function registerProjectCompany(db:DbClient,auth:AuthContext,projec
     authorityEvidence:{centralIT:authority.centralIT},changes:{companyId:row.id,name:row.name,type:row.type,associationScope:projectId}});
   return {id:row.id,tenantId:row.tenant_id,name:row.name,type:row.type,createdAt:row.created_at};
 }
-export async function selectProjectTemplate(db:DbClient,auth:AuthContext,projectId:UUID,templateId:UUID):Promise<void>{
-  const {authority,project}=await authorizeWritable(db,auth,projectId);
-  if(project.status!=='SETUP'||project.activated_at!=null||(await db.query('SELECT id FROM project_recommissioning WHERE tenant_id=$1 AND project_id=$2 AND opened_at IS NULL',[auth.tenantId,projectId])).rows.length)throw new ConflictError('Template selection is locked after activation');
-  const template=(await db.query<{id:UUID;crew_build:string}>('SELECT id,crew_build FROM project_templates WHERE tenant_id=$1 AND id=$2',[auth.tenantId,templateId])).rows[0];
-  if(!template)throw new NotFoundError('Template not found');
-  await db.query('UPDATE projects SET template_id=$3,crew_build=$4 WHERE tenant_id=$1 AND id=$2',[auth.tenantId,projectId,templateId,template.crew_build]);
-  await appendAdministrativeEvent(db,{auth,projectId,subjectUserId:null,eventType:'project.configuration_changed',authorityEvidence:{centralIT:authority.centralIT},
-    changes:{resource:'TEMPLATE_SELECTION',templateId,crewBuild:template.crew_build,existingSetupPreserved:true}});
+/** Establishment selects the template in createProject. Existing projects require
+ * a separately governed Central migration; legacy retries cannot grant that power. */
+export async function selectProjectTemplate(db:DbClient,auth:AuthContext,projectId:UUID,_templateId:UUID):Promise<void>{
+  const {authority}=await authorizeWritable(db,auth,projectId);
+  if(!authority.centralIT)throw new ForbiddenError('Project Admin cannot change the established project template.');
+  throw new ConflictError('The established project template is locked. Central template revisions apply to future projects; adoption requires a separately governed migration.','PROJECT_TEMPLATE_LOCKED');
 }
 
 /** Remove only the reviewed project associations; tenant companies and all history remain. */
