@@ -1,0 +1,111 @@
+{
+  "batch": 243,
+  "baseline": "32e858d9e0b134be93b9a821343fbf12766154b2",
+  "authority": [
+    "Owner Alpha finalization: frozen reviewed body/key after uncertain response, exact retry, deliberate reload after definitive409, and shared command ownership.",
+    "Existing attachment instruction/field-support capabilities, parent authorization, normalized upload idempotency and atomic upload/download evidence; local intake staging stays local.",
+    "Standing verified checkpoint/push directive."
+  ],
+  "classification": "Verified live upload exact-retry/ownership correction and named validation/conflict/reload/staging/file-byte criteria; wider Alpha acceptance remains open.",
+  "production": {
+    "files": 576,
+    "sha256": "bab5b771546e64a730261eed966ae246eaebee1ecbd0d518dc3e7101a7f8f386",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/components/tickets/attachment-uploader.tsx",
+      "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Live uploader freezes original purpose/key through FrozenCommand and retains immutable File Blob separately from JSON. Current shared owner and parent uploadLocked disable sibling commands/fields/Refresh. Unknown outcome offers exact unchanged retry; definitive409 holds selection/owner until authorized deliberate reload succeeds, then clears selection and re-reads current request. Known validation refusal permits correction. Existing local staging path preserves selection/add/remove behavior; endpoint/payload/server transitions/permissions/storage/events unchanged."
+  },
+  "before": {
+    "checks": [
+      "Actual instruction upload commits before browser response loss",
+      "Uncertain instruction result is exactly one actual stored attachment",
+      "Before uncertain upload still allows replacement file selection",
+      "Before uncertain upload permits Refresh to discard intent",
+      "Before uncertain upload permits sibling draft save",
+      "Before sibling deletion review opens while upload result is uncertain"
+    ],
+    "productionChanged": false
+  },
+  "verification": {
+    "strictUnusedTypes": "pass final corrected host and pinned",
+    "unitTests": 690,
+    "focusedTests": 35,
+    "pinnedProductionCompilation": "pass corrected Node22.23.3 Next15.5.27 runtime-final",
+    "postgresSuites": 33,
+    "actualCurrentChecks": [
+      "Actual instruction upload commits before browser response loss",
+      "Uncertain instruction result is exactly one actual stored attachment",
+      "Actual multipart carries original reviewed instruction bytes/name/purpose",
+      "Uncertain instruction upload freezes original file selection",
+      "Uncertain upload blocks sibling Refresh",
+      "Uncertain upload blocks sibling Save Draft",
+      "Uncertain upload blocks sibling Submit Draft",
+      "Uncertain upload blocks sibling Delete Draft",
+      "instruction-uncertain-light-1440 viewport contained",
+      "Unchanged instruction retry sends exact original key/file bytes/name/purpose",
+      "Recovered instruction result does not duplicate file",
+      "Recovered instruction result does not duplicate upload audit",
+      "Confirmed upload releases sibling request ownership",
+      "Actual invalid-file validation response is definitive",
+      "Definitive validation refusal releases original upload ownership for correction",
+      "Actual instruction upload refuses a request submitted since review",
+      "Definitive conflict freezes replacement and direct retry",
+      "Definitive upload conflict retains sibling command ownership",
+      "instruction-conflict-light-1440 viewport contained",
+      "Failed deliberate reload retains conflict file and sibling ownership",
+      "Successful deliberate keyboard reload accepts current submitted read-only state",
+      "Validation/conflict refusals create no attachment",
+      "Actual field-support upload commits before lost response",
+      "Uncertain field-support upload freezes both original file and purpose",
+      "Uncertain field-support upload owns current request",
+      "field-support-uncertain-dark-390 viewport contained",
+      "Field-support retry retains original key/name/purpose/file bytes",
+      "Field-support recovery creates one attachment",
+      "Field-support recovery creates one upload audit",
+      "Intake local staging releases selection after synchronous add",
+      "Existing intake can stage two local files independently",
+      "Existing local stage removal stays independent",
+      "Local staging/removal creates no server requests/files/events or upload commands",
+      "No upload page errors",
+      "requester recovered attachment metadata matches original frozen upload",
+      "requester actual stored bytes match original reviewed upload after exact retry",
+      "requester one upload audit and one permitted matching download audit retained",
+      "manager recovered attachment metadata matches original frozen upload",
+      "manager actual stored bytes match original reviewed upload after exact retry",
+      "manager one upload audit and one permitted matching download audit retained"
+    ],
+    "criteriaComposition": "34actual production-browser/HTTP/local staging criteria plus6actual recovered-file byte/metadata/download-audit criteria",
+    "currentCapturesOpened": [
+      ".local/alpha-closure243-confirmation/instruction-uncertain-light-1440.png",
+      ".local/alpha-closure243-confirmation/instruction-conflict-light-1440.png",
+      ".local/alpha-closure243-confirmation/field-support-uncertain-dark-390.png"
+    ],
+    "pageErrors": [],
+    "exactPayload": "Both instruction and field-support HTTP retries retain original key, filename, purpose and original byte SHA-256; actual stored bytes match those hashes. Multipart transport boundary is excluded from normalized comparison.",
+    "evidence": "Each actual commit/replay produces1attachment and1attachment.uploaded; each subsequent byte check appends1matching existing attachment.downloaded. Actual bad-file validation and Draft-to-Submitted upload409 create no file; failed reload holds original selection/owner; successful keyboard reload adopts current submitted read-only state.",
+    "staging": "Two locally staged files and one removal produce no server requests/files/events."
+  },
+  "reconciliation": [
+    "Initial final typecheck exposed nullable staging-key narrowing after conditional allocation. Corrected assertion with existing established staging assignment; failed host/pinned output and original artifact retained. Corrected final artifact/typecheck/690units/35focused/compile/33SQL pass.",
+    "Core29live criteria/captures completed before local staging observer timed out on bare filename. Existing UI has Remove filename labels. Corrected observer; completed only remaining local staging in fresh browser with no upload/workflow repeated.",
+    "Stored-byte continuation initially inherited a missing-results guard and stopped before any network check. Corrected completed-results precondition;6actual byte/metadata/audit checks then passed."
+  ],
+  "limits": [
+    "Signed owned synthetic Active fixtures rather than interactive login. Actual server201response deliberately lost by route abort; normalized original multipart evidence persisted privately.",
+    "Requester Draft instruction and Manager Approved field-support paths only. Full IM/Chief/company/foreign/current-phase/revoked/replay browser matrix remains open; current35unit/33SQL regressions preserve existing broader auth/tenant/history/Team/Org boundaries.",
+    "Three opened captures cover instruction uncertainty/conflict Light1440 and field-support uncertainty Dark390, not whole-role visual acceptance.",
+    "Cached empty file list still says No attachments uploaded during uncertain result; current capture demonstrates wording candidate to distinguish last confirmed read. Current lifecycle read-only upload controls also require wider phase verification.",
+    "No schema/new audit event/new dependencies/server payload/authority/assignment/history semantics change. Inherited source-map-js/GHSA-68fv-2mgg-jv7q remains separate; compile does not establish release readiness. No main/deploy/Alpha2."
+  ],
+  "git": {
+    "preCheckpointDev": "0/0",
+    "mainDivergence": "199 local / 7 remote; no integration",
+    "push": "routine authorized checkpoint; confirm after commit"
+  },
+  "next": "Current lifecycle upload controls and last-confirmed file-list wording, then remaining role/state acceptance."
+}

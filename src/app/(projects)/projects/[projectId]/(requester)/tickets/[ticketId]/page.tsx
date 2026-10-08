@@ -64,21 +64,23 @@ export default function TicketDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteReview,setDeleteReview]=useState<TicketRecord|null>(null),[deleteConsent,setDeleteConsent]=useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadLocked, setUploadLocked] = useState(false);
   const workflow=useTicketWorkflowReview(()=>void loadAll(true),(response,action)=>{
     if(action==='follow-up')router.push(`/projects/${projectId}/tickets/${response.ticket.id}`);
     else {void loadAll(true);setSuccess('Request cancelled. Its reference, files and history are retained.');}
   });
   const uncertain = [saveAttempt.current,submitAttempt.current,deleteAttempt.current].some(attempt=>!!attempt.command&&!attempt.stale);
-  const working = saving || submittingDraft || deleting || uploadingFile || workflow.active || Boolean(deleteReview);
+  const requestWorking = saving || submittingDraft || deleting || workflow.active || Boolean(deleteReview);
+  const working = requestWorking || uploadingFile || uploadLocked;
   const dirty = Boolean(ticket && (editArea !== (ticket.aorNodeId ?? '') || editType !== (ticket.ticketType ?? '') ||
     editCraft !== ticket.craft || editFieldContact !== (ticket.fieldContact ?? '') || editFieldChannel !== (ticket.fieldChannel ?? '') ||
     editDescription !== ticket.description || editRequestedDate !== (ticket.requestedDate?.slice(0,10) ?? '')));
 
   const canUpload = capabilities.canUploadRequestInstruction || capabilities.canUploadFieldSupport;
-  useUnsavedProgress(dirty || uncertain);
+  useUnsavedProgress(dirty || uncertain || uploadLocked);
 
   async function loadAll(discard = false) {
-    if (!discard && (busy.current || uncertain || workflow.active)) return;
+    if (!discard && (busy.current || uncertain || uploadLocked || workflow.active)) return;
     if (!discard && dirty && !window.confirm('Discard your unsaved field changes and reload the saved request?')) return;
     const currentRead = ++detailRead.current;
     setLoading(true);
@@ -259,8 +261,15 @@ export default function TicketDetailPage() {
             <div className="stack">
               {canUpload ? (
                 <AttachmentUploader
-                  disabled={working || uncertain || stale}
+                  disabled={requestWorking || uncertain || stale}
                   instructionMode={capabilities.canUploadRequestInstruction}
+                  owner={workflow.owner}
+                  onLockedChange={setUploadLocked}
+                  onReload={async () => {
+                    const [current] = await Promise.all([apiClient.getTicket(ticketId), apiClient.listAttachments(ticketId)]);
+                    if (current.ticket.projectId !== projectId) throw new Error('This request belongs to a different project.');
+                  }}
+                  onReloaded={() => void loadAll(true)}
                   onUpload={async (payload) => {
                     if (busy.current) throw new Error('Another action is in progress. Wait, then retry.');
                     busy.current = true; setUploadingFile(true);
