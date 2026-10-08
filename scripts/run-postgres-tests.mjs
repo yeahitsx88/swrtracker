@@ -20,4 +20,5 @@ try{
 }finally{await db.end();}
 run('tests/beta/scoped-offboarding-case-matrix.mjs',['pg']);
 for(const suite of ['alpha1-stabilization-postgres.ts','administrative-events-postgres.ts','continuity-recovery-postgres.ts','phase5-review-postgres.ts','project-employee-postgres.ts','custom-roles-postgres.ts','project-support-postgres.ts'])run('tests/beta/'+suite);
-console.log('PostgreSQL verification passed: 23 matrix suites and 7 additional suites. HTTP/browser acceptance is a separate gate.');
+run('tests/beta/alpha-metrics-acceptance.mjs');
+console.log('PostgreSQL verification passed: 23 matrix suites, 7 additional suites and 3 current metrics suites. HTTP/browser acceptance is a separate gate.');

@@ -43,7 +43,7 @@ async function main(){
       const metrics=await getAmeliaMetrics(new AmeliaMetricsReader(),pool,{tenantId:tenant,projectId:project,visibility,filters,includeCharts:true,today:'2026-10-01'});
       const {population,...rest}=filters;
       const requests=await new TicketRepository().list(pool,tenant,{projectId:project,visibility,filters:{...rest,queue:population??'all'},limit:10,offset:0});
-      assert.equal(requests.total,metrics.total,'Aggregate and drill-down populations must agree');scenarios++;
+      assert.equal(requests.total,metrics.total,'Aggregate and drill-down populations must agree');scenarios++;console.log('PASS Superintendent aggregate/drilldown '+JSON.stringify(filters));
       return {metrics,requests,visibility};
     };
     const wide=await read({cohort:'areaWorkload'});assert.equal(wide.metrics.total,7);assert.equal(wide.metrics.populationTotal,7);
@@ -65,8 +65,8 @@ async function main(){
     assert.equal((await read({cohort:'linkedCrews'})).metrics.total,0);assert.equal((await read()).metrics.total,7);
     await pool.query('UPDATE survey_reporting_links SET deactivated_at=NULL WHERE party_chief_id=$1',[chief]);
     for(const user of [chief,sup]){
-      await pool.query('UPDATE users SET deactivated_at=NOW() WHERE id=$1',[user]);assert.equal((await read({cohort:'linkedCrews'})).metrics.total,0);
-      await pool.query('UPDATE users SET deactivated_at=NULL WHERE id=$1',[user]);
+      await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=$2 WHERE id=$1',[user,manager]);assert.equal((await read({cohort:'linkedCrews'})).metrics.total,0);
+      await pool.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL WHERE id=$1',[user]);
     }
     for(const [user,role] of [[chief,'PARTY_CHIEF'],[sup,'SURVEY_SUPERINTENDENT']]){
       await pool.query(`UPDATE project_memberships SET role='REQUESTER' WHERE project_id=$1 AND user_id=$2`,[project,user]);assert.equal((await read({cohort:'linkedCrews'})).metrics.total,0);
