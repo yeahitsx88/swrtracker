@@ -58,6 +58,10 @@ export function DraftRecovery({ projectId,owner }: { projectId:string;owner:Comm
       </> : null}
       {selected ? <section className="stack" aria-label="Confirm draft recovery">
         <HeadingHelp label="Restore Draft" heading={<h3>Restore {selected.requesterName}’s Draft?</h3>} help={<span>The requester must still be an active Requester on this project. This restores saved progress, not a submitted request. Archived projects remain read-only.</span>}/>
+        <dl className="detail-grid">
+          <div><dt>Saved Details</dt><dd>{selected.description || 'Untitled draft'}</dd></div>
+          <div><dt>Draft ID</dt><dd>{selected.id}</dd></div>
+        </dl>
         <Field label="Recovery reason (at least 10 characters)"><Textarea disabled={closed || locked || stale} value={reason} onChange={event => setReason(event.target.value)} /></Field>
         {stale ? <p role="status">This record changed. Refresh the recovery list before proceeding.</p> : null}
         {attempt.current.command&&!attempt.current.stale ? <p role="status">Recovery is unconfirmed. Retry the same action before changing the reason or refreshing.</p> : null}
