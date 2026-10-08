@@ -1,0 +1,33 @@
+{
+  "batch": 223,
+  "baseline": "9de9a61",
+  "role": "AUDITOR",
+  "state": "completion summaries reconciled; local Alpha acceptance open",
+  "production": {
+    "files": 568,
+    "sha256": "581580ade760a1233d6744bc240861618fb027deef1952f655e63baf8089ddc1",
+    "unchangedFromE222": true
+  },
+  "changes": [
+    "R02/R06 direct cycle and R03 normal intake acknowledge completed historical connected proof",
+    "R04/R05 acknowledge member/reviewer fixes and executed delegation/review journeys",
+    "R07/R08 distinguish current stale/retry fix from earlier local-notice and rollback proof",
+    "Manager succession and team deletion summaries no longer queue closed named defects/journeys",
+    "Next approved workflow acceptance is rejected submitted recovery and other eligible current actors",
+    "Routine checkpoint push is authorized; main/deployment/Alpha2/release remain separate"
+  ],
+  "verification": {
+    "baselineStrictTypes": "pass",
+    "baselineUnits": 665,
+    "documentLinks": "pass",
+    "historicalBatchSections": "byte-equivalent after newline normalization; unchanged content",
+    "productionDigest": "unchanged from current E222 pinned compile/33SQL/browser source; these gates not rerun for documentation-only changes",
+    "gitFetch": "origin development0/0; main179/7 at baseline"
+  },
+  "limits": [
+    "Older connected/browser receipts retain original source identity and are not promoted to current whole Alpha acceptance",
+    "No production/test/schema/authority/transition change",
+    "No complete recovery/cancellation/visual matrix claimed",
+    "Inherited release advisory unchanged"
+  ]
+}

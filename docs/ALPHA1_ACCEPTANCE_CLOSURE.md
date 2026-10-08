@@ -2,30 +2,34 @@
 
 Current authority: approved requirements, Decisions51-54, D1-D8 reconciliation and owner active Alpha closure objective. Preserve conventional Team Management, Visual5866772 and prior history. This register records current evidence and outstanding acceptance; passing counts do not replace connected role/task/state requirements.
 
-| Workstream | Current state | Evidence / next action |
+Current execution baseline: `alpha1-ui-redesign` at pushed checkpoint `9de9a61`. [E222](../audits/alpha1-ui-redesign/alpha-closure222-reviewed-revision-evidence.json) verifies strict host/pinned types,665units, pinned Node22.23.3 production compilation, all33PostgreSQL suites and19focused browser checks at digest `581580ade760a1233d6744bc240861618fb027deef1952f655e63baf8089ddc1`. Older entries below are chronological receipts at their recorded source, not current whole-system acceptance.
+
+| Workstream | Reconciled state | Evidence / remaining acceptance |
 |---|---|---|
-| Historical continuity | Reconciled and currently verified | Batch206:31continuity cases including legacy same-Area reporting-only, explicit crew/person destination, preserved coverage/history, rollback, successor continuity and password recovery. Original2026-10-03 receipt remains historical. |
-| Migration/test sequencing | Corrected and currently verified | Session-owned schema persists across042wrapper; guard after each migration. Actual lifecycle writer327checks and full30PG suites pass. No deployed migration or production change. |
-| Role/state boundaries | Broad current synthetic coverage, acceptance incomplete |866authenticated/browser checks,27role combinations/81Setup-Active-Archived cells. Exact populations, independent administration, company/scope/KPI/nav denial verified. Connected journeys and cancellation-state matrix remain open. |
-| Responsive role workspaces | Automated pass, manual review incomplete |121Light/Dark desktop/mobile checks,24captures plus28role captures. Eight principal dark-mobile captures opened; admin-only Home error found and fixed in Batch207 (ALPHA-ACCEPTANCE-01),44other206captures unreviewed. |
-| Conventional/visual governed results | Supported Superintendent paired commit currently verified; broader acceptance open | Batch208:46checks actual conventional IM transfer and reverse Visual commit, unchanged uncertain body/key retries, Manager current read and conventional UI refresh, unchanged coverage/request/history. Eight captures opened. Batch211 also verifies Manager whole-crew paired commit/retry/history; remaining connected role actions open. |
-| Named offboarding acceptance | Currently verified | Batch208:55/55named cases at4a84139c41764e55404f16efbeefe64f227e2044bad0fbb5191421ace6b18509; current30PG suites from207 plus52HTTP/24browser checks on newly owned fixture/runtime3224. Four captures opened with intermediate-state limits recorded. |
-| Connected workflow journeys | Selected connected journeys currently verified; broad role/task acceptance open | Batch209:37actual HTTP setup checks,67field browser checks,35correction/recovery and35preparation checks. Same-record return/resubmission/fresh approval/crew/start/completion, historical-Chief recovery/files, actual archive/preparation/cancellation and completion-only terminal verified. Missing interrupted preparation history hash and distorted fixed-overlay captures explicitly limited; remaining role/task/browser coverage open. |
-| Full acceptance / Alpha2 integration | Open | Reconcile all valid approved requirements against current evidence and close technical gaps. No whole Alpha acceptance, Alpha2 start, push, merge or deployment. |
-| Release readiness | Separate known blocker | Inherited source-map-js/GHSA-68fv-2mgg-jv7q remains independent; passing pinned compilation does not clear release image. |
+| Historical continuity and isolation | Current regression gate passes; wider connected criteria remain open | E222 full33SQL suites; earlier E206/207 lifecycle/continuity and E212 named55offboarding proof retain source limits. No historical evidence is repaired or rewritten. |
+| Role/state boundaries | Named connected authority fixes verified; whole matrix open | E217 member combined-role scope, E219 decision availability, E220 Manager lifecycle replay and E222 reviewed revisions. Remaining recovery/cancellation/field-review actors and project states require current connected proof. |
+| Conventional/Visual Team Management | Paired Superintendent person and Manager crew paths have bounded evidence | E208/E211 actual forward/reverse commits, explicit destination, coverage/history/file witnesses and exact retries; E213 Manager deletion blocker/resolution. Other structural/role journeys and full current UI acceptance remain open. Preserve Visual5866772. |
+| Connected request journeys | Standard/direct correction, intake and queue journeys have bounded evidence | E209 standard correction/field/recovery; E212 direct cycle; E213 actual queue/delegation/Chief crew selection; E215 durable normal intake; E216 independent Admin draft recovery. These are executed journeys at recorded source, not missing implementation; refresh final current evidence as required. |
+| Date, priority and completion notices | Current stale revision fix verified; local channel consumption established | E221 actual scoped local notice consumption, capture and real rollback; E222 current stale date/priority refusals and frozen retry after a newer independent change. No new ordinary requester inbox or external email delivery claim. |
+| Metrics and responsibility | Named scoped criteria have bounded proof; wider role/task journeys open | E214 population/date/drilldown SQL/browser, E217 member/combined-role scope, E218 protected exact-Area handover and Manager succession. Current SQL regressions pass; no productivity interpretation or inferred team/reporting/Area equivalence. |
+| Project lifecycle | Named D6 server/terminal criteria verified; full history/state journey open | E209 connected terminal and E220 cancellation guard proof. E209 original preparation history hash was not persisted; do not reset retained fixtures to fabricate it. Successful recommissioning and remaining cancellation-state proof stay open. |
+| Navigation, wording and visual/keyboard acceptance | Incomplete | Preserve approved sidebar/components/branding.44E206captures remain unreviewed; current bounded dialog captures do not clear whole-role UI. Technical error prefixes, duplicate pagination and Rows wrapping are identified narrow usability candidates. |
+| Full local Alpha acceptance | Open | Every in-scope approved criterion needs current evidence and no unresolved blocking decision. Passing suite counts alone are insufficient. |
+| Checkpoint synchronization | Routine authorized development work | Owner2026-10-08directive authorizes regular verified commits/pushes. `9de9a61` matches origin; fetched main divergence179/7, no merge/cherry-pick. No force-push or automatic main integration. |
+| Release/deployment/Alpha2 | Separate | Inherited source-map-js/GHSA-68fv-2mgg-jv7q is unchanged; compilation does not establish release readiness. No deployment, main merge or Alpha2 start. |
 
 ## Requirement-level reconciliation
 
-[Current approved-capability completion register](ALPHA1_COMPLETION_REGISTER.md) maps R01-R11 and valid later decisions to acceptance criteria, actual source/tests, current receipts and explicit evidence gaps at6e726e2. It distinguishes implementation from acceptance, reconciles superseded Manager-only/Org read-only/template/role-removal plans and keeps unselected pilot outcomes separate. Next: current Manager whole-crew conventional/Visual parity where supported, then direct-variant correction and queue/delegation browser selection. No new production defect is established by the register alone; whole Alpha acceptance remains open.
+The [completion register](ALPHA1_COMPLETION_REGISTER.md) now aligns its summary rows and next increment with E212-E222. Historical source bounds remain explicit. ALPHA-ACCEPTANCE-01/02, ALPHA-LIFECYCLE-REPLAY-218 and ALPHA-REVISION-STALE-221 have named verified fixes; the wider acceptance matrices remain open.
 
 ## Current technical queue
 
-1. ALPHA-ACCEPTANCE-01 is verified fixed in Batch207: own identity uses the global self-account read, single administration label, genuine failure/Refresh retained, ordinary project data still forbidden.
-2. Named55offboarding gate and actual stored-file history verified in Batch208; retain these current receipts during subsequent production changes.
-3. Complete paired conventional/visual results and connected workflow journeys, including current role revocation/lifecycle/retry boundaries.
-4. Complete current visual review and final requirement-by-requirement acceptance audit.
+1. Verify submitted recovery of REJECTED records and remaining eligible current actors using existing Decision51/D2 rules, fresh owned fixtures, exact retry, concurrency/stale checks and atomic retained evidence.
+2. Complete remaining cancellation/field-review role and project-state journeys, including D6 completion-only boundaries and original history witnesses on a new fixture.
+3. Complete current wording/navigation/role information and Light/Dark desktop/mobile/keyboard/table acceptance. Fix demonstrated defects within existing approved scope.
+4. Reconcile final current evidence requirement by requirement before declaring local Alpha acceptance.
 
-No new owner decision currently required. Historical fixtures/receipts remain intact; new evidence uses newly owned197schemas/UUIDs and separate206paths. No retained customer/184 reset/truncation/seed. Batch206 receipt: audits/alpha1-ui-redesign/alpha-closure206-evidence.json.
+No new owner decision is currently required. Preserve retained fixtures, historical receipts and separate release/integration boundaries. Checkpoint and push coherent verified increments routinely.
 
 
 ## Batch207 - administration-only workspace correction

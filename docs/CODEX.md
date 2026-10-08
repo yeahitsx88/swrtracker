@@ -4283,3 +4283,13 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Limits: wider role/cancellation/recovery/keyboard/table/visual acceptance and shared technical error prefix remain open. Actual missing-version legacy compatibility is deliberate, not a new permission. No whole Alpha/release acceptance.
 - Standing owner directive: regular coherent verified checkpoints now include push to existing alpha1-ui-redesign and equality/divergence check; do not wait for whole goal. No force/main merge/destructive integration. Before222commit, verified ae87bd9fast-forward pushed (40priorlocalcommits),0/0localremote. Fetched main divergence178/7 includes navigation pilot; main integration separate and not attempted. Push222aftercommit and confirm.
 - Production behavior changed: yes, narrow reviewed-revision guard. No deployment/main/Alpha2 or separate release remediation.
+
+
+### 2026-10-08 - Batch223 - reconcile Alpha completion summaries and checkpoint authority
+- Role: AUDITOR; documentation-only reconciliation under the approved Alpha finalization plan.
+- Intent: remove stale missing-journey claims and obsolete no-push queue restrictions without promoting historical receipts to current whole Alpha acceptance.
+- Files touched: docs/ALPHA1_COMPLETION_REGISTER.md, docs/ALPHA1_ACCEPTANCE_CLOSURE.md, audits/alpha1-ui-redesign/alpha-closure223-register-reconciliation-evidence.json, docs/CODEX.md (append only).
+- Behavior: no production change. Summary rows acknowledge E212 direct correction, E213 queue/deletion resolution, E215 intake, E217/E219 authority fixes, E220 lifecycle replay and E221/E222 local-notice/stale-retry evidence. Historical batch sections and immutable receipts retain their source bounds.
+- Verification: baseline strict-unused typecheck and665units pass. All local document links resolve; chronological batch sections remain unchanged.568production/migration bytes match E222 digest581580ade760a1233d6744bc240861618fb027deef1952f655e63baf8089ddc1. Retain matching E222 pinned compilation/full33SQL/19browser proof; no redundant build/SQL/browser run for documentation-only changes.
+- Git: baseline9de9a61 is clean and synchronized with origin/alpha1-ui-redesign after fetch; main179local-only/7remote-only. No base merge. Commit/push this coherent documentation increment under the standing owner directive and confirm development equality.
+- Known gaps/next: actual rejected submitted recovery and remaining eligible current actors, then cancellation/field-review/D6 role-state proof and remaining wording/navigation/visual/keyboard acceptance. No new owner decision currently required. Local Alpha acceptance remains open; release advisory/deployment/Alpha2 separate.
