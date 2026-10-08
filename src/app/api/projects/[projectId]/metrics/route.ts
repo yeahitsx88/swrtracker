@@ -38,7 +38,7 @@ async function observedGET(req: NextRequest, { params }: { params: Promise<{ pro
     let filters = parseMetricsQuery(search);
     return await withTransaction(async db=>{
     if(memberId||filters.crewId||filters.instrumentManId)await db.query('SELECT id FROM projects WHERE tenant_id=$1 AND id=$2 FOR SHARE',[auth.tenantId,projectUuid]);
-    const role = await resolveProjectInsightRole(auth, projectUuid, db);
+    const role = await resolveProjectInsightRole(auth, projectUuid, db, !!memberId);
     if (role === 'BILLING_VIEWER') throw new ForbiddenError('Billing access does not grant request analytics');
     // Tenant administrators retain read-only project health, not workflow authority.
     let visibility = await resolveVisibility(db, auth.tenantId, projectUuid, auth.userId, role === 'TENANT_ADMIN' ? 'VIEWER' : role, memberId&&role==='SURVEY_MANAGER'?undefined:filters.cohort);

@@ -8,8 +8,10 @@ import type { UUID } from '@/shared/types';
 
 export type ProjectInsightRole = ProjectRole | TenantRole;
 
-export async function resolveProjectInsightRole(auth: AuthContext, projectId: UUID, db: import('@/shared/types').DbClient=pool): Promise<ProjectInsightRole> {
+export async function resolveProjectInsightRole(auth: AuthContext, projectId: UUID, db: import('@/shared/types').DbClient=pool, memberAnalytics = false): Promise<ProjectInsightRole> {
   const caps = await resolveProjectCapabilities(db, auth, projectId);
+  // Member analytics follows actual workforce authority; independent IT grants do not replace it.
+  if (memberAnalytics && caps.operationalRole) return caps.operationalRole;
   if (caps.operationalRole === 'SURVEY_MANAGER') return 'SURVEY_MANAGER';
   if (caps.centralIT) return 'TENANT_ADMIN';
   if (caps.canAdminister) return 'PROJECT_ADMIN';
