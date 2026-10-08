@@ -1,0 +1,197 @@
+{
+  "batch": 213,
+  "baseline": "6cd338d",
+  "productionChanged": true,
+  "implementation": "58c8c2dd6531767c3b0009ca8f840a1f8b38cfab3a39ead70c9f0ada7d6460b4",
+  "productionFilesMatched": 568,
+  "authority": [
+    "R05/R06 separate approval, delegation and field assignment",
+    "Decision51 dependable existing workflows and Team/delegation lifecycle",
+    "Existing named-team/reporting/Area/access distinction"
+  ],
+  "scope": "Actual Manager queue delegation, Chief-only assignment, Chief crew selection and protected team lifecycle resolution; correct misleading team save/delete success feedback",
+  "change": "TeamEditor reports saved/deleted to its existing parent callback. Save and deletion feedback preserve request-assignment/history facts and do not imply automatic request visibility. No authorization, API, persistent state, event, lifecycle or Visual editing changes.",
+  "ownership": {
+    "schema": "alpha_queue213_bcd88a31c27149248fedfad69f94c2d0",
+    "runtime": "swr-alpha-queue213-final-web",
+    "loopbackPort": 3230,
+    "freshUuidSchema": true,
+    "retainedCustomerDataModified": false
+  },
+  "verification": {
+    "strictUnused": "host and pinned passed",
+    "hostUnits": 643,
+    "pinnedUnits": 643,
+    "pinnedProductionCompilation": "Node22.23.3 matching lock passed",
+    "postgresSuites": 30,
+    "queue": {
+      "checks": 67,
+      "cases": [
+        "requester cannot delegate team request",
+        "viewer cannot delegate team request",
+        "chief cannot delegate team request",
+        "instrument cannot delegate team request",
+        "superintendent cannot delegate team request",
+        "team request present in actual Manager assignment queue",
+        "Delegation requires explicit team and consent",
+        "Delegation shows current lead as next responsible person",
+        "Dismissed delegation changes no assignment",
+        "Delegation LIGHT1440 review fits viewport",
+        "Delegation LIGHT390 review fits viewport",
+        "Delegation DARK1440 review fits viewport",
+        "Delegation DARK390 review fits viewport",
+        "delegate actual command committed before response loss",
+        "delegate uncertain reviewed consent frozen",
+        "delegate uncertain dialog cannot discard command",
+        "delegate Escape retains pending intent",
+        "delegate retries identical reviewed body and key",
+        "Team delegation remains approved awaiting crew",
+        "Exact delegation retry retains one current team responsibility",
+        "Delegation notifies current eligible team members",
+        "Team deletion cannot strand awaiting-crew responsibility",
+        "Refused structure removal retains team",
+        "Unassigned Instrument Man cannot start team pending work",
+        "Denied pending start preserves team request",
+        "Chief team cannot replace captured own Chief selection",
+        "Chief team must choose actual Instrument Man and consent",
+        "assign actual command committed before response loss",
+        "assign uncertain reviewed consent frozen",
+        "assign uncertain dialog cannot discard command",
+        "assign Escape retains pending intent",
+        "assign retries identical reviewed body and key",
+        "Chief browser team crew selection enables personal field work",
+        "Actual crew assignment resolves team pending delegation",
+        "Selected Instrument Man sees team actionable field work",
+        "Queue team preserves prior approval/submission event bytes",
+        "Queue team has expected single delegation history",
+        "Assigned team request leaves Manager Need Assignment queue",
+        "requester cannot delegate chief request",
+        "viewer cannot delegate chief request",
+        "chief cannot delegate chief request",
+        "instrument cannot delegate chief request",
+        "superintendent cannot delegate chief request",
+        "chief request present in actual Manager assignment queue",
+        "Chief-only selection does not guess Instrument Man",
+        "assign actual command committed before response loss",
+        "assign uncertain reviewed consent frozen",
+        "assign uncertain dialog cannot discard command",
+        "assign Escape retains pending intent",
+        "assign retries identical reviewed body and key",
+        "Chief-only assignment remains awaiting crew",
+        "Unassigned Instrument Man cannot start chief pending work",
+        "Denied pending start preserves chief request",
+        "Chief chief cannot replace captured own Chief selection",
+        "Chief chief must choose actual Instrument Man and consent",
+        "assign actual command committed before response loss",
+        "assign uncertain reviewed consent frozen",
+        "assign uncertain dialog cannot discard command",
+        "assign Escape retains pending intent",
+        "assign retries identical reviewed body and key",
+        "Chief browser chief crew selection enables personal field work",
+        "Actual crew assignment resolves chief pending delegation",
+        "Selected Instrument Man sees chief actionable field work",
+        "Queue chief preserves prior approval/submission event bytes",
+        "Queue chief has expected single delegation history",
+        "Assigned chief request leaves Manager Need Assignment queue",
+        "No queue/delegation page errors"
+      ],
+      "captures": [
+        ".local/alpha-closure213/delegation-light-1440.png",
+        ".local/alpha-closure213/delegation-light-390.png",
+        ".local/alpha-closure213/delegation-dark-1440.png",
+        ".local/alpha-closure213/delegation-dark-390.png",
+        ".local/alpha-closure213/chief-team-crew-review.png",
+        ".local/alpha-closure213/chief-chief-crew-review.png"
+      ],
+      "pageErrors": []
+    },
+    "teamLifecycle": {
+      "checks": 17,
+      "cases": [
+        "Ordinary team save has accurate success and retains waiting request",
+        "Actual team deletion shows protected work and lawful resolution path",
+        "Definitive team conflict blocks repeated unreviewed deletion",
+        "Blocked browser deletion retains active team",
+        "Chief browser resolves actual awaiting-crew blocker",
+        "Lawful selection closes active delegation",
+        "Deliberate reload clears old deletion consent",
+        "Real resolved team deletion commits before lost reply",
+        "Unknown deletion freezes exact consent",
+        "Resolved deletion retries exact reviewed body/key",
+        "Resolved team retained as deactivated history",
+        "Team deletion does not change any current request assignment or row",
+        "Team deletion retains every request event byte",
+        "Team deletion preserves reporting crew roster relationships",
+        "Original submitted approved delegated history retained after lawful resolution",
+        "Only explicit intervening crew command changed protected request",
+        "No team lifecycle page errors"
+      ],
+      "captures": [
+        ".local/alpha-closure213/team-awaiting-crew-blocker.png",
+        ".local/alpha-closure213/team-resolved-deletion.png"
+      ],
+      "pageErrors": []
+    }
+  },
+  "captures": [
+    {
+      "path": ".local/alpha-closure213/delegation-light-1440.png",
+      "sha256": "add964ca20c80ab59280c5a5f2c6404cb1cbd7dc2d877d2c95f1ba998882ccc8",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/delegation-light-390.png",
+      "sha256": "a647668885c376e570fe2fb7e8286c5b7ff1f7e06054d60ef7007b16b5e802a7",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/delegation-dark-1440.png",
+      "sha256": "5311785e1e4eec037dfe37e0aacb119e09dd922513c8d6023bf26f3f43d1a7ef",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/delegation-dark-390.png",
+      "sha256": "5282f9c83058d9e2da94d98a35bcd244b19a7f391930f5262c6c6c5a7a012bce",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/chief-team-crew-review.png",
+      "sha256": "9dbe744ab58308257f7babe7336065883b6207f331cdfd5424ace5a13b42118e",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/chief-chief-crew-review.png",
+      "sha256": "be90891256152913a2ca6ff2abac6af76c4d73f471b412f166f0f180e226afaf",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/team-awaiting-crew-blocker.png",
+      "sha256": "81cb3a8abe6ca3ffc9466e2cf7ed657310841d05eb6c8121be69d4edf4d3ce80",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure213/team-resolved-deletion.png",
+      "sha256": "c9b652d2bc372877720fc2dca49cf87e41fadfae95953977fd11ddfd794b280e",
+      "executorOpened": true
+    }
+  ],
+  "design": {
+    "skill": "impeccable clarify and bounded polish guidance",
+    "manualDetector": "Empty once before final save-message wording adjustment; not a current detector certificate",
+    "incumbentPreserved": true,
+    "independentShipClaim": false
+  },
+  "limitations": [
+    "Queue/delegation paths cover Manager-to-Chief team and direct Chief-only selection. Superintendent-led delegation and other reviewer/crew combinations remain open.",
+    "Actual team notifications are persisted recipient rows, not inbox consumption or external delivery.",
+    "Delegation review covers desktop/mobile Light/Dark. Chief selection and lifecycle captures are desktop; wider viewport/keyboard/role matrix remains open.",
+    "Current30SQL suites cover tested authorization/tenant/lifecycle/rollback boundaries. Prior21255named HTTP/browser receipt remains historical at its prior digest; it is not rerun or declared current here.",
+    "Blocker message still includes technical status/error-code prefix from existing shared error rendering; record for later copy reconciliation, without changing its conflict or reload semantics.",
+    "Whole Alpha acceptance and independent release readiness remain open."
+  ],
+  "excludedAttempts": [
+    "First queue observer checked Instrument Man action before loading settled; corrected wait and entire fresh final journey passed.",
+    "Lifecycle observer initially expected a list/incorrect action label. Actual rendered table uses View / edit team; resumed the same delegated request without reset and then completed independent fresh final journey.",
+    "Pre-copy-fix83checks/8captures retained as prior-source evidence; current final84checks/8captures supersede them for this scope."
+  ]
+}
