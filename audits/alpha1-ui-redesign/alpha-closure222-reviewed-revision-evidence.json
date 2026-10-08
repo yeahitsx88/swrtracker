@@ -1,0 +1,66 @@
+{
+  "batch": 222,
+  "baseline": "ae87bd9",
+  "item": "ALPHA-REVISION-STALE-221",
+  "state": "verified fixed for reviewed Need-By and priority commands",
+  "production": {
+    "files": 568,
+    "sha256": "581580ade760a1233d6744bc240861618fb027deef1952f655e63baf8089ddc1",
+    "runtimeBytesMatch": true,
+    "method": "globally sorted forward-slash relative path/NUL/raw bytes/NUL over src/db/migrations"
+  },
+  "contract": "Modern revision dialog freezes expectedVersion with original action/date/reason/key. API validates optional nonnegative integer and hashes it. Application compares it only for fresh commands before effects. Current authority and visibility precede recorded replay. Legacy omitted-version payload/hash unchanged. No schema/domain transition/notification semantics change.",
+  "verification": {
+    "baselineUnits": 659,
+    "hostAndPinnedUnits": 665,
+    "strictUnusedTypes": "pass host and Node22.23.3",
+    "pinnedProductionCompilation": "pass Next15.5.27 Node22.23.3",
+    "postgresSuites": 33,
+    "productionBrowserChecks": 19,
+    "cases": [
+      "Held Need-By review now refuses concurrent change",
+      "Need-By body carries actual reviewed version",
+      "Stale Need-By creates no row/revision/event/notice/ledger",
+      "Conflict latches confirmation until deliberate reload",
+      "stale-need-byLIGHT overflow contained",
+      "stale-need-byDARK overflow contained",
+      "Uncertain date retry freezes original reviewed version/body/key",
+      "Recorded retry succeeds after newer unrelated version without new effects",
+      "Retry retains newer priority and committed Need-By",
+      "Held priority review carries original version and refuses intervening change",
+      "Stale priority creates no row/event/notice/ledger",
+      "stale-priorityLIGHT overflow contained",
+      "stale-priorityDARK overflow contained",
+      "Fresh priority consent commits without changing Need-By",
+      "Invalid reviewed versions are rejected without effects",
+      "Current wrong role cannot use recorded reviewed command",
+      "Exact key cannot change the originally reviewed version",
+      "Forbidden replay and changed-key payload have no effects",
+      "No browser page errors"
+    ],
+    "captures": [
+      ".local/alpha-closure222/stale-need-by-light-1440.png",
+      ".local/alpha-closure222/stale-need-by-dark-390.png",
+      ".local/alpha-closure222/stale-priority-light-1440.png",
+      ".local/alpha-closure222/stale-priority-dark-390.png"
+    ],
+    "capturesOpened": 4,
+    "pageErrors": [],
+    "singleScopedDetector": "empty"
+  },
+  "checkpointDirective": {
+    "ownerAuthorizedPush": "2026-10-08 standing regular coherent checkpoint directive",
+    "priorVerifiedCheckpoint": "ae87bd9",
+    "priorPush": "succeeded origin alpha1-ui-redesign local/remote identical;40previous local commits fast-forwarded",
+    "baseDivergence": "178 local-only/7 origin-main-only at ae87bd9; includes semantic navigation pilot. No base merge/cherry-pick initiated; main/Alpha2 integration separate."
+  },
+  "limits": [
+    "Current19production checks are focused, not a full role/state/keyboard/visual acceptance.",
+    "Four conflict captures show actual held state/disabled action/reload. Mobile Need-By final controls require dialog scrolling; helper exercised actual reload. One header image partly occluded by the modal; no broad branding readiness claim.",
+    "Existing shared technical409prefix wording remains queued; this increment retains shared ErrorBanner.",
+    "Legacy absent expectedVersion remains accepted for compatibility, while current modern revision UI requires reviewed version.",
+    "Other request actions have unchanged payloads; wider current consent/stale matrix remains to verify.",
+    "Local notices/external delivery distinction from E221 remains; no new transport/inbox.",
+    "No deployment/main merge/Alpha2 or release advisory remediation."
+  ]
+}

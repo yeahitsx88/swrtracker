@@ -21,15 +21,18 @@ async function observedPOST(req: NextRequest, { params }: { params: Promise<{ ti
       if (typeof body.reason !== 'string' || typeof body.requestedDate !== 'string') {
         throw new ValidationError('requestedDate and reason are required');
       }
+      if(body.expectedVersion!==undefined&&(typeof body.expectedVersion!=='number'||!Number.isSafeInteger(body.expectedVersion)||body.expectedVersion<0))throw new ValidationError('expectedVersion must be a nonnegative integer');
+      const reviewedVersion=body.expectedVersion as number|undefined;
       const repo = new TicketRepository();
       const result = await withTicketMutation(req, ctx, (db, ctx) => executeAuthorizedTicketMutation(
         db,
         { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/need-by`, idempotencyKey },
-        { ticketId, requestedDate: body.requestedDate, reason: body.reason },
+        { ticketId, requestedDate: body.requestedDate, reason: body.reason, ...(reviewedVersion===undefined?{}:{expectedVersion:reviewedVersion}) },
         async () => ({
           status: 200,
           body: { ticket: await reviseNeedBy(repo, db, {
             ...ctx,
+            expectedVersion:reviewedVersion,
             requestedDate: new Date(body.requestedDate as string),
             reason: body.reason as string,
           }) },

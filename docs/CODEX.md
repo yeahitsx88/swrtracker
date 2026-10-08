@@ -4272,3 +4272,14 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Observer corrections:404independent administrative Requester non-disclosure; completion actor from append-only event rather than nonexistent completed_by. Prior completed owned request retained, explicit second owned run fully completes. Version metadata confirmed from original priority ledger.
 - Channel limits: no ordinary requester inbox surface or external delivery established; local requester preview consumption is current bounded proof. No new channel/integration.
 - Production behavior changed: no. Whole Alpha acceptance open, current stale revision defect next; no retained customer mutation, push/main/deploy/Alpha2 or release remediation.
+
+
+### 2026-10-08 - Batch222
+- Intent: IMPLEMENTER closes confirmed ALPHA-REVISION-STALE-221; ticket/shared dialog/client routes under authorized Alpha cross-module scope.
+- Files touched: Need-By/priority application and routes, reviewed workflow intent/dialog, API client, focused Amelia units, new owned reviewed-revision fixture/browser observer, E222 receipt and completion registers.
+- Behavior changed: optional expectedVersion binds modern reviewed revision consent and request hash; fresh stale versions409before effects. Missing modern version fails closed to reload. Frozen unknown response retains original version/body/key; current-authorized recorded retry succeeds after newer independent state without applying again. Legacy omitted payloads/hashes remain compatible. No schema/role/assignment/history/notification or dependency changes.
+- Verification: strict host/pinned665units, pinned Node22.23.3 compilation,33current PG suites,19production browser cases;4theme/size conflict captures opened, no page errors; single scoped detector empty;568currentproduction/migration bytes match artifact.
+- Preserved: authority before replay; fresh row-version patch concurrency; unrelated request workflows, conventional/Visual Team Management, Area/reporting/history and local notice semantics.
+- Limits: wider role/cancellation/recovery/keyboard/table/visual acceptance and shared technical error prefix remain open. Actual missing-version legacy compatibility is deliberate, not a new permission. No whole Alpha/release acceptance.
+- Standing owner directive: regular coherent verified checkpoints now include push to existing alpha1-ui-redesign and equality/divergence check; do not wait for whole goal. No force/main merge/destructive integration. Before222commit, verified ae87bd9fast-forward pushed (40priorlocalcommits),0/0localremote. Fetched main divergence178/7 includes navigation pilot; main integration separate and not attempted. Push222aftercommit and confirm.
+- Production behavior changed: yes, narrow reviewed-revision guard. No deployment/main/Alpha2 or separate release remediation.

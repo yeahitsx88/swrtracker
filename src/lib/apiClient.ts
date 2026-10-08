@@ -385,15 +385,15 @@ export const apiClient = {
     });
   },
 
-  reviseNeedBy(ticketId: string, requestedDate: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
+  reviseNeedBy(ticketId: string, requestedDate: string, reason: string, retryKey = createIdempotencyKey(), expectedVersion?: number): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/need-by`, {
-      method: 'POST', body: { requestedDate, reason }, headers: { 'Idempotency-Key': retryKey },
+      method: 'POST', body: { requestedDate, reason, ...(expectedVersion===undefined?{}:{expectedVersion}) }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  revisePriority(ticketId: string, priority: 'NORMAL' | 'HIGH', reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
+  revisePriority(ticketId: string, priority: 'NORMAL' | 'HIGH', reason: string, retryKey = createIdempotencyKey(), expectedVersion?: number): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/priority`, {
-      method: 'POST', body: { priority, reason }, headers: { 'Idempotency-Key': retryKey },
+      method: 'POST', body: { priority, reason, ...(expectedVersion===undefined?{}:{expectedVersion}) }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 

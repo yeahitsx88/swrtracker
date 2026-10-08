@@ -4,7 +4,7 @@ import { apiClient } from './apiClient';
 export type TicketWorkflowAction = 'start' | 'complete' | 'delay' | 'inability' | 'stop' | 'restart' |
   'validate-inability' | 'reject-inability' | 'approve-legacy' | 'reject-legacy' |
   'requester-cancel' | 'follow-up' | 'approve' | 'return' | 'cancel' | 'need-by' | 'high' | 'normal';
-export interface TicketWorkflowIntent { ticketId: string; action: TicketWorkflowAction; reason: string; requestedDate: string }
+export interface TicketWorkflowIntent { ticketId: string; action: TicketWorkflowAction; reason: string; requestedDate: string; expectedVersion?: number }
 export interface TicketWorkflowReview { title: string; consequence: string; next: string; reason: 'required' | 'optional' | false; date?: boolean; danger?: boolean }
 
 /** Presentation of established transitions. This never grants authority or selects a new transition. */
@@ -31,7 +31,7 @@ export function ticketWorkflowReview(action: TicketWorkflowAction, ticket: Pick<
 }
 
 export function executeTicketWorkflow(intent: TicketWorkflowIntent, key: string) {
-  const {ticketId,action,reason,requestedDate}=intent;
+  const {ticketId,action,reason,requestedDate,expectedVersion}=intent;
   switch(action) {
     case 'requester-cancel': return apiClient.requesterCancel(ticketId,key);
     case 'follow-up': return apiClient.createFollowUpTicket(ticketId,key);
@@ -47,7 +47,7 @@ export function executeTicketWorkflow(intent: TicketWorkflowIntent, key: string)
     case 'reject-legacy': return apiClient.rejectPcStatus(ticketId,reason||undefined,key);
     case 'approve': return apiClient.approveTicket(ticketId,key);
     case 'return': return apiClient.returnForCorrection(ticketId,reason,key);
-    case 'need-by': return apiClient.reviseNeedBy(ticketId,requestedDate,reason,key);
-    case 'high': case 'normal': return apiClient.revisePriority(ticketId,action==='high'?'HIGH':'NORMAL',reason,key);
+    case 'need-by': return apiClient.reviseNeedBy(ticketId,requestedDate,reason,key,expectedVersion);
+    case 'high': case 'normal': return apiClient.revisePriority(ticketId,action==='high'?'HIGH':'NORMAL',reason,key,expectedVersion);
   }
 }

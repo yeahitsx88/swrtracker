@@ -22,15 +22,18 @@ async function observedPOST(req: NextRequest, { params }: { params: Promise<{ ti
       if ((body.priority !== 'NORMAL' && body.priority !== 'HIGH') || typeof body.reason !== 'string') {
         throw new ValidationError('priority and reason are required');
       }
+      if(body.expectedVersion!==undefined&&(typeof body.expectedVersion!=='number'||!Number.isSafeInteger(body.expectedVersion)||body.expectedVersion<0))throw new ValidationError('expectedVersion must be a nonnegative integer');
+      const reviewedVersion=body.expectedVersion as number|undefined;
       const repo = new TicketRepository();
       const result = await withTicketMutation(req, ctx, (db, ctx) => executeAuthorizedTicketMutation(
         db,
         { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/priority`, idempotencyKey },
-        { ticketId, priority: body.priority, reason: body.reason },
+        { ticketId, priority: body.priority, reason: body.reason, ...(reviewedVersion===undefined?{}:{expectedVersion:reviewedVersion}) },
         async () => ({
           status: 200,
           body: { ticket: await revisePriority(repo, db, {
             ...ctx,
+            expectedVersion:reviewedVersion,
             priority: body.priority as TicketPriority,
             reason: body.reason as string,
           }) },

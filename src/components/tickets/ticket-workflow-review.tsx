@@ -31,7 +31,9 @@ function WorkflowReview({selection:{ticket,action},close,reloaded,completed}:{se
   useUnsavedProgress(command.locked);
   async function submit(){
     if(busy||!confirmed||(review.reason==='required'&&!reason.trim())||(review.date&&!requestedDate))return;
-    const frozen=command.begin({ticketId:ticket.id,action,reason,requestedDate},createIdempotencyKey());
+    const revision=['need-by','high','normal'].includes(action);
+    if(revision&&!Number.isSafeInteger(ticket.rowVersion)){command.fail(409);setError('Current revision information is unavailable. Reload the request before reviewing this change.');return;}
+    const frozen=command.begin({ticketId:ticket.id,action,reason,requestedDate,...(revision?{expectedVersion:ticket.rowVersion}:{})},createIdempotencyKey());
     if(!frozen)return;
     setBusy(true);setError(null);
     try {const response=await executeTicketWorkflow(frozen.body,frozen.key);command.success();completed(response);}
