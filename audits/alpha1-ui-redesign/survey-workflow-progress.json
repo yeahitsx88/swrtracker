@@ -736,6 +736,22 @@
         "Independent administration creation/support/configuration controls",
         "Full current role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 36,
+      "date": "2026-10-07",
+      "summary": "Protected scoped catalog/project creation and recommissioning controls",
+      "status": "verified_local_increment",
+      "evidence": "protected-creation-controls-evidence.json",
+      "verification": [
+        "Strict host/pinned626units28focused matching-lock production compilation",
+        "128actual production Edge cases12current Team/chart regressions20current captures",
+        "Current reads before stale release, exact retry/ownership/navigation, actual lifecycle effects/concurrency/audit rollback/current refusal; full reviewer ship/documenter complete"
+      ],
+      "remaining": [
+        "Membership/support/configuration controls",
+        "Full current role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [
