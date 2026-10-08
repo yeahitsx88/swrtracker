@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {InvitationCancellationReview} from './invitation-cancellation-review';
 import {apiRequest} from '@/lib/apiClient';
 import {operationsStatusLabel} from '@/lib/operations-view';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
@@ -36,7 +37,7 @@ export function ProjectPreparationCancellation({projectId,owner,onFinished}:{pro
  <p>Finishing changes the project to Archived. Project identity, current Setup changes, files and history are retained.</p>
  {finishing&&<p>Recorded start reason: {preview.reason}</p>}
  <section><h3 className="panel-title">Unfinished Requests</h3>{preview.work.length?<ul>{preview.work.map(record=><li key={record.id}><span className="administration-company-id">{record.name}</span><span> — {operationsStatusLabel(record.detail)}</span></li>)}</ul>:<p>No unfinished requests remain.</p>}</section>
- <section><h3 className="panel-title">Outstanding Invitations</h3>{preview.invitations.length?<ul>{preview.invitations.map(record=><li key={record.id}><span className="administration-company-id">{record.name}</span><span> — {record.detail}</span></li>)}</ul>:<p>No outstanding invitations remain.</p>}</section>
+ <section><h3 className="panel-title">Outstanding Invitations</h3>{preview.invitations.length?<ul>{preview.invitations.map(record=><li key={record.id}><span className="administration-company-id">{record.name}</span><span> — {record.detail}</span> <InvitationCancellationReview projectId={projectId} inviteId={record.id} email={record.name} owner={owner} disabled={busy||gate.locked||preview.status!=='SETUP'} onSaved={()=>{setSuccess('Invitation cancelled. Review the updated preparation evidence before continuing.');void load();}}/></li>)}</ul>:<p>No outstanding invitations remain.</p>}</section>
  {preview.blockers.length>0?<div role="alert"><h3 className="panel-title">Required Before Archiving</h3>{preview.blockers.map(blocker=><p key={blocker}>{blocker}</p>)}</div>:<p>No unfinished requests or outstanding invitations remain.</p>}
  <label className="field"><span className="field-label">{finishing?'Completion reason':'Cancellation reason'} (10–1000 characters)</span><Input value={reason} maxLength={1000} disabled={locked} onChange={event=>{setReason(event.target.value);setConsent(false);}}/></label>
  <label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked} onChange={event=>setConsent(event.target.checked)}/><span>{finishing?'I reviewed the current evidence and confirm cancellation and archival of this preparation.':'I reviewed the existing work and confirm that preparation cancellation should begin.'}</span></label>

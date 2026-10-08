@@ -5,7 +5,7 @@ export type AdministrativeEventType =
   | 'project.member_added' | 'project.role_changed' | 'project.admin_granted' | 'project.admin_revoked'
   | 'project.company_registered' | 'project.company_associated' | 'project.company_removed' | 'project.archived' | 'project.activated'
   | 'project.configuration_changed' | 'tenant.membership_changed' | 'tenant.membership_removed'
-  | 'user.invited' | 'user.registered' | 'user.provisioned' | 'password.reset_requested' | 'password.reset_completed'
+  | 'invite.canceled' | 'user.invited' | 'user.registered' | 'user.provisioned' | 'password.reset_requested' | 'password.reset_completed'
   | 'session.logged_out' | 'tenant.company_created' | 'project.created'
   | 'account.appearance_changed' | 'tenant.appearance_changed' | 'project.recommissioning_started' | 'project.recommissioned'
   | 'tenant.template_created' | 'tenant.template_updated' | 'tenant.template_deleted'

@@ -60,7 +60,7 @@ async function observedPOST(
       if(!row)throw new ValidationError('Invitation record unavailable');
       return {inviteId:row.id as string};
       });
-      const current=(await db.query('SELECT token FROM invites WHERE id=$1 AND tenant_id=$2 AND project_id=$3 AND invited_by=$4 AND accepted_at IS NULL AND expires_at>now()',[recorded.inviteId,auth.tenantId,projectId,auth.userId])).rows[0];
+      const current=(await db.query('SELECT token FROM invites WHERE id=$1 AND tenant_id=$2 AND project_id=$3 AND invited_by=$4 AND accepted_at IS NULL AND canceled_at IS NULL AND expires_at>now()',[recorded.inviteId,auth.tenantId,projectId,auth.userId])).rows[0];
       if(!current)throw new ConflictError('The recorded invitation is no longer pending. Reload invitations before creating another.');
       return current;
     });

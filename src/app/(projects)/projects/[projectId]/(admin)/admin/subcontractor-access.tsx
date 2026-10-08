@@ -1,5 +1,7 @@
 'use client';
 
+import {useProjectWorkspace} from '@/components/ui/project-shell-header';
+import {InvitationCancellationReview} from '@/components/ui/invitation-cancellation-review';
 import {RecordCollection} from '@/components/ui/record-collection';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { apiClient } from '@/lib/apiClient';
@@ -13,6 +15,7 @@ import {apiRequest} from '@/lib/apiClient';
 import { Field } from '@/components/forms';
 
 export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { projectId: string;owner:CommandOwner;companiesRevision?:number }) {
+  const centralIT=useProjectWorkspace()?.capabilities.centralIT===true;
   const ownerToken=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot);
   const token='subcontractor-invite',gate=useRef(new FrozenCommand<{companyId:string;email:string}>()).current;
   const [,render]=useState(0),generation=useRef(0),[loading,setLoading]=useState(false),[readFailed,setReadFailed]=useState(false);const blocked=owner.blocked(token);
@@ -110,6 +113,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0 }: { p
                 <div className="muted">
                   {inviteRecord.companyName} · expires {new Date(inviteRecord.expiresAt).toLocaleDateString()}
                 </div>
+                {centralIT&&<InvitationCancellationReview projectId={projectId} inviteId={inviteRecord.id} email={inviteRecord.email} owner={owner} disabled={loading||busy!==null||archived||gate.locked||!!batch} onSaved={()=>{setSuccess('Invitation cancelled. Its record and history are retained.');void load();}}/>}
               </div>
             ))}</>}/>
             </AdministrationSection>
