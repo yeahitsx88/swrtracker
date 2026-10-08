@@ -4515,3 +4515,17 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Known candidates/next: overlapping current-detail read responses and uncertain attachment upload ownership; then remaining role/state acceptance. Deferred Org work and inherited source-map-js release blocker separate. No main merge/deploy/Alpha2.
 - Git: fetch dev0/0, main197/7 before checkpoint; coherent commit/push authorized and remote confirmation after commit. Existing history preserved.
 - Production behavior changed: yes, one request-detail presentation file.
+
+
+### 2026-10-08 - Batch242
+- Intent: close demonstrated obsolete successful detail response restoring data after current revoked-access refusal; preserve newest feedback/loading and existing command ownership.
+- Ownership: sequential authorized Alpha frontend hardening exception; request-detail page only, two owned beta helpers and evidence/docs. No parallel writers.
+- Files touched: src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx; tests/beta/alpha-reads242-{fixture,browser}.mjs; audits/alpha1-ui-redesign/alpha-closure242-current-read-evidence.json; docs/ALPHA1_COMPLETION_REGISTER.md; docs/ALPHA1_ACCEPTANCE_CLOSURE.md; docs/CODEX.md (append only).
+- Behavior changed: local read counter permits only latest success/error/finally to update detail data/capabilities/files/error/loading; route cleanup invalidates outstanding loads. Existing workflow, retry, dirty fields, server authorization, schemas and history unchanged.
+- Baseline: clean pushedcfca49f alpha1-ui-redesign; strict690units pass. Six real before criteria show old200afternew404restores obsolete request/file display, with stored rows unchanged.
+- Verification: strict-unused host/pinned types;690host/pinned units;35focused file/visibility/capability/FrozenCommand tests; fresh Node22.23.3 Next15.5.27 compile;33PG suites terminal pass. Current15browser/HTTP criteria: actual held old-success/new-denial, old-abort/new-success and old-completion/new-pending; latest loading protected and current successful view restored. Exact request/file/event/assignment/delegation witness; two opened Light1440/Dark390 newest-success captures, no errors.576production/migration bytes match runtime; digest7cfd6877e7be9145ffa7e6e529144d70b4400125e7f16d4400e4b927df56e276.
+- Reconciliation: stale E230 current-gate reference now marks historical evidence; E242 current bounded technical gate.
+- Limits: signed owned synthetic Active fixtures and controlled paired Viewer membership disable/restore, not interactive login/admin-removal journey. Real success responses held by route.fetch; delayed transport abort explicit. Separate Area lookup, route/unmount races and whole role/state matrix not exhaustively tested. Cleanup guard inspected, not separately browser-certified.
+- Known candidate/next: actual uncertain attachment upload/exact-retry ownership; then remaining role/state/visual acceptance. Whole Alpha remains open; inherited release blocker and Org deferrals separate. No main integration/deploy/Alpha2.
+- Git: fetched dev0/0 and main198/7 before checkpoint; coherent commit/push authorized, remote confirmation after commit. Preserve existing history.
+- Production behavior changed: yes, one local request-detail response guard.

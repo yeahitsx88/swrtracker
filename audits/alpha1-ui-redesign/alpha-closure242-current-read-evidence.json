@@ -1,0 +1,85 @@
+{
+  "batch": 242,
+  "baseline": "cfca49f480af874b31b504b0aa595600dd3e5f64",
+  "authority": [
+    "Owner Alpha integrated technical hardening and current role/denied/loading/error state acceptance.",
+    "Existing current-response UI contract and server current membership visibility; obsolete responses do not establish current authority.",
+    "Standing verified checkpoint/push directive."
+  ],
+  "classification": "Verified request-detail response-order correction for three named real overlapping response cases; whole Alpha acceptance remains open.",
+  "production": {
+    "files": 576,
+    "sha256": "7cfd6877e7be9145ffa7e6e529144d70b4400125e7f16d4400e4b927df56e276",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Local detailRead ref owns each load. Superseded success/error/finally cannot change accepted ticket/files/capabilities, feedback or loading; route effect cleanup invalidates outstanding detail loads. Existing dirty/uncertain command guards and approved server contracts remain."
+  },
+  "before": {
+    "checks": [
+      "Current authorized Viewer detail/file baseline loaded",
+      "Older overlapping request actually succeeds before access revocation",
+      "Newer revoked read first clears current request display",
+      "Before older successful response restores request after newer revoked refusal",
+      "Before older success restores obsolete attachment link after refusal",
+      "Before race leaves request/file/history rows unchanged"
+    ],
+    "productionChanged": false
+  },
+  "verification": {
+    "strictUnusedTypes": "pass host and pinned",
+    "unitTests": 690,
+    "focusedTests": 35,
+    "focusedFiles": [
+      "tests/attachment/attachment-read-route.test.ts",
+      "tests/attachment/attachment-permissions.test.ts",
+      "tests/ticket/visibility-repository.test.ts",
+      "tests/ticket/get-ticket-capabilities.test.ts",
+      "tests/identity/frozen-command.test.ts"
+    ],
+    "pinnedProductionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "actualCurrentChecks": [
+      "Current authorized Viewer detail/file baseline loaded",
+      "Older overlapping request actually succeeds before access revocation",
+      "Newer revoked read first clears current request display",
+      "Older success cannot replace current refused request/file state",
+      "Current denied-read feedback survives older success",
+      "Fresh authorized Refresh restores current detail after fixture access restoration",
+      "Older transport failure cannot overwrite newer authorized success",
+      "Loading-order request1 uses actual authorized server response",
+      "Loading-order request2 uses actual authorized server response",
+      "Older success/finally cannot reveal data or dismiss newest loading state",
+      "Newest successful response restores current authorized file display",
+      "Current response LIGHT1440 viewport contained",
+      "Current response DARK390 viewport contained",
+      "Overlapping responses/refusals preserve all request/file/history rows exactly",
+      "No current-read page errors"
+    ],
+    "currentCapturesOpened": [
+      ".local/alpha-closure242-confirmation/current-read-light-1440.png",
+      ".local/alpha-closure242-confirmation/current-read-dark-390.png"
+    ],
+    "pageErrors": [],
+    "mode": "Actual HTTP-created/uploaded/submitted/approved request; Playwright route.fetch holds real current authorized server responses. Controlled paired Viewer access disable/restore; delayed actual transport abort; no mocked successful ticket body.",
+    "history": "All original ticket/file/event/assignment/delegation rows exact across response ordering; no downloads or permitted download audit additions in this read-only phase."
+  },
+  "limits": [
+    "Signed owned synthetic Active fixtures rather than interactive login. Paired access disable/restore is controlled fixture state, not an administrative removal journey.",
+    "Named request-detail GET response orders and current request/file display. Separate Area lookup responses and broader route-change/unmount/role/state race matrix not exhaustively executed. Cleanup invalidation is inspected source behavior, not a separate direct unmount browser criterion.",
+    "Light1440/Dark390 captures show newest authorized success; denied/pending race criteria have actual DOM assertions, not separate screenshot review.",
+    "Current full SQL/unit regressions preserve tenancy/authorization/Team Management/Org/history; whole Alpha role/state/visual acceptance remains open.",
+    "Attachment uncertain-response ownership remains next candidate. No new schema/endpoint/payload/authority/event/assignment/history/dependency changes.",
+    "Inherited source-map-js/GHSA-68fv-2mgg-jv7q remains separate; compilation does not establish release readiness. No main merge/deploy/Alpha2."
+  ],
+  "git": {
+    "preCheckpointDev": "0/0",
+    "mainDivergence": "198 local / 7 remote; no integration",
+    "push": "routine authorized checkpoint; confirm after commit"
+  },
+  "next": "Actual attachment-upload lost-response/exact-retry ownership acceptance, then remaining integrated role/state acceptance."
+}

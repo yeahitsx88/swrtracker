@@ -57,6 +57,7 @@ export default function TicketDetailPage() {
   const [areaTree, setAreaTree] = useState<{ levels: AorLevelRecord[]; nodes: AorNodeRecord[] } | null>(null);
   const [stale, setStale] = useState(false);
   const busy = useRef(false);
+  const detailRead = useRef(0);
   const saveAttempt = useRef(new FrozenCommand<{ticketId:string;input:UpdateRequesterTicketRequest}>());
   const submitAttempt = useRef(new FrozenCommand<{ticketId:string; expectedVersion: number; urgentReason: string }>());
   const deleteAttempt = useRef(new FrozenCommand<{ticketId:string; expectedVersion: number }>());
@@ -79,6 +80,7 @@ export default function TicketDetailPage() {
   async function loadAll(discard = false) {
     if (!discard && (busy.current || uncertain || workflow.active)) return;
     if (!discard && dirty && !window.confirm('Discard your unsaved field changes and reload the saved request?')) return;
+    const currentRead = ++detailRead.current;
     setLoading(true);
     setError(null);
     setTicket(null);
@@ -89,6 +91,7 @@ export default function TicketDetailPage() {
         apiClient.getTicket(ticketId),
         apiClient.listAttachments(ticketId),
       ]);
+      if (currentRead !== detailRead.current) return false;
       if (ticketResponse.ticket.projectId !== projectId) throw new Error('This request belongs to a different project. Open it from that project’s request list.');
       setTicket(ticketResponse.ticket);
       setCapabilities(ticketResponse.capabilities ?? NO_CAPABILITIES);
@@ -104,16 +107,18 @@ export default function TicketDetailPage() {
       setHistoryRevision((revision) => revision + 1);
       return true;
     } catch (err) {
+      if (currentRead !== detailRead.current) return false;
       setError(getErrorMessage(err, 'Unable to load ticket details.'));
       return false;
     } finally {
-      setLoading(false);
+      if (currentRead === detailRead.current) setLoading(false);
     }
   }
 
   useEffect(() => {
     void loadAll(true);
     void apiClient.listAorTree(projectId).then(setAreaTree).catch(err => setError(getErrorMessage(err, 'Unable to load Areas. Retry Refresh.')));
+    return () => { detailRead.current += 1; };
   }, [projectId, ticketId]);
 
   async function submitDraft() {
