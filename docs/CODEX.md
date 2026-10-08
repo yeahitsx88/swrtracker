@@ -4618,3 +4618,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Limits/next: core eight roles Light/Dark1440/390;other combos ActiveLight1440. Viewport Home evidence excludes deeper table/dialog/task surfaces. Remaining current revoked/remembered-access and finite task/requirement reconciliation queued. Full Alpha acceptance open;Org deferrals/history retained;release/main/deploy/Alpha2 separate.
 - Git: fetched development0/0,main205/7;no integration;verified checkpoint/push per standing directive,confirm synchronization after commit.
 - Production behavior changed: no.
+
+
+### 2026-10-08 - Batch250
+- Intent: close demonstrated remembered-project SPA navigation authority defect and reconcile finite Alpha acceptance queue.
+- Ownership: sequential IMPLEMENTER/TEST_WRITER/AUDITOR;one shared UI file under approved Alpha cross-module exception;no parallel writers.
+- Files touched: src/components/ui/project-shell-header.tsx;tests/beta/alpha-access250-{before,current}.mjs;audits/alpha1-ui-redesign/alpha-closure250-remembered-access-evidence.json;docs/README.md;docs/ALPHA1_FINAL_ACCEPTANCE_MATRIX.md;completion/closure registers;append-only CODEX.
+- Before: clean pushed2b91fb8;strict693units baseline. Actual revoked Viewer serverlist403while SPA Profile retained project heading/AllRequests and performed0capability reads.
+- Behavior: pathname in existing shell snapshot key revalidates discovery/capabilities and hides stale project context during loading. Existing account content/denial/return path retained;no server authority/API/schema/persistent business change.
+- Verification: host/pinned strict types;693units;24focused navigation/Home/Org regressions;fresh Node22.23.3 Next15.5.27 compile;33freshSQL suites.188finalactualchecks,2opened Light1440/Dark390captures,no pageerrors. Current revoked local/grant/scalar roles,independentCentral aggregate/administration,knownforeign/unassigned scope,stale session/renewal,25eligible SPA combinations plus2fresh revokedbrowser subjects. Original/after private protected-domain/non-appearance-ledger witnesses persisted/equal.576production/migration bytes match fresh runtime;digest260d2f0f75b0b8a5f2a804c6c5847932c47865cf6bdb046889e5b6571a9392a5.
+- Reconciliation: foreign metrics404/Central metrics200 misassertions and Windows ellipsis observer corrected;first terminal witness included expected personal appearance ledger,excluded failedrun and finalconfirmation scopes only those authorized writes separately. Previoussynthetic attempts retained,no reset;membership/grant/session injections remain paired/retained. README28-to33suitecount and stale blanket custom-role prohibition corrected from actual approvedfixed-base labels;A1-A7finite requirements queue.
+- Limits/next: signed sessions and synthetic access injections,not governed offboarding proof;viewport Profile screenshots,not fullAlpha/current alltask visual. E249 remains its source;history/Orgdeferrals preserved. NextA1urgent intake/actualattachment limits,then remainingfiniteA2-A7. Full Alphaacceptance open;release advisory/main/deploy/Alpha2 separate.
+- Git: fetcheddevelopment0/0,main206/7;no integration;verifiedcheckpoint/push per owner directive,confirmremoteaftercommit.
+- Production behavior changed: yes,3addedlines/1changedline in existing shell;presentation/current-read revalidation only.

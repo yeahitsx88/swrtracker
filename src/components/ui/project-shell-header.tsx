@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 import type { ProjectCapabilities } from '@/lib/contracts/account-offboarding';
@@ -22,9 +23,10 @@ export const useProjectWorkspace = () => useContext(ProjectContext);
 
 /** Presentation follows current capabilities; destination APIs authorize every read and action. */
 export function ProjectShellHeader({ projectId, requireProject = true, canCreateProject = false, children }: { projectId?: string; requireProject?: boolean; canCreateProject?: boolean; children?: ReactNode }) {
+  const pathname = usePathname();
   const [revision, setRevision] = useState(0);
   const [snapshot, setSnapshot] = useState<{ key: string; context?: WorkspaceContext; error?: string }>();
-  const key = `${projectId}:${revision}`;
+  const key = JSON.stringify([projectId, pathname, revision]);
   const current = snapshot?.key === key ? snapshot : undefined;
   useEffect(() => {
     let active = true;
