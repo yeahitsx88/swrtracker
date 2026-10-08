@@ -14,6 +14,10 @@ Current authority: approved requirements, Decisions51-54, D1-D8 reconciliation a
 | Full acceptance / Alpha2 integration | Open | Reconcile all valid approved requirements against current evidence and close technical gaps. No whole Alpha acceptance, Alpha2 start, push, merge or deployment. |
 | Release readiness | Separate known blocker | Inherited source-map-js/GHSA-68fv-2mgg-jv7q remains independent; passing pinned compilation does not clear release image. |
 
+## Requirement-level reconciliation
+
+[Current approved-capability completion register](ALPHA1_COMPLETION_REGISTER.md) maps R01-R11 and valid later decisions to acceptance criteria, actual source/tests, current receipts and explicit evidence gaps at6e726e2. It distinguishes implementation from acceptance, reconciles superseded Manager-only/Org read-only/template/role-removal plans and keeps unselected pilot outcomes separate. Next: current Manager whole-crew conventional/Visual parity where supported, then direct-variant correction and queue/delegation browser selection. No new production defect is established by the register alone; whole Alpha acceptance remains open.
+
 ## Current technical queue
 
 1. ALPHA-ACCEPTANCE-01 is verified fixed in Batch207: own identity uses the global self-account read, single administration label, genuine failure/Refresh retained, ordinary project data still forbidden.
