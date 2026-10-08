@@ -2,7 +2,7 @@
 
 Current authority: approved requirements, Decisions51-54, D1-D8 reconciliation and owner active Alpha closure objective. Preserve conventional Team Management, Visual5866772 and prior history. This register records current evidence and outstanding acceptance; passing counts do not replace connected role/task/state requirements.
 
-Current verified source: Batch246 on `alpha1-ui-redesign`, based on pushed `c540d38`. [E246](../audits/alpha1-ui-redesign/alpha-closure246-requester-lifecycle-evidence.json) records strict 692 units, 21 focused tests, pinned compilation/full 33 SQL suites and 214 current requester lifecycle/authority/exact-cleanup/terminal checks at digest `06d1b2e46d929475b5742038ac2d325eca51a1d872cc113c286e9bac7dc4e83e`. Requester actions reflect existing lifecycle rules; separate draft deletion preserves witnessed cleanup and terminal history. E243-E245 upload ownership/feedback/lifecycle remain intact. Whole Alpha acceptance remains open.
+Current verified source: Batch247 on `alpha1-ui-redesign`, based on pushed `3c7aa61`. [E247](../audits/alpha1-ui-redesign/alpha-closure247-cancelled-recovery-evidence.json) records strict692units (693pinned integrated invocations),23focused tests,fresh pinned compilation/full33SQL suites and381current cancelled-recovery/company/authority/lifecycle/persisted-evidence checks at unchanged digest `06d1b2e46d929475b5742038ac2d325eca51a1d872cc113c286e9bac7dc4e83e`. E246 requester cleanup-to-terminal and E243-E245 uploads are preserved. No production change;whole Alpha acceptance remains open.
 
 | Workstream | Reconciled state | Evidence / remaining acceptance |
 |---|---|---|
@@ -24,7 +24,7 @@ The [completion register](ALPHA1_COMPLETION_REGISTER.md) now aligns its summary 
 
 ## Current technical queue
 
-1. E224 verifies named REJECTED recovery for all six current eligible actor kinds:107checks, exact browser retry, retained identity/files/history, concurrency/stale refusal and atomic evidence. Complete remaining terminal/company/state recovery combinations without broadening authority.
+1. E247 verifies18actual cancelled-terminal browser recoveries across six eligible authorities,company/current-replay/lifecycle refusals and atomic evidence. E224 REJECTED browser proof keeps its historical source. Reconcile residual recovery criteria during final requirement review;do not repeat these verified named combinations as wholly missing.
 2. Complete remaining cancellation/field-review role and project-state journeys, including D6 completion-only boundaries and original history witnesses on a new fixture.
 3. Complete current wording/navigation/role information and Light/Dark desktop/mobile/keyboard/table acceptance. Fix demonstrated defects within existing approved scope.
 4. Reconcile final current evidence requirement by requirement before declaring local Alpha acceptance.
@@ -307,3 +307,8 @@ Failed staging key typing/pinned artifact retained and corrected; observer stagi
 ## Batch246 requester lifecycle checkpoint
 
 [E246](../audits/alpha1-ui-redesign/alpha-closure246-requester-lifecycle-evidence.json) closes named stale requester edit/submit/delete/cancel/follow-up presentation. Additive canDeleteDraft availability separates soft-delete cleanup from editable fields.179actual matrix/core cleanup criteria plus18authority/isolation/read-wait and17connected returned cancellation-to-terminal criteria pass; six opened Light1440/Dark390 captures,no errors. Both draft deletion and returned cancellation survive actual lost responses and exact unchanged retries. Governed Central FINISH and replay reach Archived; completed parent and all prior request evidence remain immutable. This new original witness does not fill the missing historical E209 witness. Whole Alpha remains open. Next follows the registered recovery terminal/company/project-state matrix, then cancellation/field-review role-state journeys and final requirement/visual reconciliation. Pre-checkpoint development0/0,main202/7; no integration.
+
+
+## Batch247 cancelled-request recovery checkpoint
+
+[E247](../audits/alpha1-ui-redesign/alpha-closure247-cancelled-recovery-evidence.json) records243actual browser/core,66company/authority/lifecycle and72read-only persisted-evidence criteria. Three cancelled terminals created through actual workflows are recovered by each of six eligible authorities with frozen lost-response review/body/key and keyboard retry. Same ID/number/files/prior events remain;one reviewed event/cycle/requester notice and retained closed canonical assignment per case. Actual concurrency/stale review/event rollback and current foreign/project/company/authority/archive/reopening/D6 refusals pass. Four Light1440/Dark390captures opened;mobile dialog continues vertically. No production defect/rule change. Strict692units (693pinned invocations)/23focused/pinned compilation/full33SQL suites pass;576production/migration rawbytes match runtime. E224 and missing old E209 witness keep source limits. Whole Alpha open;next remaining cancellation/field-review actor/state reconciliation,then full visual/requirement audit. Fetcheddevelopment0/0,main203/7;no integration.
