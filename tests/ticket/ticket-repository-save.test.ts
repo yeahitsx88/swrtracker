@@ -64,6 +64,27 @@ test('TicketRepository.save includes a placeholder for every ticket column value
   const repo = new TicketRepository();
   await repo.save(db, makeTicket());
 
-  assert.match(capturedSql, /\$38\b/);
-  assert.equal(capturedParams.length, 38);
+  assert.match(capturedSql, /\$39\b/);
+  assert.equal(capturedParams.length, 39);
+});
+
+
+test('TicketRepository.save persists an explicit original Need-By independently of the current date', async () => {
+  const current = new Date('2026-10-20T00:00:00.000Z');
+  const original = new Date('2026-10-15T00:00:00.000Z');
+  const captured: Array<{sql: string; params: unknown[]}> = [];
+  const db: DbClient = {query: async (sql, params) => {
+    captured.push({sql, params: params ?? []});
+    return {rows: []};
+  }};
+  const repo = new TicketRepository();
+  await repo.save(db, {...makeTicket(), requestedDate: current, originalRequestedDate: original});
+  await repo.save(db, {...makeTicket(), requestedDate: current});
+  for (const [index, snapshot] of ['2026-10-15', null].entries()) {
+    const call = captured[index]!;
+    const columns = call.sql.split('(')[1]!.split(')')[0]!.split(',').map(value => value.trim());
+    assert.ok(columns.includes('original_requested_date'));
+    assert.equal(call.params[columns.indexOf('original_requested_date')], snapshot);
+    assert.equal(call.params[columns.indexOf('requested_date')], '2026-10-20');
+  }
 });
