@@ -10,9 +10,8 @@ import {POST} from '../../src/app/api/projects/[projectId]/request-recovery/[tic
 import {handlePostSurveyTeam as TEAM} from '../../src/app/api/projects/[projectId]/survey/teams/handler';
 import type {UUID} from '../../src/shared/types';
 async function main(){
- const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_FINALIZATION_TEST,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15498');assert.equal(url.pathname,'/swr_finalization_184');
- const prior=JSON.parse(await readFile('.local/finalization/fixture.json','utf8'));const pool=getPool(),checks:string[]=[];
- assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[prior.tenant])).rows[0]?.name,'Owned Finalization 184');
+ const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_RECONCILIATION_TEST,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.match(url.searchParams.get('options')??'',/^-c search_path=d23_current_[a-f0-9]{32},public$/);
+ const owned=JSON.parse(await readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(owned.owner,'Alpha acceptance197');assert.equal(owned.hostPort,15500);assert.match(owned.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);const pool=getPool(),checks:string[]=[];
  const tenant=randomUUID(),foreignTenant=randomUUID(),project=randomUUID(),otherProject=randomUUID(),foreignProject=randomUUID(),company=randomUUID(),scCompany=randomUUID(),foreignCompany=randomUUID(),area=randomUUID(),level=randomUUID();
  const people:Record<string,string>={},tokens:Record<string,string>={};
  const roles:Record<string,string>={admin:'REQUESTER',projectAdmin:'REQUESTER',combined:'PARTY_CHIEF',manager:'SURVEY_MANAGER',superintendent:'SURVEY_SUPERINTENDENT',chief:'PARTY_CHIEF',instrument:'INSTRUMENT_MAN',requester:'REQUESTER',viewer:'VIEWER',subject:'REQUESTER',subcontractor:'REQUESTER',incoming:'SURVEY_SUPERINTENDENT',coverage:'SURVEY_SUPERINTENDENT',otherAdmin:'VIEWER',foreignAdmin:'VIEWER'};
@@ -111,7 +110,7 @@ async function main(){
   // Real EXCLUSIVE wait: revoke actor session while a SHARED recovery waits.
   const waiting=await ticket('wait-session'),holder=await pool.connect();try{await holder.query('BEGIN');await acquireTenantLifecycleLock(holder,tenant as UUID,'EXCLUSIVE');const pending=post(waiting,'manager');await new Promise(r=>setTimeout(r,150));assert((await pool.query("SELECT count(*)::int n FROM pg_stat_activity WHERE wait_event_type='Lock' AND query LIKE '%FROM tenants%'")).rows[0].n>0);await holder.query('UPDATE users SET session_version=session_version+1 WHERE tenant_id=$1 AND id=$2',[tenant,people.manager]);await holder.query('COMMIT');await call(pending,401,'Recovery revalidates revoked session after observed lifecycle wait');tokens.manager=signToken(people.manager as UUID,tenant as UUID,2);}finally{holder.release();}
   // Deliberately retain only owned fixtures for production/browser checks.
-  await writeFile('.local/finalization/submitted-recovery-fixture.json',JSON.stringify({tenant,project,otherProject,foreignTenant,foreignProject,company,scCompany,area,area2,team,people,tokens,tickets,recoveries}));
+  await writeFile('.local/d1-d8/d23/submitted-recovery-fixture.json',JSON.stringify({tenant,project,otherProject,foreignTenant,foreignProject,company,scCompany,area,area2,team,people,tokens,tickets,recoveries}));
   console.log(JSON.stringify({checks:checks.length,cases:checks}));
  }finally{await pool.end();}
 }
