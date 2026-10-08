@@ -720,6 +720,22 @@
         "Independent administration recovery/support/configuration/creation controls",
         "Full current role/state Alpha acceptance"
       ]
+    },
+    {
+      "id": 35,
+      "date": "2026-10-07",
+      "summary": "Protected retained member/draft/central-review recovery and existing Decision23 grant enforcement",
+      "status": "verified_local_increment",
+      "evidence": "protected-recovery-controls-evidence.json",
+      "verification": [
+        "626units50focused strict/unused/pinned matching-lock production compilation",
+        "86actual production Edge checks12current Team/chart regressions15Light/Dark/desktop/mobile/failed-read captures",
+        "Actual requester departure/restoration and same-draft retained files; separate tenant disable/event link; exact retry, revoked grant before replay and observed lifecycle-lock revalidation; independent reviewer ship/documenter complete"
+      ],
+      "remaining": [
+        "Independent administration creation/support/configuration controls",
+        "Full current role/state Alpha acceptance"
+      ]
     }
   ],
   "annotations": [

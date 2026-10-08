@@ -1,20 +1,11 @@
 import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
-import {getTenantRole} from '@/lib/get-tenant-role';
 
 /** Hold current identity, company, membership and lifecycle evidence until commit/replay. */
 export async function lockDraftActor(db: DbClient, scope: {
   tenantId: UUID; projectId: UUID; actorId: UUID; sessionVersion: number;
 }, role: 'REQUESTER' | 'PROJECT_ADMIN', mutation = true): Promise<{ companyId: UUID }> {
-  if(role==='PROJECT_ADMIN'&&await getTenantRole(db,scope.tenantId,scope.actorId,scope.sessionVersion)==='TENANT_ADMIN'){
-    const central=(await db.query<{company_id:UUID;status:string}>(`SELECT u.company_id,p.status FROM users u JOIN projects p ON p.tenant_id=u.tenant_id
-      WHERE u.tenant_id=$1 AND u.id=$3 AND p.id=$2 AND u.deactivated_at IS NULL AND u.session_version=$4 FOR SHARE OF u,p`,[scope.tenantId,scope.projectId,scope.actorId,scope.sessionVersion])).rows[0];
-    if(!central)throw new NotFoundError('Project not found');
-    if(mutation&&central.status==='ARCHIVED')throw new ConflictError('Archived projects are read-only');
-    if(mutation)await assertRecommissioningMutation(db,scope.tenantId,scope.projectId);
-    return {companyId:central.company_id};
-  }
   const { rows } = await db.query<{ company_id: UUID; status: string }>(
     `SELECT u.company_id, p.status FROM project_memberships pm
      JOIN projects p ON p.id = pm.project_id AND p.tenant_id = $1

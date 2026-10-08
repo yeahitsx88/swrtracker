@@ -46,7 +46,7 @@ test('restore keeps identity/files and requires current requester, reason, windo
   }
   await assert.rejects(() => recoverDraft(h.db, { ...scope, reason: 'short' }), ValidationError);
 });
-test('draft authority requires a current independent grant when the actor is not Tenant Admin', async () => {
+test('draft authority requires a current independent grant for every actor', async () => {
   const calls: {sql:string;values?:unknown[]}[]=[];
   const db={query:async(sql:string,values?:unknown[])=>{calls.push({sql,values});return {rows:sql.includes('COALESCE(session_version')?[{session_version:1,deactivated_at:null}]:[]};}} as DbClient;
   await assert.rejects(() => lockDraftActor(db, scope, 'PROJECT_ADMIN'), ForbiddenError);
@@ -71,4 +71,11 @@ test('normal visibility predicates hide deleted drafts for every operational rol
   const company = buildVisibilityClause({ actorId: scope.actorId, actorRole: 'REQUESTER', projectId: scope.projectId,
     companyId: 'company' as UUID, companyType: 'SUBCONTRACTOR' }, 1);
   assert.match(company.sql, /t.status <> 'DRAFT'/);
+});
+
+// Regression: Central IT identity must not substitute for the independent project grant.
+test('Tenant Admin alone cannot read or recover drafts through the former central bypass', async () => {
+  const db={query:async(sql:string)=>({rows:sql.includes('FROM tenant_memberships')?[{role:'TENANT_ADMIN'}]:sql.includes('COALESCE(session_version')?[{session_version:1,deactivated_at:null}]:sql.includes('FROM users u JOIN projects p')?[{company_id:'owned-company',status:'ACTIVE'}]:[]})} as DbClient;
+  await assert.rejects(()=>lockDraftActor(db,scope,'PROJECT_ADMIN',false),ForbiddenError);
+  await assert.rejects(()=>lockDraftActor(db,scope,'PROJECT_ADMIN'),ForbiddenError);
 });
