@@ -4261,3 +4261,14 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Limits: Archived/ordinary Setup probes synthetically set current state in newly owned UUID fixture; D6 start/finish uses actual Central APIs. Final15checks are resumed evidence, not uninterrupted fresh run. No retained/customer fixture changed. No new visual change or broad visual clearance.
 - Known queue: current notices/delivery consumption, remaining role/cancellation/keyboard/table/visual acceptance and final requirement reconciliation. Whole Alpha acceptance remains open; release advisory separate.
 - Production behavior changed: yes, narrow pre-replay current project guard. No push/main/deploy/Alpha2; no new owner decision.
+
+
+### 2026-10-08 - Batch221
+- Intent: AUDITOR/acceptance evidence for R07 revision and R08 requester notification consumption under existing channel.
+- Files touched: newly owned revision-notice fixture/browser observer; E221 receipt; completion registers; append-only work log.
+- Verified:26connected authenticated production checks; initial/original/current date, independent priority, scoped requester local preview, actual Manager local capture, IT content redaction, other-recipient refusal, exact date/priority/completion retries, real outbox/audit rollback, personal IM completion actor/time/history and one requester notice.
+- Finding: ALPHA-REVISION-STALE-221 confirmed200stale overwrite (review2/concurrent3/overwrite4). UI frozen intent/body lacks reviewed version. R07/R10 requires targeted fix next; no business decision needed.
+- Verification: strict659units current;568unchangedproduction/migration bytes match E220 verified pinned compile/full33PG artifact. Four current captures opened with explicit mobile branding transient and visual limits; no page errors.
+- Observer corrections:404independent administrative Requester non-disclosure; completion actor from append-only event rather than nonexistent completed_by. Prior completed owned request retained, explicit second owned run fully completes. Version metadata confirmed from original priority ledger.
+- Channel limits: no ordinary requester inbox surface or external delivery established; local requester preview consumption is current bounded proof. No new channel/integration.
+- Production behavior changed: no. Whole Alpha acceptance open, current stale revision defect next; no retained customer mutation, push/main/deploy/Alpha2 or release remediation.
