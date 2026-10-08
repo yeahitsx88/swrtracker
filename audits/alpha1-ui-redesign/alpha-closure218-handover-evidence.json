@@ -1,0 +1,198 @@
+{
+  "batch": 218,
+  "date": "2026-10-08",
+  "branch": "alpha1-ui-redesign",
+  "baselineCommit": "3d14bd6b06d7d11649b293aac9dada40790e1b7b",
+  "productionChanged": false,
+  "authority": [
+    "R04/R05 scoped reviewer responsibilities",
+    "Decisions25-31 exact-Area handover",
+    "Decision45 governed Manager succession",
+    "Decisions32-35 separate scoped departure"
+  ],
+  "sourceFiles": 568,
+  "sourceSha256": "d04cc4ea2285459c53a82ce6c00f7e541fc3942effbe8583d85e3ecead5d2f60",
+  "sourceMatchesRetained217ProductionArtifact": true,
+  "fingerprintMethod": "Global sorted forward-slash src/db/migrations relative path NUL raw bytes NUL",
+  "verification": {
+    "baselineStrictUnused": "pass",
+    "baselineUnits": 648,
+    "finalStrictUnused": "pass",
+    "finalUnits": 648,
+    "pinnedBuildAnd648Units": "Retain verified217 evidence; all568production/migration bytes identical to that runtime",
+    "full33PostgresSuites": "Retain verified217 evidence at identical production bytes",
+    "currentProtectedPostgres": {
+      "commandRetryAuditRollback": 151,
+      "read": 190
+    },
+    "currentContinuityPostgres": 31,
+    "actualConnectedHttpBrowserChecks": 69,
+    "connectedCases": [
+      "Existing review responsibility blocks incoming Manager appointment",
+      "superintendent cannot initiate protected review handover",
+      "chief cannot initiate protected review handover",
+      "viewer cannot initiate protected review handover",
+      "Replacement outside current Source Area cannot inspect or approve before coverage handover",
+      "Additional coverage handover requires explicit intent and two confirmations",
+      "review-handover-confirmationLIGHT page overflow contained",
+      "review-handover-confirmationDARK page overflow contained",
+      "Reviewer handover actual commit/replay response",
+      "Reviewer handover one first execution before unchanged retry",
+      "Recorded interrupted browser handover exact HTTP retry returns original result",
+      "Reviewer handover preserves request rows/events and captured Chief/roster",
+      "Only departing exact review grant revoked",
+      "Replacement prior other-Area review grant retained",
+      "Additional Source coverage preserves complete prior destination Areas",
+      "Departing reviewer loses approval authority despite retained Area assignment",
+      "Replacement authorized Area alone grants no Outside review approval",
+      "Source review replacement browser approval remains awaiting separate assignment",
+      "Transfer review replacement browser approval remains awaiting separate assignment",
+      "replacement-multi-area-reviewLIGHT page overflow contained",
+      "replacement-multi-area-reviewDARK page overflow contained",
+      "Resolved review grant permits current Manager appointment preview",
+      "Manager preview includes complete incoming individual Areas and explicit reporting crew",
+      "manager operational role alone cannot appoint Manager",
+      "superintendent operational role alone cannot appoint Manager",
+      "chief operational role alone cannot appoint Manager",
+      "viewer operational role alone cannot appoint Manager",
+      "manager-appointment-confirmationLIGHT page overflow contained",
+      "manager-appointment-confirmationDARK page overflow contained",
+      "Manager succession actual commit/replay response",
+      "Manager succession one first execution before unchanged retry",
+      "Manager succession actual commit/replay response",
+      "Manager succession exact reviewed body and retry key retained",
+      "Manager succession preserves every request/event/captured reviewer/roster witness",
+      "Outgoing Manager access deliberately retained until separate offboarding",
+      "Explicit incoming Superintendent becomes current Survey Manager",
+      "Explicit coverage successor receives live reporting crew",
+      "Incoming Manager prior individual coverage retained inactive",
+      "superintendent previous session invalidated by appointment",
+      "destinationLead previous session invalidated by appointment",
+      "Renewed incoming Manager obtains actual current operational authority",
+      "Outgoing Manager live request duty shown with existing resolution link",
+      "Live request duty blocks separate departure",
+      "Captured Chief review and personal completion resolve live duty without assignment rewrite",
+      "outgoing-manager-access-removalLIGHT page overflow contained",
+      "outgoing-manager-access-removalDARK page overflow contained",
+      "Separate outgoing access removal actual commit/replay response",
+      "Separate outgoing access removal one first execution before unchanged retry",
+      "Separate outgoing access removal actual commit/replay response",
+      "Separate outgoing access removal exact reviewed body and retry key retained",
+      "Separate project access removal retains request/history/field-reviewer/roster",
+      "Project departure does not disable tenant account",
+      "Outgoing Manager old session refused after separate access removal",
+      "Renewed outgoing identity has no project request authority",
+      "Renewed incoming Manager retains project historical request access",
+      "Connected protected reviewer/succession/separate departure journey complete"
+    ],
+    "supplementCases": [
+      "Exactly one immutable Manager appointment event after uncertain retry",
+      "Exactly one grant-creation/resolution evidence pair after reviewer retry",
+      "Exactly one separately confirmed outgoing departure event",
+      "Independent Tenant Admin retains protected-obligation read without Survey role",
+      "Local Project Admin grant cannot inspect succession on another project",
+      "Revoked Project Admin cannot replay recorded Manager appointment",
+      "Archived protected review evidence remains readable",
+      "Observed Archived exact Manager retry returns original recorded result; lifecycle policy reconciliation required",
+      "Revoked/admin/Archived boundary probes leave request rows unchanged",
+      "Demonstrated UI gap: Review remains enabled for readable Area without review grant",
+      "Demonstrated UI gap: unauthorized Superintendent approval confirmation enabled",
+      "Actual misleading decision is independently refused by server",
+      "Refused unsupported review leaves outside-Area request Submitted"
+    ],
+    "pageErrors": []
+  },
+  "journey": [
+    "Manager resolves exactly one Superintendent Source Area review grant with explicit temporary additional coverage/dual consent; recipient retains Transfer review and prior Areas.",
+    "Replacement actually approves Source and Transfer requests in browser; no premature Chief/IM assignment. Departing reviewer retains read Area but loses approval. Outside covered Area without review grant refuses approval.",
+    "Independent Project Admin deliberately chooses outgoing Manager, incoming Superintendent and distinct coverage successor; exact uncertain retry commits one appointment. Protected review duties block preview first.",
+    "Reporting and complete individual Area coverage move explicitly; original rows retained inactive. Current incoming/coverage sessions invalidated and renewed. Outgoing Manager access remains until separately reviewed.",
+    "Actual outgoing live field duty blocks departure with visible resolution link. Captured original Chief rejects inability report; personally assigned IM completes without assignment rewrite. Fresh evidence then permits separately confirmed departure and exact lost-response retry.",
+    "Request/event/roster witnesses unchanged across organizational actions and departure. Intended review/completion actions append ordinary events, then new witness retained. Tenant account stays enabled; outgoing current project access denied; new Manager reads retained requests."
+  ],
+  "atomicEvidence": [
+    "One grant-creation/resolution event pair",
+    "One immutable project.role_changed appointment event",
+    "One account_lifecycle_events project departure event"
+  ],
+  "ownedFixture": "New fully migrated alpha_handover218 UUID schema on dedicated acceptance197 DB; retained217/other schemas untouched. No reset/truncate/reseed. Interrupted browser execution resumed recorded original request. Bounded grant revocation/Archived injection restored.",
+  "captures": [
+    {
+      "name": "review-handover-confirmation-light-1440.png",
+      "sha256": "42997605060e9b5e023fa086dd192c8487d6ee050efdd375166f7381158786c0"
+    },
+    {
+      "name": "review-handover-confirmation-dark-390.png",
+      "sha256": "182514c6228ac3cfdeb4c0e5157fb139c65f3c923cc9d3715779c8f0b563ed2b"
+    },
+    {
+      "name": "replacement-multi-area-review-light-1440.png",
+      "sha256": "aec159f91017da9d3e051f01c3afe755e94798ce63139a41c59a7a2cb502de4d"
+    },
+    {
+      "name": "replacement-multi-area-review-dark-390.png",
+      "sha256": "c35c1849e3b3de5fee33143a4db6805d76ee23db63452b915bcafe3d1df65751"
+    },
+    {
+      "name": "manager-appointment-confirmation-light-1440.png",
+      "sha256": "c5bfd6c171a5cb6e6f869adc2b387ff4982059a6b546c191fae0ac59278592db"
+    },
+    {
+      "name": "manager-appointment-confirmation-dark-390.png",
+      "sha256": "5d6b933b888211b9d9481b8c098a39efee5e4c81d4e9a338971be3a19713abef"
+    },
+    {
+      "name": "outgoing-manager-access-removal-light-1440.png",
+      "sha256": "a0603067ebd93239b9bcda354f63b858c254b38be28cdf94b1de41df6f34ef5b"
+    },
+    {
+      "name": "outgoing-manager-access-removal-dark-390.png",
+      "sha256": "b4d127b0b92b874c68e33def0ef6cbc5218f9c55a33fa03ae6f2aaf965985351"
+    },
+    {
+      "name": "current-review-authority-gap-light-1440.png",
+      "sha256": "342327b45b5dabfbf1e2a71e353320745c0c2cc4fd49e1d192ef1fa958099bc8"
+    },
+    {
+      "name": "current-review-authority-gap-dark-390.png",
+      "sha256": "4c0f90836c9350fafbda433f30fea42c023d02a0a97b1f3212c79b4da81c77f2"
+    },
+    {
+      "name": "current-review-unavailable-decision-dark-390.png",
+      "sha256": "507ed22825b327558290d9a2a92778de52a1e3cb169ac3b7c200588036c372fc"
+    }
+  ],
+  "captureReview": {
+    "count": 11,
+    "reviewer": "executor",
+    "allOpened": true,
+    "limits": "First eight captures use actual saved mode plus root-theme override before complete appearance derivation; they show scoped workflow layouts but do not certify Light/Dark color/logo rendering. Final three gap captures use actual server appearance with correct CustomEvent detail. Confirmation/body viewports only; broader keyboard/visual acceptance remains open."
+  },
+  "newFindings": [
+    {
+      "id": "ALPHA-ACCEPTANCE-02",
+      "state": "approved incomplete technical UI correction",
+      "problem": "Read-visible Superintendent request without exact reviewer grant offers enabled Review/Confirm decision, then403AUTH_FORBIDDEN: No active Survey Reviewer grant covers this Area. Request unchanged.",
+      "next": "Use existing governed review authority to avoid presenting an executable unauthorized decision; preserve ordinary read visibility and direct API checks."
+    },
+    {
+      "id": "ALPHA-LIFECYCLE-REPLAY-218",
+      "state": "observed, contract reconciliation pending",
+      "problem": "Exact recorded Manager appointment retry under injected Archived returns original200result. No new appointment event/state transition observed. Fresh/revoked authority still checked.",
+      "next": "Inspect existing immutable retry/lifecycle authority before classifying as permitted recorded-result retrieval or a missing current lifecycle guard. Do not silently redefine business semantics."
+    }
+  ],
+  "observerCorrections": [
+    "Initial out-of-Area response expected403 but established read scope correctly404. Current extended accessible role label/disclosure/action labels used. Appearance commands require retry key.",
+    "Initial browser reviewer retry observer detached its handler before response fulfillment settled. Retained original request/key was replayed through authenticated HTTP and original result/witness verified; do not claim complete uninterrupted first browser retry. Later Manager/departure retries wait for actual handler completion and compare exact body/key.",
+    "Continuity PG first run completed tests but failed writing its evidence under read-only mount. Final rerun binds only owned output file writable and passes31cases.",
+    "Explicit UTF8 avoids Windows reason-selector corruption. Actual pre-existing duty blocker resolved by existing field workflow; it was not an implementation failure."
+  ],
+  "limits": [
+    "No production/UI/schema/authorization change. Whole Alpha acceptance and release readiness remain open.",
+    "No fresh browser file-upload/download witness added to this handover journey; file boundaries remain separately verified in prior increments.",
+    "Current handover and Manager success evidence do not resolve the newly observed review decision UI gap or Archived retry contract.",
+    "Broader role/lifecycle/recovery/notices/keyboard/visual matrix remains open.",
+    "Inherited source-map-js/GHSA-68fv-2mgg-jv7q blocker unchanged; no push, main merge, deploy or Alpha2."
+  ]
+}
