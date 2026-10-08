@@ -20,12 +20,12 @@ async function observedGET(
   try {
     const auth = await requireAuth(req);
     const { projectId } = await params;
+    requireResourceUuid(projectId,'projectId');
     const repo = new CompanyAccessRepository();
     const overview = await withTransaction(async (db) => {
-      await assertAccessAdministrator(db, auth, projectId as UUID);
       return repo.listProjectCompanyAccess(db, auth.tenantId, projectId as UUID);
-    });
-    return NextResponse.json(overview);
+    },{req,auth,mode:'SHARED',authorize:db=>assertAccessAdministrator(db,auth,projectId as UUID)});
+    return NextResponse.json(overview,{headers:{'Cache-Control':'private, no-store'}});
   } catch (err) {
     return errorResponse(err);
   }

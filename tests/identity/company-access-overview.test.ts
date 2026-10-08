@@ -8,6 +8,7 @@ test('company access overview maps scoped companies, requesters, and pending inv
   const db: DbClient = {
     query: async <T extends object>(sql: string, params?: unknown[]) => {
       calls.push({ sql, params });
+      if (sql.includes('AS blocked_reason')) return {rows:[{status:'SETUP',blocked_reason:null}] as T[]};
       if (sql.includes('FROM companies c')) {
         return { rows: [{ id: 'company-1', name: 'Civil Co' }] as T[] };
       }
@@ -30,15 +31,22 @@ test('company access overview maps scoped companies, requesters, and pending inv
     'project-1' as UUID,
   );
 
+  assert.equal(result.projectStatus,'SETUP');
+  assert.equal(result.invitationCreationBlockedReason,null);
   assert.deepEqual(result.companies, [{ id: 'company-1', name: 'Civil Co' }]);
   assert.equal(result.requesters[0]?.authorityGrantId, 'grant-1');
   assert.equal(result.pendingInvites[0]?.expiresAt, '2026-10-01T12:00:00.000Z');
   assert.equal('token' in (result.pendingInvites[0] ?? {}), false);
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 4);
   for (const call of calls) {
     assert.deepEqual(call.params, ['tenant-1', 'project-1']);
   }
-  assert.match(calls[1]!.sql, /pm\.role = 'REQUESTER'/);
-  assert.match(calls[1]!.sql, /c\.type = 'SUBCONTRACTOR'/);
-  assert.match(calls[2]!.sql, /i\.canceled_at IS NULL/);
+  assert.match(calls[2]!.sql, /pm\.role = 'REQUESTER'/);
+  assert.match(calls[2]!.sql, /c\.type = 'SUBCONTRACTOR'/);
+  assert.match(calls[3]!.sql, /i\.canceled_at IS NULL/);
 });
+
+ test('company overview refuses a missing scoped lifecycle before returning records',async()=>{
+  const db={query:async()=>({rows:[]})} as unknown as DbClient;
+  await assert.rejects(new CompanyAccessRepository().listProjectCompanyAccess(db,'tenant-1' as UUID,'project-1' as UUID),/Project not found/);
+ });

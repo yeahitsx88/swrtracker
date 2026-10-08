@@ -31,10 +31,10 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvi
   const load = useCallback(async (recover=false) => {
     if(gate.locked&&!recover)return false;const epoch=++generation.current;setLoading(true);setError(null);
     try {
-      const [next,context]=await Promise.all([apiClient.getProjectCompanyAccess(projectId),apiRequest<{project:{status:string}}>(`/api/projects/${projectId}/template`)]);if(epoch!==generation.current)return false;setOverview(next);setArchived(context.project.status==='ARCHIVED');
+      const next=await apiClient.getProjectCompanyAccess(projectId);if(epoch!==generation.current)return false;setOverview(next);setArchived(next.projectStatus==='ARCHIVED');
       setCompanyId((current) => next.companies.some(c=>c.id===current)?current:next.companies[0]?.id || '');return true;
     } catch (err) {
-      if(epoch===generation.current)setError(getErrorMessage(err, 'Unable to load subcontractor access.'));return false;
+      if(epoch===generation.current){setOverview(null);setArchived(true);setError(getErrorMessage(err, 'Unable to load subcontractor access.'));}return false;
     }finally{if(epoch===generation.current)setLoading(false);}
   }, [projectId]);
 
@@ -45,7 +45,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvi
     finally{if(!gate.locked)owner.release(token);setBusy(null);render(n=>n+1);}
   }
   async function invite() {
-    if(loading||archived||busy!==null||!owner.claim(token))return;
+    if(loading||!overview||overview.invitationCreationBlockedReason!==null||archived||busy!==null||!owner.claim(token))return;
     const command=gate.begin({companyId,email},crypto.randomUUID());if(!command){if(!gate.locked)owner.release(token);return;}
     setBusy('invite');render(n=>n+1);
     setError(null);
@@ -74,7 +74,10 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvi
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
-        {!overview ? <p className="muted">Loading subcontractor access...</p> : null}
+        {!overview&&loading ? <p className="muted">Loading subcontractor access...</p> : null}
+        {!overview&&!loading&&<Button variant="secondary" disabled={busy!==null||ownerToken!==null} onClick={()=>void load()}>Reload Subcontractor Access</Button>}
+{gate.stale&&<p role="alert">{readFailed?'Current invitation records could not be loaded.':'Invitation state changed.'} Your reviewed invitation remains held. Reload Invitation must successfully read current access and project context before another invitation.</p>}
+{gate.stale&&<Button variant="secondary" disabled={loading||blocked||busy!==null} onClick={()=>void reloadInvitation()}>Reload Invitation</Button>}
         {overview ? (
           <>
             <Field label="Subcontractor Company">
@@ -87,12 +90,12 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvi
             <Field label="Requester Email">
               <Input disabled={loading||busy!==null||ownerToken!==null} type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
             </Field>
-            <Button disabled={loading||busy !== null || blocked || gate.stale || archived || !companyId || !email.trim()} onClick={() => void invite()}>
+            <Button disabled={loading||busy !== null || blocked || gate.stale || archived || overview.invitationCreationBlockedReason!==null || !companyId || !email.trim()} onClick={() => void invite()}>
               {busy === 'invite' ? 'Creating...' : gate.command&&!gate.stale?'Retry Unchanged Invitation':'Create Invitation'}
             </Button>
-            {gate.stale&&<p role="alert">{readFailed?'Current invitation records could not be loaded.':'Invitation state changed.'} Your reviewed invitation remains held. Reload Invitation must successfully read current access and project context before another invitation.</p>}
+            {overview.invitationCreationBlockedReason&&<p role="status">{overview.invitationCreationBlockedReason==='PREPARATION_CANCELLATION'?'New invitations are unavailable while preparation cancellation is in progress. Central IT may cancel eligible reviewed invitations below.':overview.invitationCreationBlockedReason==='RECOMMISSIONING'?'New invitations are unavailable during reopening preparation. Reopen the project before inviting requesters.':'Archived projects are read-only. Invitation records remain available below.'}</p>}
+            {!gate.locked&&<Button variant="secondary" disabled={loading||busy!==null||ownerToken!==null} onClick={()=>void load()}>Refresh Subcontractor Access</Button>}
             {loading&&<p role="status">Loading current subcontractor access…</p>}
-            {gate.stale&&<Button variant="secondary" disabled={loading||blocked||busy!==null} onClick={()=>void reloadInvitation()}>Reload Invitation</Button>}
             {inviteUrl ? (
               <Field label="Registration Link (shown for this new invitation)">
                 <Input readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} />
