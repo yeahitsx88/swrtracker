@@ -70,7 +70,7 @@ export function ProjectHome() {
   useEffect(() => {
     let active = true;
     setName(undefined); setNameError(undefined);
-    apiClient.getMyAccount(projectId).then(account => { if (active) setName(account.name); })
+    apiClient.getMyAccount().then(account => { if (active) setName(account.name); })
       .catch(error => { if (active) setNameError(getErrorMessage(error, 'Unable to load your account greeting.')); });
     return () => { active = false; };
   }, [projectId, revision]);
