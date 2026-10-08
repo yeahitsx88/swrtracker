@@ -1,0 +1,86 @@
+{
+  "batch": 244,
+  "baseline": "398fcd7e8b5d2d76fd2c3da76bacb3fb9de05e0e",
+  "authority": "Owner Alpha wording/usability and accurate uncertain/success/conflict states; standing checkpoint directive.",
+  "classification": "Verified bounded file-list freshness correction; whole Alpha open.",
+  "production": {
+    "files": 576,
+    "sha256": "565e47a2f79b8461128741847e085211c2905eb2baeef7bf2c365e229f5d0c3f",
+    "mismatches": []
+  },
+  "changedFiles": [
+    "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+  ],
+  "behavior": "During upload ownership the list is explicitly last-confirmed; cached empty list does not claim no file uploaded. Existing populated list and successful upload remain unchanged. Freshness notice does not claim unknown outcome after definitive409. No permissions, API, schema, evidence or history changes.",
+  "verification": {
+    "strictTypes": "pass host and pinned",
+    "units": 690,
+    "focused": 32,
+    "pinnedCompilation": "Node22.23.3/Next15.5.27 pass",
+    "postgresSuites": 33,
+    "actualChecks": [
+      "Actual instruction upload commits before browser response loss",
+      "Uncertain instruction result is exactly one actual stored attachment",
+      "Actual multipart carries original reviewed instruction bytes/name/purpose",
+      "Uncertain instruction upload freezes original file selection",
+      "Uncertain upload blocks sibling Refresh",
+      "Uncertain upload blocks sibling Save Draft",
+      "Uncertain upload blocks sibling Submit Draft",
+      "Uncertain upload blocks sibling Delete Draft",
+      "Uncertain upload explains last-confirmed file list",
+      "Uncertain empty cached list makes no absent-upload claim",
+      "instruction-uncertain-light-1440 viewport contained",
+      "Unchanged instruction retry sends exact original key/file bytes/name/purpose",
+      "Recovered instruction result does not duplicate file",
+      "Recovered instruction result does not duplicate upload audit",
+      "Confirmed upload releases sibling request ownership",
+      "Actual invalid-file validation response is definitive",
+      "Definitive validation refusal releases original upload ownership for correction",
+      "Actual instruction upload refuses a request submitted since review",
+      "Definitive conflict freezes replacement and direct retry",
+      "Definitive upload conflict retains sibling command ownership",
+      "instruction-conflict-light-1440 viewport contained",
+      "Failed deliberate reload retains conflict file and sibling ownership",
+      "Successful deliberate keyboard reload accepts current submitted read-only state",
+      "Validation/conflict refusals create no attachment",
+      "Actual field-support upload commits before lost response",
+      "Uncertain field-support upload freezes both original file and purpose",
+      "Uncertain field-support upload owns current request",
+      "field-support-uncertain-dark-390 viewport contained",
+      "Field-support retry retains original key/name/purpose/file bytes",
+      "Field-support recovery creates one attachment",
+      "Field-support recovery creates one upload audit",
+      "Intake local staging releases selection after synchronous add",
+      "Existing intake can stage two local files independently",
+      "No upload page errors",
+      "requester recovered attachment metadata matches original frozen upload",
+      "requester actual stored bytes match original reviewed upload after exact retry",
+      "requester one upload audit and one permitted matching download audit retained",
+      "manager recovered attachment metadata matches original frozen upload",
+      "manager actual stored bytes match original reviewed upload after exact retry",
+      "manager one upload audit and one permitted matching download audit retained"
+    ],
+    "capturesOpened": [
+      ".local/alpha-closure244-final-confirmation/instruction-uncertain-light-1440.png",
+      ".local/alpha-closure244-final-confirmation/instruction-conflict-light-1440.png",
+      ".local/alpha-closure244-final-confirmation/field-support-uncertain-dark-390.png"
+    ],
+    "pageErrors": [],
+    "storedBytes": "Actual instruction/field-support bytes match original frozen uploads; one upload and one permitted download audit each."
+  },
+  "reconciliation": [
+    "Fresh fixture output directory initially missing after schema creation; left disposable schema intact, prepared output directory, used new UUID schema.",
+    "Initial notice incorrectly described definitive409as unconfirmed. Visual review corrected it before checkpoint; earlier artifact/fixture/captures retained. New final artifact, independent fresh fixture and all final gates rerun."
+  ],
+  "limits": [
+    "Signed owned fixtures, Active Requester Draft and Manager Approved cases only. Full lifecycle/company/foreign/revoked/IM/Chief browser matrix open; unit/SQL regressions retained.",
+    "Nonempty last-confirmed list branch retained; no full read-only lifecycle UI acceptance claim.",
+    "Inherited release-image blocker separate; no deployment/main merge/Alpha2."
+  ],
+  "git": {
+    "developmentPreCheckpoint": "0/0",
+    "mainDivergence": "200/7",
+    "push": "Routine authorized checkpoint, confirm after commit."
+  },
+  "next": "Actual upload lifecycle presentation matrix: ordinary Setup versus reopening preparation/cancellation/Archived, preserve cleanup exceptions and current downloads."
+}

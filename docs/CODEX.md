@@ -4543,3 +4543,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Next: current lifecycle upload controls and accurate last-confirmed file-list feedback; then remaining role/state acceptance. Preserve Org deferrals and separate source-map-js release/main/deploy/Alpha2 boundaries.
 - Git: fetched dev0/0, main199/7 before checkpoint; coherent verified commit/push authorized and remote confirmation after commit. Existing history preserved.
 - Production behavior changed: yes, two existing UI files; no new dependencies.
+
+
+### 2026-10-08 - Batch244
+- Intent: clarify last-confirmed attachment list during pending upload ownership; remove misleading cached empty claim.
+- Ownership: sequential approved Alpha frontend wording/hardening exception; one production page, three owned current fixture/browser/bytes helpers and evidence/registers; no parallel writers.
+- Files touched: request-detail page.tsx; tests/beta/alpha-upload244-{fixture,browser,bytes}.mjs; audits/alpha1-ui-redesign/alpha-closure244-upload-list-evidence.json; docs/ALPHA1_COMPLETION_REGISTER.md; docs/ALPHA1_ACCEPTANCE_CLOSURE.md; docs/CODEX.md append only.
+- Behavior: last-confirmed file list notice while upload locked; hide misleading cached empty list, preserve populated list. Existing upload uncertainty/conflict review explains outcome/recovery. No server permission/endpoint/schema/dependency/history change.
+- Baseline: clean pushed398fcd7; strict690units pass. Prior E243 capture exposed actual cached empty claim after committed/lost201.
+- Verification: final strict host/pinned;690host/pinned units;32focused attachment/visibility/capability/FrozenCommand tests; fresh Node22.23.3 Next15.5.27 compile;33fresh SQL suites terminal pass;40current actual browser/HTTP/staging/byte checks,3opened Light1440/Dark390 captures,no pageerrors. Original instruction/field-support file bytes/key/purpose and single upload/matching permitted download evidence retained.576production/migration rawbytes match runtime-final; digest565e47a2f79b8461128741847e085211c2905eb2baeef7bf2c365e229f5d0c3f.
+- Reconciliation: missing fresh fixture output directory discovered after disposable schema construction, preserved schema and used new UUID after directory preparation. Initial generic pending wording misdescribed definitive409; visual review corrected it before checkpoint, retained earlier data/artifact/captures, used separate fresh final schema and reran all gates.
+- Limits/next: whole Alpha open; verify actual ordinary Setup/preparation/cancellation/Archived upload controls and retained downloads without blanket Setup restriction or new semantics. No full company/foreign/revoked/field-role browser matrix claim. Org deferrals/source-map-js release blocker/deploy/main/Alpha2 remain separate.
+- Git: fetched development0/0,main200/7; coherent verified checkpoint/push authorized; confirm sync after commit.
+- Production behavior changed: yes,one existing page.

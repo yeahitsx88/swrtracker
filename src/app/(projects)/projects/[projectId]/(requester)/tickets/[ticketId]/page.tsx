@@ -288,7 +288,8 @@ export default function TicketDetailPage() {
                   {ticket ? `Current status: ${TICKET_STATUS_LABELS[ticket.status]}. ` : ''}You can view and download attachments on this SWR. No upload action is available in your current role or state.
                 </p>
               )}
-              <AttachmentList attachments={attachments} />
+              {uploadLocked ? <p className="muted" role="status">Showing files from the last confirmed response. The list will update after a confirmed upload or reload.</p> : null}
+              {!uploadLocked || attachments.length > 0 ? <AttachmentList attachments={attachments} /> : null}
             </div>
           </Card> : null}
 
