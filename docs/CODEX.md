@@ -4607,3 +4607,14 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Limits/next: signed accounts,not interactive login or fullAlpha/current whole-role visual acceptance. Prior receipts/E209 missing original history witness retainlimits. Next integrated role/task/state/visual/requirement reconciliation;do not requeue named verified paths as missing. Team/Org regressions/deferrals preserved;source-map-js release blocker/deploy/main/Alpha2 separate.
 - Git: fetcheddevelopment0/0,main204/7;verified checkpoint/push authorized,confirmremoteaftercommit.
 - Production behavior changed: yes,8existingfiles;only presentation/additive read capability and existing cleanup projection,mutation/persistence unchanged.
+
+
+### 2026-10-08 - Batch249
+- Intent: current approved role/state workspace, navigation and information acceptance; TEST_WRITER/AUDITOR, no production change.
+- Files touched: tests/beta/alpha-roles249-{fixture.ts,browser.mjs};audits/alpha1-ui-redesign/alpha-closure249-role-matrix-evidence.json;completion/closure docs;append-only CODEX.
+- Verification: strict-unused types baseline/final;693units pass;browser helper syntax pass.999 current authenticated HTTP/browser checks,28 authority combinations,84 project-state cells,53 opened viewport captures,no page errors. Exact independently expected request/KPI populations,date/denominator definitions, Survey-only team API, foreign scopes/private draft/linked-cohort refusals, core mobile drawer keyboard/focus.
+- Source:576 production/migration bytes equal E248 runtime-final;digeste225123e88c397fcfcf26a572d200a6f75c8b8ded324557ff11e93bab0237188. Reuse E248 pinned compilation/full33SQL at identical source;no claim of rerun.
+- Reconciliation: first owned schema failed existing Project Admin grant membership FK;retained,confirmation uses fresh44migratedUUID with valid independent grant+Viewer membership. Synthetic read-state population explicitly not workflow proof. Setup denial capture filename corrected from Light to actual Dark without altering pixels.
+- Limits/next: core eight roles Light/Dark1440/390;other combos ActiveLight1440. Viewport Home evidence excludes deeper table/dialog/task surfaces. Remaining current revoked/remembered-access and finite task/requirement reconciliation queued. Full Alpha acceptance open;Org deferrals/history retained;release/main/deploy/Alpha2 separate.
+- Git: fetched development0/0,main205/7;no integration;verified checkpoint/push per standing directive,confirm synchronization after commit.
+- Production behavior changed: no.
