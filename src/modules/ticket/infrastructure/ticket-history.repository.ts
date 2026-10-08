@@ -1,4 +1,5 @@
 import type { DbClient, UUID } from '@/shared/types';
+import {SYSTEM_AUDIT_ACTOR} from '@/modules/audit/domain/types';
 import type { TicketHistoryItem, TicketHistorySource } from '@/lib/contracts';
 
 interface HistoryRow {
@@ -8,6 +9,7 @@ interface HistoryRow {
   occurred_at: Date | string;
   actor_id: string | null;
   actor_name: string | null;
+  actor_kind?: 'USER' | 'SYSTEM' | null;
   details: Record<string, unknown> | string | null;
 }
 
@@ -58,7 +60,7 @@ export async function listTicketHistory(
     `SELECT * FROM (
        SELECT te.id::text AS id, 'TICKET_EVENT'::text AS source,
               te.event_type AS type, te.created_at AS occurred_at,
-              te.actor_id, u.name AS actor_name, te.payload AS details
+              te.actor_id, u.name AS actor_name, te.actor_kind, te.payload AS details
        FROM ticket_events te
        LEFT JOIN users u ON u.tenant_id = te.tenant_id AND u.id = te.actor_id
        WHERE te.tenant_id = $1 AND te.ticket_id = $2
@@ -71,7 +73,7 @@ export async function listTicketHistory(
        UNION ALL
 
        SELECT rc.id::text, 'RETURN_CYCLE', 'ticket.returned_for_correction',
-              rc.returned_at, rc.returned_by, u.name,
+              rc.returned_at, rc.returned_by, u.name, 'USER'::text,
               jsonb_build_object(
                 'cycleNumber', rc.cycle_number, 'origin', rc.origin,
                 'reason', rc.reason, 'resubmittedAt', rc.resubmitted_at
@@ -83,7 +85,7 @@ export async function listTicketHistory(
        UNION ALL
 
        SELECT ah.id::text, 'ASSIGNMENT', 'ticket.assignment_recorded',
-              ah.assigned_at, ah.assigned_by, actor.name,
+              ah.assigned_at, ah.assigned_by, actor.name, 'USER'::text,
               jsonb_build_object(
                 'partyChiefId', ah.party_chief_id, 'partyChiefName', pc.name,
                 'instrumentManId', ah.instrument_man_id, 'instrumentManName', im.name,
@@ -98,7 +100,7 @@ export async function listTicketHistory(
        UNION ALL
 
        SELECT nr.id::text, 'NEED_BY_REVISION', 'ticket.need_by_revised',
-              nr.revised_at, nr.revised_by, u.name,
+              nr.revised_at, nr.revised_by, u.name, 'USER'::text,
               jsonb_build_object('oldDate', nr.old_date, 'newDate', nr.new_date, 'reason', nr.reason)
        FROM ticket_need_by_revisions nr
        LEFT JOIN users u ON u.tenant_id = nr.tenant_id AND u.id = nr.revised_by
@@ -107,7 +109,7 @@ export async function listTicketHistory(
        UNION ALL
 
        SELECT a.id::text, 'ATTACHMENT', 'attachment.uploaded',
-              a.created_at, a.uploaded_by, u.name,
+              a.created_at, a.uploaded_by, u.name, 'USER'::text,
               jsonb_build_object(
                 'attachmentId', a.id, 'filename', a.filename, 'mimeType', a.mime_type,
                 'sizeBytes', a.size_bytes, 'purpose', a.purpose, 'returnCycle', a.return_cycle
@@ -119,7 +121,7 @@ export async function listTicketHistory(
        UNION ALL
 
        SELECT n.id::text, 'NOTIFICATION', n.event_type,
-              n.created_at, NULL::uuid, NULL::text,
+              n.created_at, NULL::uuid, NULL::text, 'SYSTEM'::text,
               jsonb_build_object(
                 'deliveryState', n.delivery_state, 'attemptCount', n.attempt_count,
                 'deliveredAt', n.delivered_at
@@ -136,7 +138,7 @@ export async function listTicketHistory(
     source: row.source,
     type: row.type,
     occurredAt: new Date(row.occurred_at).toISOString(),
-    actor: row.actor_id ? { id: row.actor_id, name: row.actor_name ?? 'Unknown user' } : null,
+    actor: row.actor_kind==='SYSTEM'?{id:null,name:SYSTEM_AUDIT_ACTOR,kind:'SYSTEM'}:row.actor_id ? { id: row.actor_id, name: row.actor_name ?? 'Unknown user' } : null,
     details: parseDetails(row.details),
   }));
 }

@@ -11,7 +11,7 @@ Authority: owner pasted D1-D8 request and D6 clarification, recorded in Decision
 | D5 | Approved incomplete | PC/IM role changes exist for current named subordinates after resolved obligations. Wider current supervised staffing/moves remain constrained by older same-team guards. Expand only approved current structure plus authorized Areas; no access/admin/coverage authority. |
 | D6 | Approved incomplete | Owner expressly approves a separate cancellation-of-preparation lifecycle operation. Current reopening preparation is not cancellation. New phases/evidence/completion-only guards must be implemented and verified before this item closes. |
 | D7 | Verified complete, bounded increment | Established projects cannot switch templates, including SETUP and Central legacy command. Current authority and lock precede replay. Central establishment selection/catalog management retained; later adoption requires separately governed migration. Project Settings shows read-only governing reference/current persisted crew build. Catalog updates do not propagate project fields. |
-| D8 | Approved incomplete | Notification background audit still accepts configurable employee UUID. Replace with canonical non-human identity and compatible explicit audit contract; current employee history retained. Needs schema/audit/worker/history/API tests. |
+| D8 | Verified complete, bounded increment | Migration043 adds explicit USER/SYSTEM identity, retaining historical humans. Timeout/orphan dispatch and worker logs use canonical SWRTracker System without employee selection. History/API expose explicit system identity. Current migration, worker, isolation, rollback, browser and Team regression evidence recorded below. |
 
 ## D7 Current Verification
 
@@ -23,6 +23,13 @@ Older submitted-recovery harness attempt refused its obsolete15498/fixture184 gu
 
 ## Remaining Queue and Limits
 
-Next implementation priorities: D8 incorrect actor attribution, D6 separately governed preparation cancellation, then D1/D4/D5 bounded transfers; D2/D3 current verification proceeds with those related increments. All are already authorized. No new owner decision currently requested. Do not infer authority from Area overlap or chart visibility.
+Next implementation priorities: D6 separately governed preparation cancellation, then D1/D4/D5 bounded transfers; D2/D3 current verification proceeds with those related increments. All are already authorized. No new owner decision currently requested. Do not infer authority from Area overlap or chart visibility.
 
 Historical continuity-fixture reconciliation and inherited source-map-js/GHSA-68fv-2mgg-jv7q release-image blocker remain independent. Whole Alpha connected role/state acceptance remains open. No push, deploy, main merge or Alpha2.
+
+
+## D8 Current Verification
+
+Strict host634units/pinned635tests (pinned environment additionally invokes scoped lifecycle PG coverage) and matching-lock Node22.23.3 production compilation pass.17new PostgreSQL migration/history/isolation/rollback checks and54actual worker lifecycle checks pass;9current Team/staffing/obligation/Area/workforce/draft regressions pass with migration043. Actual bounded worker emits a SYSTEM event despite employee SYSTEM_ACTOR_ID;14authenticated HTTP/browser checks and4focused desktop/mobile Light/Dark history captures pass, executor opened all4.563production/migration files match the runtime3215. No frontend component or design-system code changed. Existing human history preserved; notification history now explicitly uses canonical system actor with nullable id.
+
+Initial new audit/old worker harness attempts exposed migration042 closing its enclosing transaction and resetting SET LOCAL schema selection. Harnesses now retain their newly owned session schema; savepoints are opened after migration setup. Those failures are excluded. Migration043 was also applied to the owned197 synthetic public fixture database; historical rows retain all prior actor/content fields and default USER. No retained184/customer state was accessed. Test email transport captures effects; external email delivery is not accepted by this increment.

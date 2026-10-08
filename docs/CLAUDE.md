@@ -891,6 +891,8 @@ All errors return a consistent JSON shape:
 
 Owner-approved system extension (2026-10-02): `account.appearance_changed`, `tenant.appearance_changed`, `project.recommissioning_started`, and `project.recommissioned` are administrative events, written atomically with their effects. Personal display mode is available to every current account. Only eligible Central/Tenant IT may change tenant branding. Archived projects may enter guarded recommissioning preparation under Central IT, retaining the project ID and all historical evidence. Preparation uses SETUP; reopening requires a fresh access, invitation, company, staffing and unfinished-work review. Earlier terminal-archive wording is superseded only by this explicit workflow. Existing project-admin setup capabilities remain approved.
 
+Owner-approved D8 audit identity extension (Decision54, 2026-10-07): ticket_events actor_kind is explicitly USER or SYSTEM. USER retains an employee actor_id; SYSTEM has actor_id NULL and canonical display SWRTracker System. Migration043 adds this discriminant/default USER and preserves all existing rows/foreign keys/append-only protections. Existing automated timeout and orphan escalation event types remain unchanged, tenant/ticket/project references and timestamps retained, append/outbox effects atomic. Background dispatch accepts no caller-selected employee actor. History maps only explicit SYSTEM records (including automated notification records) to the canonical non-human actor; missing human names remain Unknown user. No ordinary system employee account or login authority is created.
+
 
 Log at every meaningful state transition. Structured format only.
 

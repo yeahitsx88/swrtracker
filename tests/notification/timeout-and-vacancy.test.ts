@@ -20,7 +20,6 @@ import type { DbClient, UUID } from '@/shared/types';
 const tenantId = 'tenant-1' as UUID;
 const projectId = 'project-1' as UUID;
 const ticketId = 'ticket-1' as UUID;
-const workerActorId = 'worker-1' as UUID;
 
 function makeApproverCandidate(
   overrides?: Partial<ApproverTimeoutCandidate>,
@@ -130,6 +129,8 @@ test('dispatchApproverTimeoutNotifications sends the 18-hour warning and appends
   const auditEvents: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
   const db = makeDb((sql, params) => {
     if (/INSERT INTO ticket_events/.test(sql)) {
+      assert.equal(params?.[3],null);
+      assert.equal(params?.[6],'SYSTEM');
       auditEvents.push({
         eventType: String(params?.[4]),
         payload: JSON.parse(String(params?.[5])) as Record<string, unknown>,
@@ -148,7 +149,6 @@ test('dispatchApproverTimeoutNotifications sends the 18-hour warning and appends
     makeTransport(sent),
     db,
     {
-      actorId: workerActorId,
       now: new Date('2026-03-04T12:45:00Z'),
     },
   );
@@ -168,6 +168,8 @@ test('dispatchApproverTimeoutNotifications sends only the 24-hour escalation whe
   const auditEvents: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
   const db = makeDb((sql, params) => {
     if (/INSERT INTO ticket_events/.test(sql)) {
+      assert.equal(params?.[3],null);
+      assert.equal(params?.[6],'SYSTEM');
       auditEvents.push({
         eventType: String(params?.[4]),
         payload: JSON.parse(String(params?.[5])) as Record<string, unknown>,
@@ -186,7 +188,6 @@ test('dispatchApproverTimeoutNotifications sends only the 24-hour escalation whe
     makeTransport(sent),
     db,
     {
-      actorId: workerActorId,
       now: new Date('2026-03-04T09:15:00Z'),
     },
   );
@@ -215,7 +216,6 @@ test('dispatchApproverTimeoutNotifications skips tickets that already emitted th
     makeTransport(sent),
     makeDb(),
     {
-      actorId: workerActorId,
       now: new Date('2026-03-04T09:15:00Z'),
     },
   );
@@ -279,6 +279,8 @@ test('dispatchOrphanWorkflowRecovery preserves orphaned assignments even when a 
   let reassignCalls = 0;
   const db = makeDb((sql, params) => {
     if (/INSERT INTO ticket_events/.test(sql)) {
+      assert.equal(params?.[3],null);
+      assert.equal(params?.[6],'SYSTEM');
       auditEvents.push({
         eventType: String(params?.[4]),
         payload: JSON.parse(String(params?.[5])) as Record<string, unknown>,
@@ -297,7 +299,6 @@ test('dispatchOrphanWorkflowRecovery preserves orphaned assignments even when a 
     makeTransport(sent),
     db,
     {
-      actorId: workerActorId,
       now: new Date('2026-03-04T12:00:00Z'),
     },
   );
@@ -317,6 +318,8 @@ test('dispatchOrphanWorkflowRecovery escalates unresolved orphaned tickets after
   const auditEvents: Array<{ eventType: string; payload: Record<string, unknown> }> = [];
   const db = makeDb((sql, params) => {
     if (/INSERT INTO ticket_events/.test(sql)) {
+      assert.equal(params?.[3],null);
+      assert.equal(params?.[6],'SYSTEM');
       auditEvents.push({
         eventType: String(params?.[4]),
         payload: JSON.parse(String(params?.[5])) as Record<string, unknown>,
@@ -337,7 +340,6 @@ test('dispatchOrphanWorkflowRecovery escalates unresolved orphaned tickets after
     makeTransport(sent),
     db,
     {
-      actorId: workerActorId,
       now: new Date('2026-03-04T08:30:00Z'),
     },
   );
@@ -367,7 +369,6 @@ test('dispatchOrphanWorkflowRecovery does not escalate unresolved orphaned ticke
     makeTransport(sent),
     makeDb(),
     {
-      actorId: workerActorId,
       now: new Date('2026-03-04T08:30:00Z'),
     },
   );
@@ -547,6 +548,6 @@ test('held tenant dispatch refuses a cross-tenant repository candidate before se
  let sends=0,audits=0;
  const repo=makeRepo({listApproverTimeoutCandidates:async()=>[makeApproverCandidate({tenantId:'wrong-tenant' as UUID})]});
  await assert.rejects(()=>dispatchApproverTimeoutNotifications(repo,{send:async()=>{sends++;}},
-  makeDb(()=>{audits++;}),{actorId:workerActorId,tenantId,now:new Date('2026-03-04')}),/crossed held tenant scope/);
+  makeDb(()=>{audits++;}),{tenantId,now:new Date('2026-03-04')}),/crossed held tenant scope/);
  assert.equal(sends,0);assert.equal(audits,0);
 });

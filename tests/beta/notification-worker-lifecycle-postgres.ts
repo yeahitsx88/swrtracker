@@ -21,7 +21,7 @@ async function main(){
  let created=false,pg:Pool|undefined,holder:PoolClient|undefined,waiter:PoolClient|undefined,checks=0;
  try{
   const db=await setup.connect();
-  try{await db.query('BEGIN');await db.query('CREATE SCHEMA "'+schema+'"');await db.query('SET LOCAL search_path TO "'+schema+'",public');
+  try{await db.query('BEGIN');await db.query('CREATE SCHEMA "'+schema+'"');await db.query('SET search_path TO "'+schema+'",public');
    for(const file of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')).sort())await db.query(await readFile('db/migrations/'+file,'utf8'));
    await db.query('COMMIT');created=true;
   }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
@@ -44,7 +44,7 @@ async function main(){
   app.query=pg.query.bind(pg) as typeof app.query;
   app.connect=(async()=>({query:async(sql:string,params?:unknown[])=>{queries.push(sql);const result=await w.query(sql,params);if(sql==='BEGIN')await w.query('SET LOCAL statement_timeout=6000');return result;},release:()=>{}})) as typeof app.connect;
   const now=new Date();const sent:NotificationMessage[]=[];
-  const run=()=>runNotificationWorkerCycle({repo:new NotificationRepository(),transport:{send:async message=>{sent.push(message);}},db:app,runRepo:new PgBackgroundJobRunRepository(),actorId:actor,now,withTenantLifecycle:withTenantNotificationTransaction});
+  const run=()=>runNotificationWorkerCycle({repo:new NotificationRepository(),transport:{send:async message=>{sent.push(message);}},db:app,runRepo:new PgBackgroundJobRunRepository(),now,withTenantLifecycle:withTenantNotificationTransaction});
   const domain=async()=>{const result:Record<string,unknown>={};for(const table of ['tickets','ticket_events','project_memberships','project_admin_grants','acting_grants'])result[table]=(await pg!.query('SELECT to_jsonb(t) AS row FROM '+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;};
   for(const kind of ['timeout','vacancy','orphan'] as const){
    await pg.query('UPDATE users SET deactivated_at=NULL,deactivated_by=NULL,session_version=1 WHERE id=$1',[recipient]);
@@ -71,6 +71,10 @@ async function main(){
    sent.length=0;const positive=await run();assert.equal(sent.length,1,kind+' eligible current recipient dispatches');checks++;
    assert.equal(sent[0]!.tenantId,tenant);checks++;assert.equal(sent[0]!.recipients.length,1,'combined Central/project admin recipient dedup');checks++;
    assert.equal(positive.orphanReassignedCount,0);checks++;
+   if(kind!=='vacancy'){
+    const events:Array<{actor_id:string|null;actor_kind:string;tenant_id:string;ticket_id:string;project_id:string;created_at:Date}>=(await pg.query('SELECT e.actor_id,e.actor_kind,e.tenant_id,e.ticket_id,e.created_at,t.project_id FROM ticket_events e JOIN tickets t ON t.tenant_id=e.tenant_id AND t.id=e.ticket_id WHERE e.tenant_id=$1 AND e.ticket_id=$2',[tenant,ticket])).rows;
+    assert.equal(events.length,1);const recorded=events[0];assert.ok(recorded);assert.equal(recorded.actor_id,null);assert.equal(recorded.actor_kind,'SYSTEM');assert.equal(recorded.tenant_id,tenant);assert.equal(recorded.ticket_id,ticket);assert.equal(recorded.project_id,project);assert.ok(recorded.created_at);checks+=7;
+   }
    if(kind==='orphan'){assert.equal((await pg.query('SELECT assigned_party_chief_id FROM tickets WHERE id=$1',[ticket])).rows[0].assigned_party_chief_id,chief);checks++;}
   }
   // Prove SQL partitioning against another tenant with all three candidate kinds.

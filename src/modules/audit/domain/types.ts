@@ -6,6 +6,8 @@
  */
 import type { UUID } from '@/shared/types';
 
+export const SYSTEM_AUDIT_ACTOR = 'SWRTracker System';
+
 export type AuditEventType =
   | 'ticket.created'
   | 'ticket.draft_saved'
@@ -59,7 +61,8 @@ export interface TicketEvent {
   id: UUID;
   ticketId: UUID;
   tenantId: UUID;
-  actorId: UUID;
+  actorId: UUID | null;
+  actorKind: 'USER' | 'SYSTEM';
   eventType: AuditEventType;
   payload: Record<string, unknown>;
   createdAt: Date;

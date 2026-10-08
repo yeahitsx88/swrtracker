@@ -1,0 +1,30 @@
+{
+  "scope": "Decision54 D8 canonical non-human audit attribution",
+  "baseline": "d95fa23",
+  "migration": "043_system_audit_identity.sql",
+  "strictUnusedTypes": "pass",
+  "hostUnitTests": 634,
+  "pinnedTests": 635,
+  "pinnedAdditionalTest": "scoped lifecycle PostgreSQL invocation",
+  "pinnedProductionCompilation": "pass; Node22.23.3 matching lock",
+  "postgresNewMigrationHistoryIsolationRollbackChecks": 17,
+  "postgresWorkerLifecycleChecks": 54,
+  "postgresTeamRegressionSuites": 9,
+  "actualWorkerHttpBrowserChecks": 14,
+  "captures": [
+    ".impeccable/review/d8-history-light-1440.png",
+    ".impeccable/review/d8-history-light-390.png",
+    ".impeccable/review/d8-history-dark-1440.png",
+    ".impeccable/review/d8-history-dark-390.png"
+  ],
+  "rawProductionMigrationFilesMatched": 563,
+  "uiComponentChanges": false,
+  "limits": [
+    "External email delivery not accepted; captured test transport",
+    "Initial transaction/schema harness failures excluded and corrected",
+    "Migration043 also applied only to owned197 synthetic fixture database",
+    "D6 and D1/D4/D5 approved incomplete; D2/D3 specific current verification pending",
+    "Whole Alpha acceptance open; inherited release blocker unchanged",
+    "No push/deploy/main merge/Alpha2"
+  ]
+}

@@ -164,7 +164,7 @@ export interface TicketHistoryItem {
   source: TicketHistorySource;
   type: string;
   occurredAt: string;
-  actor: { id: string; name: string } | null;
+  actor: { id: string | null; name: string; kind?: 'USER' | 'SYSTEM' } | null;
   details: Record<string, unknown>;
 }
 

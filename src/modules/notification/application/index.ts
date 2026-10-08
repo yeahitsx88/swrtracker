@@ -126,7 +126,6 @@ export async function dispatchApproverTimeoutNotifications(
   transport: INotificationTransport,
   db: DbClient,
   params: {
-    actorId: UUID;
     tenantId?: UUID;
     now?: Date;
   },
@@ -173,7 +172,7 @@ export async function dispatchApproverTimeoutNotifications(
       await appendAuditEvent(db, {
         ticketId: candidate.ticketId,
         tenantId: candidate.tenantId,
-        actorId: params.actorId,
+        actorId: null, actorKind: 'SYSTEM',
         eventType: 'approver.timeout_unlocked',
         payload: {
           ticketId: candidate.ticketId,
@@ -207,7 +206,7 @@ export async function dispatchApproverTimeoutNotifications(
     await appendAuditEvent(db, {
       ticketId: candidate.ticketId,
       tenantId: candidate.tenantId,
-      actorId: params.actorId,
+      actorId: null, actorKind: 'SYSTEM',
       eventType: 'approver.timeout_warning_sent',
       payload: {
         ticketId: candidate.ticketId,
@@ -280,7 +279,6 @@ export async function dispatchOrphanWorkflowRecovery(
   transport: INotificationTransport,
   db: DbClient,
   params: {
-    actorId: UUID;
     tenantId?: UUID;
     now?: Date;
   },
@@ -325,7 +323,7 @@ export async function dispatchOrphanWorkflowRecovery(
     await appendAuditEvent(db, {
       ticketId: candidate.ticketId,
       tenantId: candidate.tenantId,
-      actorId: params.actorId,
+      actorId: null, actorKind: 'SYSTEM',
       eventType: 'workflow.orphan_escalation',
       payload: {
         reason: 'OFFBOARDING_ORPHAN_ESCALATION',
