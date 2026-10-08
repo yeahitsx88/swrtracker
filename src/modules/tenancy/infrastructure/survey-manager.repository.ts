@@ -3,15 +3,21 @@ import {ConflictError,NotFoundError} from '@/shared/errors';
 import type {DbClient,UUID} from '@/shared/types';
 import type {AuthContext} from '@/lib/auth';
 import {appendAdministrativeEvent} from '@/modules/audit/infrastructure/administrative-event.repository';
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import {snapshotCte} from './survey-staffing.repository';
 import type {ManagerAppointmentRepository,ManagerSelection,ManagerAppointment,ManagerPreview} from '../application/appoint-survey-manager';
 
 export class SurveyManagerPgRepository implements ManagerAppointmentRepository {
- async preview(db:DbClient,auth:AuthContext,projectId:UUID,selection:ManagerSelection):Promise<ManagerPreview>{
-  const params=[auth.tenantId,projectId],ids=[selection.outgoingUserId,selection.incomingUserId,selection.coverageUserId];
-  const project=(await db.query<{status:string;crew_build:string}>('SELECT status,crew_build FROM projects WHERE tenant_id=$1 AND id=$2',params)).rows[0];
+ /** Caller holds the tenant lifecycle barrier; current project eligibility precedes recorded replay. */
+ async assertEditableProject(db:DbClient,auth:AuthContext,projectId:UUID):Promise<void>{
+  const project=(await db.query<{status:string;crew_build:string}>('SELECT status,crew_build FROM projects WHERE tenant_id=$1 AND id=$2',[auth.tenantId,projectId])).rows[0];
   if(!project)throw new NotFoundError('Project not found');
   if(project.status==='ARCHIVED'||project.crew_build!=='FULL')throw new ConflictError('Manager handover requires an editable FULL project');
+  await assertPreparationNotCancelling(db,auth.tenantId,projectId);
+ }
+ async preview(db:DbClient,auth:AuthContext,projectId:UUID,selection:ManagerSelection):Promise<ManagerPreview>{
+  const params=[auth.tenantId,projectId],ids=[selection.outgoingUserId,selection.incomingUserId,selection.coverageUserId];
+  await this.assertEditableProject(db,auth,projectId);
   const members=(await db.query<{user_id:UUID;name:string;role:string}>(`SELECT u.id AS user_id,u.name,pm.role FROM project_memberships pm
     JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1 JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1
     JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1 WHERE pm.project_id=$2 AND u.id=ANY($3::uuid[])

@@ -4251,3 +4251,13 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Limitations: corrected pinned copied-harness missing unchanged test artifacts; direct pinned commands avoid pnpm install check. Observer corrected Chief non-disclosure, named consent loading selector and full revocation actor evidence; same owned UUID fixture resumed. No retained customer data changed. Prior retry browser receipts retained as historical; current SQL replay gates pass.
 - Known queue: Manager lifecycle replay/preparation reconciliation, notices/cancellation, remaining current role/keyboard/visual and requirement-by-requirement acceptance. Full Alpha acceptance and release remain open; no owner decision inferred.
 - Production behavior changed: yes, narrow decision read and permission UI only; no schema/dependency change, push/main/deploy/Alpha2.
+
+
+### 2026-10-08 - Batch220
+- Intent: reconcile confirmed Manager current-project eligibility gap from E218; IMPLEMENTER tenancy scope plus authorized Alpha route/test/governance exception.
+- Files touched: survey-manager repository; Manager handover route; tenancy units; continuity PostgreSQL route tests; owned Manager fixture/browser observer; CLAUDE current contract; E220 receipt and registers.
+- Behavior changed: shared current editable FULL project and existing D6 cancellation guard run after tenant EXCLUSIVE/current administrative authority, before recorded idempotency retrieval; same guard protects preview. Ordinary Setup configuration and promoted-subject exact retry remain valid. No subject/snapshot replay recheck, new payload, role, transfer, audit event, schema or dependency.
+- Verification: baseline656units; strict host/pinned659units; pinned Node22.23.3 production compilation;33current PostgreSQL suites;36continuity route/database cases;15resumed production HTTP/browser checks. Original actual browser lost reply and unchanged body/key retry completed; observer corrected structural JSON response comparison and resumed same command. Current568source/migration bytes match artifact.
+- Limits: Archived/ordinary Setup probes synthetically set current state in newly owned UUID fixture; D6 start/finish uses actual Central APIs. Final15checks are resumed evidence, not uninterrupted fresh run. No retained/customer fixture changed. No new visual change or broad visual clearance.
+- Known queue: current notices/delivery consumption, remaining role/cancellation/keyboard/table/visual acceptance and final requirement reconciliation. Whole Alpha acceptance remains open; release advisory separate.
+- Production behavior changed: yes, narrow pre-replay current project guard. No push/main/deploy/Alpha2; no new owner decision.

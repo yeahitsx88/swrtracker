@@ -28,3 +28,18 @@ test('preview checksum binds state and selections, excluding command reason and 
  const read=await repo.preview(db,auth,id(10),managerSelection(body)),command=await repo.preview(db,auth,id(10),parseManagerAppointment(body));
  assert.equal(read.snapshot,command.snapshot);
 });
+
+function editableFixture(status:string,build='FULL',cancelling=false,missing=false){
+ const queries:{sql:string;params:unknown[]|undefined}[]=[];
+ const db={query:async(sql:string,params?:unknown[])=>{queries.push({sql,params});return {rows:sql.startsWith('SELECT status')?(missing?[]:[{status,crew_build:build}]):(cancelling?[{id:id(90)}]:[])};}} as unknown as DbClient;
+ return {db,queries};
+}
+test('Manager handover current project eligibility retains ordinary Setup and Active configuration',async()=>{
+ for(const status of ['SETUP','ACTIVE']){const f=editableFixture(status);await new SurveyManagerPgRepository().assertEditableProject(f.db,{tenantId:id(20)} as AuthContext,id(10));assert.equal(f.queries.length,2);assert.deepEqual(f.queries[0]!.params,[id(20),id(10)]);assert.deepEqual(f.queries[1]!.params,[id(20),id(10)]);}
+});
+test('Manager handover refuses cancelling preparation before subject or recorded result use',async()=>{
+ const f=editableFixture('SETUP','FULL',true);await assert.rejects(new SurveyManagerPgRepository().assertEditableProject(f.db,{tenantId:id(20)} as AuthContext,id(10)),{code:'PROJECT_PREPARATION_CANCELLING'});assert.equal(f.queries.length,2);
+});
+test('Manager handover refuses archived, unsupported build and absent scoped projects',async()=>{
+ for(const [status,build,missing]of [['ARCHIVED','FULL',false],['ACTIVE','MEDIUM',false],['ACTIVE','FULL',true]] as const){const f=editableFixture(status,build,false,missing);await assert.rejects(new SurveyManagerPgRepository().assertEditableProject(f.db,{tenantId:id(20)} as AuthContext,id(10)),missing?{name:'NotFoundError'}:{name:'ConflictError'});assert.equal(f.queries.length,1);}
+});
