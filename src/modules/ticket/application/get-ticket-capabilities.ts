@@ -6,6 +6,7 @@ import type { Ticket } from '../domain/types';
 export interface TicketCapabilities {
   canEditRequesterFields: boolean;
   canSubmit: boolean;
+  canDeleteDraft: boolean;
   canRequesterCancel: boolean;
   canCreateFollowUp: boolean;
   canUploadRequestInstruction: boolean;
@@ -29,7 +30,7 @@ function transitionIsAllowed(ticket: Ticket, to: 'REQUESTER_CANCELED'): boolean 
 export function getTicketCapabilities(
   ticket: Ticket,
   actor: { id: UUID; role: ProjectRole },
-  uploadsAvailable: boolean,
+  availability: { ordinary: boolean; submit: boolean; requesterCancel: boolean; deleteDraft: boolean },
 ): TicketCapabilities {
   const ownsRequest = actor.role === 'REQUESTER' && ticket.requesterId === actor.id;
   const requesterEditable = ownsRequest && REQUESTER_EDITABLE.has(ticket.status);
@@ -41,11 +42,12 @@ export function getTicketCapabilities(
   );
 
   return {
-    canEditRequesterFields: requesterEditable,
-    canSubmit: requesterEditable,
-    canRequesterCancel: ownsRequest && transitionIsAllowed(ticket, 'REQUESTER_CANCELED'),
-    canCreateFollowUp: ownsRequest && ticket.status === 'COMPLETED',
-    canUploadRequestInstruction: requesterEditable && uploadsAvailable,
-    canUploadFieldSupport: canUploadFieldSupport && uploadsAvailable,
+    canEditRequesterFields: requesterEditable && availability.ordinary,
+    canSubmit: requesterEditable && availability.submit,
+    canDeleteDraft: ownsRequest && ticket.status === 'DRAFT' && availability.deleteDraft,
+    canRequesterCancel: ownsRequest && transitionIsAllowed(ticket, 'REQUESTER_CANCELED') && availability.requesterCancel,
+    canCreateFollowUp: ownsRequest && ticket.status === 'COMPLETED' && availability.ordinary,
+    canUploadRequestInstruction: requesterEditable && availability.ordinary,
+    canUploadFieldSupport: canUploadFieldSupport && availability.ordinary,
   };
 }

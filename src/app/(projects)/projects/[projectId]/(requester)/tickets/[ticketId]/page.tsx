@@ -24,6 +24,7 @@ import { useProjectWorkspace } from '@/components/ui/project-shell-header';
 const NO_CAPABILITIES: TicketCapabilities = {
   canEditRequesterFields: false,
   canSubmit: false,
+  canDeleteDraft: false,
   canRequesterCancel: false,
   canCreateFollowUp: false,
   canUploadRequestInstruction: false,
@@ -200,7 +201,7 @@ export default function TicketDetailPage() {
   const returnPath = requester ? fromDraft ? 'drafts' : 'my-requests' : fieldRole ? 'crew/work' : reviewRole ? 'requests' : 'home';
   const returnLabel = requester ? fromDraft ? 'Back to Drafts' : 'Back to My Requests' : fieldRole ? 'Back to Crew Work' : reviewRole ? 'Back to All Requests' : 'Back to Home';
   const noActions = !capabilities.canSubmit && !capabilities.canCreateFollowUp && !capabilities.canRequesterCancel &&
-    !(ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields);
+    !capabilities.canDeleteDraft;
 
   return (
     <div className="stack">
@@ -314,7 +315,7 @@ export default function TicketDetailPage() {
                   Create Follow-Up Request
                 </Button>
               ) : null}
-              {ticket?.status === 'DRAFT' && capabilities.canEditRequesterFields ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.command || submitAttempt.current.command)} onClick={() => {if(ticket&&!uncertain&&workflow.owner.claim('requester-fields')){setDeleteConsent(false);setDeleteReview(ticket);}}}>Delete Draft</Button> : null}
+              {capabilities.canDeleteDraft ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.command || submitAttempt.current.command)} onClick={() => {if(ticket&&!uncertain&&workflow.owner.claim('requester-fields')){setDeleteConsent(false);setDeleteReview(ticket);}}}>Delete Draft</Button> : null}
               {capabilities.canRequesterCancel ? (
                 <Button variant="secondary" disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('requester-cancel')}>
                   Cancel My Request

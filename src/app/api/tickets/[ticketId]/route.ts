@@ -38,14 +38,19 @@ async function observedGET(
         db, ctx.tenantId, ticket.requesterId,
       );
 
-      // Availability uses the upload writer's read-only lifecycle gate; it grants no authority.
-      let uploadsAvailable = true;
-      try {
-        await assertRecommissioningMutation(db, ctx.tenantId, ctx.projectId, `/api/tickets/${ticketId}/attachments`);
-      } catch (err) {
-        if (!(err instanceof ConflictError)) throw err;
-        uploadsAvailable = false;
+      // These read-only writer gates restrict availability; they grant no actor authority.
+      const availability = { ordinary: true, submit: false, requesterCancel: true, deleteDraft: true };
+      for (const [action, suffix] of [['ordinary', ''], ['requesterCancel', '/requester-cancel'], ['deleteDraft', '/draft']] as const) {
+        try {
+          await assertRecommissioningMutation(db, ctx.tenantId, ctx.projectId, `/api/tickets/${ticketId}${suffix}`);
+        } catch (err) {
+          if (!(err instanceof ConflictError)) throw err;
+          availability[action] = false;
+        }
       }
+      const projectStatus = await repo.findProjectStatus(db, ctx.tenantId, ctx.projectId);
+      if (!projectStatus) throw new NotFoundError('Project not found');
+      availability.submit = availability.ordinary && projectStatus === 'ACTIVE';
 
       return NextResponse.json({
         ticket: {
@@ -53,7 +58,7 @@ async function observedGET(
           requesterName: requester?.name ?? 'Unknown requester',
           isOwnRequest: ticket.requesterId === ctx.actorId,
         },
-        capabilities: getTicketCapabilities(ticket, { id: ctx.actorId, role: ctx.actorRole }, uploadsAvailable),
+        capabilities: getTicketCapabilities(ticket, { id: ctx.actorId, role: ctx.actorRole }, availability),
       });
     });
   } catch (err) {
