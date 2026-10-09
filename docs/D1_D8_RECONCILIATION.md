@@ -1,5 +1,7 @@
 # Alpha D1-D8 Reconciliation
 
+Final Batch285 disposition: all D1-D8 finite approved criteria are verified by [E285](../audits/alpha1-ui-redesign/alpha-final285-reconciliation-evidence.json), with named E224/E247/E256/E261/E262/E271/E278 and preserved contract proofs. Fresh final-source33SQL and707units pass; no production/history change. Earlier counts and open-queue statements below are historical, not the current acceptance queue. Release/pilot/main/deploy/Alpha2 remain separate.
+
 Authority: owner pasted D1-D8 request and D6 clarification, recorded in Decision54. Preserve Visual Team Editor5866772, conventional Team Management, prior Org Chart checkpoint and all verified history. Current execution baseline: clean alpha1-ui-redesign5866772, strict-unused types and629unit tests passed before edits. IMPLEMENTER, bounded authorized cross-module Alpha exception.
 
 | Decision | Classification | Current boundary and acceptance |
