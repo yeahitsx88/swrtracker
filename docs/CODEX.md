@@ -4863,3 +4863,11 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Integration: isolated codex/alpha1-audit-reconciliation from verified b8ff814; no-ff second parent68ce7a4. Clean D checkout advanced through its owned checkout;010a corrective files/index were not written. The shared hardening ref also changes HEAD visibility in010a, so its old working files are deliberately not reconciled here. Receipt names both parents and source/migration digests.
 - Known gaps: post-merge telemetry, prototype/runner/dependency cleanup and final verification still open. Inherited source-map-js advisory is explicitly not a passing release gate. Main/push/deployment/Alpha2 excluded.
 - Production behavior changed: full branch adopted; no unrelated retained data or corrective work included.
+
+### 2026-10-09 - Batch 288: targeted source-map dependency patch
+- Intent: close the inherited GHSA-68fv-2mgg-jv7q blocker in a separate dependency increment without changing the Next.js line.
+- Files touched: pnpm-workspace.yaml and pnpm-lock.yaml only, plus this append and dependency receipt.
+- Behavior changed: narrow postcss>source-map-js override resolves 1.2.2; frozen lock regenerated with pinned pnpm11.19.0. Next remains15.5.27.
+- Verification: frozen install and production audit pass with no known vulnerabilities; strict types,707units and production compilation pass. Actual shipping Docker build runs its own audit/types/units/build; image smoke confirms only source-map-js1.2.2 and Node22.23.3. Unrelated application and PostgreSQL gates also pass in the reconciliation run.
+- Known gaps: external hosted/pilot deployment remains separate; the historical advisory status at7c039ec remains explicitly failing in its source-bound receipt.
+- Production behavior changed: dependency patch only.
