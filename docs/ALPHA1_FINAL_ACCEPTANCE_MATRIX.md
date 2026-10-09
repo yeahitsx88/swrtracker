@@ -52,3 +52,6 @@ Batch261 bounded A4 progress: [E261](../audits/alpha1-ui-redesign/alpha-lifecycl
 
 
 Batch262 closes named A4 criteria with E261/E262 and explicit preserved readiness criteria, without accepting A5/A6 UI tasks. A1-A4 are verified; next is A5 administration. A6 also reviews system-history event wording and mobile horizontal table position observed in bounded D8 captures. Full Alpha remains open; no release/deploy/main/Alpha2 action.
+
+
+Batch264 A5 progress: [E264](../audits/alpha1-ui-redesign/alpha-administration264-acceptance-evidence.json) fixes same-project capability refresh discarding held administration commands and supplies current cached-layout denial after independent grant loss.163current connected/authority/retention/Team/file checks, strict693units, pinned build,26focused and full33SQL with explicit final client-only impact evidence pass. Named provisioning/membership/support/configuration tasks verified; remaining A5 catalog/project establishment, invitations/company/access-restoration/diagnostics and A6/A7 remain. No new business rule, schema, dependency or release action.

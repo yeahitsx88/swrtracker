@@ -47,14 +47,20 @@ export function ProjectShellHeader({ projectId, requireProject = true, canCreate
         try { window.sessionStorage.setItem('swr-workspace-project', project.id); } catch { /* Explicit navigation links retain context. */ }
       }
     }
-    load().catch(error => { if (active) setSnapshot({ key, error: getErrorMessage(error, 'Unable to load project navigation. Retry to check current access.') }); });
+    load().catch(error => { if (active) setSnapshot(previous => ({ key, context: previous?.context?.project.id === projectId ? previous.context : undefined, error: getErrorMessage(error, 'Unable to load project navigation. Retry to check current access.') })); });
     return () => { active = false; };
   }, [projectId, key]);
 
-  const context = current?.context;
+  const context = current?.error ? undefined : current?.context;
+  // Keep same-project editors mounted while current access is checked; hidden
+  // retained state supplies no navigation or visible action authority.
+  const priorContext = snapshot?.context;
+  const retainedContext = priorContext?.project.id === projectId ? priorContext : undefined;
   const project = context?.project;
   const capabilities = context?.capabilities;
-  return <ProjectContext.Provider value={context ?? null}>
+  const administrationRoot = `/projects/${projectId}/admin`;
+  const administrationUnavailable = !!context && (pathname === administrationRoot || pathname.startsWith(administrationRoot + '/')) && !capabilities?.canAdminister;
+  return <ProjectContext.Provider value={context ?? retainedContext ?? null}>
     <div className="project-workspace">
       <ProjectNav projectId={context ? projectId : undefined} role={capabilities?.operationalRole ?? null} canAdminister={capabilities?.canAdminister} canCreateProject={canCreateProject} status={project?.status ?? 'ACTIVE'} projectName={project?.name ?? 'SWRTracker'} />
       <div className="project-content">
@@ -62,7 +68,8 @@ export function ProjectShellHeader({ projectId, requireProject = true, canCreate
         {project && project.status !== 'ACTIVE' && <p className="workspace-state-note">{project.status === 'ARCHIVED' ? 'This project is archived. Authorized history remains available; ordinary work commands are restricted.' : 'This project is in setup or recommissioning preparation. Use the existing administration and work-resolution controls where authorized.'}</p>}
         {projectId && !current && <p className="muted" role="status">Loading your project workspace…</p>}
         {current?.error && <section className="panel stack"><p className="error-banner" role="alert">{current.error}</p><div className="row"><button className="button button-secondary" onClick={() => setRevision(value => value + 1)}>Retry project access</button><Link className="app-link" href="/projects">Return to Projects</Link></div></section>}
-        {(!requireProject || context) && <PageTransition>{children}</PageTransition>}
+        {administrationUnavailable && <section className="panel stack"><h1>Project Administration Unavailable</h1><p>Your account does not have Project Admin access. Return to your project to continue your work.</p><div className="row"><button className="button button-secondary" onClick={() => setRevision(value => value + 1)}>Retry project access</button><Link className="app-link" href={`/projects/${projectId}/home`}>Return to Project</Link></div></section>}
+        {(!requireProject || retainedContext) && <PageTransition hidden={requireProject && (!context || administrationUnavailable)}>{children}</PageTransition>}
       </div>
     </div>
   </ProjectContext.Provider>;
