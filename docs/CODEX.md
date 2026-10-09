@@ -4855,3 +4855,11 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Integration inventory: fetched origin hardening b8ff814/redesign45af79a,0/120. Primary D checkout clean;010a has uncommitted corrective work, preserved separately under explicit owner answer. Other accessible clones have no local hardening branch. No retained data/service changed; only newly labelled reconciliation containers created.
 - Known gaps: integration/actual acceptance/populated upgrade/cleanup verification remain open in the register. No new passing release or browser claim.
 - Production behavior changed: no.
+
+### 2026-10-09 - Batch 287: controlled Alpha1 adoption
+- Intent: close governance/baseline verification and adopt the complete approved redesign with a no-fast-forward integration commit.
+- Files touched: current route inventory/review, fresh reconciliation fixtures and HTTP/browser/populated-upgrade runners and sanitized receipts; controlled-merge receipt. Existing historical audit/receipts remain unchanged.
+- Verification: pinned Node22.23.3/pnpm11.19.0/PostgreSQL15; strict types,707units,33PostgreSQL suites and production build pass both before and on merge7c039ec. Owned populated034 upgrade has22checks including injected042 bookkeeping failure and repeatable runner recovery. Initial current HTTP209 and actual live browser29checks precede cleanup; their later receipts explicitly supersede these counts.
+- Integration: isolated codex/alpha1-audit-reconciliation from verified b8ff814; no-ff second parent68ce7a4. Clean D checkout advanced through its owned checkout;010a corrective files/index were not written. The shared hardening ref also changes HEAD visibility in010a, so its old working files are deliberately not reconciled here. Receipt names both parents and source/migration digests.
+- Known gaps: post-merge telemetry, prototype/runner/dependency cleanup and final verification still open. Inherited source-map-js advisory is explicitly not a passing release gate. Main/push/deployment/Alpha2 excluded.
+- Production behavior changed: full branch adopted; no unrelated retained data or corrective work included.
