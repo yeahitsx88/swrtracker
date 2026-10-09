@@ -116,7 +116,7 @@ export default function SurveyOperationsPage() {
       {error ? <ErrorBanner message={error} /> : null}
       {ticketQuery.error ? <ErrorBanner message={ticketQuery.error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
-      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><Button variant="secondary" disabled={loading||workflow.active} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
+      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><div className="toolbar-group"><Link className="button" href={`/projects/${projectId}/survey/direct-assignment`}><Icon name="plus" />Assign work directly</Link><Button variant="secondary" disabled={loading||workflow.active} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div></div>
 
       {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} areaWide={scopeSnapshot?.analytics.supportsLinkedCrewScope} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
       <div className="ops-tabs" role="tablist" aria-label="Operations views">
