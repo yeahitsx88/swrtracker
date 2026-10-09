@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "Consumed reset token cannot be reused",
+    "Prior password cannot authenticate",
+    "Reset invalidates previously issued viewer bearer",
+    "Actual credential login succeeds",
+    "New credential retains owned project read authority",
+    "Actual credential login succeeds",
+    "Tenant-wide alias requires explicit confirmation",
+    "Real administrator wizard deploys Viewer alias",
+    "Current tenant catalog contains accepted Viewer alias",
+    "Current Sign Out completes actual server revocation",
+    "Replayed logged-out administrator cookie is refused",
+    "Identity/administration browser has no page errors"
+  ],
+  "fixtureKind": "fresh owned synthetic",
+  "runtime": "actual shipping Docker image via local TLS",
+  "limits": [
+    "Local encrypted-outbox capture substitutes for external email delivery; no message sent.",
+    "Edge desktop only; source-preserved additional identity cases remain covered by unit/PostgreSQL suites."
+  ]
+}

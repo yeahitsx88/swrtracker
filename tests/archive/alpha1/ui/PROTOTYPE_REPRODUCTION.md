@@ -82,4 +82,3 @@ The fixed-viewport review inspected current desktop, reported-window available-t
 The implementation now lives in `src/components/ui/survey-org-chart`; the standalone route retains compatibility reexports. See that directory README for workspace ownership, launch and verification.
 
 To remove the packaged feature, remove its TeamManagementEntry import/launcher and the shared component directory, then delete this route directory and `tests/ui/survey-team-prototype{.test.ts,-browser.mjs}` to remove the POC. The historical CODEX entry can remain. No API, schema or migration changes need reverting.
-

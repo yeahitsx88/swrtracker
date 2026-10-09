@@ -10,22 +10,24 @@
     "Recorder refuses stale authority after waiting at lifecycle barrier",
     "Fresh-authority refusal writes no observation",
     "Pre-handler verified ticket and status survive after scheduling",
+    "Administrator metadata exception supplies no ordinary draft visibility",
+    "Current scoped administrator sees approved UUID/status/actor metadata despite ordinary draft denial",
     "Denied business command and fresh-authority refusal preserve business state"
   ],
   "httpLatencyMs": [
-    37.38,
-    24.68,
-    33.35,
-    37.03,
-    38.32,
-    38.9
+    40.58,
+    24.02,
+    32.27,
+    36.51,
+    37.77,
+    37.56
   ],
   "poolLimit": 2,
   "lockTimeoutMs": 100,
   "connectionTimeoutMs": 300,
   "statementTimeoutMs": 250,
   "eventualDeadlineMs": 5000,
-  "retainedWitness": "376c8ff75a0b6116668095694a64e4e3e468e28831d5e47eafbfbfa745ae6804",
+  "retainedWitness": "a78f25128745d0298b97a2f67cce0cef22c2dae9c2d598cf5095e51b373c96c5",
   "limits": [
     "Latency samples are local observations, not production SLOs. The previous synchronous recorder awaited the same bounded persistence path; no statistically controlled pre-change latency benchmark was captured."
   ]

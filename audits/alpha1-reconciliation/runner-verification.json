@@ -6,5 +6,8 @@
   ],
   "syntaxCommand": "node scripts/check-acceptance-syntax.mjs",
   "browserCorrectness": "separate current runtime receipt",
-  "unavailableModulePreflight": "refused before fixture mutation"
+  "unavailableModulePreflight": "refused before fixture mutation",
+  "syntaxModuleCount": 291,
+  "maintainedMjs": 271,
+  "archivedMjs": 20
 }

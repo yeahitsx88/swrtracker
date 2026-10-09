@@ -1,0 +1,179 @@
+{
+  "date": "2026-10-09",
+  "productionCheckpoint": "cbdba04e2d44adb2e68cee5b416e3d8fb0d5b7e2",
+  "controlledMerge": "7c039ecafe8b84cfbe7271ad930028d24b5fa061",
+  "source": {
+    "sha256": "9efc815b4fbce1eb0462be602334b5e84c12f8133bb032e25a1cb6d5aeda49e0",
+    "files": 533
+  },
+  "migrations": {
+    "sha256": "0c4ac12199b6660e792cc2d318c6c8b7404df167a4fefb4b9f87d8d9636adde3",
+    "files": 45
+  },
+  "runtimeSource": {
+    "sha256": "1de7f0d96902904c49441558aba1b4eebe573e2892a0bbcd05fe78b79b86a70b",
+    "files": 530
+  },
+  "acceptanceTools": {
+    "sha256": "63ae6784d14b5e36e5e86c0405c34c245c68d2157b17c4bc589dbc33cc3fe648",
+    "files": 513
+  },
+  "digestFormat": "Sorted repository path + NUL + UTF-8 canonical LF bytes; no binary files in these sets.",
+  "toolchain": {
+    "node": "22.23.3",
+    "pnpm": "11.19.0",
+    "postgresql": "15.19",
+    "next": "15.5.27",
+    "browser": "installed Microsoft Edge via Playwright; host driver Node24.13.1 only"
+  },
+  "shippingImageId": "sha256:9ad45338a1b9d2d8d52bebeea52313ae49579b241ba3ce3e270c4e200e02111f",
+  "testedHttpImageId": "sha256:aa46c04064410338f3aa04567bc353153243356834dc60ccbd4be2e53098b5dd",
+  "imageSourceParity": "Working tree, tested HTTP image and final rebuilt shipping image agree on all src production code and package/Next/TypeScript configuration bytes. runtimeSource excludes Markdown; the only inclusive src difference in the HTTP image is the chart README. Final shipping image includes that README and reruns audit/types/707 units/production build.",
+  "gates": {
+    "strictUnusedTypes": "pass",
+    "units": 707,
+    "postgresSuites": 34,
+    "productionAudit": "No known vulnerabilities found",
+    "pinnedProductionBuild": "pass; warning-free",
+    "dockerBuild": "pass",
+    "runnerSyntaxModules": 291,
+    "patchedSourceMapVersions": [
+      "1.2.2"
+    ]
+  },
+  "namedReceipts": {
+    "http": {
+      "file": "http-acceptance.json",
+      "namedChecks": 211,
+      "sha256": "9fbd7bef90daf6cf8ea4267923b211abd9d64d370d125e58ae2e49a06c71fcdf"
+    },
+    "liveBrowser": {
+      "file": "browser-acceptance.json",
+      "namedChecks": 48,
+      "sha256": "434692407718e99eed08be99be99c23801c15829fcc965e25406bdc1cd2cfc83"
+    },
+    "loadedVisual": {
+      "file": "visual-inspection.json",
+      "namedChecks": 12,
+      "sha256": "ac2ee7c3d46e7bbd8d594e1f0ac15c92faf016fbbc8dc1fd816517b008e84994"
+    },
+    "attachments": {
+      "file": "attachments.json",
+      "namedChecks": 10,
+      "sha256": "ff1d4934e3cca040be4d6cc377d458a2c26a46fec89d037333e114340c410f38"
+    },
+    "telemetry": {
+      "file": "telemetry.json",
+      "namedChecks": 13,
+      "sha256": "fa1888aabcc7a2ae73a1388c40bed10d38bdd783d7e66a8cfc14cb6ccd3f6abd"
+    },
+    "retention": {
+      "file": "retention.json",
+      "namedChecks": 13,
+      "sha256": "793d07cd85102efed277417a3d800efe2ce595eb4d6f6dab3c50582936d17be4"
+    },
+    "upgrade": {
+      "file": "populated-upgrade.json",
+      "namedChecks": 22,
+      "sha256": "2c7539754626a97f3dca15c712b5b1442a61e08e916006bcbcd977bed26ab6a8"
+    },
+    "identityAdministration": {
+      "file": "identity-administration.json",
+      "namedChecks": 12,
+      "sha256": "d8bcee4fe2827737e9c2d6cc11188e9f98ddb9c1e9e632f436bc3d556273f96b"
+    }
+  },
+  "ownedFixtures": [
+    "Populated migration034 schema plus actual runner/bookkeeping fault witnesses",
+    "Clean installation through045 and retention concurrency/boundary fixtures",
+    "Fresh synthetic HTTP/browser project memberships/requests/files/lifecycle/identity schema",
+    "Separate synthetic query-count fixture at26/126/1026 tickets"
+  ],
+  "preservation": {
+    "migrations001Through044": "44 files byte-equivalent after canonical LF normalization",
+    "codexAndDecisionHistory": "Original45af79a prefixes preserved; new entries appended",
+    "pinnedManifests": "All four unchanged",
+    "historicalAcceptanceReceiptsAndDesignBriefs": "Unchanged",
+    "originalExternalAuditSha256": "8663f8260c1d878053d77ecd0193edeea063fda48d56478d50ba71ccb7848a82",
+    "dirty010a": "Owner instructed preservation separately; no files/index written; shared hardening ref advancement changes visible HEAD"
+  },
+  "visualInspection": "Loaded Home/Operations/Review contact sheets inspected at1440/390 in Light/Dark; live chart desktop/mobile inspected. No unintended document overflow; mobile tables retain contained scrolling.",
+  "identityObserverNotes": "Actual reset form200 was completed before a Viewer-ineligible organization read assertion. Resume used saved replacement credential and consumed-token refusal; current Sign out casing corrected in helper. Final12 checks and durable bearer witness pass; no product change or external mail.",
+  "logs": [
+    {
+      "privateLocalFile": ".local-reconcile-baseline-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-baseline-units.log",
+      "sha256": "d73d552f453c1b62bab0d0874e7bd43e44cea7945976574bfdbbc040d7725bec"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-baseline-postgres.log",
+      "sha256": "cd09480bcd8d42a3897b18dc9dac365da44bb1000e7914a78be9eef93b8be475"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-baseline-build.log",
+      "sha256": "501a0484c76245f01d3d2757418680f343101fe4b7f91cc69a4a2d1d4987ea39"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-merge-types.log",
+      "sha256": "0f75176bfa54b9bee2e1a5136dcbd48a62494c9ededa77fedf9706875576ebac"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-merge-units.log",
+      "sha256": "1eaf9e845d0fa51cd5d0bc3a8586ec288f6e3bf9a4e24110d82d404ed3ced6df"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-merge-postgres.log",
+      "sha256": "9c45a94ea30e5ae306c2dbe5b64c52c01288b1f3713fe08d089dde81fce32a5f"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-merge-build.log",
+      "sha256": "c61f3e01d182c9988fe7b56f631f307007299cea5d150f75b69cb6dd18f62c76"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-types.log",
+      "sha256": "1527d0a42f65e0fe64c0eb22be705b592918945cb37aae5fb2b95b242c9822e3"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-postgres.log",
+      "sha256": "ddd9d0d69e05d0c034fdf892d66168fe931b8a4e4ba2cfc1c626f3abcccf1e7f"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-upgrade.log",
+      "sha256": "3b100166983026c73abe7cd1879f6b1368110b59fabd46e99122feee0b33db95"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-docker.log",
+      "sha256": "4a9a1e336c9f258d69f547367e1ed144bb1195c430ba73d5aa1963bc054fc34f"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-audit.log",
+      "sha256": "4e4757ff226a44b5c448b1c4624619419c22d5272463dc19510b4754871a72f9"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-syntax.log",
+      "sha256": "fccfdef819a38d8fb7eb63bc28142c536ad2bb58b593d88e6c33c467243e2f9a"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-identity-admin.log",
+      "sha256": "6662c94261d823f56a1fc4d8c851443fde1302feac5ac487a21cce9def897e60"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-identity-durable.log",
+      "sha256": "7473d5e266507246d67799ad0f5877c7924b28d15f7327a27874b1d4ca6d779d"
+    },
+    {
+      "privateLocalFile": ".local-reconcile-final-telemetry-metadata.log",
+      "sha256": "d5b6c5d5ed264c75165608b1a575f15674fb9e2d6b90645fb2707581952c2d6c"
+    }
+  ],
+  "limits": [
+    "Synthetic local fixtures and analyzed query samples are not production-load/SLO proof.",
+    "Route method/import trace and shared-family review plus negative SQL/HTTP coverage are not proof of every possible authenticated branch.",
+    "Browser acceptance uses Edge desktop/mobile viewports; physical devices and other engines unverified.",
+    "Real hosted backup recovery, external email delivery, pilot/deployment, main integration, publication and Alpha2 remain separate.",
+    "Populated upgrade retains stored attachment identity/hash metadata; real attachment byte integrity is independently proven in shipping HTTP acceptance."
+  ]
+}

@@ -280,6 +280,8 @@
     "tests/beta/reconciliation-attachments.mjs",
     "tests/beta/reconciliation-browser.mjs",
     "tests/beta/reconciliation-http.mjs",
+    "tests/beta/reconciliation-identity-admin.mjs",
+    "tests/beta/reconciliation-identity-fixture.mjs",
     "tests/beta/reconciliation-performance.mjs",
     "tests/beta/reconciliation-telemetry.mjs",
     "tests/beta/reconciliation-upgrade.mjs",
