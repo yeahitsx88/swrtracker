@@ -7,6 +7,8 @@ import type { UUID } from '@/shared/types';
 import { getMyAccount } from '@/modules/tenancy/application/my-account';
 import { SqlMyAccountReader } from '@/modules/tenancy/infrastructure/my-account.reader';
 import { withTransaction } from '@/lib/with-transaction';
+import { readJsonBody } from '@/lib/read-json-body';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
 import { changeOwnName } from '@/modules/identity/application/account-self-service';
 
 export const dynamic = 'force-dynamic';
@@ -22,13 +24,18 @@ export async function GET(req: NextRequest) {
   } catch (error) { return errorResponse(error); }
 }
 
-/** PATCH /api/account — correct your own display name. */
+/** PATCH /api/account — correct your own display name (own active account is the only authority). */
 export async function PATCH(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    const body = await req.json().catch(() => null) as { name?: unknown } | null;
-    if (!body || typeof body !== 'object') throw new ValidationError('Enter your name.');
-    const result = await withTransaction(db => changeOwnName(db, auth, body.name));
-    return NextResponse.json(result, { headers: { 'Cache-Control': 'private, no-store' } });
+    const body = await readJsonBody(req);
+    if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => key !== 'name')) throw new ValidationError('Send only your name.');
+    const command = { name: (body as { name?: unknown }).name };
+    const key = requireIdempotencyKey(req);
+    const response = await withTransaction(db => executeIdempotentHttpMutation(db,
+      { tenantId: auth.tenantId, actorId: auth.userId, endpoint: '/api/account:name', idempotencyKey: key }, command,
+      async () => ({ status: 200, body: await changeOwnName(db, auth, command.name) })),
+    { req, auth, mode: 'SHARED', authorize: async () => undefined });
+    return NextResponse.json(response.body, { status: response.status, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) { return errorResponse(error); }
 }

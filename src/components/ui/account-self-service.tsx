@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
-import { apiRequest } from '@/lib/apiClient';
+import { apiRequest, createIdempotencyKey } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button } from './button';
 import { ErrorBanner, SuccessBanner } from './feedback';
@@ -25,7 +25,7 @@ function NameForm({ name, onNameChanged }: { name: string; onNameChanged: (name:
     if (busy) return;
     setBusy(true); setError(undefined); setSuccess(undefined);
     try {
-      const result = await apiRequest<{ name: string; changed: boolean }>('/api/account', { method: 'PATCH', body: { name: value } });
+      const result = await apiRequest<{ name: string; changed: boolean }>('/api/account', { method: 'PATCH', body: { name: value }, headers: { 'Idempotency-Key': createIdempotencyKey() } });
       setValue(result.name);
       onNameChanged(result.name);
       setSuccess(result.changed ? 'Your name is updated.' : 'No change: that is already your name.');

@@ -3,6 +3,7 @@ import { COOKIE_NAME, TOKEN_TTL_SECONDS, requireActiveAuth, signToken } from '@/
 import { pool } from '@/lib/db';
 import { errorResponse } from '@/lib/api-error';
 import { withTransaction } from '@/lib/with-transaction';
+import { readJsonBody } from '@/lib/read-json-body';
 import { ValidationError } from '@/shared/errors';
 import { changeOwnPassword, verifyCurrentPassword } from '@/modules/identity/application/account-self-service';
 import { createLoginRateLimiter } from '@/modules/identity/application/login-rate-limit';
@@ -17,10 +18,11 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireActiveAuth(req);
-    const body = await req.json().catch(() => null) as { currentPassword?: unknown; newPassword?: unknown } | null;
+    const body = await readJsonBody(req) as { currentPassword?: unknown; newPassword?: unknown } | null;
     if (!body || typeof body !== 'object') throw new ValidationError('Enter your current and new password.');
     const verified = await verifyCurrentPassword(pool, auth, body.currentPassword, createLoginRateLimiter(new LoginRateLimitRepository()));
-    const { sessionVersion } = await withTransaction(db => changeOwnPassword(db, auth, verified, body.newPassword));
+    const { sessionVersion } = await withTransaction(db => changeOwnPassword(db, auth, verified, body.newPassword),
+      { req, auth, mode: 'EXCLUSIVE', authorize: async () => undefined });
     const res = NextResponse.json({ changed: true }, { headers: { 'Cache-Control': 'private, no-store' } });
     res.cookies.set(COOKIE_NAME, signToken(auth.userId, auth.tenantId, sessionVersion), {
       httpOnly: true,
