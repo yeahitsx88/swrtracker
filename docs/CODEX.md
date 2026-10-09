@@ -4784,3 +4784,13 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Known gaps: A6 role task/navigation/table/copy acceptance (including stored REQUESTER and disabled stale Retry label), A7 final requirement reconciliation. A1-A5 named criteria verified with explicit current/preserved-source limits; full Alpha still open. Org follow-ons and source-map-js release blocker remain deferred/separate.
 - Production behavior changed: no.
 - Git: fetched development0/0,main219/7; no integration. Verified evidence checkpoint/push follows standing directive.
+
+
+### 2026-10-08 - Batch 280
+- Intent: close bounded approved A6 comprehension gaps; IMPLEMENTER, authorized project-wide UI exception, sequential shared-file ownership.
+- Files touched: src/components/tickets/ticket-history.tsx, src/components/ui/invitation-cancellation-review.tsx, src/components/ui/member-access-recovery.tsx, src/components/ui/project-templates.tsx, src/components/ui/superintendent-teams.tsx, src/components/ui/survey-org-chart/survey-org-chart-launcher.tsx, src/components/ui/team-management-entry.tsx, five tests/beta/alpha-human280 helpers, E280 and three Alpha registers.
+- Behavior changed: display-only archived chart/stale cancellation/fixed role/timeout/local removal time/paging/template labels. No schema/event/authorization/endpoint changes.
+- Verification: baseline strict698units; final pinned strict698units/build;28focused; fresh33SQL;47distinct current checks;8captures opened.576 source digest matches runtime. E280 records excluded initial encoding build, retained preparation failure, observer failures and guarded post-archive resume limits.
+- Impeccable inline finish: disposition ship; persistence pass, fidelity faithful, bounded ceiling reached, material fixes none; keep scoped ownership/history/read-only. Documenter No changes to incumbent system.
+- Known gaps: A6 task/navigation/table/KPI reconciliation and A7; source-map-js/GHSA release blocker separate. No deployment/Alpha2/deferred Org expansion.
+- Production behavior changed: yes (presentation only).

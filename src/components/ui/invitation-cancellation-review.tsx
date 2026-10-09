@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {apiRequest} from '@/lib/apiClient';
 import {ApiClientError,getErrorMessage} from '@/lib/errors';
+import {roleLabel} from '@/lib/display-labels';
 import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
 import {AdministrationDialog} from './administration-dialog';
 import {Button,ErrorBanner,Input} from '@/components/ui';
@@ -38,11 +39,11 @@ function Review({projectId,inviteId,owner,token,onClose,onSaved}:{projectId:stri
  return <AdministrationDialog title="Cancel Invitation" locked={locked} onDismiss={onClose}>
  {error&&<ErrorBanner message={error}/>} {busy&&<p role="status">Loading or saving invitation cancellation…</p>}
  <p>Central IT cancellation prevents future use of this registration link. It retains the invitation and its history; it does not remove an account that has already accepted.</p>
- {preview&&<><dl><dt>Email</dt><dd className="administration-company-id">{preview.email}</dd><dt>Role</dt><dd>{preview.role}</dd><dt>Company</dt><dd>{preview.companyName}</dd><dt>Expires</dt><dd>{new Date(preview.expiresAt).toLocaleString()}</dd></dl>
+ {preview&&<><dl><dt>Email</dt><dd className="administration-company-id">{preview.email}</dd><dt>Role</dt><dd>{roleLabel(preview.role)}</dd><dt>Company</dt><dd>{preview.companyName}</dd><dt>Expires</dt><dd>{new Date(preview.expiresAt).toLocaleString()}</dd></dl>
  {!preview.canCancel&&<p role="alert">This invitation is no longer eligible for cancellation. It may be accepted, cancelled, expired, or outside the current preparation cleanup.</p>}
  <label className="field"><span className="field-label">Cancellation reason (10–1000 characters)</span><Input value={reason} maxLength={1000} disabled={locked||!preview.canCancel} onChange={e=>{setReason(e.target.value);setConsent(false);}}/></label>
  <label className="checkbox-row"><input type="checkbox" checked={consent} disabled={locked||!preview.canCancel} onChange={e=>setConsent(e.target.checked)}/><span>I reviewed this invitation and confirm its registration link should no longer be usable.</span></label>
- <Button variant="danger" disabled={busy||gate.stale||!gate.command&&(!preview.canCancel||!consent||reason.trim().length<10)} onClick={()=>void submit()}>{busy?'Working…':gate.command?'Retry Unchanged Cancellation':'Confirm Cancellation'}</Button></>}
+ <Button variant="danger" disabled={busy||gate.stale||!gate.command&&(!preview.canCancel||!consent||reason.trim().length<10)} onClick={()=>void submit()}>{busy?'Working…':gate.stale?'Reload Required':gate.command?'Retry Unchanged Cancellation':'Confirm Cancellation'}</Button></>}
  {gate.stale&&<p role="alert">Invitation evidence changed. Reload Invitation successfully, then enter a new reason and renew confirmation. Your previous command stays held until the read succeeds.</p>}
  <div className="row"><Button variant="secondary" disabled={busy||!!gate.command&&!gate.stale} onClick={()=>void load()}>Reload Invitation</Button><Button variant="secondary" disabled={locked} onClick={onClose}>Keep Invitation</Button></div>
  </AdministrationDialog>;

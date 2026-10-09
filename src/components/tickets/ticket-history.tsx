@@ -13,6 +13,8 @@ interface TicketHistoryProps {
 }
 
 const LABELS: Record<string, string> = {
+  'approver.timeout_warning_sent': 'Approval timeout warning recorded',
+  'approver.timeout_unlocked': 'Approval timeout escalation recorded',
   'ticket.returned_for_correction': 'Returned for correction',
   'ticket.assignment_recorded': 'Assignment recorded',
   'ticket.need_by_revised': 'Need-By date revised',
