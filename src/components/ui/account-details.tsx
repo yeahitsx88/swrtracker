@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/lib/errors';
 import type { MyAccount } from '@/modules/tenancy/application/my-account';
 import {useProjectWorkspace} from './project-shell-header';
 import {HeadingHelp} from './heading-help';
+import {AccountSelfService} from './account-self-service';
 
 export function AccountDetails({ assignments = false }: { assignments?: boolean }) {
   const workspace = useProjectWorkspace();
@@ -24,12 +25,12 @@ export function AccountDetails({ assignments = false }: { assignments?: boolean 
   }, [assignments, revision, workspace?.project.id]);
   const assignment = account?.assignment;
   return <section className="panel stack">
-    <HeadingHelp label={assignments?'Assignment Details':'Profile'} heading={<h1 className="panel-title">{assignments ? 'Assignment Details' : 'Profile'}</h1>} help={assignments?'These are recorded assignments, not a complete permissions summary. Contact your Survey Manager for staffing changes.':'Contact your administrator to correct your account details.'}/>
+    <HeadingHelp label={assignments?'Assignment Details':'Profile'} heading={<h1 className="panel-title">{assignments ? 'Assignment Details' : 'Profile'}</h1>} help={assignments?'These are recorded assignments, not a complete permissions summary. Contact your Survey Manager for staffing changes.':'Update your name or password here. Contact your administrator to change your email or company.'}/>
     {error ? <><p role="alert" className="error-banner">{error}</p><button className="button button-secondary" onClick={() => setRevision(revision + 1)}>Retry</button></>
       : !account ? <p role="status" className="muted">Loading your details…</p>
       : !assignments ? <>
-        <dl className="account-facts"><div><dt>Name</dt><dd>{account.name}</dd></div><div><dt>Email</dt><dd>{account.email}</dd></div><div><dt>Company</dt><dd>{account.company}</dd></div></dl>
-        <Link className="app-link" href="/forgot-password">Reset password</Link>
+        <dl className="account-facts"><div><dt>Email</dt><dd>{account.email}</dd></div><div><dt>Company</dt><dd>{account.company}</dd></div></dl>
+        <AccountSelfService name={account.name} onNameChanged={name => setAccount(previous => previous ? { ...previous, name } : previous)} />
       </> : !assignment ? <p className="muted">Open a project, then choose Assignment Details to see your role, Areas and crew.</p> : <>
         <dl className="account-facts">
           <div><dt>Project role</dt><dd>{assignment.role.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())}</dd></div>

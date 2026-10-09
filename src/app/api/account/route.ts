@@ -6,6 +6,8 @@ import { ValidationError } from '@/shared/errors';
 import type { UUID } from '@/shared/types';
 import { getMyAccount } from '@/modules/tenancy/application/my-account';
 import { SqlMyAccountReader } from '@/modules/tenancy/infrastructure/my-account.reader';
+import { withTransaction } from '@/lib/with-transaction';
+import { changeOwnName } from '@/modules/identity/application/account-self-service';
 
 export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
@@ -17,5 +19,16 @@ export async function GET(req: NextRequest) {
     }
     const account = await getMyAccount(new SqlMyAccountReader(), pool, auth, ids[0] as UUID | undefined);
     return NextResponse.json(account, { headers: { 'Cache-Control': 'private, no-store' } });
+  } catch (error) { return errorResponse(error); }
+}
+
+/** PATCH /api/account — correct your own display name. */
+export async function PATCH(req: NextRequest) {
+  try {
+    const auth = await requireAuth(req);
+    const body = await req.json().catch(() => null) as { name?: unknown } | null;
+    if (!body || typeof body !== 'object') throw new ValidationError('Enter your name.');
+    const result = await withTransaction(db => changeOwnName(db, auth, body.name));
+    return NextResponse.json(result, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) { return errorResponse(error); }
 }
