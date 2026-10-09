@@ -1,0 +1,220 @@
+{
+  "status": "verified-bounded-A7-session-navigation-fix-and-identity-journeys;full-A7-Alpha-open",
+  "baseline": "7d259fd",
+  "authority": [
+    "Approved fixed roles/independent administration/session renewal and current authentication contract",
+    "Owner full Alpha technical-hardening and acceptance objective; smallest authorized routing correction",
+    "Standing checkpoint/push directive"
+  ],
+  "productionBehaviorChanged": true,
+  "source": {
+    "files": 576,
+    "sha256": "dcb076aa6c03928685fa95f57a0bdcdd50bd3310f16830f7acbf4e0639c9c62b",
+    "method": "Case-insensitive lexical repository-relative forward-slash path order; UTF8path/NUL/rawworkingbytes/NUL",
+    "matchesFinalPinnedRuntime": true,
+    "changedPaths": [
+      "src/app/(auth)/layout.tsx",
+      "src/middleware.ts"
+    ],
+    "buildConfigurationUnchanged": true,
+    "difference": "Only current-session public-page redirect handling changes. Auth form markup, endpoint bodies, Secure cookie flags, role/tenant/project/Area/Company checks, existing session version/revocation effects, persistent schema/audit identities/history unchanged. Middleware overwrites route-only marker; server AuthLayout uses current requireActiveAuth and permits forms only for UnauthorizedError. Unexpected errors propagate. Independent invitation route preserves former valid-session behavior."
+  },
+  "demonstratedDefect": {
+    "before": {
+      "login": {
+        "status": 307,
+        "location": "/projects"
+      },
+      "projects": {
+        "status": 307,
+        "location": "/login"
+      }
+    },
+    "impact": "Expired/revoked cookie presence caused /login -> /projects -> /login instead of reachable reauthentication. Actual current HTTP reproduction, not just source inference.",
+    "after": "Actual reset-revoked cookie reaches all four public forms and protected navigation returns to usable sign-in. Current valid core/combined sessions still redirect to Projects. Valid-session invitation page remains reachable even with caller route marker. Marker never grants authority."
+  },
+  "verification": {
+    "baseline": "Fresh strict698units before edits, alpha-closure283/a7-baseline logs exits0.",
+    "currentHost": "Final strict707units,30focused identity/session/navigation/Team tests all pass.",
+    "pinned": "Final Node22.23.3 strict707units/production compilation pass.",
+    "postgres": "Fresh full33SQL suites pass at initial284 auth-layout source. Final change only adds route-context header/invitation exception and two unit tests; exact underlying auth/session/domain/HTTP handler/DB/migration/config bytes unchanged. Explicit preserved SQL impact bound, not claimed as a rerun at final bytes.",
+    "identityJourneys": {
+      "checks": 99,
+      "cases": [
+        "tenantOnly anonymous protected account refused",
+        "tenantOnly real credential sign-in succeeds",
+        "tenantOnly actual session identifies current subject",
+        "tenantOnly production cookie keeps HttpOnly Secure Strict attributes",
+        "tenantOnly keyboard sign-out commits",
+        "tenantOnly sign-out clears bearer and remembered project",
+        "tenantOnly copied logged-out bearer is refused by server",
+        "tenantOnly repeated logout retains exactly one atomic event",
+        "projectOnly anonymous protected account refused",
+        "projectOnly real credential sign-in succeeds",
+        "projectOnly actual session identifies current subject",
+        "projectOnly production cookie keeps HttpOnly Secure Strict attributes",
+        "projectOnly keyboard sign-out commits",
+        "projectOnly sign-out clears bearer and remembered project",
+        "projectOnly copied logged-out bearer is refused by server",
+        "projectOnly repeated logout retains exactly one atomic event",
+        "manager anonymous protected account refused",
+        "manager real credential sign-in succeeds",
+        "manager actual session identifies current subject",
+        "manager production cookie keeps HttpOnly Secure Strict attributes",
+        "manager keyboard sign-out commits",
+        "manager sign-out clears bearer and remembered project",
+        "manager copied logged-out bearer is refused by server",
+        "manager repeated logout retains exactly one atomic event",
+        "superintendent anonymous protected account refused",
+        "superintendent real credential sign-in succeeds",
+        "superintendent actual session identifies current subject",
+        "superintendent production cookie keeps HttpOnly Secure Strict attributes",
+        "superintendent keyboard sign-out commits",
+        "superintendent sign-out clears bearer and remembered project",
+        "superintendent copied logged-out bearer is refused by server",
+        "superintendent repeated logout retains exactly one atomic event",
+        "chief anonymous protected account refused",
+        "chief real credential sign-in succeeds",
+        "chief actual session identifies current subject",
+        "chief production cookie keeps HttpOnly Secure Strict attributes",
+        "chief keyboard sign-out commits",
+        "chief sign-out clears bearer and remembered project",
+        "chief copied logged-out bearer is refused by server",
+        "chief repeated logout retains exactly one atomic event",
+        "instrument anonymous protected account refused",
+        "instrument real credential sign-in succeeds",
+        "instrument actual session identifies current subject",
+        "instrument production cookie keeps HttpOnly Secure Strict attributes",
+        "instrument keyboard sign-out commits",
+        "instrument sign-out clears bearer and remembered project",
+        "instrument copied logged-out bearer is refused by server",
+        "instrument repeated logout retains exactly one atomic event",
+        "requester anonymous protected account refused",
+        "requester real credential sign-in succeeds",
+        "requester actual session identifies current subject",
+        "requester production cookie keeps HttpOnly Secure Strict attributes",
+        "requester keyboard sign-out commits",
+        "requester sign-out clears bearer and remembered project",
+        "requester copied logged-out bearer is refused by server",
+        "requester repeated logout retains exactly one atomic event",
+        "viewer anonymous protected account refused",
+        "viewer real credential sign-in succeeds",
+        "viewer actual session identifies current subject",
+        "viewer production cookie keeps HttpOnly Secure Strict attributes",
+        "viewer keyboard sign-out commits",
+        "viewer sign-out clears bearer and remembered project",
+        "viewer copied logged-out bearer is refused by server",
+        "viewer repeated logout retains exactly one atomic event",
+        "managerAdmin anonymous protected account refused",
+        "managerAdmin real credential sign-in succeeds",
+        "managerAdmin actual session identifies current subject",
+        "managerAdmin production cookie keeps HttpOnly Secure Strict attributes",
+        "managerAdmin keyboard sign-out commits",
+        "managerAdmin sign-out clears bearer and remembered project",
+        "managerAdmin copied logged-out bearer is refused by server",
+        "managerAdmin repeated logout retains exactly one atomic event",
+        "Incorrect password refused without authenticated cookie",
+        "Failed sign-in leaves anonymous session",
+        "identity284-failed-sign-in-dark-390 contained document overflow",
+        "Correct credentials under foreign tenant refused",
+        "Valid sign-in accepts credentials with unsafe return target",
+        "External return target replaced by established local destination",
+        "Actual password-recovery request succeeds",
+        "Actual reset token captured from newly owned encrypted outbox, no external delivery claim",
+        "Mismatched password confirmation blocks reset before network",
+        "Keyboard confirmed reset consumes actual token",
+        "Successful reset clears both password fields",
+        "Password reset invalidates previously authenticated session",
+        "Actual reset-invalidated cookie reaches sign-in instead of redirect cycle",
+        "Reset-invalidated protected navigation returns to usable sign-in",
+        "Consumed reset token cannot reset again",
+        "Single password reset renews session version exactly once",
+        "Former password refused after reset",
+        "New password signs in through actual form",
+        "Password recovery keeps anonymous request and token-derived completion evidence distinct",
+        "Current-build authentication/reset/logout preserves original operational roles, independent grants, staffing and requests/history",
+        "Current valid Manager session retains established public-auth redirect",
+        "Actual reset-revoked cookie can reach /login without redirect loop",
+        "Actual reset-revoked cookie can reach /forgot-password without redirect loop",
+        "Actual reset-revoked cookie can reach /reset-password without redirect loop",
+        "Actual reset-revoked cookie can reach /register without redirect loop",
+        "identity284-sign-in-light-1440 contained document overflow",
+        "No completed identity journey browser errors"
+      ],
+      "captures": [
+        ".local/alpha-closure284/identity284-failed-sign-in-dark-390.png",
+        ".local/alpha-closure284/identity284-sign-in-light-1440.png"
+      ],
+      "errors": [],
+      "limits": [
+        "Nine synthetic initial fixed-role/administration credential subjects in newly owned fixture; not account provisioning evidence.",
+        "Current284 compiled runtime actual login/logout/reset endpoints and form controls executed.",
+        "Owned local encrypted reset-outbox capture is not external delivery acceptance.",
+        "Completed reset retained after administrative occurred_at observer correction; finish is read-only, no consumed token replay or session/credential restoration.",
+        "Additional sign-out after post-reset new-password login was not executed before observer stop and is not claimed; nine actual sign-out journeys are independently verified.",
+        "Replacement password from completed stopped observer was not persisted; that disposable account remains reset and is not reused. Future helper persists private replacement before reset.",
+        "Role/project-state workflow acceptance remains separate named E249/E251-E283 proof."
+      ]
+    },
+    "finalNavigation": {
+      "checks": 19,
+      "cases": [
+        "tenantOnly current authority preserves valid session redirect despite caller route marker",
+        "projectOnly current authority preserves valid session redirect despite caller route marker",
+        "manager current authority preserves valid session redirect despite caller route marker",
+        "superintendent current authority preserves valid session redirect despite caller route marker",
+        "chief current authority preserves valid session redirect despite caller route marker",
+        "instrument current authority preserves valid session redirect despite caller route marker",
+        "viewer current authority preserves valid session redirect despite caller route marker",
+        "managerAdmin current authority preserves valid session redirect despite caller route marker",
+        "Actual reset-revoked cookie renders /login at final build",
+        "Final revoked /login browser form remains reachable",
+        "Actual reset-revoked cookie renders /forgot-password at final build",
+        "Final revoked /forgot-password browser form remains reachable",
+        "Actual reset-revoked cookie renders /reset-password at final build",
+        "Final revoked /reset-password browser form remains reachable",
+        "Actual reset-revoked cookie renders /register at final build",
+        "Final revoked /register browser form remains reachable",
+        "Valid-session invitation route retains its independent validation page despite caller marker",
+        "Caller route marker does not change authenticated API identity",
+        "Final anonymous protected navigation retains sign-in boundary"
+      ],
+      "scope": "Read-only final707source valid/revoked public-session route marker and authenticated invitation/API exception, not another account reset or whole Alpha acceptance."
+    },
+    "totalNamedChecks": 118,
+    "sourceImpact": "99current credential/reset checks executed at initial284705build. Final707 change is public entry route hint plus restored invitation exception; server current-session function and all auth mutation/credential/session/audit implementations unchanged.19final read-only checks cover affected current valid/revoked/marker/invitation outcomes. Not a claim that all99were rerun at final bytes.",
+    "capturesOpened": [
+      {
+        "path": ".local/alpha-closure284/identity284-failed-sign-in-dark-390.png",
+        "sha256": "d4484d832a474ae7838c9131e968106f2105a396f3b589f8def75e4f8969c68d"
+      },
+      {
+        "path": ".local/alpha-closure284/identity284-sign-in-light-1440.png",
+        "sha256": "da61c987f7a5ca954176d756f4823c4ac846ce6d4f0b70472d2d9e5b901e5540"
+      }
+    ],
+    "captureLimits": "Two bounded public auth captures opened. Historical mobile filename includes dark browser preference, but public auth page actually renders incumbent Light; no Dark public-auth acceptance claim or unapproved theme expansion. No new layout/styling/design token change."
+  },
+  "fixture": {
+    "schema": "alpha_identity284_d84e07629e4c4a81b32aa4a6889e03d3",
+    "ownedPostgres": "swr-alpha-acceptance197-db-2f99839f",
+    "origin": "https://127.0.0.1:3317 via disposable loopback proxy to owned3316production",
+    "TLS": "Generated short-lived .NET certificate in ignored local files, no OS trust-store change/dependency; verifier tolerates self-signed only for this owned origin. Production HttpOnly/Secure/Strict cookies unchanged.",
+    "initialSubjects": "Nine unique seeded fixed-role/combined-authority subjects receive random credential hashes only in new guarded fixture setup; not real provisioning proof.",
+    "retention": "Actual logout revocations/reset/audits retained; no account/session restoration. New replacement password from stopped reset was not persisted and is not reused. Future helper now persists private replacement before mutation. Operational witness captured before current-build journeys and byte-compared afterward; historical lost/unopened evidence remains excluded."
+  },
+  "stoppedAndExcluded": [
+    "Initial HTTP-only API-client observer could not send Secure production cookie; TLS used without relaxing cookies.",
+    "Account observer guessed id instead of established email/name; login response provides actual user.id.",
+    "Error locator also matched route announcer; corrected specific error banner, previous completed auth effects retained.",
+    "Authenticated recovery form is intentionally redirected; anonymous recovery context introduced.",
+    "Audit observer guessed created_at instead of administrative occurred_at after actual reset/new-password login. Read-only finish verifies audit/witnesses without replay/reset; extra final sign-out not executed and not claimed.",
+    "Initial shared-layout implementation would redirect valid invitation visits. Final route marker preserves invitation exception, actual final current verification supplied.",
+    "Read-only initial artifact image-cache EROFS diagnostic was verification mount behavior, not production defect; current284 artifacts have own writable cache."
+  ],
+  "limits": [
+    "A7 final capability/R01-R11/D1-D8/continuity closure still pending. This is a verified defect increment, not full Alpha acceptance.",
+    "Local encrypted reset-outbox capture is not external email delivery.",
+    "Source-map-js/GHSA-68fv-2mgg-jv7q release blocker remains separate; no release, main merge, deployment, Alpha2 or deferred Org work."
+  ]
+}

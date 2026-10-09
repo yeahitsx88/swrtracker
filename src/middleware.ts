@@ -25,18 +25,14 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (hasSession && isPublic && pathname !== '/invite') {
-    if (
-      pathname === '/login' ||
-      pathname === '/register' ||
-      pathname === '/forgot-password' ||
-      pathname === '/reset-password'
-    ) {
-      return NextResponse.redirect(new URL('/projects', req.url));
-    }
-  }
+  // Public auth pages validate current sessions in their server layout.
+  // Cookie presence alone cannot redirect a stale session away from sign-in.
 
-  return NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  // Route context only: overwrite caller input and preserve invitation pages.
+  requestHeaders.delete('x-swr-auth-entry');
+  if (PUBLIC_ROUTES.includes(pathname)) requestHeaders.set('x-swr-auth-entry', '1');
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
