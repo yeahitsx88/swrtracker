@@ -275,6 +275,10 @@ export default function TicketDetailPage() {
 
           {ticket ? <Card title="Attachments" description="Saved files stay with the request. Uploads are available only when your role and the request state permit them.">
             <div className="stack">
+              {uploadLocked ? <p className="muted" role="status">Showing files from the last confirmed response. The list will update after a confirmed upload or reload.</p> : null}
+              {!uploadLocked || attachments.length > 0 ? <AttachmentList attachments={attachments} actorId={actorId}
+                canWithdraw={attachment => !uploadLocked && (attachment.purpose === 'REQUEST_INSTRUCTION' ? capabilities.canUploadRequestInstruction : capabilities.canUploadFieldSupport)}
+                onWithdrawn={withdrawn => { setAttachments(items => items.map(item => item.id === withdrawn.id ? withdrawn : item)); setHistoryRevision(revision => revision + 1); setSuccess('File withdrawn. It remains in the request history.'); }} /> : null}
               {canUpload ? (
                 <AttachmentUploader
                   disabled={requestWorking || uncertain || stale}
@@ -304,10 +308,6 @@ export default function TicketDetailPage() {
                   {ticket ? `Current status: ${TICKET_STATUS_LABELS[ticket.status]}. ` : ''}You can view and download attachments on this SWR. No upload action is available in your current role or state.
                 </p>
               )}
-              {uploadLocked ? <p className="muted" role="status">Showing files from the last confirmed response. The list will update after a confirmed upload or reload.</p> : null}
-              {!uploadLocked || attachments.length > 0 ? <AttachmentList attachments={attachments} actorId={actorId}
-                canWithdraw={attachment => !uploadLocked && (attachment.purpose === 'REQUEST_INSTRUCTION' ? capabilities.canUploadRequestInstruction : capabilities.canUploadFieldSupport)}
-                onWithdrawn={withdrawn => { setAttachments(items => items.map(item => item.id === withdrawn.id ? withdrawn : item)); setHistoryRevision(revision => revision + 1); setSuccess('File withdrawn. It remains in the request history.'); }} /> : null}
             </div>
           </Card> : null}
 

@@ -62,3 +62,14 @@
 .record-column-settings label { display:flex; align-items:center; gap:.5rem; }
 .record-column-settings input[type=range] { min-width:0; flex:1; }
 .record-column-settings output { min-width:4rem; font-variant-numeric:tabular-nums; }
+
+/* Flow: filter and selection tools share one line; row actions stay on one line and pinned in view. */
+.record-collection-tools:not([hidden]) { display:flex; flex-wrap:wrap; align-items:flex-end; gap:.5rem 1rem; }
+.record-collection-tools > .record-filter { flex:1 1 16rem; max-width:28rem; margin:0; }
+.record-collection-tools > .row { align-items:center; min-height:44px; }
+.record-collection-tools > .row:empty { display:none; }
+.administration-table td.record-actions .row { flex-wrap:nowrap; gap:.4rem; align-items:center; }
+.administration-table td.record-actions p { margin:0; min-width:8rem; font-size:.8rem; }
+.administration-table td.record-actions .button { white-space:nowrap; padding:.4rem .7rem; }
+.administration-table :is(th,td).record-actions { position:sticky; right:0; z-index:1; background:var(--bg-elevated); box-shadow:-8px 0 8px -8px rgb(0 0 0 / .18); }
+.administration-table th.record-actions { background:var(--surface-sunken); }

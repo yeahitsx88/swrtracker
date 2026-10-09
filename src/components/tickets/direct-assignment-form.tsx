@@ -116,7 +116,7 @@ export function DirectAssignmentForm({ projectId }: { projectId: string }) {
               <select className="select" value={form.partyChiefId} onChange={event => set('partyChiefId')(event.target.value)}><option value="">No Party Chief</option>
                 {options.partyChiefs.map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
           </fieldset>
-          <div className="row"><Button type="submit" disabled={busy} blockers={blockers} blockedTitle="Can’t create and assign yet">{busy ? 'Assigning…' : 'Create and assign'}</Button>
+          <div className="row sticky-actions"><Button type="submit" disabled={busy} blockers={blockers} blockedTitle="Can’t create and assign yet">{busy ? 'Assigning…' : 'Create and assign'}</Button>
             <Link className="button button-secondary" href={`/projects/${projectId}/survey/operations`}>Cancel</Link></div>
         </form>
       ) : null}

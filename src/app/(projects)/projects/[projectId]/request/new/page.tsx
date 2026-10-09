@@ -342,7 +342,7 @@ export default function NewRequestPage() {
         {locked && !submitting ? <p role="status" className="muted">{stale ? 'The action conflicted with current state. Open draft details and reload before editing.' : 'The last action is unconfirmed. Retry it before editing or leaving this page.'}</p> : null}
         <fieldset className="form-narrow" disabled={locked} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>{renderStepBody()}</fieldset>
         {error && !draft && !saveAttempt.current.pending ? <Button variant="secondary" onClick={() => setSetupRevision(value => value+1)}>Retry setup</Button> : null}
-        <div className="row">
+        <div className="row sticky-actions">
           <Button
             variant="secondary"
             disabled={activeStep === 0 || submitting}

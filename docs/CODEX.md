@@ -4911,3 +4911,47 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Review: diff and tracked-file inspection performed; generated logs, tokens, fixture manifests, mail handoff, TLS material and captures stay ignored. Each audit register row has an explicit final disposition. Plan's local hosting blockers closed; real hosted backup/mail/pilot/deployment, production-load SLOs, other engines/devices, main/publication/Alpha2 remain separate.
 - Integration: original no-ff7c039ec retains both reviewed parents. Advance alpha1-audit-hardening by fast-forward through its clean D:/Programming/SWRTracker checkout to this final reviewed evidence head. Preserve010a files/index separately as owner directed; shared ref advancement changes its visible HEAD. No push/main/deployment.
 - Production behavior changed: no, final evidence/acceptance only.
+
+### 2026-10-09 - Batch 293: Alpha1 basic-feature gaps (owner-authorized "fix everything" scope)
+- Intent: close basic-feature friction found in the Phase5 review. The owner chose the gated scope: comments on a request, notification inbox and removal of a wrong attachment. Help flags and CAD stay excluded.
+- Commits: f041dd8 (request filters), 9004fc2 + 059eaea (account self-service), 54df3cb (attachment preview/withdrawal), 1b394c9 (request conversation), 69a65ad (project inbox), df4f849 (Areas/Departments setup screens), da17ddd (direct-assignment screen), fda0c7b (tenant audit log viewer).
+- Changed behavior:
+  - URL-driven search/status/queue filters on My Requests and Crew Work.
+  - Signed-in name change (SHARED, idempotent) and password change (EXCLUSIVE). Password change verifies the current password against the sign-in rate limiter, bumps session_version, retires reset tokens and re-issues the cookie. New administrative events: account.profile_updated, password.changed.
+  - Uploader-only withdrawal with reason (migration046; final by trigger; attachment.withdrawn). Downloads of withdrawn files are refused, and PNG/JPEG preview is served inline with a sandbox CSP.
+  - Append-only request comments (migration047; ticket.comment_added; COMMENT_ADDED outbox to other participants; never on drafts).
+  - Per-user project inbox merging notification_outbox and survey_notifications, with a read watermark (migration048) and an unread badge; not offered to PROJECT_ADMIN.
+  - Project Admin Areas and Departments tabs, editable only in SETUP.
+  - Survey Manager/Superintendent direct-assignment screen using the existing DIRECT_ASSIGNMENT variant.
+  - TENANT_ADMIN audit log over ticket_events and administrative_events: tenant-scoped, parameterized filters, CSV with formula neutralization.
+- Writers: new writers are registered in audits/phase5-lifecycle-writers.json; existing coordinated-transaction, idempotency and append-only rules are reused. No role or workflow transition was added.
+- Verification: strict typecheck and units pass (738 at the end of Batch 295); warning-free production build except the pre-existing workspace-root lockfile notice in this worktree. HTTP and browser checks ran against a disposable review database (127.0.0.1:15491).
+- Limitations: PostgreSQL acceptance suites (test:postgres) were not run, because the retained 15489 container is out of bounds for this session. Maintained browser runners were not re-run.
+- Production behavior changed: yes.
+
+### 2026-10-09 - Batch 294: explained blocked actions with field highlighting
+- Intent: owner report: "Create team" silently disabled with no reason given. Owner-requested feature: every disabled action explains why, and highlights the problem area where possible.
+- Root cause: Create team requires a lead, chosen from a picker that sat at the top of the editor and only filled after members were added below. Nothing stated the requirement.
+- Changed behavior:
+  - Button accepts blockers (reason plus optional target element id). While reasons apply, the button is aria-disabled but focusable. Activating it opens a popover listing the reasons, outlines every target and offers "Show me" (scroll, focus, flash). Busy states keep native disabled, and the action never runs while reasons remain.
+  - Applied to: team create/save/delete, per-person Add with eligibility reasons, bulk add, role and staffing saves, closed-project Create team, direct assignment, New Request Save Draft/Submit (conflict and unconfirmed-intent reasons) and request-detail actions.
+- Files: src/components/ui/{action-blockers.ts, blocked-action.tsx, blocked-action.css, button.tsx} and the call sites; tests/ui/action-blockers.test.ts.
+- Verification: units and typecheck pass. Browser check: reasons, highlights, keyboard Enter/Escape, aria-describedby text, no POST while blocked, and a complete team creates (201).
+- Limitations: about 300 disabled sites exist; admin wizards and catalog screens still use plain disabled.
+- Production behavior changed: yes (presentation only; no authority or workflow change).
+
+### 2026-10-09 - Batch 295: QoL flow reconciliation
+- Intent: owner-authorized pass so that containers flow logically and actions stay in view. Assessment in docs/QOL_ASSESSMENT_20261009.md. This explicitly authorizes UI layout changes during stabilization.
+- Changed behavior:
+  - Shared tables fill their panel (saved widths become minimums), and the Actions column is pinned on-screen with actions on one line.
+  - Selection count/Clear/Export appear only after a selection; Select all matching appears only when a row is selectable.
+  - The local pager appears only above 25 rows; empty tables show only their message.
+  - The server pager hides itself on a single page.
+  - Request lists put Status second.
+  - Sticky action bar (.sticky-actions) on the Team editor (with a live name/members/lead/Areas summary and the lead picker beside the selected members), Direct assignment and New Request.
+  - Attachments list before the uploader.
+  - Back-to-top rises above sticky bars.
+- Compatibility: maintained runners' "Select all matching"/"Export selected" paths remain (visible when rows are selectable or selected). No column-order CSV assertion exists in maintained runners.
+- Verification: units/typecheck/build pass. A 1280×900 sweep of all role screens was taken before and after; Review Requests went 1.8 → 1.3 screens, Crew Work has no page overflow and Status/actions are visible. A 390×844 Team editor check confirmed the sticky bar is in view.
+- Open: see the assessment's open recommendations (history card, company-ID association, invitation table, Area picker, dashboard data toggles, audit header, phone card layout).
+- Production behavior changed: yes (presentation/flow only).

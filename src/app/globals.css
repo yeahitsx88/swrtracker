@@ -883,3 +883,10 @@ main {
 .audit-table td { vertical-align: top; }
 .audit-table code { font-size: 0.8rem; }
 .audit-details { max-width: 32rem; max-height: 18rem; overflow: auto; margin: 0.4rem 0 0; padding: 0.5rem; background: var(--surface-sunken); border-radius: 6px; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Long forms keep their primary decision in view; the bar sits at the bottom of the form while it scrolls. */
+.sticky-actions { position: sticky; bottom: 0; z-index: 3; margin-top: .5rem; padding: .75rem 0; background: var(--bg-elevated); border-top: 1px solid var(--line); box-shadow: 0 -10px 16px -14px rgb(0 0 0 / .35); }
+@media (max-width: 640px) { .sticky-actions { padding: .6rem 0 calc(.6rem + env(safe-area-inset-bottom)); } }
+/* The floating Back to top control rises above a sticky action bar instead of covering its buttons. */
+body:has(.sticky-actions) .scroll-to-top { translate: 0 -4.5rem; }
+@media (max-width: 640px) { body:has(.sticky-actions) .scroll-to-top { translate: 0 -8rem; } }

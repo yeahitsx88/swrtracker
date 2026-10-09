@@ -15,6 +15,8 @@ export function PaginationControls({
 }: PaginationControlsProps) {
   const page = Math.floor(offset / limit) + 1;
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  // A single page needs no pager; it returns as soon as there is somewhere to go.
+  if (totalPages === 1 && offset === 0) return null;
 
   return (
     <div className="row">

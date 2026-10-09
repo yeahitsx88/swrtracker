@@ -12,11 +12,11 @@ export function TicketList({projectId,tickets,areaNames,renderActions,emptyTitle
 
  return <div className="stack">{!tickets.length?<div className="empty-state" role="status"><strong>{emptyTitle}</strong><span>{emptyMessage}</span></div>:null}<AdministrationRecords compact={compactTools} preferencesKey={`project:${projectId}:requests`} label="requests" description="Filter, sort and export requests on this loaded page. Use this view’s search or page controls to review remaining authorized history." rows={tickets} id={t=>t.id} columns={[
  {key:'number',label:'Number',text:t=>t.ticketNumber??'Draft',render:t=><Link className="app-link" href={`/projects/${projectId}/tickets/${t.id}`}>{t.ticketNumber??'Open draft'}</Link>},
- {key:'description',label:'Request',className:'request-description-column',text:t=>t.description||'Untitled draft'},
- {key:'type',label:'Type',className:'request-type-column',text:t=>t.ticketType?ticketTypeLabel(t.ticketType):'Not specified'},
- {key:'area',label:'Area',text:t=>t.aorNodeId?areaNames?.get(t.aorNodeId)?.path??t.aorNodeId:'Not specified'},
- {key:'date',label:'Need-By',text:t=>t.requestedDate??'',render:t=>t.requestedDate?formatCalendarDate(t.requestedDate):'Not specified'},
  {key:'status',label:'Status',text:t=>t.status.replaceAll('_',' '),render:t=><StatusBadge status={t.status} viewerIsRequester={false}/>},
+ {key:'description',label:'Request',className:'request-description-column',text:t=>t.description||'Untitled draft'},
+ {key:'date',label:'Need-By',text:t=>t.requestedDate??'',render:t=>t.requestedDate?formatCalendarDate(t.requestedDate):'Not specified'},
+ {key:'area',label:'Area',text:t=>t.aorNodeId?areaNames?.get(t.aorNodeId)?.path??t.aorNodeId:'Not specified'},
+ {key:'type',label:'Type',className:'request-type-column',text:t=>t.ticketType?ticketTypeLabel(t.ticketType):'Not specified'},
  {key:'priority',label:'Priority',text:t=>priorityLabel(t.priority)}
  ]} actions={renderActions}/></div>;
 }
