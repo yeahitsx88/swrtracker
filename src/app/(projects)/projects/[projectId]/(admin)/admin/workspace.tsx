@@ -17,6 +17,8 @@ import {useAdministrationProgress} from '@/lib/use-administration-progress';
 import type {ProjectRequestConfig,ProjectRequestConfigResponse} from '@/lib/contracts/projects';
 import {ProjectAdministration} from '@/components/ui/project-administration';
 import {MemberAccessRecovery} from '@/components/ui/member-access-recovery';
+import {ProjectAreaSetup} from '@/components/ui/project-area-setup';
+import {ProjectDepartments} from '@/components/ui/project-departments';
 
 export function AdminProjectWorkspace() {
   const params = useParams<{ projectId: string }>();
@@ -32,7 +34,7 @@ export function AdminProjectWorkspace() {
   const policyBlocked=owner.blocked(policyToken),policyLocked=policy.locked||policyBlocked;
   const readingPolicy=useRef(false);const [policyReadFailed,setPolicyReadFailed]=useState(false);
   void ownerToken;
-  const tabs = [{id:'admin-personnel',icon:'team' as const,label:'Personnel',href:base},{id:'admin-companies',icon:'building' as const,label:'Companies',href:base+'/companies'},{id:'admin-settings',icon:'settings' as const,label:'Project Settings',href:base+'/settings'},{id:'admin-access-recovery',icon:'shield' as const,label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',icon:'chart' as const,label:'Diagnostics',href:base+'/diagnostics'}];
+  const tabs = [{id:'admin-personnel',icon:'team' as const,label:'Personnel',href:base},{id:'admin-companies',icon:'building' as const,label:'Companies',href:base+'/companies'},{id:'admin-settings',icon:'settings' as const,label:'Project Settings',href:base+'/settings'},{id:'admin-areas',icon:'pin' as const,label:'Areas',href:base+'/areas'},{id:'admin-departments',icon:'building' as const,label:'Departments',href:base+'/departments'},{id:'admin-access-recovery',icon:'shield' as const,label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',icon:'chart' as const,label:'Diagnostics',href:base+'/diagnostics'}];
   const activeId = pathname===base+'/request-policy'?'admin-settings':tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
 
   const [leadTimeEnforcementEnabled, setLeadTimeEnforcementEnabled] = useState(true);
@@ -132,6 +134,8 @@ export function AdminProjectWorkspace() {
       <AdministrationArea id="admin-access-recovery" className="stack"><Card title="Transfer Area Review Responsibility" description="Before removing or changing a Superintendent, transfer their Area review responsibility to a replacement. This keeps unfinished requests covered; it does not transfer crew membership or remove access."><ProtectedSurveyObligations key={projectId} projectId={projectId} owner={owner}/></Card>
       <DraftRecovery projectId={projectId} owner={owner} /><SubmittedRequestRecovery projectId={projectId} owner={owner}/></AdministrationArea>
       <AdministrationArea id="admin-access-recovery"><MemberAccessRecovery projectId={projectId} owner={owner} readOnly={loading||archived}/></AdministrationArea>
+      <AdministrationArea id="admin-areas"><ProjectAreaSetup projectId={projectId}/></AdministrationArea>
+      <AdministrationArea id="admin-departments"><ProjectDepartments projectId={projectId}/></AdministrationArea>
       <AdministrationArea id="admin-companies"><SubcontractorAccess projectId={projectId} owner={owner} companiesRevision={companiesRevision} onInvitesChanged={()=>setCompaniesRevision(value=>value+1)}/><ProjectInvitationHistory projectId={projectId} owner={owner} revision={companiesRevision} onInvitesChanged={()=>setCompaniesRevision(value=>value+1)}/></AdministrationArea>
     </AdministrationWorkspace>
   );

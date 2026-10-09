@@ -864,3 +864,16 @@ main {
 .inbox-meta { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.82rem; }
 .nav-count { margin-left: auto; min-width: 1.4rem; padding: 0 0.4rem; border-radius: 999px; background: var(--action); color: #fff; font-size: 0.72rem; font-weight: 700; line-height: 1.4rem; text-align: center; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Areas and departments administration ---------- */
+.area-levels { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; list-style: none; margin: 0; padding: 0; }
+.area-levels li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.area-tree { list-style: none; margin: 0; padding-left: 1.1rem; border-left: 2px solid var(--line); display: grid; gap: 0.35rem; }
+.stack > .area-tree { padding-left: 0; border-left: 0; }
+.area-tree .area-tree { margin-top: 0.35rem; }
+.area-node { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; padding: 0.3rem 0; }
+.department-card { display: grid; gap: 0.6rem; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius-panel); }
+.simple-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.simple-table th, .simple-table td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--line); }
+.simple-table th { color: var(--muted); font-size: 0.78rem; font-weight: 700; background: var(--surface-sunken); }
+.title-form { align-items: flex-end; }

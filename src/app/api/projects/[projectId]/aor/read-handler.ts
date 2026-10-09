@@ -4,6 +4,9 @@ import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import type { UUID } from '@/shared/types';
+import { ForbiddenError } from '@/shared/errors';
+import { resolveProjectCapabilities } from '@/lib/project-capabilities';
+import type { AuthContext } from '@/lib/auth';
 
 interface AorLevelRow {
   id: string;
@@ -24,11 +27,14 @@ export interface AorReadRouteDeps {
   getProjectRole: typeof getProjectRole;
   queryLevels: (tenantId: UUID, projectId: UUID) => Promise<AorLevelRow[]>;
   queryNodes: (tenantId: UUID, projectId: UUID) => Promise<AorNodeRow[]>;
+  /** Current project administrators (project or central IT) may read the Area tree they configure. */
+  isProjectAdministrator?: (auth: AuthContext, projectId: UUID) => Promise<boolean>;
 }
 
 const defaultAorReadDeps: AorReadRouteDeps = {
   requireAuth: requireActiveAuth,
   getProjectRole,
+  isProjectAdministrator: async (auth, projectId) => (await resolveProjectCapabilities(pool, auth, projectId)).canAdminister,
   queryLevels: async (tenantId, projectId) => {
     const levelsResult = await pool.query<AorLevelRow>(
       `SELECT id, depth, label
@@ -64,7 +70,11 @@ export async function handleGetAor(
     const { projectId } = await params;
     const projectUuid = projectId as UUID;
 
-    await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId, auth.sessionVersion);
+    try {
+      await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId, auth.sessionVersion);
+    } catch (error) {
+      if (!(error instanceof ForbiddenError) || !deps.isProjectAdministrator || !await deps.isProjectAdministrator(auth, projectUuid)) throw error;
+    }
 
     const levels = await deps.queryLevels(auth.tenantId, projectUuid);
     const nodes = await deps.queryNodes(auth.tenantId, projectUuid);

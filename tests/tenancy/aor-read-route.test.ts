@@ -71,3 +71,13 @@ test('handleGetAor returns 403 when project membership gate fails', async () => 
 
   assert.equal(response.status, 403);
 });
+
+test('handleGetAor lets a current project administrator without a work role read the Area tree', async () => {
+  const forbidden = async () => { throw new ForbiddenError('User is not a project member'); };
+  const allowed = await handleGetAor(makeRequest(), { params: Promise.resolve({ projectId }) },
+    makeDeps({ getProjectRole: forbidden, isProjectAdministrator: async () => true }));
+  assert.equal(allowed.status, 200);
+  const refused = await handleGetAor(makeRequest(), { params: Promise.resolve({ projectId }) },
+    makeDeps({ getProjectRole: forbidden, isProjectAdministrator: async () => false }));
+  assert.equal(refused.status, 403);
+});
