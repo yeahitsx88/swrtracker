@@ -839,3 +839,14 @@ main {
 .attachment-dialog { --popout-inset: 1.25rem; width: min(900px, calc(100vw - 2rem)); max-height: 88dvh; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--bg-elevated); color: var(--ink); overflow: hidden; }
 .attachment-dialog::backdrop { background: rgb(24 38 50 / 48%); }
 .attachment-preview { display: block; max-width: 100%; max-height: 70dvh; margin: 0 auto; object-fit: contain; background: var(--surface-sunken); }
+
+/* ---------- Request conversation ---------- */
+.comment-thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; max-height: 32rem; overflow-y: auto; }
+.comment { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); gap: 0.65rem; align-items: start; }
+.comment-avatar { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; background: var(--surface-hover); color: var(--action); font-size: 0.8rem; font-weight: 700; }
+.comment-own .comment-avatar { background: var(--action); color: #fff; }
+.comment-body { min-width: 0; padding: 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: 0 var(--radius-control) var(--radius-control) var(--radius-control); background: var(--bg-elevated); }
+.comment-own .comment-body { background: var(--surface-sunken); }
+.comment-meta { margin: 0 0 0.2rem; color: var(--muted); font-size: 0.82rem; }
+.comment-meta strong { color: var(--ink); }
+.comment-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -39,7 +39,7 @@ interface PreviewRow {
 
 const FULL_PREVIEW_ROLES: ProjectInsightRole[] = ['TENANT_ADMIN', 'PROJECT_ADMIN', 'SURVEY_MANAGER'];
 
-function describeEvent(eventType: string, payload: Record<string, unknown>, ticket: string): { subject: string; body: string } {
+export function describeEvent(eventType: string, payload: Record<string, unknown>, ticket: string): { subject: string; body: string } {
   const reason = typeof payload.reason === 'string' ? ` Reason: ${payload.reason}` : '';
   const urgent = typeof payload.urgentReason === 'string' && payload.urgentReason
     ? ` Urgent reason: ${payload.urgentReason}`
@@ -60,6 +60,7 @@ function describeEvent(eventType: string, payload: Record<string, unknown>, tick
     SURVEY_CANCELED: [`${ticket} canceled by Survey`, `${ticket} was canceled by Survey.${reason}`],
     STOP_WORK_RETURNED: [`Stop work on ${ticket}`, `${ticket} was returned for correction. Stop work until fresh approval and assignment.${reason}`],
     STOP_WORK_CANCELED: [`Stop work on ${ticket}`, `${ticket} was canceled. Stop work.${reason}`],
+    COMMENT_ADDED: [`New comment on ${ticket}`, `${typeof payload.authorName === 'string' ? payload.authorName : 'Someone'} commented: ${typeof payload.excerpt === 'string' ? payload.excerpt : ''}`],
   };
   const [subject, body] = descriptions[eventType] ?? [`${ticket} status update`, `${ticket} recorded ${eventType}.`];
   return { subject, body };

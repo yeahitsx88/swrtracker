@@ -11,6 +11,7 @@ import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-revi
 import { useUnsavedProgress } from '@/lib/use-unsaved-progress';
 import type { AorNodeRecord, AorLevelRecord, AttachmentRecord, TicketCapabilities, TicketRecord, TicketType, UpdateRequesterTicketRequest } from '@/lib/contracts';
 import { AttachmentList, AttachmentUploader, TicketDetails, TicketHistory } from '@/components/tickets';
+import { TicketConversation } from '@/components/tickets/ticket-conversation';
 import { Button, Card, ErrorBanner, Input, Select, SuccessBanner, Textarea } from '@/components/ui';
 import { Field } from '@/components/forms';
 import { AorNodePicker } from '@/components/aor';
@@ -243,6 +244,8 @@ export default function TicketDetailPage() {
             {loading ? <p className="muted" role="status">Loading ticket details…</p> : null}
             {ticket ? <TicketDetails ticket={ticket} areaPath={areaPath} /> : null}
           </Card>
+
+          {ticket && ticket.status !== 'DRAFT' ? <TicketConversation ticketId={ticket.id} actorId={actorId} revision={historyRevision} /> : null}
 
           {capabilities.canEditRequesterFields ? (
             <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
