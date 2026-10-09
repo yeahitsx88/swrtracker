@@ -1,7 +1,7 @@
 import { requesterCancel } from '@/modules/ticket/application/requester-cancel';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ForbiddenError } from '@/shared/errors';
+import { ConflictError, ForbiddenError } from '@/shared/errors';
 import { requestSurveyCancel } from '@/modules/ticket/application/request-survey-cancel';
 import { approveSurveyCancel } from '@/modules/ticket/application/approve-survey-cancel';
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
@@ -25,7 +25,7 @@ function makeTicket(overrides?: Partial<Ticket>): Ticket {
     ticketNumber: 'FSS-U1-00001',
     ticketType: 'LAYOUT',
     requesterId: 'requester-1' as UUID,
-    assignedPartyChiefId: 'pc-1' as UUID,
+    assignedPartyChiefId: actorId,
     assignedInstrumentManId: 'im-1' as UUID,
     surveyLeadId: 'lead-1' as UUID,
     workflowVariant: 'STANDARD_APPROVAL',
@@ -167,7 +167,7 @@ test('approveSurveyCancel clears pending request metadata and cancels the ticket
   assert.equal(patchCalls[0]?.surveyCancelRequestedRole, null);
   assert.equal(patchCalls[0]?.assignedPartyChiefId, null);
   assert.equal(patchCalls[0]?.assignedInstrumentManId, null);
-  assert.equal(dbCalls.length, 6);
+  assert.equal(dbCalls.filter(sql=>sql.includes('UPDATE survey_rejection_proposals')).length,1);
   assert.equal(dbCalls.filter((sql) => /notification_outbox/.test(sql)).length, 3);
 });
 
@@ -184,7 +184,61 @@ test('requester cancellation queues stop work for the captured crew before clear
   });
   assert.equal(result.assignedPartyChiefId,null);
   assert.equal(result.assignedInstrumentManId,null);
-  assert.deepEqual(outbox.filter(p=>p[3]==='STOP_WORK_CANCELED').map(p=>p[2]),['pc-1','im-1']);
+  assert.deepEqual(outbox.filter(p=>p[3]==='STOP_WORK_CANCELED').map(p=>p[2]),[actorId,'im-1']);
   assert.equal(outbox.filter(p=>p[3]==='REQUESTER_CANCELED').length,1);
   assert.equal(new Set(outbox.map(p=>p[5])).size,3);
+});
+
+
+test('assigned field staff cannot create stop-work flags on closed requests in either variant', async () => {
+  for (const workflowVariant of ['STANDARD_APPROVAL', 'DIRECT_ASSIGNMENT'] as const) {
+    for (const status of ['COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED'] as const) {
+      for (const actorRole of ['PARTY_CHIEF', 'INSTRUMENT_MAN'] as const) {
+        const patches: Array<Record<string, unknown>> = [];
+        const queries: string[] = [];
+        const original = makeTicket({workflowVariant, status, assignedInstrumentManId: actorId});
+        const db: DbClient = {query: async sql => {queries.push(sql); return {rows: []};}};
+        await assert.rejects(() => requestSurveyCancel(makeRepo(original, patches), db, {
+          tenantId, ticketId, actorId, actorRole, reason: 'Work was already closed',
+        }), ConflictError);
+        assert.equal(patches.length, 0, `${workflowVariant}/${status}/${actorRole} preserves the record`);
+        assert.equal(queries.length, 0, 'No audit, notice or persistence effect on refusal');
+        assert.equal(original.surveyCancelRequestedAt, null);
+      }
+    }
+  }
+});
+
+test('assigned Chief and Instrument Man can still flag active stop-work without cancelling the request', async () => {
+  for (const workflowVariant of ['STANDARD_APPROVAL', 'DIRECT_ASSIGNMENT'] as const) {
+    for (const actorRole of ['PARTY_CHIEF', 'INSTRUMENT_MAN'] as const) {
+      for (const status of ['ASSIGNED', 'IN_PROGRESS', 'DELAYED', 'PENDING_FIELD_VALIDATION'] as const) {
+        const patches: Array<Record<string, unknown>> = [];
+        const queries: string[] = [];
+        const original = makeTicket({workflowVariant, status, assignedInstrumentManId: actorId});
+        const db: DbClient = {query: async sql => {queries.push(sql); return {rows: []};}};
+        const result = await requestSurveyCancel(makeRepo(original, patches), db, {
+          tenantId, ticketId, actorId, actorRole, reason: 'Current work must stop',
+        });
+        assert.equal(result.status, status);
+        assert.equal(result.surveyCancelRequestedRole, actorRole);
+        assert.equal(patches.length, 1);
+        assert.equal(queries.filter(sql => sql.includes('INSERT INTO ticket_events')).length, 1);
+      }
+    }
+  }
+});
+
+test('terminal stop-work refusals retain wrong-role and personal-assignment checks', async () => {
+  for (const actorRole of ['PARTY_CHIEF', 'INSTRUMENT_MAN', 'REQUESTER', 'VIEWER', 'SURVEY_SUPERINTENDENT'] as const) {
+    const patches: Array<Record<string, unknown>> = [];
+    const queries: string[] = [];
+    const original = makeTicket({status: 'COMPLETED', assignedPartyChiefId: 'another-chief' as UUID});
+    const db: DbClient = {query: async sql => {queries.push(sql); return {rows: []};}};
+    await assert.rejects(() => requestSurveyCancel(makeRepo(original, patches), db, {
+      tenantId, ticketId, actorId, actorRole, reason: 'Unauthorized terminal action',
+    }), ForbiddenError);
+    assert.equal(patches.length, 0);
+    assert.equal(queries.length, 0);
+  }
 });

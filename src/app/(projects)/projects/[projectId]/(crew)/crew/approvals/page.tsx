@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { apiClient } from '@/lib/apiClient';
-import { getErrorMessage } from '@/lib/errors';
 import { useTicketPage } from '@/lib/use-ticket-page';
 import { PaginationControls } from '@/components/forms';
+import {useProjectWorkspace} from '@/components/ui/project-shell-header';
+import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
 import { ApprovalActions, TicketList } from '@/components/tickets';
 import { Button, Card, ErrorBanner } from '@/components/ui';
 import { Icon } from '@/components/ui/icon';
@@ -18,40 +18,30 @@ export default function CrewApprovalsPage() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(25);
   const [revision, setRevision] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [busyTicketId, setBusyTicketId] = useState<string | null>(null);
+  const workspace=useProjectWorkspace();
+  const workflow = useTicketWorkflowReview(() => setRevision(current => current + 1));
+  const actionDisabled=workflow.active||workspace?.project.status!=='ACTIVE';
   const approvals = useTicketPage(projectId, page, size, { queue: 'pcApprovals' }, true, revision);
   const total = approvals.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / size));
   useEffect(() => { if (approvals.data && page > pages) setPage(pages); }, [approvals.data, page, pages]);
   useEffect(() => { setPage(1); }, [projectId]);
 
-  async function runAction(ticketId: string, action: () => Promise<void>) {
-    setError(null);
-    setBusyTicketId(ticketId);
-    try {
-      await action();
-      setRevision((current) => current + 1);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Unable to process approval action.'));
-    } finally {
-      setBusyTicketId(null);
-    }
-  }
 
   return (
     <Card
-      title="Party Chief Approvals"
-      description="Field reports from your crew that need your decision before the request moves on."
+      title="Field Report Review"
+      description="Review inability reports when you are the recorded reviewer. Other reports you can see remain read-only. Retained legacy field reports remain available; new successful completions need no approval."
       actions={<>
         <label className="toolbar-select"><span>Rows</span><select className="select" value={size} onChange={(event) => { setSize(Number(event.target.value)); setPage(1); }}>{[10, 25, 50, 100].map((count) => <option key={count} value={count}>{count}</option>)}</select></label>
-        <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={approvals.loading}>
+        <Button variant="secondary" onClick={() => setRevision((current) => current + 1)} disabled={approvals.loading||workflow.active}>
           <Icon name="refresh" />{approvals.loading ? 'Refreshing…' : 'Refresh'}
         </Button>
       </>}
     >
       <div className="stack">
-        {error ? <ErrorBanner message={error} /> : null}
+        {workflow.dialog}
+        {approvals.data?.data.some(ticket=>ticket.preparationCleanupAllowed)?<p role="status">Preparation cancellation: validate the reviewed inability report or confirm its recorded legacy outcome. Resuming work is unavailable.</p>:null}
         {approvals.error ? <ErrorBanner message={approvals.error} /> : null}
         {approvals.loading ? <p className="muted" role="status">Loading approval queue…</p> : null}
         {!approvals.loading && !approvals.error ? (
@@ -60,25 +50,25 @@ export default function CrewApprovalsPage() {
             tickets={approvals.data?.data ?? []}
             areaNames={areaNames}
             emptyTitle="Nothing waiting for you"
-            emptyMessage="Field reports that need your approval will appear here."
+            emptyMessage="Field reports that need your decision will appear here."
             renderActions={(ticket) => ticket.status === 'PENDING_FIELD_VALIDATION' ? (
+              workspace?.actorId === ticket.fieldValidationReviewerId &&
+              ['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF'].includes(workspace.capabilities.operationalRole ?? '') ? (
               <>
-                <Button disabled={busyTicketId === ticket.id} onClick={() => {
-                  const reason = window.prompt('Validated return reason');
-                  if (reason?.trim()) void runAction(ticket.id, () => apiClient.validateFieldInability(ticket.id, reason).then(() => undefined));
-                }}>Validate and Return</Button>
-                <Button variant="secondary" disabled={busyTicketId === ticket.id} onClick={() => {
-                  const reason = window.prompt('Reason to reject the inability report');
-                  if (reason?.trim()) void runAction(ticket.id, () => apiClient.rejectFieldInability(ticket.id, reason).then(() => undefined));
-                }}>Reject and Resume</Button>
+                <Button disabled={workflow.active||(workspace?.project.status!=='ACTIVE'&&!(workspace?.project.status==='SETUP'&&ticket.preparationCleanupAllowed))} onClick={() => workflow.open(ticket,'validate-inability')}>Validate and Return</Button>
+                <Button variant="secondary" disabled={actionDisabled} onClick={() => workflow.open(ticket,'reject-inability')}>Reject Report and Resume</Button>
               </>
+              ) : <span className="muted">Review is reserved for the recorded reviewer.</span>
             ) : (
+              workspace && (['SURVEY_MANAGER','SURVEY_SUPERINTENDENT'].includes(workspace.capabilities.operationalRole ?? '') ||
+              workspace.capabilities.operationalRole === 'PARTY_CHIEF' && ticket.assignedPartyChiefId === workspace.actorId) ? (
               <ApprovalActions
                 ticket={ticket}
-                busy={busyTicketId === ticket.id}
-                onApprove={(id) => runAction(id, () => apiClient.approvePcStatus(id).then(() => undefined))}
-                onReject={(id, reason) => runAction(id, () => apiClient.rejectPcStatus(id, reason).then(() => undefined))}
+                busy={workflow.active||(workspace.project.status!=='ACTIVE'&&!(workspace.project.status==='SETUP'&&ticket.preparationCleanupAllowed))}
+                completionOnly={workspace.project.status!=='ACTIVE'}
+                onReview={action => workflow.open(ticket,action)}
               />
+              ) : <span className="muted">Legacy review requires the assigned Party Chief or authorized survey leadership.</span>
             )}
           />
         ) : null}

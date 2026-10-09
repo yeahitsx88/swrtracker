@@ -1,3 +1,4 @@
+import type {SubmittedRecoveryInput,SubmittedRecoveryPage} from '@/lib/contracts/submitted-recovery';
 import type {
   AttachmentResponse,
   AttachmentsListResponse,
@@ -98,6 +99,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export const apiClient = {
+  listSubmittedRecovery(projectId:string,limit=20,offset=0):Promise<SubmittedRecoveryPage>{return apiRequest(withQuery(`/api/projects/${projectId}/request-recovery`,{limit,offset}));},
+  recoverSubmittedRequest(projectId:string,ticketId:string,body:SubmittedRecoveryInput,retryKey:string):Promise<{recovered:true;status:'RETURNED_FOR_CORRECTION'}>{return apiRequest(`/api/projects/${projectId}/request-recovery/${ticketId}`,{method:'POST',body,headers:{'Idempotency-Key':retryKey}});},
+  getSurveyOrganization(projectId: string): Promise<import('@/modules/tenancy/application/read-survey-organization').SurveyOrganization> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/organization`);
+  },
  projectAdministration():Promise<{canCreateProject:boolean;projects:Array<{id:string;name:string;status:'SETUP'|'ACTIVE'|'ARCHIVED';crewBuild:string;recommissioning?:boolean}>;templates:Array<{id:string;name:string;crewBuild:string}>}>{return apiRequest('/api/projects/administration');},
  createProject(input:{name:string;crewBuild?:import('@/modules/tenancy/domain/types').CrewBuild;templateId?:string},key?:string):Promise<{project:{id:string;name:string;status:'SETUP'}}> {return apiRequest('/api/projects',{method:'POST',body:input,...(key?{headers:{'Idempotency-Key':key}}:{})});},
  workforceContext(projectId:string):Promise<{project:import('@/modules/tenancy/application/survey-teams').TeamProjectContext;role:import('@/modules/identity/domain/types').ProjectRole;snapshotToken:string}>{return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/workforce`,{mode:'context'}));},
@@ -137,6 +143,9 @@ export const apiClient = {
   listTeamAreas(projectId: string, query: import('@/modules/tenancy/application/survey-teams').TeamPageQuery): Promise<import('@/shared/types').Page<import('@/modules/tenancy/application/survey-teams').TeamArea>> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { ...query, mode: 'areas' }));
   },
+  createSurveyArea(projectId: string, input: {name:string;code:string}, idempotencyKey:string): Promise<{area:{id:string;name:string}}> {
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/areas`, {method:'POST',body:input,headers:{'Idempotency-Key':idempotencyKey}});
+  },
   getSurveyTeam(projectId: string, teamId: string): Promise<{ team: import('@/modules/tenancy/application/survey-teams').SurveyTeamDetail }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { teamId }));
   },
@@ -148,6 +157,10 @@ export const apiClient = {
   },
   changeSurveyRole(projectId: string, input: import('@/modules/tenancy/application/change-survey-role').ChangeSurveyRoleInput, idempotencyKey: string): Promise<{ changed: boolean }> {
     return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`, { method: 'PATCH', body: { action: 'set-role', ...input }, headers: { 'Idempotency-Key': idempotencyKey } });
+  },
+  changeReviewedSurveyRole(projectId:string,input:import('@/modules/tenancy/application/change-survey-role').OperationalRoleChangeInput & Partial<Pick<import('@/modules/tenancy/application/change-supervised-survey-role').SupervisedSurveyRoleInput,'reviewedTeamId'|'expectedTeamVersion'>>,idempotencyKey:string):Promise<{changed:boolean}> {
+    const {role,...review}=input;
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/teams`,{method:'PATCH',body:role==='REQUESTER'?{action:'remove-role',...review}:{action:'set-role',role,...review},headers:{'Idempotency-Key':idempotencyKey}});
   },
   reviewTickets(projectId: string, query: Record<string, string | number | undefined>): Promise<import('@/modules/ticket/application/review-tickets').ReviewResult> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/review`, query));
@@ -240,10 +253,10 @@ export const apiClient = {
     });
   },
 
-  createFollowUpTicket(ticketId: string): Promise<TicketResponse> {
+  createFollowUpTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/follow-up`, {
       method: 'POST',
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
@@ -273,10 +286,13 @@ export const apiClient = {
       body: { expectedVersion, reason }, headers: { 'Idempotency-Key': retryKey } });
   },
 
-  approveTicket(ticketId: string): Promise<TicketResponse> {
+  approveTicket(ticketId: string, idempotencyKey=createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/approve`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': idempotencyKey },
     });
+  },
+  rejectTicket(ticketId:string,rejectionReason:string,idempotencyKey:string):Promise<TicketResponse> {
+    return apiRequest(`/api/tickets/${ticketId}/reject`,{method:'POST',body:{rejectionReason},headers:{'Idempotency-Key':idempotencyKey}});
   },
 
   assignTicket(ticketId: string, assignedPartyChiefId: string | null, assignedInstrumentManId: string | null): Promise<TicketResponse> {
@@ -286,29 +302,35 @@ export const apiClient = {
     });
   },
 
-  surveyCancel(ticketId: string, reason: string): Promise<TicketResponse> {
+  surveyCancel(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/survey-cancel`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  startTicket(ticketId: string): Promise<TicketResponse> {
+  approveSurveyCancel(ticketId: string, retryKey: string): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/survey-cancel/approve`, {
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
+    });
+  },
+
+  startTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/start`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  completeTicket(ticketId: string): Promise<TicketResponse> {
+  completeTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/complete`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  delayTicket(ticketId: string, reason: string): Promise<TicketResponse> {
+  delayTicket(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/delay`, {
       method: 'POST',
       body: { reason },
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
@@ -320,63 +342,64 @@ export const apiClient = {
     });
   },
 
-  restartDelayedTicket(ticketId: string): Promise<TicketResponse> {
+  restartDelayedTicket(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/restart-delay`, {
-      method: 'POST', headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  approvePcStatus(ticketId: string): Promise<TicketResponse> {
-    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/pc-approve`, { method: 'POST' });
+  approvePcStatus(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
+    return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/pc-approve`, { method: 'POST', headers: { 'Idempotency-Key': retryKey } });
   },
 
-  rejectPcStatus(ticketId: string, reason?: string): Promise<TicketResponse> {
+  rejectPcStatus(ticketId: string, reason?: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/pc-reject`, {
       method: 'POST',
       body: reason ? { reason } : {},
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  requesterCancel(ticketId: string): Promise<TicketResponse> {
+  requesterCancel(ticketId: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/requester-cancel`, {
       method: 'POST',
-      headers: { 'Idempotency-Key': createIdempotencyKey() },
+      headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  returnForCorrection(ticketId: string, reason: string): Promise<TicketResponse> {
+  returnForCorrection(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/return`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  reportFieldInability(ticketId: string, reason: string): Promise<TicketResponse> {
+  reportFieldInability(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-inability`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  validateFieldInability(ticketId: string, reason: string): Promise<TicketResponse> {
+  validateFieldInability(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-inability/validate`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  rejectFieldInability(ticketId: string, reason: string): Promise<TicketResponse> {
+  rejectFieldInability(ticketId: string, reason: string, retryKey = createIdempotencyKey()): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/field-inability/reject`, {
-      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { reason }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  reviseNeedBy(ticketId: string, requestedDate: string, reason: string): Promise<TicketResponse> {
+  reviseNeedBy(ticketId: string, requestedDate: string, reason: string, retryKey = createIdempotencyKey(), expectedVersion?: number): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/need-by`, {
-      method: 'POST', body: { requestedDate, reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { requestedDate, reason, ...(expectedVersion===undefined?{}:{expectedVersion}) }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 
-  revisePriority(ticketId: string, priority: 'NORMAL' | 'HIGH', reason: string): Promise<TicketResponse> {
+  revisePriority(ticketId: string, priority: 'NORMAL' | 'HIGH', reason: string, retryKey = createIdempotencyKey(), expectedVersion?: number): Promise<TicketResponse> {
     return apiRequest<TicketResponse>(`/api/tickets/${ticketId}/priority`, {
-      method: 'POST', body: { priority, reason }, headers: { 'Idempotency-Key': createIdempotencyKey() },
+      method: 'POST', body: { priority, reason, ...(expectedVersion===undefined?{}:{expectedVersion}) }, headers: { 'Idempotency-Key': retryKey },
     });
   },
 

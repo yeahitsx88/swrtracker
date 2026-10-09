@@ -44,7 +44,7 @@ export const cases=[
 ];
 assert.equal(cases.length,55);assert.equal(new Set(cases.map(row=>row[0])).size,55);
 const mode=process.argv[2];assert.ok(['pg','external','report'].includes(mode),'Choose pg, external or report');
-const url=new URL(process.env.DATABASE_URL??'');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(process.env.SWR_TEAM_POSTGRES,'1');
+const url=new URL(process.env.DATABASE_URL??'');assert.equal(url.hostname,'127.0.0.1');if(url.port==='15500'){const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);assert.match(own.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);}else assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(process.env.SWR_TEAM_POSTGRES,'1');
 const files=async(root)=>{const out=[];for(const entry of await fs.readdir(root,{withFileTypes:true})){const path=root+'/'+entry.name;if(entry.isDirectory())out.push(...await files(path));else out.push(path);}return out;};
 const hash=createHash('sha256');for(const path of [...await files('src'),...await files('db/migrations')].sort()){hash.update(path);hash.update(await fs.readFile(path));}
 const implementation=hash.digest('hex'),record='.local-case-results.json';
@@ -63,8 +63,9 @@ if(mode==='pg'){
  // Existing PostgreSQL regressions need their own committed, fully migrated schema.
  const schema='phase5_regression_'+randomUUID().replaceAll('-',''),pg=new Pool({connectionString:url.href});const db=await pg.connect();let created=false;
  try{
-  await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET LOCAL search_path TO "${schema}",public`);
-  for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort())await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));
+  // Migration042 commits its wrapper; retain session schema for later migrations.
+  await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET search_path TO "${schema}",public`);
+  for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort()){await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name,schema,'Migration must stay in the newly owned schema');}
   await db.query('COMMIT');created=true;const scoped=new URL(url);scoped.searchParams.set('options','-c search_path='+schema+',public');
   const env={...process.env,DATABASE_URL:scoped.href,JWT_SECRET:process.env.JWT_SECRET??'synthetic-regression-secret-long-enough'};
   for(const suite of ['survey-teams-postgres.ts','survey-staffing-postgres.ts','survey-staffing-safety-postgres.ts','protected-obligations-postgres.ts','protected-obligations-concurrency-postgres.ts','superintendent-area-postgres.ts','superintendent-area-concurrency-postgres.ts','team-workforce-postgres.ts','draft-recovery-postgres.ts'])result.suites[suite]=await run(suite,[],env);
@@ -73,6 +74,7 @@ if(mode==='pg'){
 if(mode==='external'){
  // The operator first wires the named production runtime to setup's owned schema.
  result.suites[H]=await run('scoped-offboarding-acceptance.mjs',['http']);
+ await fs.writeFile(record,JSON.stringify(result,null,2)); // Retain successful HTTP evidence if browser verification subsequently fails.
  result.suites[U]=await run('scoped-offboarding-browser.mjs');
 }
 await fs.writeFile(record,JSON.stringify(result,null,2));

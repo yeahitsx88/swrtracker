@@ -64,7 +64,7 @@ export function validateAttachmentUploadCandidate(filename: string, mimeType: st
   const extension = path.extname(filename).toLowerCase();
   const allowedMimeTypes = ALLOWED_TYPES.get(extension);
   if (!allowedMimeTypes || !allowedMimeTypes.has(mimeType.toLowerCase())) {
-    throw new ValidationError('File type is not allowed for the Amelia beta');
+    throw new ValidationError('File type is not supported. Choose a PDF, JPG, PNG, TXT, CSV, Word, or Excel file.');
   }
 }
 

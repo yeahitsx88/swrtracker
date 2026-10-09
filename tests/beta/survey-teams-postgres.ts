@@ -146,7 +146,13 @@ async function main() {
       handlePostSurveyTeam(request('POST',{...input,name:'Exclusive B',memberIds:[otherChief],leadUserId:otherChief}),ctx,deps),
     ]);
     assert.deepEqual(exclusiveRace.map(r=>r.status).sort(),[201,409]);scenarios++;
-    const roleBody={action:'set-role',userId:candidate,role:'INSTRUMENT_MAN',expectedRole:'REQUESTER',expectedRoleVersion:1,confirmRoleChanges:true};
+    // Later Survey-only requirements supersede historical Requester promotion.
+    await call(handlePatchSurveyRole(request('PATCH',{action:'set-role',userId:candidate,role:'INSTRUMENT_MAN',expectedRole:'REQUESTER',expectedRoleVersion:1,confirmRoleChanges:true}),ctx,deps),400);
+    assert.equal((await pool.query('SELECT role FROM project_memberships WHERE project_id=$1 AND user_id=$2',[project,candidate])).rows[0].role,'REQUESTER');
+    assert.equal((await pool.query('SELECT session_version FROM users WHERE id=$1',[candidate])).rows[0].session_version,1);scenarios++;
+    // Own synthetic setup supplies an already-survey candidate for the valid path.
+    await pool.query("UPDATE project_memberships SET role='PARTY_CHIEF' WHERE project_id=$1 AND user_id=$2",[project,candidate]);
+    const roleBody={action:'set-role',userId:candidate,role:'INSTRUMENT_MAN',expectedRole:'PARTY_CHIEF',expectedRoleVersion:1,confirmRoleChanges:true};
     const roleKey=randomUUID();
     const changed=await call(handlePatchSurveyRole(request('PATCH',roleBody,'',token,roleKey),ctx,deps),200);
     assert.equal(changed.roleVersion,2);
@@ -162,7 +168,7 @@ async function main() {
     await call(handlePatchSurveyRole(request('PATCH',protectedRole(outsideProject)),ctx,deps),404);
     await pool.query('UPDATE users SET deactivated_at=NOW(),deactivated_by=id WHERE id=$1',[inactive]);
     await call(handlePatchSurveyRole(request('PATCH',protectedRole(inactive)),ctx,deps),404);
-    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,userId:im,expectedRole:'INSTRUMENT_MAN',role:'REQUESTER'}),ctx,deps),409);
+    await call(handlePatchSurveyRole(request('PATCH',{action:'remove-role',userId:im,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:1,confirmRoleChanges:true}),ctx,deps),409);
     const brokenRole=new SurveyTeamsPgRepository();brokenRole.recordTeamEvent=async()=>{throw new Error('role audit rejected');};
     await assert.rejects(transaction(db=>changeSurveyRole(brokenRole,db,actor,{userId:candidate,role:'PARTY_CHIEF',expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:2,confirmRoleChanges:true})),/role audit rejected/);
     assert.equal((await pool.query('SELECT session_version FROM users WHERE id=$1',[candidate])).rows[0].session_version,2);
@@ -194,13 +200,14 @@ async function main() {
     ]);
     assert.deepEqual(roleRace.map(r=>r.status).sort(),[200,409]);scenarios++;
     const currentRole=(await pool.query('SELECT role FROM project_memberships WHERE user_id=$1',[candidate])).rows[0].role;
-    await call(handlePatchSurveyRole(request('PATCH',{...roleBody,expectedRole:currentRole,expectedRoleVersion:3,role:'REQUESTER'}),ctx,deps),200);
+    await call(handlePatchSurveyRole(request('PATCH',{action:'remove-role',userId:candidate,expectedRole:currentRole,expectedRoleVersion:3,confirmRoleChanges:true}),ctx,deps),200);
     assert.equal((await pool.query('SELECT role FROM project_memberships WHERE user_id=$1',[candidate])).rows[0].role,'REQUESTER');
     assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM users WHERE id=$1',[candidate])).rows[0].count,1);
     await assert.rejects(getProjectRole(pool,tenant,project,candidate,1),{name:'UnauthorizedError'});scenarios++;
     assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM tenant_memberships')).rows[0].count,0);scenarios++;
-    // Two Managers are valid Requesters in each other's project. Synchronize
-    // their subject lookup to expose actor-user/subject-user lock inversion.
+    // Own setup gives each Manager a survey role in the other project.
+    // Current cross-project session renewal remains serialized before subject lookup.
+    await pool.query("UPDATE project_memberships SET role='PARTY_CHIEF' WHERE (project_id=$1 AND user_id=$2) OR (project_id=$3 AND user_id=$4)",[project,crossManager,sameTenantProject,manager]);
     const crossRepo=new SurveyTeamsPgRepository();const actualMembers=crossRepo.members.bind(crossRepo);
     // The tenant EXCLUSIVE barrier serializes these commands before subject lookup.
     crossRepo.members=actualMembers;

@@ -1,0 +1,43 @@
+.administration-workspace { min-width: 0; }
+.administration-workspace-heading { display: grid; gap: 1rem; }
+.administration-workspace-heading h1 { font-size: clamp(1.5rem, 2vw, 2rem); line-height: 1.3; }
+.administration-jump-links { display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.administration-jump-links .button { min-height: 44px; padding: .5rem .75rem; font-size: .875rem; white-space: nowrap; }
+.administration-area { min-width: 0; scroll-margin-top: 100px; }
+.administration-area[hidden] { display: none; }
+.administration-jump-links [aria-current="page"] { background: var(--surface-selected); color: var(--ink); border-color: var(--action); font-weight: 700; }
+.administration-wizard { padding-block: 1rem; border-block: 1px solid var(--line); }
+.administration-wizard-steps { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; padding-left: 1.5rem; }
+.administration-wizard-steps [aria-current="step"] { font-weight: 700; color: var(--action); }
+.administration-workspace .select[size] { height: auto; max-height: 12rem; overflow-y: auto; }
+.administration-workspace .select[size] option { padding: .5rem; }
+.administration-area:focus-visible { outline: 2px solid var(--action); outline-offset: 4px; }
+.administration-workspace .panel, .administration-inventory.panel { box-shadow: none; }
+.administration-workspace .panel-header { margin-bottom: .75rem; }
+.administration-workspace :is(input, select, textarea), .administration-inventory :is(input, select, textarea) { min-width: 0; max-width: 100%; }
+.administration-workspace :is(.field, .stack, .row), .administration-inventory :is(.field, .stack, .row) { min-width: 0; }
+.administration-workspace .select, .administration-inventory .select { width: 100%; }
+.administration-workspace .record-scrollable .administration-table, .administration-inventory .record-scrollable .administration-table { min-width: 720px; font-size: .875rem; }
+.administration-workspace .record-scrollable .administration-table td, .administration-inventory .record-scrollable .administration-table td { white-space: normal; overflow-wrap: anywhere; }
+.administration-workspace .administration-table td:last-child > .row, .administration-inventory .administration-table td:last-child > .row { width: max-content; flex-wrap: nowrap; }
+.administration-workspace .administration-table .button, .administration-inventory .administration-table .button { white-space: nowrap; flex-shrink: 0; min-height: 44px; padding: .4rem .65rem; font-size: .8rem; }
+.administration-workspace .administration-state-column, .administration-inventory .administration-state-column { white-space: nowrap; }
+.administration-state-column .badge { display: inline-flex; width: max-content; white-space: nowrap; }
+.administration-settings-grid, .administration-tenant-grid { display: grid; gap: 1rem; min-width: 0; align-items: start; }
+.administration-settings-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); }
+.administration-command-review { padding: 1rem; border: 1px solid var(--line-strong); background: var(--surface-sunken); border-radius: var(--radius-panel); }
+.help-desk-conversation { padding-left:1.25rem; display:grid; gap:1rem; }
+.help-desk-message { white-space:pre-wrap; overflow-wrap:anywhere; max-width:75ch; }
+.diagnostic-proportions {display:flex;flex-wrap:wrap;gap:2rem;padding-block:1rem;border-block:1px solid var(--line);}
+.diagnostic-proportion {display:flex;align-items:center;gap:1rem;margin:0;min-width:0;flex:1 1 20rem;}
+.diagnostic-proportion svg {width:7rem;height:7rem;flex:none;}
+.diagnostic-proportion figcaption {display:grid;gap:.375rem;}
+.diagnostic-proportion figcaption span {font-size:.875rem;}
+.diagnostic-measures {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1.25rem;}
+.diagnostic-measures dt {font-size:.875rem;}
+.diagnostic-measures dd {margin:.375rem 0 0;font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums;}
+.diagnostic-measures small {display:block;font-size:.8rem;font-weight:400;}
+@media (max-width: 599px) {
+  .administration-workspace .panel, .administration-inventory.panel { padding: 1rem; }
+  .administration-workspace .record-collection-tools .button, .administration-inventory .record-collection-tools .button { font-size: .8rem; padding-inline: .65rem; }
+}

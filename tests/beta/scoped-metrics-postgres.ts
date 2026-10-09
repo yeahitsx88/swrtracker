@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import { Pool } from 'pg';
 import { getAmeliaMetrics } from '../../src/modules/reporting/application/amelia-metrics';
 import { AmeliaMetricsReader } from '../../src/modules/reporting/infrastructure/amelia-metrics.reader';
@@ -26,9 +25,14 @@ const terminal = new Set(['COMPLETED', 'SURVEY_CANCELED', 'REQUESTER_CANCELED', 
 
 async function main() {
   if (process.env.SWR_METRICS_POSTGRES !== '1') throw new Error('SWR_METRICS_POSTGRES=1 required');
-  const config = JSON.parse(fs.readFileSync('.data/sabine/runtime.json', 'utf8'));
-  if (new URL(config.DATABASE_URL).pathname !== '/swr_sabine_simulation') throw new Error('Sabine database required');
-  const pool = new Pool({ connectionString: config.DATABASE_URL, max: 1 });
+  const url = new URL(process.env.DATABASE_URL ?? '');
+  assert.equal(process.env.SWR_TEAM_POSTGRES, '1');
+  assert.equal(url.hostname, '127.0.0.1');
+  assert.equal(url.port, '15489');
+  assert.equal(url.pathname, '/swr_team_isolated');
+  assert.match(url.searchParams.get('options') ?? '', /^-c search_path=alpha_metrics214_[a-f0-9]{32},public$/);
+  // Historical Sabine expectations remain; current verification never connects to retained Sabine.
+  const pool = new Pool({ connectionString: url.href, max: 1 });
   const db = await pool.connect();
   let scenarios = 0;
   try {
@@ -40,14 +44,18 @@ async function main() {
       ticket_type text DEFAULT 'LAYOUT', submitted_at timestamptz, draft_deleted_at timestamptz,
       id bigint GENERATED ALWAYS AS IDENTITY
     ) ON COMMIT DROP;
-    CREATE TEMP TABLE aor_nodes (id text, tenant_id text, project_id text, name text) ON COMMIT DROP;
+    CREATE TEMP TABLE aor_nodes (id text, tenant_id text, project_id text, name text, parent_id text, retired_at timestamptz) ON COMMIT DROP;
     CREATE TEMP TABLE companies (id text, tenant_id text, type text) ON COMMIT DROP;
     CREATE TEMP TABLE company_authority_grants (tenant_id text, project_id text, company_id text, user_id text, revoked_at timestamptz) ON COMMIT DROP;
-    CREATE TEMP TABLE project_memberships (project_id text, user_id text, role text) ON COMMIT DROP;
+    CREATE TEMP TABLE project_memberships (project_id text, user_id text, role text, access_disabled_at timestamptz) ON COMMIT DROP;
     CREATE TEMP TABLE users (id text, tenant_id text, deactivated_at timestamptz, company_id text, session_version integer, name text) ON COMMIT DROP;
     CREATE TEMP TABLE projects (id text, tenant_id text) ON COMMIT DROP;
     CREATE TEMP TABLE crew_rosters (tenant_id text, project_id text, party_chief_id text, instrument_man_id text, deactivated_at timestamptz) ON COMMIT DROP;
     CREATE TEMP TABLE ticket_events (ticket_id bigint, tenant_id text, payload jsonb) ON COMMIT DROP;
+    CREATE TEMP TABLE project_admin_grants (tenant_id text, project_id text, user_id text, revoked_at timestamptz) ON COMMIT DROP;
+    CREATE TEMP TABLE survey_teams (id text, tenant_id text, project_id text, lead_user_id text, deactivated_at timestamptz, row_version integer) ON COMMIT DROP;
+    CREATE TEMP TABLE survey_team_members (tenant_id text, project_id text, team_id text, user_id text, deactivated_at timestamptz) ON COMMIT DROP;
+    CREATE TEMP TABLE survey_team_areas (tenant_id text, project_id text, team_id text, area_id text, deactivated_at timestamptz) ON COMMIT DROP;
     SET LOCAL search_path = pg_temp;`);
     // Explicit pg_temp qualification ensures writes cannot fall through to public.
     for (const record of records) await db.query(`INSERT INTO pg_temp.tickets (tenant_id,project_id,aor_node_id,department_id,company_id,requester_id,assigned_party_chief_id,assigned_instrument_man_id,status,requested_date,completed_at,first_submitted_at,ticket_type,submitted_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'2026-01-01','LAYOUT','2026-01-01')`, record);
@@ -74,7 +82,7 @@ async function main() {
       const expectedCells = new Map<string, number>();
       for (const row of open) { const key = `${row[2]}:${row[8]}`; expectedCells.set(key, (expectedCells.get(key) ?? 0) + 1); }
       assert.deepEqual(new Map(metric.openByAreaStatus.map(row => [`${row.areaId}:${row.status}`, row.count])), expectedCells, label);
-      scenarios++;
+      scenarios++; console.log(`PASS metrics ${label}`);
     }
     for (const actorRole of ['SURVEY_MANAGER', 'VIEWER', 'CAD_LEAD', 'CAD_TECHNICIAN'] as const) await check(actorRole, { actorRole }, [1,2,3,4,8,9,10]);
     await check('requester own', { actorRole: 'REQUESTER' }, [1,8]);

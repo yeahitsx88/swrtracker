@@ -1,3 +1,5 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
@@ -23,25 +25,32 @@ async function run<T>(req:NextRequest,context:Context,fn:(db:import('@/shared/ty
  }
  const actor={tenantId:auth.tenantId,projectId,actorId:auth.userId,sessionVersion:auth.sessionVersion,actorRole:await getProjectRole(db,auth.tenantId,projectId,auth.userId,auth.sessionVersion)};assertWorkforceViewer(actor);return fn(db,actor);});
 }
-export async function GET(req:NextRequest,context:Context){
+async function observedGET(req:NextRequest,context:Context){
  try{
- const mode=req.nextUrl.searchParams.get('mode')??'personnel';if(!['personnel','context','person'].includes(mode))throw new ValidationError('Unknown workforce view');
+ const mode=req.nextUrl.searchParams.get('mode')??'personnel';if(!['personnel','context','person','destinations'].includes(mode))throw new ValidationError('Unknown workforce view');
  const query=parseTeamPage(req);
  const result=await run(req,context,async(db,actor)=>{
+ if(mode==='destinations')return repo.destinations(db,actor,query);
  if(mode==='context'){const project=await repo.context(db,actor);if(!project)throw new NotFoundError('Project not found');return {project,role:actor.actorRole,snapshotToken:await repo.snapshot(db,actor.tenantId,actor.projectId)};}
  if(mode==='person')return {person:await readWorkforceMember(repo,db,actor,uuid(req.nextUrl.searchParams.get('personId')))};
  return repo.personnel(db,actor,query);
  });return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}});
  }catch(error){return errorResponse(error);}
 }
-export async function POST(req:NextRequest,context:Context){
+async function observedPOST(req:NextRequest,context:Context){
  try{
- const body=await req.json();const input={instrumentManId:uuid(body?.instrumentManId),partyChiefId:uuid(body?.partyChiefId),expectedSnapshot:body?.expectedSnapshot};
+ const body=await req.json();
+ if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>!['instrumentManId','partyChiefId','destinationTeamId','expectedSnapshot'].includes(key)))throw new ValidationError('Review a person, Chief and explicit destination named team');
+ const input={instrumentManId:uuid(body?.instrumentManId),partyChiefId:uuid(body?.partyChiefId),destinationTeamId:uuid(body?.destinationTeamId),expectedSnapshot:body?.expectedSnapshot};
  if(typeof input.expectedSnapshot!=='string'||!/^[a-f0-9]{32}$/.test(input.expectedSnapshot))throw new ValidationError('Current staffing snapshot is required');
  const idempotencyKey=requireIdempotencyKey(req);
  const result=await run(req,context,async(db,actor)=>{
+ await assertPreparationNotCancelling(db,actor.tenantId,actor.projectId);
  await authorizeWorkforceMove(repo,db,actor,input);
  return executeIdempotentHttpMutation(db,{tenantId:actor.tenantId,actorId:actor.actorId,endpoint:`POST:/api/projects/${actor.projectId}/survey/workforce`,idempotencyKey},input,async()=>({status:200,body:await moveWorkforceMember(repo,db,actor,input)}));
  });return NextResponse.json(result.body,{status:result.status});
  }catch(error){return errorResponse(error);}
 }
+
+export const GET=observeProjectRoute(observedGET);
+export const POST=observeProjectRoute(observedPOST);

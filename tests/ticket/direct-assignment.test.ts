@@ -81,6 +81,10 @@ test('createDirectAssignmentTicket creates a direct-assignment ticket in ASSIGNE
 
   assert.equal(ticket.workflowVariant, 'DIRECT_ASSIGNMENT');
   assert.equal(ticket.status, 'ASSIGNED');
+  assert.equal(ticket.originalRequestedDate?.toISOString(), ticket.requestedDate?.toISOString());
+  assert.equal(savedTickets[0]?.originalRequestedDate?.toISOString(), ticket.requestedDate?.toISOString());
+  assert.equal(ticket.firstSubmittedAt ?? null, null);
+  assert.equal(ticket.submittedAt, null);
   assert.equal(ticket.ticketNumber, 'FSS-U1-00042');
   assert.equal(ticket.departmentId, departmentId);
   assert.equal(ticket.priority, 'NORMAL');

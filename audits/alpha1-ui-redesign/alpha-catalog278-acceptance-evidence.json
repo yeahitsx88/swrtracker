@@ -1,0 +1,201 @@
+{
+  "status": "verified-named-A5-shared-template-management;remaining-Alpha-open",
+  "baseline": "b1e6218",
+  "authority": [
+    "CLAUDE.md section23 approved Central create/edit/delete and referenced-project protection",
+    "D7 nonretroactive shared-template revision boundary",
+    "Owner-approved Alpha finalization A5 gap completion and exact reviewed retry",
+    "Standing commit/push directive"
+  ],
+  "productionBehaviorChanged": true,
+  "source": {
+    "files": 576,
+    "sha256": "f52b5a73bb479eb1cd63203c12cdd1590e67b5c4270b6cdce5ff46ce3de08786",
+    "matchesPinnedRuntime": true,
+    "changed": [
+      "src/app/api/project-templates/[templateId]/route.ts",
+      "src/modules/tenancy/application/project-templates.ts",
+      "src/components/ui/project-templates.tsx"
+    ],
+    "unchanged": "All other src/db files and dependency/build configuration unchanged from b1e6218; no migration or new event."
+  },
+  "verification": {
+    "strictTypecheck": "pass pinned Node22.23.3/Next15.5.27",
+    "unitTests": 698,
+    "focusedTests": 32,
+    "productionCompilation": "pass; separate release blocker remains",
+    "postgres": "fresh full33 established suites passed",
+    "authenticatedChecks": 74,
+    "receipts": {
+      "browser": {
+        "checks": 60,
+        "cases": [
+          "Actual template selection establishes a Medium Setup project before revision",
+          "Current review prefills name 1440",
+          "Current review prefills crew 1440",
+          "Future-only consequence visible 1440",
+          "edit278-light-1440 has no document overflow",
+          "Back renews edit consent 1440",
+          "Deletion requires explicit consent 1440",
+          "delete278-light-1440 has no document overflow",
+          "Unsubmitted dialog restores keyboard focus 1440",
+          "Current review prefills name 390",
+          "Current review prefills crew 390",
+          "Future-only consequence visible 390",
+          "edit278-dark-390 has no document overflow",
+          "Back renews edit consent 390",
+          "Deletion requires explicit consent 390",
+          "delete278-dark-390 has no document overflow",
+          "Unsubmitted dialog restores keyboard focus 390",
+          "Current review prefills name 768",
+          "Current review prefills crew 768",
+          "Future-only consequence visible 768",
+          "edit278-light-768 has no document overflow",
+          "Back renews edit consent 768",
+          "Deletion requires explicit consent 768",
+          "delete278-light-768 has no document overflow",
+          "Unsubmitted dialog restores keyboard focus 768",
+          "Bounded Light Dark desktop mobile intermediate review captured",
+          "Lost committed edit cannot discard frozen intent",
+          "Uncertain template edit blocks sibling command",
+          "Lost committed edit retries identical body/key with one audit event",
+          "Catalog edit preserves established project row and creation history",
+          "Future establishment uses revised selected template",
+          "Referenced template deletion remains visibly blocked",
+          "Reviewed edit integrated journey complete",
+          "Uncertain deletion protects dialog and cancellation",
+          "Deleted resource exact retry succeeds with one audit event",
+          "Successful deletion restores focus after row trigger disappears",
+          "Reviewed deletion integrated journey complete",
+          "Failed reload preserves held stale review and consent without resubmission",
+          "stale278-light-1440 has no document overflow",
+          "Successful deliberate reload exposes current revision for new consent",
+          "Conflict requires successful reload and renewed reviewed action",
+          "Concurrent identical key applies one template update",
+          "Changed body cannot reuse recorded command key",
+          "Change and revert invalidates old consent through retained audit evidence",
+          "Concurrent distinct reviews yield one winner and one stale conflict",
+          "Reference appearing after review blocks deletion atomically",
+          "Actual administrative audit failure rolls back template effect and retry ledger",
+          "Unchanged failed-audit command succeeds once after owned fault removal",
+          "projectAdmin cannot review edit or delete tenant catalog",
+          "manager cannot review edit or delete tenant catalog",
+          "superintendent cannot review edit or delete tenant catalog",
+          "chief cannot review edit or delete tenant catalog",
+          "instrument cannot review edit or delete tenant catalog",
+          "requester cannot review edit or delete tenant catalog",
+          "viewer cannot review edit or delete tenant catalog",
+          "subcontractor cannot review edit or delete tenant catalog",
+          "Foreign Central cannot review edit or delete owned template",
+          "Catalog operations preserve original request file assignment and append-only history",
+          "Original instruction remains authorized and byte-identical after catalog changes",
+          "No catalog review browser errors"
+        ],
+        "captures": [
+          ".local/alpha-closure278/edit278-light-1440.png",
+          ".local/alpha-closure278/delete278-light-1440.png",
+          ".local/alpha-closure278/edit278-dark-390.png",
+          ".local/alpha-closure278/delete278-dark-390.png",
+          ".local/alpha-closure278/edit278-light-768.png",
+          ".local/alpha-closure278/delete278-light-768.png",
+          ".local/alpha-closure278/stale278-light-1440.png"
+        ],
+        "pageErrors": [],
+        "limits": [
+          "New disposable fixture only; controlled initial role grants and an owned trigger simulate boundary/fault conditions.",
+          "Actual project creation and template edit/delete; no established-project propagation.",
+          "Separate release blocker and remaining A5 invitation/A6/A7 acceptance remain open."
+        ]
+      },
+      "lockWait": {
+        "checks": 4,
+        "cases": [
+          "Current review revalidates role after actual tenant lock wait",
+          "Current review revalidates session after actual tenant lock wait",
+          "Recorded exact retry revalidates role after actual tenant lock wait",
+          "Recorded exact retry revalidates session after actual tenant lock wait"
+        ],
+        "limits": [
+          "Four distinct controlled initial Central profiles; each revoked grant or bumped session remains retained. Actual tenant row blocking observed before revocation."
+        ]
+      },
+      "compatibility": {
+        "checks": 10,
+        "cases": [
+          "Creation remains protected after unified catalog intent",
+          "Actual creation retains original payload and exact retry key",
+          "Reviewed edit cannot omit retry key",
+          "Reviewed edit requires explicit confirmation",
+          "Reviewed deletion cannot omit retry key",
+          "Legacy keyed patch body retains compatibility",
+          "Deletion audit failure retains row and rolls back retry ledger",
+          "Unchanged deletion after rollback commits and replays exactly once",
+          "Legacy keyed deletion without body remains compatible",
+          "Legacy subcontractor Central metadata grants no template authority"
+        ],
+        "limits": [
+          "Actual protected creation and both update/delete audit failures; legacy malformed subcontractor membership is controlled boundary setup, retained after refusal."
+        ]
+      }
+    },
+    "detector": "one pass, no findings"
+  },
+  "finishReview": {
+    "disposition": "ship",
+    "substitution": "Finish reviewer and documenter roles performed inline under their explicit reference instructions; no independent agent review claimed.",
+    "persistence": "PRODUCT.md, DESIGN.md, .impeccable/design.json and incumbent administration-refinement contract retained. This is a bounded Operate extension, with no new visual world or comp/seed requirement.",
+    "fidelity": {
+      "TYPE": "match: incumbent Roboto and heading/action hierarchy",
+      "MATERIAL": "match: flat semantic panels and existing native protected dialog",
+      "GROUND": "match: existing Light/Dark semantic surfaces; no palette changes",
+      "navigation": "match: approved sidebar/drawer and route-backed sibling links",
+      "review": "adaptation: approved section23/D7 catalog edit/deletion adds current facts, future-only consequence and explicit consent",
+      "responsive": "match: wrapping actions, contained tables, readable desktop/mobile/intermediate confirmation states"
+    },
+    "ceiling": "Incumbent office/task workspace finish retained. Seven bounded current state captures opened; keyboard, pending/uncertain/stale/failure and success outcomes exercised. No broader surface/theme acceptance implied.",
+    "material_fixes": [],
+    "keep": "Preserve Axiom identity, guided confirmation, future-only template effect, protected exact retry, current authority and separate operational scope.",
+    "documenter": {
+      "pathsWritten": [],
+      "checked": [
+        "PRODUCT.md",
+        "DESIGN.md",
+        ".impeccable/design.json",
+        ".impeccable/surfaces/administration-refinement.md",
+        "src/components/ui/project-templates.tsx",
+        "src/components/ui/administration-dialog.css",
+        "src/components/ui/administration-records.tsx"
+      ],
+      "systemSummary": [
+        "Palette: existing semantic Light/Dark roles.",
+        "Type: incumbent Roboto heading/body/label hierarchy.",
+        "Controls: existing 44px Button/Input patterns.",
+        "Layout: existing flat panels, wrapping rows and contained table scrolling.",
+        "Rules: scope guidance in heading help; consequence, blockers and consent visible."
+      ],
+      "notCanonized": "No new durable token/component rule; pre-existing design documentation drift is left unchanged. Minor singular/plural wording remains an A6 copy candidate."
+    }
+  },
+  "captures": [
+    ".local/alpha-closure278/edit278-light-1440.png",
+    ".local/alpha-closure278/delete278-light-1440.png",
+    ".local/alpha-closure278/edit278-dark-390.png",
+    ".local/alpha-closure278/delete278-dark-390.png",
+    ".local/alpha-closure278/edit278-light-768.png",
+    ".local/alpha-closure278/delete278-light-768.png",
+    ".local/alpha-closure278/stale278-light-1440.png"
+  ],
+  "impact": "Only shared tenant template catalog interaction/review/retry changed. Existing project configuration, request workflows, Team/Org modules and permission populations remain unchanged; fullSQL and focused Team/Org regressions supplement preserved criterion-level evidence. Original request/file/assignment/history rows compared before download; original file bytes preserved.",
+  "limitations": [
+    "Initial observer stopped on a genuine async-trigger focus defect; fixture effects retained, local fix verified and one bounded confirmation capture round completed. No failed observer acceptance claimed.",
+    "Four distinct controlled Central actors retain actual grant removals or session bumps; no revoked authority reset. Owned insert triggers simulate real audit failure and are removed after observed rollback.",
+    "Existing malformed subcontractor Central membership is a controlled negative boundary fixture and remains retained.",
+    "Catalog operations change future establishment only. Referenced template deletion is blocked even when usage appears after review. Legacy payloads remain compatible; reviewed payloads require confirmation and caller-owned retry key.",
+    "A5 accepted/cancelled invitation integrated reconciliation and A6/A7 remain open. Deferred Org follow-ons and source-map-js release remediation remain separate."
+  ],
+  "git": {
+    "fetchedDevelopment": "0/0 before checkpoint",
+    "fetchedMain": "218 local / 7 remote; no integration",
+    "push": "standing authorized checkpoint push; commit identity supplied by Git report"
+  }
+}

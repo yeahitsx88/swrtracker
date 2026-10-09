@@ -25,7 +25,8 @@ test('review aggregates and page use one scoped SQL statement with bound filters
   assert.equal(calls.length,1);
   const call=calls[0]!;
   assert.match(call.sql,/t.tenant_id=\$1 AND t.project_id=\$2/);
-  assert.match(call.sql,/t.assigned_party_chief_id = \$3 AND \(t.status <> 'DRAFT' OR t.requester_id = \$3\) AND t.company_id = \$4/);
+  assert.match(call.sql,/t.assigned_party_chief_id = \$3 OR EXISTS/);
+  assert.match(call.sql,/AND \(t.status <> 'DRAFT' OR t.requester_id = \$3\) AND t.company_id = \$4/);
   assert.match(call.sql,/FROM authorized t WHERE/);
   assert.match(call.sql,/authorized AS NOT MATERIALIZED/);
   assert.match(call.sql,/FROM filtered t/);
@@ -34,10 +35,11 @@ test('review aggregates and page use one scoped SQL statement with bound filters
   assert.deepEqual(call.params.slice(0,7),['tenant','project','actor','company','2021-01-01','2021-12-31',"%' OR 1=1 --"]);
   assert.deepEqual(call.params.slice(-2),[10,20]);
 });
-test('review empty Area scope remains deny-all, including filter facets', async () => {
+test('review without legacy Areas resolves live team coverage, including filter facets', async () => {
   let sql='';
   const db:DbClient = {async query<T extends object>(query:string) {sql=query;return {rows:[{result:{total:0} as ReviewResult}] as T[]};}};
   await new TicketRepository().review(db,'tenant' as UUID,{...options,visibility:{...options.visibility,actorRole:'SURVEY_SUPERINTENDENT',aorNodeIds:[]}});
-  assert.match(sql,/AND 1 = 0/);
+  assert.match(sql,/FROM survey_team_members/);
+  assert.match(sql,/st.lead_user_id=\$3/);
   assert.match(sql,/FROM authorized t JOIN users/);
 });

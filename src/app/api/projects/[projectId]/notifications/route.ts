@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
@@ -15,7 +16,7 @@ import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
+async function observedGET(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const auth = await requireAuth(req);
     const { projectId } = await params;
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
+async function observedPOST(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const auth = await requireAuth(req);
     const { projectId } = await params;
@@ -51,3 +52,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     return errorResponse(error);
   }
 }
+
+export const GET=observeProjectRoute(observedGET);
+export const POST=observeProjectRoute(observedPOST);

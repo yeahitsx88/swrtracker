@@ -2,6 +2,7 @@ import {handleOffboarding} from '../../src/app/api/accounts/[userId]/offboarding
 import {POST as resolveReview} from '../../src/app/api/accounts/offboarding-reviews/[reviewId]/route';
 import {POST as setAdmin} from '../../src/app/api/projects/[projectId]/administrators/route';
 import {POST as registerCompany} from '../../src/app/api/projects/[projectId]/companies/route';
+import {POST as createEmployee} from '../../src/app/api/projects/[projectId]/employees/route';
 import {PATCH as selectTemplate} from '../../src/app/api/projects/[projectId]/template/route';
 import assert from 'node:assert/strict';
 import {Pool,type PoolClient} from 'pg';
@@ -39,7 +40,7 @@ import {POST as startTicket} from '../../src/app/api/tickets/[ticketId]/start/ro
 import {POST as createTicket} from '../../src/app/api/tickets/route';
 import {DELETE as deleteDraft} from '../../src/app/api/tickets/[ticketId]/draft/route';
 import {handlePostTicketAttachments,handleDownloadTicketAttachment} from '../../src/app/api/tickets/[ticketId]/attachments/handler';
-import {getTicketRouteContext,withTicketMutation} from '../../src/lib/ticket-route-helpers';
+import {getTicketRouteContext,withTicketMutation,withTicketRead} from '../../src/lib/ticket-route-helpers';
 import {TicketRepository} from '../../src/modules/ticket/infrastructure/ticket.repository';
 import {AttachmentRepository,validateAttachmentObjectMetadata} from '../../src/modules/attachment/infrastructure';
 import type {UUID} from '../../src/shared/types';
@@ -57,8 +58,9 @@ async function main(){
   const db=await setup.connect();
   try{
    await db.query('BEGIN');await db.query('CREATE SCHEMA "'+schema+'"');
-   await db.query('SET LOCAL search_path TO "'+schema+'",public');
-   for(const migration of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')).sort())await db.query(await readFile('db/migrations/'+migration,'utf8'));
+  // Migration042 commits its wrapper; retain session schema for later migrations.
+   await db.query('SET search_path TO "'+schema+'",public');
+   for(const migration of (await readdir('db/migrations')).filter(name=>name.endsWith('.sql')).sort()){await db.query(await readFile('db/migrations/'+migration,'utf8'));assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name,schema,'Migration must stay in the newly owned schema');}
    await db.query('COMMIT');created=true;
   }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}
   pg=new Pool({connectionString:url.href,max:5,options:'-c search_path='+schema+',public'});
@@ -95,6 +97,7 @@ async function main(){
    {name:'central-review-resolution',method:'POST',handler:resolveReview,mode:'EXCLUSIVE',body:{reviewId:link,disposition:'NO_FURTHER_ACTION',reason:'Synthetic review decision',tenantEventId:null,snapshot:'a'.repeat(64),confirmed:true}},
    {name:'project-admin-grant',method:'POST',handler:setAdmin,mode:'EXCLUSIVE',body:{userId:chief,enabled:true,confirmed:true}},
    {name:'project-company-register',method:'POST',handler:registerCompany,mode:'EXCLUSIVE',body:{name:'Scoped company',type:'GC',confirmed:true}},
+   {name:'project-employee-create',method:'POST',handler:createEmployee,mode:'EXCLUSIVE',body:{name:'Writer employee',email:'writer-employee@example.test',password:'Writer-Only-Test-2026!',companyId:company,role:'REQUESTER',projectAdmin:false,confirmed:true}},
    {name:'project-template-select',method:'PATCH',handler:selectTemplate,mode:'EXCLUSIVE',body:{templateId:chief,confirmed:true}},
    {name:'project-member-add',method:'POST',handler:addProjectMember,mode:'EXCLUSIVE',body:{userId:chief,role:'REQUESTER'}},
    {name:'tenant-role-grant',method:'POST',handler:(req:NextRequest)=>grantTenantRole(req),mode:'EXCLUSIVE',body:{userId:chief,role:'BILLING_VIEWER'}},
@@ -103,12 +106,12 @@ async function main(){
    {name:'notification-retry',method:'POST',handler:operateNotifications,mode:'SHARED',body:{action:'retry-failed'}},
    {name:'staffing-role-and-links',method:'POST',handler:handlePostSurveyStaffing,mode:'EXCLUSIVE',body:{expectedSnapshot:snapshot,partyChiefId:chief,areaId:area,superintendentId:superintendent,instrumentManIds:[im],confirmRoleChanges:true}},
    {name:'staffing-unlink',method:'PATCH',handler:handlePatchSurveyStaffing,mode:'EXCLUSIVE',body:{action:'unlink',kind:'roster',linkId:link,partyChiefId:chief,expectedSnapshot:snapshot,confirmUnlink:true}},
-   {name:'team-save',method:'POST',handler:handlePostSurveyTeam,mode:'SHARED',body:{name:'Race team',areaId:area,leadUserId:chief,memberIds:[chief,im]}},
-   {name:'team-role',method:'PATCH',handler:handlePatchSurveyRole,mode:'EXCLUSIVE',body:{action:'set-role',userId:chief,role:'INSTRUMENT_MAN',expectedRole:'REQUESTER',expectedRoleVersion:1,confirmRoleChanges:true}},
-   {name:'team-delete',method:'DELETE',handler:handleDeleteSurveyTeam,mode:'SHARED',body:{teamId:nextId(),expectedVersion:1,confirmDelete:true}},
+   {name:'team-save',method:'POST',handler:handlePostSurveyTeam,mode:'EXCLUSIVE',body:{name:'Race team',areaId:area,leadUserId:chief,memberIds:[chief,im]}},
+   {name:'team-role',method:'PATCH',handler:handlePatchSurveyRole,mode:'EXCLUSIVE',body:{action:'set-role',userId:chief,role:'INSTRUMENT_MAN',expectedRole:'PARTY_CHIEF',expectedRoleVersion:1,confirmRoleChanges:true}},
+   {name:'team-delete',method:'DELETE',handler:handleDeleteSurveyTeam,mode:'EXCLUSIVE',body:{teamId:nextId(),expectedVersion:1,confirmDelete:true}},
    {name:'protected-review-handover',method:'POST',handler:handlePostProtectedObligations,mode:'EXCLUSIVE',body:{userId:superintendent,grantId:nextId(),replacementUserId:nextId(),expectedSnapshot:snapshot,confirmResolution:true,coverageMode:'reuse'}},
    {name:'superintendent-area-unlink',method:'PATCH',handler:handlePatchSuperintendentArea,mode:'EXCLUSIVE',body:{action:'unlink-superintendent-area',superintendentId:superintendent,linkId:link,replacementUserId:nextId(),replacementGrantId:nextId(),replacementAssignmentId:nextId(),expectedSnapshot:snapshot,confirmUnlink:true}},
-   {name:'workforce-roster-move',method:'POST',handler:moveWorkforce,mode:'EXCLUSIVE',body:{instrumentManId:im,partyChiefId:chief,expectedSnapshot:snapshot}},
+   {name:'workforce-roster-move',method:'POST',handler:moveWorkforce,mode:'EXCLUSIVE',body:{instrumentManId:im,partyChiefId:chief,destinationTeamId:nextId(),expectedSnapshot:snapshot}},
    {name:'department-create',method:'POST',handler:handlePostDepartments,mode:'EXCLUSIVE',body:{name:'Race department',managerTitle:'Race manager'}},
    {name:'project-activate',method:'POST',handler:handlePostProjectActivation,mode:'EXCLUSIVE',body:{acknowledgeWarnings:true}},
    {name:'project-archive',method:'POST',handler:handlePostProjectArchive,mode:'EXCLUSIVE',body:{}},
@@ -237,7 +240,7 @@ async function main(){
   assert.equal(stagedObjects.size,1,'replay removes only duplicate staged bytes');checks++;
   const attachmentRows=(await pg.query('SELECT * FROM attachments')).rows;
   assert.equal(attachmentRows.length,1);checks++;assert.equal(attachmentRows[0].uploaded_by,actor);checks++;
-  const downloadDeps={getTicketRouteContext,withTicketMutation,createTicketRepo:()=>new TicketRepository(),
+  const downloadDeps={getTicketRouteContext,withTicketRead,createTicketRepo:()=>new TicketRepository(),
    findAttachment:async(tid:string,ticketId:string,file:string,db:import('../../src/shared/types').DbClient)=>
     (await db.query<NonNullable<Awaited<ReturnType<import('../../src/app/api/tickets/[ticketId]/attachments/handler').TicketAttachmentDownloadDeps['findAttachment']>>>>('SELECT * FROM attachments WHERE tenant_id=$1 AND ticket_id=$2 AND id=$3',[tid,ticketId,file])).rows[0]??null,
    createStorage:uploadDeps.createStorage};
@@ -247,6 +250,21 @@ async function main(){
   assert.equal(downloaded.status,200);checks++;assert.equal(await downloaded.text(),'synthetic bytes');checks++;
   const downloadEvents=(await pg.query("SELECT * FROM ticket_events WHERE event_type='attachment.downloaded'")).rows;
   assert.equal(downloadEvents.length,1);checks++;assert.equal(downloadEvents[0].actor_id,actor);checks++;
+  // Historical reads retain fresh authority and atomic access auditing in both
+  // archived projects and actual completion-only preparation cancellation.
+  for (const status of ['ARCHIVED','SETUP']) {
+   await pg.query('UPDATE projects SET status=$2 WHERE id=$1',[project,status]);
+   if(status==='SETUP')await pg.query(`INSERT INTO project_preparation_cancellations(id,tenant_id,project_id,started_by,reason,reviewed_evidence) VALUES($1,$2,$3,$4,'Owned existing completion cleanup',$5)`,[randomUUID(),tenant,project,actor,JSON.stringify({work:[{id:ticket}]})]);
+   const count:number=(await pg.query("SELECT count(*)::int n FROM ticket_events WHERE event_type='attachment.downloaded'")).rows[0].n;
+   const historical=await handleDownloadTicketAttachment(downloadRequest(),downloadParams,downloadDeps);
+   assert.equal(historical.status,200);checks++;
+   assert.equal(await historical.text(),'synthetic bytes');checks++;
+   assert.equal((await pg.query("SELECT count(*)::int n FROM ticket_events WHERE event_type='attachment.downloaded'")).rows[0].n,count+1);checks++;
+   const beforeUpload=await rowsBefore();
+   assert.equal((await handlePostTicketAttachments(uploadRequest(),attachmentParams,uploadDeps)).status,409);checks++;
+   assert.deepEqual(await rowsBefore(),beforeUpload);checks++;
+   assert.equal(stagedObjects.size,1);checks++;
+  }
   // Audit failure rejects the download response, without returning buffered bytes.
   await pg.query('CREATE TRIGGER reject_file_audit BEFORE INSERT ON ticket_events FOR EACH ROW EXECUTE FUNCTION reject_metadata_audit()');
   const beforeDownloadFailure=await rowsBefore();

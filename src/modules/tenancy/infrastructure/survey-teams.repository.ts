@@ -1,26 +1,49 @@
+import { selectedTeamAreas } from '../application/survey-teams';
 import type { DbClient, Page, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import { ConflictError } from '@/shared/errors';
 import type { SaveSurveyTeamInput, SurveyTeamDetail, SurveyTeamSummary, SurveyTeamsRepository,
   TeamActor, TeamEvent, TeamPageQuery, TeamPersonnel, TeamPerson, TeamProjectContext, TeamArea } from '../application/survey-teams';
 import { SurveyStaffingPgRepository } from './survey-staffing.repository';
-import type { ChangeSurveyRoleInput, SurveyRoleObligations, SurveyRoleRepository } from '../application/change-survey-role';
+import type { OperationalRoleChangeInput, SurveyRoleObligations, SurveyRoleRepository } from '../application/change-survey-role';
 
+/** Shared current structural scope for team, workforce and supervised-role operations.
+ * Area overlap alone never supplies the reporting link. Caller validates current actor.
+ */
+export const supervisedTeamsCte=`covered AS (
+ SELECT n.id FROM aor_assignments aa JOIN aor_nodes n ON n.tenant_id=aa.tenant_id AND n.project_id=aa.project_id AND n.id=aa.aor_node_id
+ WHERE aa.tenant_id=$1 AND aa.project_id=$2 AND aa.user_id=$3 AND aa.deactivated_at IS NULL AND n.retired_at IS NULL
+ UNION SELECT n.id FROM aor_nodes n JOIN covered parent ON n.parent_id=parent.id WHERE n.tenant_id=$1 AND n.project_id=$2 AND n.retired_at IS NULL
+), supervised_teams AS (
+ SELECT t.id FROM survey_teams t
+ JOIN users lead ON lead.tenant_id=t.tenant_id AND lead.id=t.lead_user_id AND lead.deactivated_at IS NULL
+ JOIN companies lc ON lc.tenant_id=t.tenant_id AND lc.id=lead.company_id AND lc.type<>'SUBCONTRACTOR'
+ JOIN project_memberships lp ON lp.project_id=t.project_id AND lp.user_id=lead.id AND lp.access_disabled_at IS NULL
+ WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL
+ AND EXISTS(SELECT 1 FROM survey_team_members lm WHERE lm.tenant_id=t.tenant_id AND lm.project_id=t.project_id AND lm.team_id=t.id AND lm.user_id=t.lead_user_id AND lm.deactivated_at IS NULL) AND
+ ((t.lead_user_id=$3 AND lp.role='SURVEY_SUPERINTENDENT') OR
+ (lp.role='PARTY_CHIEF' AND EXISTS(SELECT 1 FROM survey_reporting_links rl JOIN covered ca ON ca.id=rl.aor_node_id WHERE rl.tenant_id=$1 AND rl.project_id=$2 AND rl.party_chief_id=t.lead_user_id AND rl.superintendent_id=$3 AND rl.deactivated_at IS NULL)
+ AND EXISTS(SELECT 1 FROM survey_team_areas ta WHERE ta.tenant_id=$1 AND ta.project_id=$2 AND ta.team_id=t.id AND ta.deactivated_at IS NULL)
+ AND NOT EXISTS(SELECT 1 FROM survey_team_areas ta WHERE ta.tenant_id=$1 AND ta.project_id=$2 AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND ta.area_id NOT IN(SELECT id FROM covered))))
+)`;
 interface TeamRow {
   id: UUID; name: string; aor_node_id: UUID; area_name: string; lead_user_id: UUID;
   lead_name: string; lead_email: string; lead_role: ProjectRole; lead_active: boolean;
-  member_count: number; row_version: number;
+  member_count: number; row_version: number; areas: TeamArea[];
 }
 interface PersonRow {
   user_id: UUID; name: string; email: string; role: ProjectRole; active: boolean; team_id: UUID | null; team_name: string | null; role_version: number;
 }
 const summary = (row: TeamRow): SurveyTeamSummary => ({
-  id: row.id, name: row.name, areaId: row.aor_node_id, areaName: row.area_name,
+  id: row.id, name: row.name, areaId: row.aor_node_id, areaName: row.area_name, areas: row.areas,
   lead: { userId: row.lead_user_id, name: row.lead_name, email: row.lead_email, role: row.lead_role, active: row.lead_active },
   memberCount: row.member_count, rowVersion: row.row_version,
 });
-const person = (row: PersonRow): TeamPerson => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role, active: row.active });
+const person = (row: PersonRow): TeamPerson => ({ userId: row.user_id, name: row.name, email: row.email, role: row.role, active: row.active, ...(row.role_version===undefined?{}:{roleVersion:row.role_version}) });
 const teamSelect = `SELECT t.id,t.name,t.aor_node_id,n.name AS area_name,t.lead_user_id,
+  COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a.name) ORDER BY lower(a.name),a.id)
+    FROM survey_team_areas ta JOIN aor_nodes a ON a.tenant_id=ta.tenant_id AND a.project_id=ta.project_id AND a.id=ta.area_id
+    WHERE ta.tenant_id=t.tenant_id AND ta.project_id=t.project_id AND ta.team_id=t.id AND ta.deactivated_at IS NULL),'[]'::jsonb) AS areas,
   u.name AS lead_name,u.email AS lead_email,pm.role AS lead_role,(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AS lead_active,
   t.row_version,(SELECT COUNT(*)::int FROM survey_team_members m
     WHERE m.tenant_id=t.tenant_id AND m.project_id=t.project_id AND m.team_id=t.id AND m.deactivated_at IS NULL) AS member_count
@@ -70,12 +93,30 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     return rows.length === 1;
   }
 
+  async lockSuperintendent(db:DbClient,actor:TeamActor):Promise<boolean> {
+    const result=await db.query(
+      `SELECT pm.user_id FROM project_memberships pm JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
+       JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1
+       WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='SURVEY_SUPERINTENDENT' AND pm.access_disabled_at IS NULL
+       AND u.deactivated_at IS NULL AND u.session_version=$4 AND c.type<>'SUBCONTRACTOR' FOR UPDATE OF pm`,
+      [actor.tenantId,actor.projectId,actor.actorId,actor.sessionVersion]);
+    return result.rows.length===1;
+  }
+
+  async lockSuperintendentScope(db:DbClient,actor:TeamActor){
+    await db.query('SELECT id FROM aor_nodes WHERE tenant_id=$1 AND project_id=$2 ORDER BY id FOR SHARE',[actor.tenantId,actor.projectId]);
+    await db.query('SELECT id FROM aor_assignments WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL ORDER BY id FOR SHARE',[actor.tenantId,actor.projectId,actor.actorId]);
+    await db.query('SELECT id FROM survey_reporting_links WHERE tenant_id=$1 AND project_id=$2 AND superintendent_id=$3 AND deactivated_at IS NULL ORDER BY id FOR SHARE',[actor.tenantId,actor.projectId,actor.actorId]);
+  }
+  async supervisedTeam(db:DbClient,actor:TeamActor,teamId:UUID){
+    const {rows}=await db.query(`WITH RECURSIVE ${supervisedTeamsCte} SELECT id FROM supervised_teams WHERE id=$4 AND EXISTS(SELECT 1 FROM project_memberships pm JOIN users u ON u.id=pm.user_id AND u.tenant_id=$1 JOIN companies c ON c.id=u.company_id AND c.tenant_id=$1 AND c.type<>'SUBCONTRACTOR' WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role='SURVEY_SUPERINTENDENT' AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL AND u.session_version=$5)`,[actor.tenantId,actor.projectId,actor.actorId,teamId,actor.sessionVersion]);return rows.length===1;
+  }
   async team(db: DbClient, tenantId: UUID, projectId: UUID, teamId: UUID): Promise<SurveyTeamDetail | null> {
     const { rows } = await db.query<TeamRow>(`${teamSelect} AND t.id=$3`, [tenantId, projectId, teamId]);
     if (!rows[0]) return null;
     const members = await db.query<PersonRow>(
       `SELECT u.id AS user_id,u.name,u.email,pm.role,(u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL) AS active,
-         m.team_id,t.name AS team_name FROM survey_team_members m
+         m.team_id,t.name AS team_name,u.session_version AS role_version FROM survey_team_members m
        JOIN survey_teams t ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id
        JOIN users u ON u.tenant_id=m.tenant_id AND u.id=m.user_id
        JOIN project_memberships pm ON pm.project_id=m.project_id AND pm.user_id=m.user_id
@@ -84,15 +125,17 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     return { ...summary(rows[0]), members: members.rows.map(person) };
   }
 
-  async list(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery): Promise<Page<SurveyTeamSummary>> {
+  async list(db: DbClient, tenantId: UUID, projectId: UUID, query: TeamPageQuery, leadUserId?: UUID): Promise<Page<SurveyTeamSummary>> {
     const search = `%${query.search}%`;
-    const filter = ` AND (t.name ILIKE $3 OR n.name ILIKE $3)`;
+    const filter = ` AND ($3::uuid IS NULL OR t.id IN(SELECT id FROM supervised_teams)) AND (t.name ILIKE $4 OR EXISTS (SELECT 1 FROM survey_team_areas ta
+      JOIN aor_nodes a ON a.tenant_id=ta.tenant_id AND a.project_id=ta.project_id AND a.id=ta.area_id
+      WHERE ta.tenant_id=t.tenant_id AND ta.project_id=t.project_id AND ta.team_id=t.id AND ta.deactivated_at IS NULL AND a.name ILIKE $4))`;
     const count = await db.query<{ total: number }>(
-      `SELECT COUNT(*)::int AS total FROM survey_teams t
+      `WITH RECURSIVE ${supervisedTeamsCte} SELECT COUNT(*)::int AS total FROM survey_teams t
        JOIN aor_nodes n ON n.tenant_id=t.tenant_id AND n.project_id=t.project_id AND n.id=t.aor_node_id
-       WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL${filter}`, [tenantId, projectId, search]);
-    const { rows } = await db.query<TeamRow>(`${teamSelect}${filter} ORDER BY lower(t.name),t.id LIMIT $4 OFFSET $5`,
-      [tenantId, projectId, search, query.limit, query.offset]);
+       WHERE t.tenant_id=$1 AND t.project_id=$2 AND t.deactivated_at IS NULL${filter}`, [tenantId, projectId, leadUserId??null,search]);
+    const { rows } = await db.query<TeamRow>(`WITH RECURSIVE ${supervisedTeamsCte} ${teamSelect}${filter} ORDER BY lower(t.name),t.id LIMIT $5 OFFSET $6`,
+      [tenantId, projectId, leadUserId??null,search, query.limit, query.offset]);
     return { data: rows.map(summary), total: count.rows[0]!.total, limit: query.limit, offset: query.offset };
   }
 
@@ -101,7 +144,7 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
       JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
       JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id AND (u.deactivated_at IS NULL AND pm.id IS NOT NULL AND pm.access_disabled_at IS NULL)
       JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id AND c.type<>'SUBCONTRACTOR'
-      WHERE pm.project_id=$2 AND pm.role IN ('REQUESTER','VIEWER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
+      WHERE pm.project_id=$2 AND pm.role IN ('SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN')
         AND (u.name ILIKE $3 OR u.email ILIKE $3 OR pm.role ILIKE $3 OR replace(pm.role,'_',' ') ILIKE $3)`;
     const values = [tenantId, projectId, `%${query.search}%`];
     const count = await db.query<{ total: number }>(`SELECT COUNT(*)::int AS total ${from}`, values);
@@ -137,14 +180,33 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
        (SELECT COUNT(*)::int FROM crew_rosters WHERE tenant_id=$1 AND project_id=$2 AND (party_chief_id=$3 OR instrument_man_id=$3) AND deactivated_at IS NULL) AS "crewLinks",
        (SELECT COUNT(*)::int FROM survey_reporting_links WHERE tenant_id=$1 AND project_id=$2 AND (superintendent_id=$3 OR party_chief_id=$3) AND deactivated_at IS NULL) AS "reportingLinks",
        (SELECT COUNT(*)::int FROM project_responsibility_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND revoked_at IS NULL) AS "responsibilityGrants",
+       (SELECT COUNT(*)::int FROM tickets WHERE tenant_id=$1 AND project_id=$2
+         AND status IN ('APPROVED','ASSIGNED','IN_PROGRESS','DELAYED','PENDING_PC_APPROVAL','PENDING_FIELD_VALIDATION')
+         AND (assigned_party_chief_id=$3 OR assigned_instrument_man_id=$3 OR field_validation_reviewer_id=$3)) AS "activeRequests",
+       (SELECT COUNT(*)::int FROM survey_work_delegations d WHERE d.tenant_id=$1 AND d.project_id=$2 AND d.ended_at IS NULL
+         AND (d.lead_user_id=$3 OR EXISTS(SELECT 1 FROM survey_team_members m JOIN survey_teams t
+           ON t.tenant_id=m.tenant_id AND t.project_id=m.project_id AND t.id=m.team_id AND t.deactivated_at IS NULL
+           WHERE m.tenant_id=d.tenant_id AND m.project_id=d.project_id AND m.team_id=d.team_id
+             AND m.user_id=$3 AND m.deactivated_at IS NULL))) AS "pendingDelegations",
        (SELECT COUNT(*)::int FROM acting_grants WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND revoked_at IS NULL) AS "actingGrants"`,
       [tenantId, projectId, userId]);
     return rows[0]!;
   }
 
-  async changeOperationalRole(db: DbClient, actor: TeamActor, input: ChangeSurveyRoleInput): Promise<number> {
+  async anotherCurrentManager(db:DbClient,tenantId:UUID,projectId:UUID,subjectId:UUID):Promise<boolean>{
+    const {rows}=await db.query(`SELECT pm.user_id FROM project_memberships pm
+      JOIN projects p ON p.id=pm.project_id AND p.tenant_id=$1
+      JOIN users u ON u.id=pm.user_id AND u.tenant_id=p.tenant_id
+      JOIN companies c ON c.id=u.company_id AND c.tenant_id=u.tenant_id
+      WHERE pm.project_id=$2 AND pm.user_id<>$3 AND pm.role='SURVEY_MANAGER'
+        AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL AND c.type IN ('GC','OWNER_REP')
+      ORDER BY pm.user_id LIMIT 1 FOR SHARE OF pm,u,c`,[tenantId,projectId,subjectId]);
+    return rows.length===1;
+  }
+
+  async changeOperationalRole(db: DbClient, actor: Pick<TeamActor,'tenantId'|'projectId'|'actorId'>, input: OperationalRoleChangeInput): Promise<number> {
     const membership = await db.query<{ user_id: UUID }>(
-      `UPDATE project_memberships pm SET role=$4 WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$5 AND pm.access_disabled_at IS NULL
+      `UPDATE project_memberships pm SET role=$4,custom_role_id=NULL WHERE pm.project_id=$2 AND pm.user_id=$3 AND pm.role=$5 AND pm.access_disabled_at IS NULL
        AND EXISTS(SELECT 1 FROM projects p WHERE p.id=pm.project_id AND p.tenant_id=$1)
        RETURNING pm.user_id`, [actor.tenantId, actor.projectId, input.userId, input.role, input.expectedRole]);
     if (!membership.rows[0]) throw new ConflictError('This person’s role changed; reload before saving', 'STALE_SURVEY_ROLE');
@@ -164,6 +226,12 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
   }
 
   async save(db: DbClient, actor: TeamActor, teamId: UUID, input: SaveSurveyTeamInput, previous: SurveyTeamDetail | null): Promise<void> {
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&previous){
+      const removed=previous.members.filter(member=>!input.memberIds.includes(member.userId)).map(member=>member.userId);
+      const links=await db.query(`SELECT id FROM crew_rosters WHERE tenant_id=$1 AND project_id=$2 AND deactivated_at IS NULL
+        AND (party_chief_id=ANY($3::uuid[]) OR instrument_man_id=ANY($3::uuid[])) LIMIT 1`,[actor.tenantId,actor.projectId,removed]);
+      if(links.rows.length)throw new ConflictError('This person still has a crew assignment. Resolve that assignment before removing them from the team.');
+    }
     const values = [actor.tenantId, actor.projectId, teamId, input.name, input.areaId, input.leadUserId];
     if (previous) {
       const { rows } = await db.query<{ id: UUID }>(
@@ -173,6 +241,13 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
     } else await db.query(
       `INSERT INTO survey_teams (tenant_id,project_id,id,name,aor_node_id,lead_user_id,created_by)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`, [...values, actor.actorId]);
+    const areaIds = selectedTeamAreas(input);
+    await db.query(`UPDATE survey_team_areas SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3
+      AND deactivated_at IS NULL AND NOT(area_id=ANY($4::uuid[]))`, [actor.tenantId,actor.projectId,teamId,areaIds]);
+    await db.query(`INSERT INTO survey_team_areas(tenant_id,project_id,team_id,area_id)
+      SELECT $1,$2,$3,unnest($4::uuid[]) ON CONFLICT(tenant_id,project_id,team_id,area_id) DO UPDATE SET
+      assigned_at=CASE WHEN survey_team_areas.deactivated_at IS NOT NULL THEN NOW() ELSE survey_team_areas.assigned_at END,deactivated_at=NULL`,
+      [actor.tenantId,actor.projectId,teamId,areaIds]);
     await db.query(
       `UPDATE survey_team_members SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3
        AND deactivated_at IS NULL AND NOT(user_id=ANY($4::uuid[]))`, [actor.tenantId, actor.projectId, teamId, input.memberIds]);
@@ -184,15 +259,53 @@ export class SurveyTeamsPgRepository extends SurveyStaffingPgRepository implemen
          deactivated_at=NULL`, [actor.tenantId, actor.projectId, teamId, input.memberIds]);
   }
 
+  async delegationObligations(db: DbClient, actor: TeamActor, teamId: UUID, retainedAreaIds: UUID[] | null): Promise<number> {
+    // The caller's EXCLUSIVE lifecycle barrier keeps ticket delegation/assignment
+    // and organizational writes stable together; a row lock alone cannot do that.
+    const { rows } = await db.query<{ count: number }>(`WITH RECURSIVE work AS (
+      SELECT t.id,t.aor_node_id FROM survey_work_delegations d
+      JOIN tickets t ON t.tenant_id=d.tenant_id AND t.project_id=d.project_id AND t.id=d.ticket_id
+      WHERE d.tenant_id=$1 AND d.project_id=$2 AND d.team_id=$3 AND d.ended_at IS NULL
+        AND t.status='APPROVED' AND t.assigned_instrument_man_id IS NULL
+    ), coverage AS (
+      SELECT w.id AS ticket_id,n.id,n.parent_id FROM work w
+      JOIN aor_nodes n ON n.tenant_id=$1 AND n.project_id=$2 AND n.id=w.aor_node_id AND n.retired_at IS NULL
+      UNION SELECT c.ticket_id,n.id,n.parent_id FROM coverage c
+      JOIN aor_nodes n ON n.tenant_id=$1 AND n.project_id=$2 AND n.id=c.parent_id AND n.retired_at IS NULL
+    ) SELECT COUNT(*)::int AS count FROM work w WHERE $4::uuid[] IS NULL OR NOT EXISTS (
+      SELECT 1 FROM coverage c WHERE c.ticket_id=w.id AND c.id=ANY($4::uuid[]))`,
+      [actor.tenantId,actor.projectId,teamId,retainedAreaIds]);
+    return rows[0]!.count;
+  }
+
   async deactivate(db: DbClient, actor: TeamActor, team: SurveyTeamDetail): Promise<void> {
     const { rows } = await db.query<{ id: UUID }>(`UPDATE survey_teams SET deactivated_at=NOW(),updated_at=NOW(),row_version=row_version+1
       WHERE tenant_id=$1 AND project_id=$2 AND id=$3 AND row_version=$4 AND deactivated_at IS NULL RETURNING id`, [actor.tenantId, actor.projectId, team.id, team.rowVersion]);
     if (!rows[0]) throw new ConflictError('This team changed; reload before deleting', 'STALE_TEAM');
+    await db.query(`UPDATE survey_team_areas SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND deactivated_at IS NULL`, [actor.tenantId,actor.projectId,team.id]);
     await db.query(`UPDATE survey_team_members SET deactivated_at=NOW()
       WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND deactivated_at IS NULL`, [actor.tenantId, actor.projectId, team.id]);
   }
 
   async recordTeamEvent(db: DbClient, actor: TeamActor, event: TeamEvent, payload: Record<string, unknown>): Promise<void> {
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&event==='survey.team_updated'){
+      await db.query(`INSERT INTO survey_notifications(tenant_id,project_id,recipient_id,actor_id,event_key,title,message)
+        SELECT $1,$2,pm.user_id,$3,$4,'Team roster updated',u.name || ' updated ' || $5 || '. Review the team for its current roster.'
+        FROM project_memberships pm JOIN users recipient ON recipient.id=pm.user_id AND recipient.tenant_id=$1
+        JOIN users u ON u.id=$3 AND u.tenant_id=$1 WHERE pm.project_id=$2 AND pm.role='SURVEY_MANAGER'
+        AND pm.access_disabled_at IS NULL AND recipient.deactivated_at IS NULL
+        ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`,[actor.tenantId,actor.projectId,actor.actorId,
+        'team:'+String(payload.teamId)+':'+String(payload.rowVersion),String(payload.name)]);
+    }
+    if(actor.actorRole==='SURVEY_SUPERINTENDENT'&&event==='survey.role_changed'&&!payload.removedTeamId){
+      await db.query(`INSERT INTO survey_notifications(tenant_id,project_id,recipient_id,actor_id,event_key,title,message)
+        SELECT $1,$2,pm.user_id,$3,$4,'Survey role updated',u.name || ' changed ' || $5 || ' from ' || $6 || ' to ' || $7 || '. Request history is retained.'
+        FROM project_memberships pm JOIN users recipient ON recipient.id=pm.user_id AND recipient.tenant_id=$1
+        JOIN users u ON u.id=$3 AND u.tenant_id=$1 WHERE pm.project_id=$2 AND pm.role='SURVEY_MANAGER'
+        AND pm.access_disabled_at IS NULL AND recipient.deactivated_at IS NULL
+        ON CONFLICT(tenant_id,recipient_id,event_key) DO NOTHING`,[actor.tenantId,actor.projectId,actor.actorId,
+        'survey-role:'+String(payload.userId)+':'+String(payload.roleVersion),String(payload.name),String(payload.previousRole).replaceAll('_',' '),String(payload.role).replaceAll('_',' ')]);
+    }
     await db.query(`INSERT INTO survey_staffing_events (tenant_id,project_id,actor_id,event_type,payload)
       VALUES ($1,$2,$3,$4,$5::jsonb)`, [actor.tenantId, actor.projectId, actor.actorId, event, JSON.stringify(payload)]);
   }

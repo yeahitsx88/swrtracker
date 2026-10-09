@@ -1,4 +1,5 @@
 'use client';
+import {HeadingHelp} from '@/components/ui/heading-help';
 import { TICKET_TYPE_LABELS } from '@/lib/display-labels';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -73,21 +74,21 @@ export function SurveyCommandOverview({ projectId, initialMetrics, revision }: {
     crews: chart.crews.filter(row => row.key !== '__unassigned__'),
   } : { areas: [], types: [], crews: [] };
   const group = rows[distribution];
-  const groupTitle = distribution === 'areas' ? 'Area' : distribution === 'types' ? 'Request type' : 'Party Chief';
+  const groupTitle = distribution === 'areas' ? 'Area' : distribution === 'types' ? 'Request Type' : 'Party Chief';
   const selectGroup = (value: string) => drill(distribution === 'areas' ? { areaId: value } : distribution === 'types' ? { ticketType: value as CommandFilters['ticketType'] } : { crewId: value });
   const scoped = Object.entries(applied).filter(([field, value]) => value && !['dateFrom', 'dateTo'].includes(field));
 
   return <section className="ops-command" aria-label="Survey command overview" aria-busy={!current && !error}>
-    <div className="ops-command-heading"><div><h2>Survey command</h2><p>Current request state and recorded activity within your authorized project scope.</p></div><span>Survey Manager view</span></div>
+    <div className="ops-command-heading"><div><HeadingHelp label={"Survey Command"} heading={<h2>Survey Command</h2>} help={<span>Current request state and recorded activity within your authorized project scope.</span>}/></div><span>Survey Manager view</span></div>
     <form className="ops-command-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Area<select value={draft.areaId ?? ''} onChange={event => set('areaId', event.target.value)}><option value="">All authorized Areas</option>{baseCharts?.facets.areas.map(row => <option key={row.key} value={row.key}>{row.label}</option>)}</select></label>
       <label>Request type<select value={draft.ticketType ?? ''} onChange={event => set('ticketType', event.target.value)}><option value="">All types</option>{baseCharts?.types.filter(row => row.key !== '__unassigned__').map(row => <option key={row.key} value={row.key}>{typeLabels[row.label] ?? row.label}</option>)}</select></label>
       <label>Party Chief<select value={draft.crewId ?? ''} onChange={event => set('crewId', event.target.value)}><option value="">All authorized crews</option>{baseCharts?.facets.crews.map(row => <option key={row.key} value={row.key}>{row.label}</option>)}</select></label>
-      <details className="ops-command-more"><summary>More filters and activity dates</summary><div>
+      <details className="ops-command-more"><summary>More Filters and Activity Dates</summary><div>
         <label>Current status<select value={draft.status ?? ''} onChange={event => set('status', event.target.value)}><option value="">All statuses</option>{baseCharts?.statuses.map(row => <option key={row.key} value={row.key}>{operationsStatusLabel(row.key)}</option>)}</select></label>
         <label>Activity from · UTC<input type="date" value={draft.dateFrom ?? ''} onChange={event => set('dateFrom', event.target.value)} /></label>
         <label>Activity through · UTC<input type="date" value={draft.dateTo ?? ''} onChange={event => set('dateTo', event.target.value)} /></label>
-        <p>Dates narrow the activity chart only. Current-state counts retain older open work. Activity windows are limited to 90 days.</p>
+        <HeadingHelp label="Activity Dates" heading={<h4>Activity Dates</h4>} help="Dates narrow the activity chart only. Current-state counts retain older open work. Activity windows are limited to 90 days." />
       </div></details>
       <div className="ops-command-actions"><Button type="submit">Apply</Button><Button type="button" variant="secondary" onClick={reset}>Reset</Button></div>
     </form>
@@ -96,18 +97,17 @@ export function SurveyCommandOverview({ projectId, initialMetrics, revision }: {
     {error ? <div className="ops-command-error"><p role="alert">{error}</p><Button variant="secondary" onClick={() => setRetry(value => value + 1)}>Retry overview</Button></div> : null}
     {current && chart ? <>
       <div className="ops-command-grid">
-        <section className="ops-command-panel"><div className="ops-command-panel-heading"><h3>Current status</h3><button type="button" className="app-link" onClick={() => drill()}>Review {total.toLocaleString()} requests</button></div><p className="muted">All dates · current status, not event history</p>
+        <section className="ops-command-panel"><div className="ops-command-panel-heading"><HeadingHelp label="Current Status" heading={<h3>Current Status</h3>} help="All dates · current status, not event history" /><button type="button" className="app-link" onClick={() => drill()}>Review {total.toLocaleString()} requests</button></div>
           {total ? <KpiChart kind="donut" rows={chart.statuses.map(row => ({ ...row, label: operationsStatusLabel(row.key) }))} months={[]} cells={[]} cycle={false} total={total} denominator={total} title="Current status" select={value => drill({ status: value as CommandFilters['status'] })} selectMonth={() => {}} /> : <p className="muted">No requests match this scope. Reset filters to inspect the project.</p>}
         </section>
-        <section className="ops-command-panel"><h3>Demand and recorded completion</h3><p className="muted">{current.activity.from} through {current.activity.to} · first submissions vs. recorded completions · UTC</p>
+        <section className="ops-command-panel"><HeadingHelp label="Demand and Recorded Completion" heading={<h3>Demand and Recorded Completion</h3>} help={`${current.activity.from} through ${current.activity.to} · first submissions vs. recorded completions · UTC`} />
           <KpiComparisonTrend points={current.activity.days.map(day => ({ key: day.date, primary: day.submitted, secondary: day.recordedCompletions }))} title="Daily request activity" primaryLabel="Submitted" secondaryLabel="Recorded completed" />
           {current.activity.excludedSyntheticCompletions ? <p className="ops-command-note">{current.activity.excludedSyntheticCompletions.toLocaleString()} generated completion dates excluded from this window.</p> : null}
         </section>
       </div>
-        <div className="ops-command-distribution"><div className="ops-command-panel-heading"><div><h3>Request distribution</h3><p className="muted">Current requests · all dates · select a bar to review matching requests</p></div><div className="ops-command-switch" role="group" aria-label="Distribution dimension">{(['areas', 'types', 'crews'] as const).map(value => <button key={value} type="button" aria-pressed={distribution === value} onClick={() => setDistribution(value)}>{value === 'areas' ? 'Area' : value === 'types' ? 'Type' : 'Party Chief'}</button>)}</div></div>
+        <div className="ops-command-distribution"><div className="ops-command-panel-heading"><div><HeadingHelp label={"Request Distribution"} heading={<h3>Request Distribution</h3>} help={<span>Current requests · all dates · select a bar to review matching requests. Unassigned requests are included in current status but are not attributed to a Party Chief. Assignment timing and employee productivity are not inferred from these counts.</span>}/></div><div className="ops-command-switch" role="group" aria-label="Distribution dimension">{(['areas', 'types', 'crews'] as const).map(value => <button key={value} type="button" aria-pressed={distribution === value} onClick={() => setDistribution(value)}>{value === 'areas' ? 'Area' : value === 'types' ? 'Type' : 'Party Chief'}</button>)}</div></div>
         {group.length ? <KpiChart kind="bar" rows={group} months={[]} cells={[]} cycle={false} total={total} denominator={total} title={`Requests by ${groupTitle}`} select={selectGroup} selectMonth={() => {}} /> : <p className="muted">No {groupTitle.toLowerCase()} assignments in this scope. Try another dimension or reset filters.</p>}
         {chart.limits.truncated ? <p className="ops-command-note">Breakdowns show at most {chart.limits.groups} groups. Totals remain complete; narrow the scope to inspect omitted groups.</p> : null}
-        <p className="ops-command-note">Unassigned requests are included in current status but are not attributed to a Party Chief. Assignment timing and employee productivity are not inferred from these counts.</p>
       </div>
     </> : null}
   </section>;

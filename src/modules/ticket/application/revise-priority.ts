@@ -24,6 +24,7 @@ export async function revisePriority(
     priority: TicketPriority;
     reason: string;
     visibility?: VisibilityScope;
+    expectedVersion?: number;
   },
 ): Promise<Ticket> {
   if (params.actorRole !== 'SURVEY_MANAGER') {
@@ -35,10 +36,12 @@ export async function revisePriority(
     throw new ValidationError('priority must be NORMAL or HIGH');
   }
 
+  if(params.expectedVersion!==undefined&&(!Number.isSafeInteger(params.expectedVersion)||params.expectedVersion<0))throw new ValidationError('expectedVersion must be a nonnegative integer');
   const ticket = params.visibility
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if(params.expectedVersion!==undefined&&ticket.rowVersion!==params.expectedVersion)throw new ConflictError('This request changed after your review. Reload it and confirm the current revision.');
   if (TERMINAL_STATUSES.has(ticket.status)) {
     throw new ConflictError('Priority cannot be revised after an SWR reaches a terminal state');
   }

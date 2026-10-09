@@ -8,7 +8,6 @@ import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type {
   LocalNotificationPreviewRecord,
-  ProjectMemberRecord,
   TicketRecord,
 } from '@/lib/contracts';
 import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui';
@@ -24,11 +23,18 @@ import './operations.css';
 import { Icon } from '@/components/ui/icon';
 import { formatCalendarDate } from '@/lib/calendar-date';
 import { humanizeCode, priorityLabel } from '@/lib/display-labels';
+import {TeamDelegation} from '@/components/ui/team-delegation';
+import {useProjectWorkspace} from '@/components/ui/project-shell-header';
+import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
+import type {CommandOwner} from '@/lib/frozen-command';
+import {CrewAssignment} from '@/components/ui/crew-assignment';
 
 export default function SurveyOperationsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [revision, setRevision] = useState(0);
-  const [members, setMembers] = useState<ProjectMemberRecord[]>([]);
+  const workflow = useTicketWorkflowReview(() => setRevision(current => current + 1));
+  const workspace=useProjectWorkspace();
+  const actionDisabled=workflow.active||workspace?.project.status!=='ACTIVE';
   const [metrics, setMetrics] = useState<AmeliaMetrics | null>(null);
   const [scopeSnapshot, setScopeSnapshot] = useState<Awaited<ReturnType<typeof apiClient.getKpiCharts>> | null>(null);
   const superintendent = scopeSnapshot?.analytics.supportsLinkedCrewScope === true;
@@ -62,15 +68,6 @@ export default function SurveyOperationsPage() {
     return () => { active = false; };
   }, [projectId, revision]);
 
-  useEffect(() => {
-    if (!metrics || superintendent || tab !== 'assignment') return;
-    let active = true;
-    setMembers([]);
-    apiClient.listProjectMembers(projectId).then(response => { if (active) setMembers(response.members); })
-      .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load crew choices.')); });
-    return () => { active = false; };
-  }, [projectId, metrics, superintendent, tab]);
-
   const [messagesLoading, setMessagesLoading] = useState(false);
   useEffect(() => {
     if (!metrics || tab !== 'messages') return;
@@ -90,8 +87,6 @@ export default function SurveyOperationsPage() {
   useEffect(() => {
     if (ticketQuery.data && page > Math.max(1, Math.ceil(ticketQuery.data.total / pageSize))) setPage(Math.max(1, Math.ceil(ticketQuery.data.total / pageSize)));
   }, [ticketQuery.data, page, pageSize]);
-  const partyChiefs = members.filter((member) => member.role === 'PARTY_CHIEF');
-  const instrumentMen = members.filter((member) => member.role === 'INSTRUMENT_MAN');
   const areas = [...new Map(metrics?.openByAreaStatus.map(row => [row.areaId, row.areaName]) ?? []).entries()];
   const filteredMessages = messages.filter(message => (!delivery || message.deliveryState === delivery) &&
     [message.subject, message.body, message.recipientName, message.recipientEmail, message.ticketNumber].some(value => value?.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())));
@@ -117,10 +112,11 @@ export default function SurveyOperationsPage() {
 
   return (
     <div className="stack ops-workspace">
+      {workflow.dialog}
       {error ? <ErrorBanner message={error} /> : null}
       {ticketQuery.error ? <ErrorBanner message={ticketQuery.error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
-      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><Button variant="secondary" disabled={loading} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
+      <div className="toolbar"><h2 className="panel-title">Survey Operations</h2><Button variant="secondary" disabled={loading||workflow.active} onClick={() => void loadOperations()}><Icon name="refresh" />{loading ? 'Loading…' : 'Refresh Operations'}</Button></div>
 
       {metrics ? <OperationsHealth metrics={metrics} projectId={projectId} areaWide={scopeSnapshot?.analytics.supportsLinkedCrewScope} /> : <p className="muted" role="status">{loading ? 'Loading queue health…' : 'No metric snapshot loaded. Refresh to try again.'}</p>}
       <div className="ops-tabs" role="tablist" aria-label="Operations views">
@@ -148,20 +144,20 @@ export default function SurveyOperationsPage() {
       </div>
       <div className="ops-pagination">
         <span role="status">{currentPage.first}–{currentPage.last} of {currentPage.total} {tab === 'messages' ? 'messages' : 'requests'}</span>
-        <label>Items per page<select value={pageSize} onChange={event => { setPageSize(Number(event.target.value)); setPage(1); }}>{[10,25,50,100].map(size => <option key={size}>{size}</option>)}</select></label>
-        <Button variant="secondary" disabled={currentPage.page === 1} onClick={() => setPage(currentPage.page - 1)}>Previous</Button>
+        <label>{tab === 'messages' ? 'Messages per page' : 'Requests per page'}<select value={pageSize} onChange={event => { setPageSize(Number(event.target.value)); setPage(1); }}>{[10,25,50,100].map(size => <option key={size}>{size}</option>)}</select></label>
+        <Button variant="secondary" disabled={currentPage.page === 1} onClick={() => setPage(currentPage.page - 1)}>Previous {tab === 'messages' ? 'message' : 'request'} page</Button>
         <span>Page {currentPage.page} of {currentPage.pages}</span>
-        <Button variant="secondary" disabled={currentPage.page === currentPage.pages} onClick={() => setPage(currentPage.page + 1)}>Next</Button>
+        <Button variant="secondary" disabled={currentPage.page === currentPage.pages} onClick={() => setPage(currentPage.page + 1)}>Next {tab === 'messages' ? 'message' : 'request'} page</Button>
       </div>
       <div className="ops-disclosure-controls"><Button variant="secondary" onClick={() => expandRows(true)}>Expand page</Button><Button variant="secondary" onClick={() => expandRows(false)}>Collapse all</Button></div>
 
       {tab === 'assignment' ? <Card className="ops-list" title="Need Assignment" description={superintendent ? 'Area-wide approved requests awaiting an Instrument Man. Expand a row to review the request.' : 'Approved requests awaiting an Instrument Man. Expand a row to assign crew.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
-            <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket} partyChiefs={partyChiefs} instrumentMen={instrumentMen}
+          <RecordCollection preserveOrder label="operation requests on this page" records={<>{ticketPage.items.map((ticket) => (
+            <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket}
               readOnly={superintendent} projectId={projectId}
-              busy={busy === ticket.id || members.length === 0} onAssign={(pc, im) => run(ticket.id, () => apiClient.assignTicket(ticket.id, pc, im), 'Assignment saved.')} />
+              disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>void loadOperations()} />
           ))}</>}/>
         </div>
       </Card> : null}
@@ -169,7 +165,7 @@ export default function SurveyOperationsPage() {
       {tab === 'open' ? <Card className="ops-list" title="Open Requests" description={superintendent ? 'Area-wide workload, high priority first, then earliest Need-By. Open a request for applicable actions.' : 'High priority first, then earliest Need-By. Expand a row for review actions.'}>
         <div className="stack">
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
-          <RecordCollection label="operation requests" records={<>{ticketPage.items.map((ticket) => (
+          <RecordCollection preserveOrder label="operation requests on this page" records={<>{ticketPage.items.map((ticket) => (
             <details className="ops-queue-row" key={ticket.id}>
               <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
               <div className="stack ops-row-body">
@@ -180,27 +176,11 @@ export default function SurveyOperationsPage() {
                 <p>{ticket.description}</p>
                 <p className="muted">Need-By {ticket.requestedDate ? formatCalendarDate(ticket.requestedDate) : 'Not set'} · {priorityLabel(ticket.priority)} priority</p>
                 {!superintendent ? <div className="row">
-                  {ticket.status === 'SUBMITTED' ? <Button disabled={busy === ticket.id} onClick={() => void run(ticket.id, () => apiClient.approveTicket(ticket.id), 'SWR approved.')}>Approve</Button> : null}
-                  {['SUBMITTED', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED'].includes(ticket.status) ? (
-                    <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                      const reason = window.prompt('Return reason');
-                      if (reason?.trim()) void run(ticket.id, () => apiClient.returnForCorrection(ticket.id, reason), 'SWR returned for correction.');
-                    }}>Return</Button>
-                  ) : null}
-                  <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                    const next = ticket.priority === 'HIGH' ? 'NORMAL' : 'HIGH';
-                    const reason = window.prompt(`Reason to set priority ${next}`);
-                    if (reason?.trim()) void run(ticket.id, () => apiClient.revisePriority(ticket.id, next, reason), 'Priority revised.');
-                  }}>Set {ticket.priority === 'HIGH' ? 'Normal' : 'High'}</Button>
-                  <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                    const date = window.prompt('New Need-By date (YYYY-MM-DD)');
-                    const reason = date ? window.prompt('Reason for Need-By change') : null;
-                    if (date && reason?.trim()) void run(ticket.id, () => apiClient.reviseNeedBy(ticket.id, date, reason), 'Need-By revised.');
-                  }}>Revise Need-By</Button>
-                  <Button variant="secondary" disabled={busy === ticket.id} onClick={() => {
-                    const reason = window.prompt('Cancellation reason');
-                    if (reason?.trim()) void run(ticket.id, () => apiClient.surveyCancel(ticket.id, reason), 'SWR canceled.');
-                  }}>Cancel</Button>
+                  {ticket.status === 'SUBMITTED' ? <Button disabled={actionDisabled||busy===ticket.id} onClick={() => workflow.open(ticket,'approve')}>Approve Request</Button> : null}
+                  {['SUBMITTED','APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'return')}>Return for Correction</Button>:null}
+                  <Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,ticket.priority==='HIGH'?'normal':'high')}>Set {ticket.priority==='HIGH'?'Normal':'High'} Priority</Button>
+                  <Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'need-by')}>Revise Need-By Date</Button>
+                  <Button variant="danger" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'cancel')}>Cancel Request</Button>
                 </div> : null}
               </div>
             </details>
@@ -231,24 +211,14 @@ export default function SurveyOperationsPage() {
   );
 }
 
-function AssignmentRow({ ticket, partyChiefs, instrumentMen, busy, onAssign, readOnly, projectId }: {
-  ticket: TicketRecord; partyChiefs: ProjectMemberRecord[]; instrumentMen: ProjectMemberRecord[]; busy: boolean;
-  onAssign: (partyChiefId: string | null, instrumentManId: string | null) => Promise<void>;
-  readOnly?: boolean; projectId: string;
+function AssignmentRow({ ticket,disabled,owner,readOnly,projectId,onDelegated }: {
+  ticket: TicketRecord; disabled:boolean; owner:CommandOwner; readOnly?:boolean; projectId:string;onDelegated:()=>void;
 }) {
-  const [partyChiefId, setPartyChiefId] = useState(ticket.assignedPartyChiefId ?? '');
-  const [instrumentManId, setInstrumentManId] = useState(ticket.assignedInstrumentManId ?? '');
-  return (
-    <details className="ops-queue-row">
-      <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
-      <div className="stack ops-row-body">
-        <p>{ticket.description}</p>
-        {readOnly ? <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link> : <div className="row">
-          <label>Party Chief <select value={partyChiefId} onChange={(event) => setPartyChiefId(event.target.value)}><option value="">None</option>{partyChiefs.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
-          <label>Instrument Man <select value={instrumentManId} onChange={(event) => setInstrumentManId(event.target.value)}><option value="">Unassigned</option>{instrumentMen.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}</select></label>
-          <Button disabled={busy} onClick={() => void onAssign(partyChiefId || null, instrumentManId || null)}>{busy ? 'Saving…' : 'Save Assignment'}</Button>
-        </div>}
-      </div>
-    </details>
-  );
+  return <details className="ops-queue-row">
+    <summary><span>{ticket.ticketNumber??'Request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
+    <div className="stack ops-row-body"><p>{ticket.description}</p>
+      <TeamDelegation ticket={ticket} canDelegate={!readOnly} disabled={disabled} owner={owner} onDelegated={onDelegated}/>
+      <div className="row"><CrewAssignment ticket={ticket} owner={owner} disabled={disabled} restrictToSelectedTeam={readOnly} allowChiefOnly={ticket.status==='APPROVED'} onSaved={onDelegated}/><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link></div>
+    </div>
+  </details>;
 }

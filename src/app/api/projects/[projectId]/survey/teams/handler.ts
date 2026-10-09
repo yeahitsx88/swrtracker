@@ -4,13 +4,16 @@ import type { DbClient, UUID } from '@/shared/types';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
 import { getProjectRole } from '@/lib/get-project-role';
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import {acquireTenantLifecycleLock,assertMutationIdentity} from '@/lib/tenant-lifecycle-lock';
 import { withTransaction } from '@/lib/with-transaction';
 import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
-import { authorizeTeamMutation, deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamContext, readTeamAreas, saveSurveyTeam,
+import { authorizeTeamSave, authorizeTeamMutation, deactivateSurveyTeam, readSurveyTeams, readTeamPersonnel, readTeamContext, readTeamAreas, saveSurveyTeam,
   type SaveSurveyTeamInput, type TeamActor, type TeamPageQuery } from '@/modules/tenancy/application/survey-teams';
 import { SurveyTeamsPgRepository } from '@/modules/tenancy/infrastructure/survey-teams.repository';
 import { changeSurveyRole, type ChangeSurveyRoleInput, type ManagedSurveyRole, type SurveyRoleRepository } from '@/modules/tenancy/application/change-survey-role';
+import {authorizeSupervisedSurveyRole,changeSupervisedSurveyRole,removeSurveyRole} from '@/modules/tenancy/application/change-supervised-survey-role';
+import type {OperationalRoleChangeInput} from '@/modules/tenancy/application/change-survey-role';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 
 type TransactionRunner = <T>(fn: (db: DbClient) => Promise<T>) => Promise<T>;
@@ -49,18 +52,24 @@ export function parseTeamInput(value: Record<string, unknown>): SaveSurveyTeamIn
   const memberIds = value.memberIds.map(id => uuid(id, 'Member'));
   if (new Set(memberIds).size !== memberIds.length) throw new ValidationError('Each team member may be selected only once');
   if (!teamId && value.expectedVersion != null) throw new ValidationError('A new team must not specify an existing version');
+  const areaIds = value.areaIds === undefined ? undefined : Array.isArray(value.areaIds) ? value.areaIds.map(id => uuid(id, 'Area')) : null;
+  if (areaIds === null || (areaIds && (!areaIds.length || areaIds.length > 100 || new Set(areaIds).size !== areaIds.length))) throw new ValidationError('Choose between 1 and 100 different Areas.');
   return { teamId, expectedVersion: teamId ? version(value.expectedVersion) : null, name: value.name.trim(),
-    areaId: uuid(value.areaId, 'Area'), leadUserId: uuid(value.leadUserId, 'Team lead'), memberIds };
+    areaId: uuid(value.areaId, 'Area'), ...(areaIds ? { areaIds } : {}), leadUserId: uuid(value.leadUserId, 'Team lead'), memberIds };
 }
 export function parseSurveyRoleInput(value: Record<string, unknown>): ChangeSurveyRoleInput {
-  const targets = ['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN','REQUESTER'];
-  const sources = [...targets,'VIEWER'];
+  const targets = ['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'];
+  const sources = targets;
   if (value.action !== 'set-role' || typeof value.role !== 'string' || !targets.includes(value.role) ||
       typeof value.expectedRole !== 'string' || !sources.includes(value.expectedRole) || typeof value.confirmRoleChanges !== 'boolean') {
     throw new ValidationError('Select a supported survey role, its current role and an explicit role-change confirmation');
   }
   return { userId: uuid(value.userId, 'Person'), role: value.role as ManagedSurveyRole, expectedRole: value.expectedRole as ProjectRole,
     expectedRoleVersion: version(value.expectedRoleVersion), confirmRoleChanges: value.confirmRoleChanges };
+}
+export function parseSurveyRoleRemovalInput(value:Record<string,unknown>):OperationalRoleChangeInput {
+ if(value.action!=='remove-role'||!['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(String(value.expectedRole))||value.role!==undefined||typeof value.confirmRoleChanges!=='boolean')throw new ValidationError('Review the current survey role and confirm removal to Requester');
+ return {userId:uuid(value.userId,'Person'),expectedRole:value.expectedRole as ProjectRole,expectedRoleVersion:version(value.expectedRoleVersion),role:'REQUESTER',confirmRoleChanges:value.confirmRoleChanges};
 }
 export function parseTeamPage(req: NextRequest): TeamPageQuery {
   const values = req.nextUrl.searchParams;
@@ -78,10 +87,11 @@ async function transact<T>(req: NextRequest, ctx: Context, deps: TeamDeps, fn: (
   const projectId = uuid((await ctx.params).projectId, 'Project');
   return deps.withTransaction(async db => {
     if(req.method!=='GET'){
-      await acquireTenantLifecycleLock(db,auth.tenantId,req.method==='PATCH'?'EXCLUSIVE':'SHARED');
+      await acquireTenantLifecycleLock(db,auth.tenantId,'EXCLUSIVE');
       assertMutationIdentity(await deps.requireAuth(req,db),auth);
     }
     const actorRole = await deps.getProjectRole(db, auth.tenantId, projectId, auth.userId, auth.sessionVersion);
+    if(req.method!=='GET')await assertPreparationNotCancelling(db,auth.tenantId,projectId);
     return fn(db, { tenantId: auth.tenantId, projectId, actorId: auth.userId, actorRole, sessionVersion: auth.sessionVersion });
   });
 }
@@ -109,7 +119,7 @@ export async function handlePostSurveyTeam(req: NextRequest, ctx: Context, deps:
     const input = parseTeamInput(await body(req));
     const idempotencyKey = requireIdempotencyKey(req);
     const result = await transact(req, ctx, deps, async (db, actor) => {
-      await authorizeTeamMutation(deps.repo, db, actor);
+      await authorizeTeamSave(deps.repo, db, actor,input);
       return deps.executeIdempotent(db, { tenantId: actor.tenantId, actorId: actor.actorId,
         endpoint: `POST:/api/projects/${actor.projectId}/survey/teams`, idempotencyKey }, input,
         async () => ({ status: input.teamId ? 200 : 201, body: await saveSurveyTeam(deps.repo, db, actor, input) }));
@@ -136,13 +146,20 @@ export async function handleDeleteSurveyTeam(req: NextRequest, ctx: Context, dep
 
 export async function handlePatchSurveyRole(req: NextRequest, ctx: Context, deps: TeamDeps = defaults) {
   try {
-    const input = parseSurveyRoleInput(await body(req));
+    const value=await body(req),removing=value.action==='remove-role';
+    if(Object.keys(value).some(k=>!['action','userId','expectedRole','expectedRoleVersion','role','confirmRoleChanges','reviewedTeamId','expectedTeamVersion'].includes(k)))throw new ValidationError('Review only the current person, team and role change');
+    const input=removing?parseSurveyRoleRemovalInput(value):parseSurveyRoleInput(value);
+    const scope=value.reviewedTeamId===undefined?undefined:{reviewedTeamId:uuid(value.reviewedTeamId,'Reviewed team'),expectedTeamVersion:version(value.expectedTeamVersion)};
+    if(!scope&&value.expectedTeamVersion!==undefined)throw new ValidationError('The reviewed team is required');
     const idempotencyKey = requireIdempotencyKey(req);
     const result = await transact(req, ctx, deps, async (db, actor) => {
-      await authorizeTeamMutation(deps.repo, db, actor);
+      if(actor.actorRole==='SURVEY_SUPERINTENDENT'){
+        if(!scope)throw new ValidationError('Review your current named team and its version');
+        await authorizeSupervisedSurveyRole(deps.repo,db,actor,scope.reviewedTeamId);
+      }else {if(scope)throw new ValidationError('Scoped team-role changes use current Superintendent authority');await authorizeTeamMutation(deps.repo, db, actor);}
       return deps.executeIdempotent(db, { tenantId: actor.tenantId, actorId: actor.actorId,
-        endpoint: `PATCH:/api/projects/${actor.projectId}/survey/teams`, idempotencyKey }, { action: 'set-role', ...input },
-        async () => ({ status: 200, body: await changeSurveyRole(deps.repo, db, actor, input) }));
+        endpoint: `PATCH:/api/projects/${actor.projectId}/survey/teams`, idempotencyKey }, { action: removing?'remove-role':'set-role', ...input,...scope },
+        async () => ({ status: 200, body: actor.actorRole==='SURVEY_SUPERINTENDENT'?await changeSupervisedSurveyRole(deps.repo,db,actor,{...input,...scope!}):removing?await removeSurveyRole(deps.repo,db,actor,input):await changeSurveyRole(deps.repo, db, actor, input as ChangeSurveyRoleInput) }));
     });
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) { return errorResponse(error); }

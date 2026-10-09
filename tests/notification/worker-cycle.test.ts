@@ -8,7 +8,7 @@ const db: DbClient = {
   query: async () => ({ rows: [] }),
 };
 
-const actorId = '00000000-0000-0000-0000-000000000099' as UUID;
+
 
 class InMemoryRunRepo implements BackgroundJobRunRepository {
   public starts = 0;
@@ -45,7 +45,6 @@ test('runNotificationWorkerCycle records a successful worker run', async () => {
     transport,
     db,
     runRepo,
-    actorId,
     withTenantLifecycle: async (_tenant,fn)=>fn(db),
     now: new Date('2026-03-04T12:00:00Z'),
   });
@@ -94,8 +93,7 @@ test('runNotificationWorkerCycle records a failed worker run', async () => {
         transport,
         db,
         runRepo,
-        actorId,
-        withTenantLifecycle: async (_tenant,fn)=>fn(db),
+            withTenantLifecycle: async (_tenant,fn)=>fn(db),
         now: new Date('2026-03-04T12:00:00Z'),
       }),
     /transport failure/,
@@ -125,7 +123,7 @@ test('worker rereads candidates and recipient eligibility on its held tenant cli
   listOrphanWorkflowCandidates:async(client,scope)=>{if(client===heldDb){assert.equal(held,true);assert.equal(scope,tenant);}return[];},
   reassignOrphanWorkflowTicket:async()=>{throw Error('Must never reassign');},
  };
- const result=await runNotificationWorkerCycle({repo,db,actorId,runRepo:new InMemoryRunRepo(),
+ const result=await runNotificationWorkerCycle({repo,db,runRepo:new InMemoryRunRepo(),
   transport:{send:async()=>{sends++;}},now:new Date('2026-03-04'),
   withTenantLifecycle:async(_tenant,fn)=>{assert.equal(_tenant,tenant);coordinated++;held=true;try{return await fn(heldDb);}finally{held=false;}},
  });

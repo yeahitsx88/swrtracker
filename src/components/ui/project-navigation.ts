@@ -4,7 +4,10 @@ import type { ProjectMembershipRecord } from '@/lib/contracts/projects';
 export interface ProjectNavigationItem {
   label: string;
   href: (projectId: string) => string;
+  group?: 'Home' | 'Work' | 'People' | 'Administration';
 }
+
+const home: ProjectNavigationItem = { label: 'Home', href: id => `/projects/${id}/home`, group: 'Home' };
 
 const newRequest: ProjectNavigationItem = {
   label: 'New Request',
@@ -31,7 +34,7 @@ const surveyOperations: ProjectNavigationItem = {
   href: (projectId) => `/projects/${projectId}/survey/operations`,
 };
 const pcApprovals: ProjectNavigationItem = {
-  label: 'PC Approvals',
+  label: 'Field Report Review',
   href: (projectId) => `/projects/${projectId}/crew/approvals`,
 };
 const teamManagement: ProjectNavigationItem = {
@@ -45,11 +48,11 @@ const admin: ProjectNavigationItem = {
 
 const navigationByRole: Record<ProjectRole, readonly ProjectNavigationItem[]> = {
   REQUESTER: [newRequest, myRequests, drafts],
-  SURVEY_MANAGER: [surveyOperations, teamManagement, allRequests],
+  SURVEY_MANAGER: [surveyOperations, pcApprovals, teamManagement, allRequests],
   PARTY_CHIEF: [crewWork, pcApprovals],
   INSTRUMENT_MAN: [crewWork],
   PROJECT_ADMIN: [admin],
-  SURVEY_SUPERINTENDENT: [allRequests, surveyOperations, crewWork],
+  SURVEY_SUPERINTENDENT: [allRequests, surveyOperations, crewWork, pcApprovals],
   CAD_TECHNICIAN: [allRequests],
   CAD_LEAD: [allRequests],
   DEPARTMENT_MANAGER: [allRequests],
@@ -59,18 +62,24 @@ const navigationByRole: Record<ProjectRole, readonly ProjectNavigationItem[]> = 
   SUBCONTRACTS_COORDINATOR: [allRequests],
 };
 
-export function getProjectNavigation(role: ProjectRole,canAdminister=false): readonly ProjectNavigationItem[] {
-  const operational=navigationByRole[role];
-  return canAdminister&&!operational.includes(admin)?[...operational,admin]:operational;
+export function getProjectNavigation(role: ProjectRole | null, canAdminister=false, status: ProjectMembershipRecord['status']='ACTIVE'): readonly ProjectNavigationItem[] {
+  const operational = role ? navigationByRole[role] : [];
+  const items = operational.filter(item => !(item === newRequest && status !== 'ACTIVE') && !(item === admin && !canAdminister));
+  if (canAdminister && !items.includes(admin)) items.push(admin);
+  // The existing team page permits scoped read access for Superintendent and Chief.
+  if (role === 'SURVEY_SUPERINTENDENT' || role === 'PARTY_CHIEF') items.push(teamManagement);
+  if(role&&['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF'].includes(role))items.push({label:'Review Requests',href:id=>`/projects/${id}/survey/review`});
+  if(role && ['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(role))items.push({label:'Notifications',href:id=>`/projects/${id}/survey/notifications`});
+  if(role||canAdminister)items.push({label:'Help Desk',href:id=>`/projects/${id}/help-desk`});
+  return role || canAdminister ? [home, ...items.map(item => ({...item, group: item === admin ? 'Administration' as const : item === teamManagement ? 'People' as const : 'Work' as const}))] : [];
 }
 
 export function getProjectLandingHref(projectId: string, role: ProjectRole): string {
-  return getProjectNavigation(role)[0]?.href(projectId) ?? `/projects/${projectId}/requests`;
+  return role === 'PROJECT_ADMIN' ? `/projects/${projectId}/admin` : `/projects/${projectId}/home`;
 }
 
 export function getMembershipLandingHref(project:ProjectMembershipRecord):string {
-  if(project.role==='PROJECT_ADMIN'||project.canAdminister&&project.role==='REQUESTER')return `/projects/${project.id}/admin`;
-  if(project.status==='ARCHIVED')return `/projects/${project.id}/${project.role==='REQUESTER'?'my-requests':'requests'}`;
+  if((project.status==='SETUP' && project.canAdminister) || project.role==='PROJECT_ADMIN')return `/projects/${project.id}/admin`;
   return getProjectLandingHref(project.id,project.role);
 }
 

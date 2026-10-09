@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
@@ -13,7 +14,7 @@ import type { UUID } from '@/shared/types';
 export const dynamic = 'force-dynamic';
 
 /** Explicit partial Save Draft; legacy complete/direct creation contracts stay intact. */
-export async function POST(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
+async function observedPOST(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const auth = await requireActiveAuth(req);
     const { projectId } = await params;
@@ -41,3 +42,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) { return errorResponse(error); }
 }
+
+export const POST=observeProjectRoute(observedPOST);

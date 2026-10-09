@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth } from '@/lib/auth';
@@ -11,7 +12,7 @@ import { ValidationError } from '@/shared/errors';
 import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
-export async function POST(req: NextRequest, { params }: { params: Promise<{ projectId: string; ticketId: string }> }) {
+async function observedPOST(req: NextRequest, { params }: { params: Promise<{ projectId: string; ticketId: string }> }) {
   try {
     const auth = await requireActiveAuth(req);
     const { projectId, ticketId } = await params;
@@ -34,3 +35,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) { return errorResponse(error); }
 }
+
+export const POST=observeProjectRoute(observedPOST);

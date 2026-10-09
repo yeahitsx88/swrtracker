@@ -1,0 +1,259 @@
+{
+  "batch": 214,
+  "baseline": "2280a24",
+  "productionChanged": false,
+  "implementation": "58c8c2dd6531767c3b0009ca8f840a1f8b38cfab3a39ead70c9f0ada7d6460b4",
+  "productionFilesMatched": 568,
+  "compiledServerAndStaticFilesMatched": 690,
+  "authority": [
+    "R11 precise operational populations/date/cycle measures, no productivity inference",
+    "Approved Superintendent separate Area workload and explicit linked-crew populations",
+    "Existing company/tenant/project/role and historical provenance contracts"
+  ],
+  "scope": "Reconcile old metric verification fixtures and integrate current metrics SQL into established regression gate; authenticate actual Superintendent and Manager metric/list/date reads",
+  "reconciliation": [
+    {
+      "discrepancy": "Scoped helper required retained Sabine connection and omitted current membership/team coverage columns",
+      "classification": "Stale fixture configuration/schema",
+      "resolution": "Require fresh alpha_metrics214 UUID namespace on explicit owned loopback gate; retain all original population/provenance assertions; empty current-shape team/admin tables isolate the old population cases."
+    },
+    {
+      "discrepancy": "Superintendent helper deactivated accounts without required paired actor",
+      "classification": "Migration sequencing/fixture drift",
+      "resolution": "Set and clear deactivated_by together with fixture deactivated_at; preserve production constraint and original refusal expectations."
+    },
+    {
+      "discrepancy": "Historical foreign-project metric observer expected403",
+      "classification": "Obsolete non-disclosure assertion",
+      "resolution": "Current production project-capability path returns404 for foreign metric project; ticket-list403 remains separately asserted."
+    },
+    {
+      "discrepancy": "Historical matching requests used li markup",
+      "classification": "Obsolete UI observer assumption",
+      "resolution": "Observe actual request links in current table and assert exact linked identities; retain the older helper."
+    }
+  ],
+  "ownership": {
+    "browserSchema": "alpha_metrics214_612ed16400664394afa81ed953cb685f",
+    "integratedGateMetricsSchema": "alpha_metrics214_e342fc239dd949f48c95f57e4b0ff393",
+    "runtime": "swr-alpha-metrics214-web",
+    "loopbackPort": 3232,
+    "freshUuidSchemas": true,
+    "retainedCustomerDataModified": false
+  },
+  "verification": {
+    "strictUnused": "passed",
+    "hostUnits": 643,
+    "productionCompilation": "Existing matching-lock Node22.23.3 Batch213 artifact reused with byte-identical production source and compiled server/static files",
+    "fullPostgresSuites": 33,
+    "metricsSql": {
+      "scopedPopulationProvenanceScenarios": 55,
+      "freshBaseTeamRouteScenarios": 65,
+      "superintendentAggregateDrilldownScenarios": 20
+    },
+    "http": {
+      "checks": 23,
+      "areaTotal": 7,
+      "linkedTotal": 3,
+      "managerTotal": 8,
+      "activity": {
+        "to": "2026-09-03",
+        "days": [
+          {
+            "date": "2026-09-01",
+            "submitted": 8,
+            "recordedCompletions": 0
+          },
+          {
+            "date": "2026-09-02",
+            "submitted": 0,
+            "recordedCompletions": 0
+          },
+          {
+            "date": "2026-09-03",
+            "submitted": 0,
+            "recordedCompletions": 1
+          }
+        ],
+        "from": "2026-09-01",
+        "timezone": "UTC",
+        "excludedSyntheticCompletions": 0
+      },
+      "scope": "Actual Superintendent/Manager metric/list/date/refusal checks"
+    },
+    "httpCases": [
+      "Area workload7 with no personnel comparison",
+      "Explicit linked cohort3/current crew facets",
+      "Area request list7",
+      "Linked list3",
+      "Out-of-pool personnel metric refusal",
+      "Out-of-pool linked list empty",
+      "Area-only personnel comparison refused",
+      "Unknown cohort rejected",
+      "Duplicate cohorts rejected",
+      "Chief cannot request Superintendent cohort metrics",
+      "Chief cannot request Superintendent cohort list",
+      "Foreign metric project undisclosed404",
+      "Foreign ticket list refused403",
+      "Stale Superintendent session refused401",
+      "Actor-role query spoof rejected",
+      "Manager all-date current state8/open7/completed1/unassigned1",
+      "Manager list agrees8",
+      "Inclusive UTC first-submission8 and recorded completion1 series",
+      "Status filter narrows activity independently",
+      "Need-By future range yields0 current population",
+      "More than90activity days rejected",
+      "Superintendent cannot obtain Manager activity",
+      "Activity population mode mismatch rejected"
+    ],
+    "browser": {
+      "checks": 76,
+      "cases": [
+        "LIGHT1440 overview reuses single aggregate",
+        "LIGHT1440 request drilldown stays lazy",
+        "LIGHT1440 no Manager-only activity request",
+        "LIGHT1440 no Manager message tab",
+        "LIGHT1440 Area population exposes no personnel comparison",
+        "area-light-1440 page overflow contained",
+        "LIGHT1440 linked facet contains only explicit current Chief",
+        "LIGHT1440 visual changes do not refetch aggregates",
+        "LIGHT1440 linked aggregate equals three actual matching requests",
+        "LIGHT1440 actual drilldown contains exact linked request identities",
+        "LIGHT1440 actual drilldown retains linked cohort and Chief",
+        "linked-light-1440 page overflow contained",
+        "LIGHT1440 population switch clears prior detail",
+        "LIGHT1440 Area view restores meaningful grouping",
+        "LIGHT1440 Area switch clears personnel fence",
+        "LIGHT1440 completed KPI retains linked population",
+        "LIGHT1440 failed read retains selected scope",
+        "LIGHT1440 retry recovers current scoped aggregate",
+        "LIGHT390 overview reuses single aggregate",
+        "LIGHT390 request drilldown stays lazy",
+        "LIGHT390 no Manager-only activity request",
+        "LIGHT390 no Manager message tab",
+        "LIGHT390 Area population exposes no personnel comparison",
+        "area-light-390 page overflow contained",
+        "LIGHT390 linked facet contains only explicit current Chief",
+        "LIGHT390 visual changes do not refetch aggregates",
+        "LIGHT390 linked aggregate equals three actual matching requests",
+        "LIGHT390 actual drilldown contains exact linked request identities",
+        "LIGHT390 actual drilldown retains linked cohort and Chief",
+        "linked-light-390 page overflow contained",
+        "LIGHT390 population switch clears prior detail",
+        "LIGHT390 Area view restores meaningful grouping",
+        "LIGHT390 Area switch clears personnel fence",
+        "LIGHT390 completed KPI retains linked population",
+        "LIGHT390 failed read retains selected scope",
+        "LIGHT390 retry recovers current scoped aggregate",
+        "DARK1440 overview reuses single aggregate",
+        "DARK1440 request drilldown stays lazy",
+        "DARK1440 no Manager-only activity request",
+        "DARK1440 no Manager message tab",
+        "DARK1440 Area population exposes no personnel comparison",
+        "area-dark-1440 page overflow contained",
+        "DARK1440 linked facet contains only explicit current Chief",
+        "DARK1440 visual changes do not refetch aggregates",
+        "DARK1440 linked aggregate equals three actual matching requests",
+        "DARK1440 actual drilldown contains exact linked request identities",
+        "DARK1440 actual drilldown retains linked cohort and Chief",
+        "linked-dark-1440 page overflow contained",
+        "DARK1440 population switch clears prior detail",
+        "DARK1440 Area view restores meaningful grouping",
+        "DARK1440 Area switch clears personnel fence",
+        "DARK1440 completed KPI retains linked population",
+        "DARK1440 failed read retains selected scope",
+        "DARK1440 retry recovers current scoped aggregate",
+        "DARK390 overview reuses single aggregate",
+        "DARK390 request drilldown stays lazy",
+        "DARK390 no Manager-only activity request",
+        "DARK390 no Manager message tab",
+        "DARK390 Area population exposes no personnel comparison",
+        "area-dark-390 page overflow contained",
+        "DARK390 linked facet contains only explicit current Chief",
+        "DARK390 visual changes do not refetch aggregates",
+        "DARK390 linked aggregate equals three actual matching requests",
+        "DARK390 actual drilldown contains exact linked request identities",
+        "DARK390 actual drilldown retains linked cohort and Chief",
+        "linked-dark-390 page overflow contained",
+        "DARK390 population switch clears prior detail",
+        "DARK390 Area view restores meaningful grouping",
+        "DARK390 Area switch clears personnel fence",
+        "DARK390 completed KPI retains linked population",
+        "DARK390 failed read retains selected scope",
+        "DARK390 retry recovers current scoped aggregate",
+        "real-unlinked-dark-390 page overflow contained",
+        "Actual revoked reporting links yield empty linked cohort without changing Area workload",
+        "Read-only metric journeys preserve every original ticket row",
+        "No metrics browser runtime errors"
+      ],
+      "captures": [
+        ".local/alpha-closure214/area-light-1440.png",
+        ".local/alpha-closure214/linked-light-1440.png",
+        ".local/alpha-closure214/area-light-390.png",
+        ".local/alpha-closure214/linked-light-390.png",
+        ".local/alpha-closure214/area-dark-1440.png",
+        ".local/alpha-closure214/linked-dark-1440.png",
+        ".local/alpha-closure214/area-dark-390.png",
+        ".local/alpha-closure214/linked-dark-390.png",
+        ".local/alpha-closure214/real-unlinked-dark-390.png"
+      ],
+      "pageErrors": []
+    }
+  },
+  "captures": [
+    {
+      "path": ".local/alpha-closure214/area-light-1440.png",
+      "sha256": "608bcc6d7a8f9123c9ea5a7c072f3d759c9221db4b44ba0aab0dd28598ecd63d",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/linked-light-1440.png",
+      "sha256": "bf91a15128ccc0b8b203e1b520a200c99195426c369707d8e4f64df73342cf10",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/area-light-390.png",
+      "sha256": "5837b4215480ab307912f31e9dbe3ab973512443c9b17dc067370c5b8149af5a",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/linked-light-390.png",
+      "sha256": "74205742f36b5efb323a4e008ea1ae357fe2553aa7f4d33fc50a960c4e25a51d",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/area-dark-1440.png",
+      "sha256": "a376ab96356f8463177a03a49c7f2e7407b546ae7514db863ebbf995f93f9daa",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/linked-dark-1440.png",
+      "sha256": "2b73629595c0fd33ea4c3083ea01093ef91ca55b9c46c038d8753d73738a244e",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/area-dark-390.png",
+      "sha256": "6507670b1c008dd616d0f55bb511de28a00fd218cf9076458778bb44760c7e4e",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/linked-dark-390.png",
+      "sha256": "3c5177d36b219ea55233969e13bd01d8c34b80900d086637a5e8a079c2b5bc6d",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure214/real-unlinked-dark-390.png",
+      "sha256": "bb90b326f60a63199bafbfd0d37ec61f0aa057b83eea0b352c1bdb8f30f808e7",
+      "executorOpened": true
+    }
+  ],
+  "limitations": [
+    "Synthetic report records are inserted into new owned schemas; this proves current read/population contracts, not historical customer imports or the lifecycle creation of every record.",
+    "The55legacy general-population cases use session-local temporary current-shape tables; fully migrated Superintendent and production HTTP/browser cases provide complementary constraint/route evidence.",
+    "Browser temporary503 is deliberate read-failure injection. Empty linked cohort comes from actual owned reporting-link revocation, restored in finally; request rows remain byte-identical.",
+    "Current focused browser proof covers Superintendent Light/Dark1440/390; Manager date HTTP proof does not certify complete human Manager chart-to-review navigation.",
+    "Personal/member-focused KPI journeys, wider roles and full keyboard/visual acceptance remain open.",
+    "Viewport observations expose Rows label wrapping as Ro/ws in KPI pagination; record a narrow usability follow-up rather than claiming broad visual clearance.",
+    "Historical fixtures/receipts and separate release advisory blocker preserved. No push/main merge/deploy/Alpha2."
+  ]
+}

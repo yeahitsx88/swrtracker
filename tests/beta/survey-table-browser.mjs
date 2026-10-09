@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import jwt from 'jsonwebtoken';
+assert.equal(process.env.SWR_SURVEY_WORKFLOW_TEST,'1');
+const f=JSON.parse(await fs.readFile('.local-survey-ui.json','utf8'));assert.equal(f.origin,'http://127.0.0.1:3150');
+const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');
+const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const checks=[];function check(value,label){assert(value,label);checks.push(label);}
+try{
+ const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
+ await context.addCookies([{name:'swr_session',value:jwt.sign({sub:f.manager,tenantId:f.tenant,sv:1},f.secret,{algorithm:'HS256',expiresIn:'1h',jwtid:crypto.randomUUID()}),url:f.origin,httpOnly:true,sameSite:'Lax'}]);
+ const page=await context.newPage();await page.goto(`${f.origin}/projects/${f.project}/requests?view=requests`);
+ await page.getByText('Columns and widths',{exact:true}).waitFor();
+ const table=page.locator('table.record-custom-columns');await table.locator('tbody tr').first().waitFor();
+ check(await table.locator('tbody tr').count()===3,'Three authorized synthetic requests rendered');
+ check(await table.locator('td').nth(1).evaluate(node=>getComputedStyle(node).whiteSpace==='nowrap'),'References do not wrap');
+ await page.getByText('Columns and widths',{exact:true}).click();
+ const settings=page.locator('.record-column-options');const toggles=settings.locator('input[type=checkbox]');
+ const headers=await table.locator('th').count();await toggles.nth(2).uncheck();
+ check(await table.locator('th').count()===headers-1,'Hiding a column removes its header and cells');
+ const resize=page.getByRole('separator').first();const widthBefore=Number(await resize.getAttribute('aria-valuenow'));
+ await resize.focus();await page.keyboard.press('ArrowRight');
+ check(Number(await resize.getAttribute('aria-valuenow'))===widthBefore+10,'Keyboard resizes the reference column');
+ const box=await resize.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+50,box.y+box.height/2);await page.mouse.up();
+ const dragged=Number(await resize.getAttribute('aria-valuenow'));check(dragged===widthBefore+60,'Pointer drag resizes the column');
+ await page.reload();await table.locator('tbody tr').first().waitFor();
+ await page.waitForFunction(expected=>Number(document.querySelector('[role=separator]').getAttribute('aria-valuenow'))===expected,dragged);
+ check(await table.locator('th').count()===headers-1,'Hidden columns persist across reload');
+ check(Number(await page.getByRole('separator').first().getAttribute('aria-valuenow'))===dragged,'Widths persist across reload');
+ await page.screenshot({path:'.local-survey-table-desktop.png',fullPage:true});
+ await page.getByText('Columns and widths',{exact:true}).click();await page.getByRole('button',{name:'Reset columns',exact:true}).click();
+ check(await table.locator('th').count()===headers,'Reset restores all columns');
+ check(Number(await page.getByRole('separator').first().getAttribute('aria-valuenow'))===widthBefore,'Reset restores default widths');
+ await page.setViewportSize({width:390,height:844});
+ check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile viewport has no page overflow');
+ check(await table.evaluate(node=>node.parentElement.scrollWidth>node.parentElement.clientWidth),'Wide table scrolls within its own region');
+ await page.evaluate(async()=>{document.activeElement?.blur();window.scrollTo(0,0);await document.fonts.ready;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
+ await page.screenshot({path:'.local-survey-table-mobile.png',fullPage:true});
+ console.log(JSON.stringify({checks},null,2));await fs.writeFile('.local-survey-table-results.json',JSON.stringify({checks},null,2));
+}finally{await browser.close();}

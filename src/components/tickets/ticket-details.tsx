@@ -3,7 +3,7 @@ import type { TicketRecord } from '@/lib/contracts';
 import { StatusBadge } from '@/components/ui';
 import { Icon } from '@/components/ui/icon';
 import { formatCalendarDate } from '@/lib/calendar-date';
-import { humanizeCode, isPastNeedBy, priorityLabel, ticketTypeLabel } from '@/lib/display-labels';
+import { humanizeCode, isPastNeedBy, priorityLabel, roleLabel, ticketTypeLabel } from '@/lib/display-labels';
 
 interface TicketDetailsProps {
   ticket: TicketRecord;
@@ -32,6 +32,8 @@ export function TicketDetails({ ticket, areaPath }: TicketDetailsProps) {
             : null}
         </div>
       </div>
+
+      {ticket.surveyCancelRequestedAt ? <div className="stack"><p role="status"><strong>Stop-work review pending.</strong> A Survey Manager must review the recorded flag before cancellation.</p><p className="detail-description">{ticket.surveyCancelReason ?? 'No reason recorded.'}</p><dl className="detail-grid"><div><dt>Flagged by</dt><dd>{roleLabel(ticket.surveyCancelRequestedRole ?? '')} · {ticket.surveyCancelRequestedBy}</dd></div><div><dt>Flag recorded</dt><dd>{new Date(ticket.surveyCancelRequestedAt).toLocaleString()}</dd></div></dl></div> : null}
 
       {ticket.rejectionReason ? (
         <p className="detail-callout"><strong>Rejection reason</strong>{ticket.rejectionReason}</p>

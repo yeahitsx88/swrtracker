@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
 import {withTransaction} from '@/lib/with-transaction';
@@ -24,5 +25,8 @@ async function run(req:NextRequest,ctx:Context,command:boolean){try{
   return executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST /api/projects/${projectId}/survey/reorganization`,idempotencyKey:key!},selection,async()=>({status:200,body:await reorganizeSurvey(repo,db,actor,selection as Parameters<typeof reorganizeSurvey>[3])}));
  });return NextResponse.json(result.body,{status:result.status,headers:{'Cache-Control':'private, no-store'}});
 }catch(error){return errorResponse(error);}}
-export async function GET(req:NextRequest,ctx:Context){return run(req,ctx,false);}
-export async function POST(req:NextRequest,ctx:Context){return run(req,ctx,true);}
+async function observedGET(req:NextRequest,ctx:Context){return run(req,ctx,false);}
+async function observedPOST(req:NextRequest,ctx:Context){return run(req,ctx,true);}
+
+export const GET=observeProjectRoute(observedGET);
+export const POST=observeProjectRoute(observedPOST);

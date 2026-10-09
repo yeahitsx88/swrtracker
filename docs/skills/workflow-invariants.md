@@ -10,6 +10,6 @@ Authority: [requirements](../REQUIREMENTS_ADCQ-260923-001.md) and approved [deci
 - Draft deletion is soft. Recovery within 30 days requires an actual Project Admin grant; Tenant Admin alone is insufficient.
 - Tenant disabling and project-access removal are separate decisions. Other-project duties/access and historical assignments survive local removal. Protected duties/last eligible authority require approved resolution.
 - Uncertain responses retain exact body/key. Definitive409 requires reload and renewed consent.
-- Archived history remains retained. Guarded recommissioning requires explicit Central IT preparation and fresh exact readiness review (Decision 50). Preparation blocks ordinary work; no bypass activation, wholesale replacement or preparation-cancel feature is approved.
+- Archived history remains retained. Guarded recommissioning requires explicit Central IT preparation and fresh exact readiness review (Decision 50). Preparation blocks ordinary work; no bypass activation or wholesale replacement is approved. Decision54 separately authorizes Central preparation cancellation with reviewed immutable start/completion evidence and completion-only current-authority paths.
 
-Read current approved cancellation chains and corresponding workflow/ticket tests. Preparation cancellation handling remains OPEN until decided.
+Read current approved cancellation chains and corresponding workflow/ticket tests. Decision54 governs preparation cancellation; ordinary activation/archive cannot substitute for the separately approved operation. See current D1_D8_RECONCILIATION.md and CLAUDE.md Section12 for recorded implementation and event contracts.

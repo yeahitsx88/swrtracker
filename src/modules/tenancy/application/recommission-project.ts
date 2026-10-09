@@ -1,3 +1,4 @@
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import {ConflictError,ForbiddenError,ValidationError} from '@/shared/errors';
 import type {DbClient,UUID} from '@/shared/types';
 import type {AuthContext} from '@/lib/auth';
@@ -16,7 +17,7 @@ export interface RecommissionRepository {
  open(db:DbClient,auth:AuthContext,projectId:UUID,command:Extract<RecommissionCommand,{action:'OPEN'}>,preview:RecommissionPreview):Promise<{periodId:string}>;
 }
 export async function requireRecommissionAuthority(db:DbClient,auth:AuthContext){
- if(await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Central IT is required to recommission a project.');
+ if(await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Central IT is required to manage project preparation.');
 }
 export function parseRecommissionCommand(value:unknown):RecommissionCommand{
  if(!value||typeof value!=='object'||Array.isArray(value))throw new ValidationError('Review and confirm recommissioning.');
@@ -34,6 +35,7 @@ export function parseRecommissionCommand(value:unknown):RecommissionCommand{
 function exact(expected:string[],actual:string[]){return expected.length===actual.length&&expected.every(id=>actual.includes(id));}
 export async function recommissionProject(repo:RecommissionRepository,db:DbClient,auth:AuthContext,projectId:UUID,command:RecommissionCommand){
  await requireRecommissionAuthority(db,auth);
+ await assertPreparationNotCancelling(db,auth.tenantId,projectId);
  const preview=await repo.preview(db,auth,projectId);
  if(command.snapshot!==preview.snapshot)throw new ConflictError('Project evidence changed. Reload and review the current records.','STALE_RECOMMISSIONING');
  if(command.action==='BEGIN'){

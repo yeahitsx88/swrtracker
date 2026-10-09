@@ -1,6 +1,7 @@
 'use client';
 
 import {AdministrationRecords,AdministrationSection} from './administration-records';
+import {Icon} from './icon';
 import type { MetricBucket, MetricsCharts } from '@/modules/reporting/application/amelia-metrics';
 import { operationsStatusLabel } from '@/lib/operations-view';
 import { chartColor } from '@/lib/display-labels';
@@ -26,7 +27,7 @@ function Heat(p: ChartProps) {
   const areas=[...new Map(p.cells.map(c=>[c.key,c.label])).entries()];
   const statuses=[...new Set(p.cells.map(c=>c.status))];
   const max=Math.max(1,...p.cells.map(c=>value(c,p.cycle)??0));
-  return <div className="kpi-scroll" tabIndex={0} role="region" aria-label="Area by status heat map"><table className="ops-heatmap"><caption>{p.title} by Area and status · {p.cycle?'average hours':'requests'}; darker means more</caption>
+  return <div className="kpi-scroll" tabIndex={0} role="region" aria-label="Area by status heat map"><table className="ops-heatmap"><caption>{p.title} By Area and Status · {p.cycle?'Average Hours':'Requests'}; Darker Means More</caption>
     <thead><tr><th scope="col">Area</th>{statuses.map(s=><th key={s} scope="col">{operationsStatusLabel(s)}</th>)}</tr></thead>
     <tbody>{areas.map(([key,label])=><tr key={key}><th scope="row">{label}</th>{statuses.map(status=>{
       const row=p.cells.find(c=>c.key===key&&c.status===status); const n=row?value(row,p.cycle):p.cycle?null:0;
@@ -44,7 +45,7 @@ function Trend(p: ChartProps) {
     {p.months.map((row,i)=>{ const n=value(row,p.cycle); const prev=i?value(p.months[i-1]!,p.cycle):null; return n===null?null:<g key={row.key}>
       {prev!==null?<line x1={x(i-1)} y1={y(prev)} x2={x(i)} y2={y(n)} stroke="var(--action)" strokeWidth="2"/>:null}
       <circle cx={x(i)} cy={y(n)} r="4" fill="var(--action)"/><text x={x(i)} y="227" textAnchor="middle" fill="currentColor">{row.label}</text>
-    </g>;})}</svg></div><details><summary>Monthly values and request drill-downs</summary><ul className="kpi-values">{p.months.map(row=><li key={row.key}><button type="button" onClick={()=>p.selectMonth(row.key)}>{row.label}: {formatted(value(row,p.cycle),p.cycle)}</button></li>)}</ul></details></>;
+    </g>;})}</svg></div><details><summary>Monthly Values and Request Drill-Downs</summary><ul className="kpi-values">{p.months.map(row=><li key={row.key}><button type="button" onClick={()=>p.selectMonth(row.key)}>{row.label}: {formatted(value(row,p.cycle),p.cycle)}</button></li>)}</ul></details></>;
 }
 function Donut(p: ChartProps) {
   const sum=p.rows.reduce((n,row)=>n+row.count,0); let offset=0;
@@ -63,7 +64,7 @@ function Gauge(p: ChartProps) {
     <strong>{percent===null?'No matching population':`${percent.toFixed(1)}%`}</strong><p>{p.total.toLocaleString()} selected / {p.denominator.toLocaleString()} authorized requests matching the other filters. This is an operational share, not an SLA target or productivity score.</p></div>;
 }
 const renderers: Record<ChartKind,(props:ChartProps)=>React.ReactNode>={heat:Heat,bar:Bars,trend:Trend,donut:Donut,gauge:Gauge};
-export function KpiChart({kind,...props}:ChartProps&{kind:ChartKind}) { const Renderer=renderers[kind]; return <><Renderer {...props}/><AdministrationSection title="Recorded chart values"><AdministrationRecords label={`${props.title} categories`} rows={props.rows} id={r=>r.key} columns={[{key:'label',label:'Category',text:r=>r.label},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]} actions={r=><button className="button button-secondary" disabled={r.key==='__unassigned__'} onClick={()=>props.select(r.key)}>Review requests</button>}/>{props.months.length>0?<AdministrationRecords label={`${props.title} monthly values`} rows={props.months} id={r=>r.key} columns={[{key:'month',label:'Month',text:r=>r.label},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]} actions={r=><button className="button button-secondary" onClick={()=>props.selectMonth(r.key)}>Review month</button>}/>:null}{props.cells.length>0?<AdministrationRecords label={`${props.title} Area and status values`} rows={props.cells} id={r=>`${r.key}:${r.status}`} columns={[{key:'area',label:'Area',text:r=>r.label},{key:'status',label:'Status',text:r=>operationsStatusLabel(r.status)},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]}/>:null}</AdministrationSection></>; }
+export function KpiChart({kind,requestDetails=true,...props}:ChartProps&{kind:ChartKind;requestDetails?:boolean}) { const Renderer=renderers[kind]; return <><Renderer {...props}/><AdministrationSection title="Recorded Chart Values"><AdministrationRecords scrollable label={`${props.title} categories`} rows={props.rows} id={r=>r.key} columns={[{key:'label',label:'Category',text:r=>r.label},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]} actions={r=><button className="button button-secondary chart-review-action" disabled={r.key==='__unassigned__'} onClick={()=>props.select(r.key)}><Icon name="search"/>{requestDetails?'Review requests':'Filter chart'}</button>}/>{props.months.length>0?<AdministrationRecords scrollable label={`${props.title} monthly values`} rows={props.months} id={r=>r.key} columns={[{key:'month',label:'Month',text:r=>r.label},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]} actions={r=><button className="button button-secondary chart-review-action" onClick={()=>props.selectMonth(r.key)}><Icon name="search"/>{requestDetails?'Review month':'Filter month'}</button>}/>:null}{props.cells.length>0?<AdministrationRecords scrollable label={`${props.title} Area and status values`} rows={props.cells} id={r=>`${r.key}:${r.status}`} columns={[{key:'area',label:'Area',text:r=>r.label},{key:'status',label:'Status',text:r=>operationsStatusLabel(r.status)},{key:'value',label:props.cycle?'Average hours':'Requests',text:r=>formatted(value(r,props.cycle),props.cycle)}]}/>:null}</AdministrationSection></>; }
 
 export interface ComparisonPoint { key: string; primary: number; secondary: number }
 
@@ -85,6 +86,6 @@ export function KpiComparisonTrend({ points, title, primaryLabel, secondaryLabel
       <polyline points={series('secondary')} fill="none" stroke="var(--muted)" strokeWidth="3" strokeLinejoin="round" />
     </svg>
     <div className="kpi-comparison-range"><time dateTime={points[0]!.key}>{points[0]!.key}</time><time dateTime={points.at(-1)!.key}>{points.at(-1)!.key}</time></div>
-    <AdministrationSection title="Exact daily counts"><AdministrationRecords label="daily activity counts" rows={points} id={p=>p.key} columns={[{key:'date',label:'Date · UTC',text:p=>p.key},{key:'primary',label:primaryLabel,text:p=>String(p.primary)},{key:'secondary',label:secondaryLabel,text:p=>String(p.secondary)}]}/></AdministrationSection>
+    <AdministrationSection title="Exact Daily Counts"><AdministrationRecords label="daily activity counts" rows={points} id={p=>p.key} columns={[{key:'date',label:'Date · UTC',text:p=>p.key},{key:'primary',label:primaryLabel,text:p=>String(p.primary)},{key:'secondary',label:secondaryLabel,text:p=>String(p.secondary)}]}/></AdministrationSection>
   </div>;
 }

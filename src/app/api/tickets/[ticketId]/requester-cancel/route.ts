@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse } from '@/lib/api-error';
 import { requireIdempotencyKey } from '@/lib/idempotency';
@@ -9,7 +10,7 @@ import { requesterCancel } from '@/modules/ticket/application/requester-cancel';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -41,3 +42,5 @@ export async function POST(
     }
   });
 }
+
+export const POST=observeProjectRoute(observedPOST);

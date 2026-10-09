@@ -8,9 +8,8 @@ import { PgBackgroundJobRunRepository } from '@/modules/notification/infrastruct
 import { dispatchPasswordResetEmails, pruneExpiredAuthSecurityRecords } from '@/modules/identity/infrastructure/password-reset-email-outbox';
 import { dispatchAdministrativeNotifications } from '@/modules/identity/infrastructure/administrative-notification-outbox';
 import { withTransaction } from '@/lib/with-transaction';
-import type { UUID } from '@/shared/types';
+import {SYSTEM_AUDIT_ACTOR} from '@/modules/audit/domain/types';
 
-const SYSTEM_ACTOR_ID = (process.env.SYSTEM_ACTOR_ID || '00000000-0000-0000-0000-000000000001') as UUID;
 const intervalSeconds = Number(process.env.NOTIFICATION_WORKER_INTERVAL_SECONDS || 300);
 const intervalMs = Number.isFinite(intervalSeconds) && intervalSeconds > 0
   ? Math.floor(intervalSeconds * 1000)
@@ -28,7 +27,7 @@ async function runResetEmailCycle(): Promise<void> {
   } catch (err) {
     logError('Password reset email worker cycle failed', {
       eventType: 'auth.password_reset.worker.failed', tenantId: null,
-      ticketId: null, actorId: SYSTEM_ACTOR_ID,
+      ticketId: null, actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
     }, err);
   } finally {
     resetEmailRunning = false;
@@ -47,7 +46,6 @@ async function runCycle(): Promise<void> {
       transport: new EmailNotificationTransport(createEmailTransportFromEnv()),
       db: pool,
       runRepo: new PgBackgroundJobRunRepository(),
-      actorId: SYSTEM_ACTOR_ID,
       withTenantLifecycle: withTenantNotificationTransaction,
     });
   } catch (err) {
@@ -55,7 +53,7 @@ async function runCycle(): Promise<void> {
       eventType: 'job.notification.loop.failed',
       tenantId: null,
       ticketId: null,
-      actorId: SYSTEM_ACTOR_ID,
+      actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
     }, err);
   } finally {
     isRunning = false;
@@ -66,7 +64,7 @@ logInfo('Notification worker loop started', {
   eventType: 'job.notification.loop.started',
   tenantId: null,
   ticketId: null,
-  actorId: SYSTEM_ACTOR_ID,
+  actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
   interval_ms: intervalMs,
 });
 

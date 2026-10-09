@@ -88,6 +88,26 @@ export async function withTicketMutation<T>(
   expected: TicketRouteContext,
   fn: (db: DbClient, current: TicketRouteContext) => Promise<T>,
 ): Promise<T> {
+  return withTicketTransaction(req, expected, fn, true);
+}
+
+/** Authorized historical reads may append access audit without changing workflow.
+ * Keep the lifecycle barrier and fresh scope, including during preparation/archive.
+ */
+export async function withTicketRead<T>(
+  req: NextRequest,
+  expected: TicketRouteContext,
+  fn: (db: DbClient, current: TicketRouteContext) => Promise<T>,
+): Promise<T> {
+  return withTicketTransaction(req, expected, fn, false);
+}
+
+async function withTicketTransaction<T>(
+  req: NextRequest,
+  expected: TicketRouteContext,
+  fn: (db: DbClient, current: TicketRouteContext) => Promise<T>,
+  workflowMutation: boolean,
+): Promise<T> {
   const auth = await requireAuth(req);
   if (auth.tenantId !== expected.tenantId || auth.userId !== expected.actorId) {
     throw new NotFoundError('Ticket not found');
@@ -97,7 +117,7 @@ export async function withTicketMutation<T>(
     req, auth, mode: 'SHARED',
     authorize: async db => {
       current = await getTicketRouteContext(req, expected.ticketId, db);
-      await assertRecommissioningMutation(db,current.tenantId,current.projectId,req.nextUrl.pathname);
+      if (workflowMutation) await assertRecommissioningMutation(db,current.tenantId,current.projectId,req.nextUrl.pathname);
     },
   });
 }

@@ -6,9 +6,8 @@ import { runNotificationWorkerCycle } from '@/modules/notification/application/w
 import { NotificationRepository, EmailNotificationTransport } from '@/modules/notification/infrastructure';
 import { PgBackgroundJobRunRepository } from '@/modules/notification/infrastructure/job-run.repository';
 import { dispatchPasswordResetEmails, pruneExpiredAuthSecurityRecords } from '@/modules/identity/infrastructure/password-reset-email-outbox';
-import type { UUID } from '@/shared/types';
+import {SYSTEM_AUDIT_ACTOR} from '@/modules/audit/domain/types';
 
-const SYSTEM_ACTOR_ID = (process.env.SYSTEM_ACTOR_ID || '00000000-0000-0000-0000-000000000001') as UUID;
 
 async function main(): Promise<void> {
   await pruneExpiredAuthSecurityRecords(pool);
@@ -18,7 +17,6 @@ async function main(): Promise<void> {
     transport: new EmailNotificationTransport(createEmailTransportFromEnv()),
     db: pool,
     runRepo: new PgBackgroundJobRunRepository(),
-    actorId: SYSTEM_ACTOR_ID,
     withTenantLifecycle: withTenantNotificationTransaction,
   });
 
@@ -26,7 +24,7 @@ async function main(): Promise<void> {
     eventType: 'job.notification.once.completed',
     tenantId: null,
     ticketId: null,
-    actorId: SYSTEM_ACTOR_ID,
+    actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
     run_id: result.runId,
     warning_count: result.warningCount,
     unlocked_count: result.unlockedCount,
@@ -46,7 +44,7 @@ main()
       eventType: 'job.notification.once.failed',
       tenantId: null,
       ticketId: null,
-      actorId: SYSTEM_ACTOR_ID,
+      actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
     }, err);
     await pool.end();
     process.exitCode = 1;

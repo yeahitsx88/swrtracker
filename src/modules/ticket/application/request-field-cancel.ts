@@ -32,6 +32,7 @@ export async function requestFieldCancel(
     eventPayload: { reason: params.reason ?? null },
     visibility:   params.visibility,
     assertTicket: ticket => {
+      if(params.actorRole==='PARTY_CHIEF'&&ticket.assignedPartyChiefId!==params.actorId)throw new ForbiddenError('Only the assigned Party Chief may change this field work.');
       if (params.actorRole === 'INSTRUMENT_MAN' && ticket.assignedInstrumentManId !== params.actorId) {
         throw new ForbiddenError('Only the assigned Instrument Man may request this field cancellation');
       }

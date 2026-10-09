@@ -1,4 +1,5 @@
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
+import { assertValidTransition } from '@/modules/workflow/domain/transitions';
 import { appendAuditEvent } from '@/modules/audit/application/index';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
@@ -27,6 +28,7 @@ export async function requestSurveyCancel(
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if(params.actorRole==='PARTY_CHIEF'&&ticket.assignedPartyChiefId!==params.actorId)throw new ForbiddenError('Only the assigned Party Chief may change this field work.');
 
   if (params.actorRole === 'SURVEY_MANAGER') {
     const canceled = await performTransition(db, repo, {
@@ -99,6 +101,9 @@ export async function requestSurveyCancel(
   if (ticket.surveyCancelRequestedAt) {
     throw new ConflictError('A survey-side cancellation request is already pending');
   }
+
+  // A flag may request only a cancellation that the current workflow permits.
+  assertValidTransition(ticket.workflowVariant, ticket.status, 'SURVEY_CANCELED');
 
   await repo.patchTicket(db, params.tenantId, params.ticketId, {
     status: ticket.status,

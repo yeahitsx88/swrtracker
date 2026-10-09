@@ -57,10 +57,6 @@ export function isApiErrorPayload(value: unknown): value is ApiErrorPayload {
 }
 
 export function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof ApiClientError) {
-    const codeSuffix = error.code ? ` ${error.code}` : '';
-    return `${error.status}${codeSuffix}: ${error.message}`;
-  }
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }

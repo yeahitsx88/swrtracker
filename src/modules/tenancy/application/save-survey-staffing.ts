@@ -32,8 +32,8 @@ export interface SurveyStaffingRepository {
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const eligiblePartyChiefRoles = new Set<ProjectRole>(['VIEWER', 'REQUESTER', 'PARTY_CHIEF']);
-const eligibleInstrumentManRoles = new Set<ProjectRole>(['VIEWER', 'REQUESTER', 'INSTRUMENT_MAN']);
+const eligiblePartyChiefRoles = new Set<ProjectRole>(['PARTY_CHIEF']);
+const eligibleInstrumentManRoles = new Set<ProjectRole>(['INSTRUMENT_MAN']);
 
 /** Replays require current authority too. Caller owns the transaction. */
 export async function authorizeStaffingMutation(repo: SurveyStaffingRepository, db: DbClient, actor: StaffingActor) {

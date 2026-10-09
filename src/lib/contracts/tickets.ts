@@ -31,6 +31,8 @@ export interface TicketRecord {
   requesterId: string;
   requesterName?: string;
   isOwnRequest?: boolean;
+  /** Visible request is witnessed in current completion-only preparation cancellation; not actor authority. */
+  preparationCleanupAllowed?: boolean;
   assignedPartyChiefId: string | null;
   assignedInstrumentManId: string | null;
   surveyLeadId: string | null;
@@ -83,6 +85,8 @@ export interface TicketResponse {
 export interface TicketCapabilities {
   canEditRequesterFields: boolean;
   canSubmit: boolean;
+  canDeleteDraft: boolean;
+  canApproveSurveyCancel: boolean;
   canRequesterCancel: boolean;
   canCreateFollowUp: boolean;
   canUploadRequestInstruction: boolean;
@@ -164,7 +168,7 @@ export interface TicketHistoryItem {
   source: TicketHistorySource;
   type: string;
   occurredAt: string;
-  actor: { id: string; name: string } | null;
+  actor: { id: string | null; name: string; kind?: 'USER' | 'SYSTEM' } | null;
   details: Record<string, unknown>;
 }
 

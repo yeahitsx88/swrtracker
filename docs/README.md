@@ -10,6 +10,7 @@ SWRTracker is a modular monolith for construction Survey work requests. Next.js 
 - [CODEX.md](CODEX.md): implementation history and restart point.
 - [DEPLOYMENT.md](DEPLOYMENT.md): migration, attachment, ingress and worker contracts.
 - [Alpha 1 report](../audits/alpha1/REPORT.md): audit register and verification.
+- [Alpha 1 design reference](design/alpha1/README.md): historical design inventories and the complete Alpha1 baseline integration.
 
 ## Toolchain and local setup
 
@@ -53,9 +54,11 @@ For PostgreSQL acceptance, provision a **disposable** database named **swr_team_
 pnpm test:postgres
 ~~~
 
-The runner initializes only an entirely empty public schema, then runs 27 suites in owned schemas. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
+The runner initializes only an entirely empty public schema, then runs 33 suites in owned schemas (23 matrix, 7 additional and 3 metrics suites), including authenticated project employee provisioning. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
 
 HTTP/browser acceptance requires a separate fixture and production runtime wired to its generated schema. tests/beta/scoped-offboarding-acceptance.mjs setup creates the schema and private .local-runtime.env; it requires .local-test.env. Supply SWR_ACCEPTANCE_ORIGIN as a loopback URL, that runtime's JWT_SECRET, and SWR_PLAYWRIGHT_MODULE pointing to an existing Playwright ESM module. Run scoped-offboarding-case-matrix.mjs external, then report: all 55 named cases require the same current source/migration digest. The acceptance cleanup mode removes only the fixture's owned schema. Keep credentials and runtime files ignored.
+
+The additional `tests/beta/admin-workflows-http.mjs` and `admin-workflows-browser.mjs` runners require the explicitly owned custom restoration fixture/runtime, `SWR_ADMIN_RESTORATION=1`, its fixture manifest and a local retained-demo manifest proving different schemas. Their recorded database guard is task-specific (`127.0.0.1:15493/swr_team_isolated`); generic acceptance setup alone does not provision the restoration fixture fields. Follow [restoration verification boundaries](design/alpha1/administration-restoration.md#verification-and-limitations) before running them. Use fresh owned mutation fixtures, matching runtime/JWT settings and the existing Playwright/Edge installation; these are not generic clean-clone commands or permission to reuse retained demo data.
 
 ## Repository map
 
@@ -73,3 +76,11 @@ HTTP/browser acceptance requires a separate fixture and production runtime wired
 JWT sessions revalidate account/session version and current membership. Independent Project Admin grants do not replace operational roles; Central/Tenant IT does not gain request visibility merely through TENANT_ADMIN. Domain reads apply tenant/project/company/actor scope. Lifecycle writers take the tenant barrier before domain/idempotency locks and revalidate authority before replay.
 
 Keep .env*, .local*, .data/, build caches, stores and new screenshots ignored. Prior reports are historical evidence; current verification writes ignored output or a newly named artifact.
+
+## Current Role Access and Support Audit
+
+[Role access audit and integration reference](design/alpha1/role-access-audit.md) covers the approved eight-role matrix, Tenant Admin custom-role wizard, new scoped Help Desk, member restoration and measured project diagnostics. That historical role-access checkpoint passed strict types, 584 units/pinned build, 30 PostgreSQL suites and separately owned production role checks. The audited Alpha1 baseline has 707 unit tests and 33 PostgreSQL suites; fresh reconciliation evidence is recorded in [the register](../audits/alpha1-reconciliation/REGISTER.md). Their sanitized receipts are in `audits/alpha1-ui-redesign/role-access-evidence.json`; counts do not replace the documented High/Medium findings.
+
+`tests/beta/role-access-http.mjs` is opt-in (`SWR_ROLE_ACCESS=1`) and requires an explicitly owned synthetic manifest, a different-schema retained-demo guard, loopback PostgreSQL `127.0.0.1:15493/swr_team_isolated`, an origin/runtime on that manifest's schema and its JWT secret. The manifest provides active GC membership/independent administration, a separate Tenant Admin without operational membership, Manager/Superintendent/Chief/Instrument Man/Requester/Viewer, associated company, foreign tenant and scoped assignments. It is not a generic clean-clone seed command or permission to reuse retained data. The fixture setup and browser capture helpers remain ignored/local. Source audit and API receipts do not claim execution of every core field transition.
+
+`tests/beta/role-access-conditions-browser.mjs` uses the same explicitly owned manifest/runtime guard and existing local Playwright/Edge installation to verify existing-account company eligibility and Archived restoration restrictions. It creates synthetic records only in that owned schema.

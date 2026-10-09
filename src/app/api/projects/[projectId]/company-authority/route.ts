@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ConflictError, ValidationError } from '@/shared/errors';
@@ -12,25 +13,25 @@ import {requireResourceUuid} from '@/lib/resource-uuid';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
+async function observedGET(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
     const auth = await requireAuth(req);
     const { projectId } = await params;
+    requireResourceUuid(projectId,'projectId');
     const repo = new CompanyAccessRepository();
     const overview = await withTransaction(async (db) => {
-      await assertAccessAdministrator(db, auth, projectId as UUID);
       return repo.listProjectCompanyAccess(db, auth.tenantId, projectId as UUID);
-    });
-    return NextResponse.json(overview);
+    },{req,auth,mode:'SHARED',authorize:db=>assertAccessAdministrator(db,auth,projectId as UUID)});
+    return NextResponse.json(overview,{headers:{'Cache-Control':'private, no-store'}});
   } catch (err) {
     return errorResponse(err);
   }
 }
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -67,3 +68,6 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const GET=observeProjectRoute(observedGET);
+export const POST=observeProjectRoute(observedPOST);

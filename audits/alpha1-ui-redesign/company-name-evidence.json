@@ -1,0 +1,76 @@
+{
+  "sourceDigest": "7e172f87a5adf485fda2ac6853c9c10b4e2f0b35a0750a559b26bba25fe78315",
+  "digestAlgorithm": "sorted src + db/migrations paths, NUL, raw file bytes, NUL; SHA-256",
+  "previousCheckpoint": "eb928d6",
+  "toolchain": {
+    "node": "22.23.3",
+    "pnpm": "11.19.0",
+    "postgres": "15"
+  },
+  "verification": {
+    "strictUnusedTypes": "pass",
+    "unitTests": 584,
+    "productionBuild": "pass",
+    "postgresSuites": 30,
+    "focusedHttpBrowserChecks": 24
+  },
+  "receipt": [
+    "Owned fixture schema",
+    "Project Admin registers a distinct name",
+    "Same key/body registration replays",
+    "Replay creates no company or evidence",
+    "Equivalent company name conflicts: exact",
+    "Equivalent company name conflicts: case/spacing",
+    "Equivalent company name conflicts: case/spacing",
+    "Equivalent company name conflicts: case/spacing",
+    "Tenant creation shares duplicate rule",
+    "Duplicates leave company and administrative evidence unchanged",
+    "Existing company ID remains reusable across projects",
+    "Another tenant name does not block creation",
+    "Concurrent project/tenant writers create only one company",
+    "Concurrent company insert persists once",
+    "Company outside current project created once",
+    "Known duplicate review disabled",
+    "Inline duplicate feedback attached to field",
+    "company-name-user-1107 has no page overflow",
+    "company-name-mobile has no page overflow",
+    "Changing name re-enables valid review",
+    "Tenant-only duplicate conflict requires deliberate reload",
+    "Rejected registration preserves name",
+    "company-name-conflict-user-1107 has no page overflow",
+    "Reload dismisses stale confirmation"
+  ],
+  "captures": [
+    {
+      "localPath": ".impeccable/review/company-name-user-1107.png",
+      "sha256": "c47b0564586171e50b7f8650e5971f9b68b60ef9cf9e31594e568875070f75a7"
+    },
+    {
+      "localPath": ".impeccable/review/company-name-mobile.png",
+      "sha256": "98e44dd19569f0b010c136225a2d6217f2fbf45fbd5d22e3fafcf5683f29471a"
+    },
+    {
+      "localPath": ".impeccable/review/company-name-conflict-user-1107.png",
+      "sha256": "037fc62d8ca697156645f4a8aa31d7d9fa1eb30bcb3928a5c17f69555a1add11"
+    }
+  ],
+  "review": {
+    "disposition": "ship",
+    "scope": "duplicate-company-name correction only",
+    "materialFixes": [],
+    "documentation": "ordinary extension; DESIGN/sidecar unchanged; existing drift preserved"
+  },
+  "retainedDemo": {
+    "companyIdsAndExistingRows": "before/after digest match",
+    "schemaMigration": "none",
+    "fileVolumeEnvironment": "preserved",
+    "actualBrowser": "SC Company 1 feedback visible and registration disabled"
+  },
+  "limitations": [
+    "Pre-existing duplicate companies remain intact; no merge/delete/reassignment performed.",
+    "Production company creation enforces tenant-scoped names under existing EXCLUSIVE transaction barriers; arbitrary operator SQL is outside application enforcement.",
+    "Punctuation remains significant; no fuzzy company identity matching.",
+    "Host baseline unit runner was blocked by loopback sandbox EACCES; final pinned build ran all584 tests successfully.",
+    "Earlier role/recovery audit findings remain separate; this receipt is not Alpha2 or security clearance."
+  ]
+}

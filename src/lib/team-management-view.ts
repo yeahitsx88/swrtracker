@@ -12,7 +12,7 @@ export function supportedTeamRoles(build: CrewBuild): ProjectRole[] {
     build === 'MEDIUM' ? ['PARTY_CHIEF','INSTRUMENT_MAN'] : ['INSTRUMENT_MAN'];
 }
 export function canEditSurveyRole(role: ProjectRole) {
-  return ['VIEWER','REQUESTER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(role);
+  return ['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(role);
 }
 /** Keep selection independent of whichever bounded search page is displayed. */
 export function addTeamSelection(selected: TeamPerson[], person: TeamPerson): TeamPerson[] {

@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 /**
  * POST /api/tickets/[ticketId]/override-rejection
  * REJECTED → APPROVED (CLAUDE.md §6 — Permitted Non-Standard Transition).
@@ -12,7 +13,7 @@ import { overrideRejection } from '@/modules/ticket/application/override-rejecti
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -36,3 +37,5 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);

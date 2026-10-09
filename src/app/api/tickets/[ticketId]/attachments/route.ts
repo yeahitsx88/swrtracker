@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import type { NextRequest } from 'next/server';
 import {
   handleGetTicketAttachments,
@@ -6,16 +7,19 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   ctx: { params: Promise<{ ticketId: string }> },
 ) {
   return handlePostTicketAttachments(req, ctx);
 }
 
-export async function GET(
+async function observedGET(
   req: NextRequest,
   ctx: { params: Promise<{ ticketId: string }> },
 ) {
   return handleGetTicketAttachments(req, ctx);
 }
+
+export const POST=observeProjectRoute(observedPOST);
+export const GET=observeProjectRoute(observedGET);

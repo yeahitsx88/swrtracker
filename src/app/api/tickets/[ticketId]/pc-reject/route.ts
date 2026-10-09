@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -5,14 +6,18 @@ import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-he
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { rejectPcStatus } from '@/modules/ticket/application/reject-pc-status';
 
+import {requireIdempotencyKey} from '@/lib/idempotency';
+import {executeAuthorizedTicketMutation} from '@/lib/ticket-mutation-idempotency';
+
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
   try {
     const { ticketId } = await params;
+    const idempotencyKey = requireIdempotencyKey(req);
     const ctx = await getTicketRouteContext(req, ticketId);
     const body = await req.json().catch(() => ({})) as unknown;
 
@@ -26,11 +31,16 @@ export async function POST(
         : undefined;
 
     const repo = new TicketRepository();
-    const ticket = await withTicketMutation(req, ctx, (client, ctx) =>
-      rejectPcStatus(repo, client, { ...ctx, reason }),
-    );
-    return NextResponse.json({ ticket });
+    const result = await withTicketMutation(req, ctx, (client, ctx) => executeAuthorizedTicketMutation(
+      client,
+      { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/pc-reject`, idempotencyKey },
+      { ticketId, reason: reason ?? null },
+      async () => ({ status: 200, body: { ticket: await rejectPcStatus(repo, client, { ...ctx, reason }) } }),
+    ));
+    return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);

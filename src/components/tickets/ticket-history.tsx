@@ -13,6 +13,8 @@ interface TicketHistoryProps {
 }
 
 const LABELS: Record<string, string> = {
+  'approver.timeout_warning_sent': 'Approval timeout warning recorded',
+  'approver.timeout_unlocked': 'Approval timeout escalation recorded',
   'ticket.returned_for_correction': 'Returned for correction',
   'ticket.assignment_recorded': 'Assignment recorded',
   'ticket.need_by_revised': 'Need-By date revised',
@@ -110,7 +112,7 @@ export function TicketHistory({ ticketId, refreshRevision = 0 }: TicketHistoryPr
     return false;
   });
 
-  return <AdministrationSection title="Recorded request history" open><AdministrationRecords label="request history" rows={shown} id={item=>`${item.source}:${item.id}`} columns={[
+  return <AdministrationSection title="Recorded Request History" open><AdministrationRecords label="request history" rows={shown} id={item=>`${item.source}:${item.id}`} columns={[
     {key:'occurred',label:'Time',text:item=>item.occurredAt,render:item=>new Date(item.occurredAt).toLocaleString()},
     {key:'type',label:'Event',text:item=>humanize(item.type)},
     {key:'actor',label:'Actor',text:item=>item.actor?.name??'System'},

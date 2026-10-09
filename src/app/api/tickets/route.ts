@@ -1,4 +1,4 @@
-import {assertRecommissioningMutation} from '@/lib/recommissioning-gate';
+import {assertRecommissioningMutation,findPreparationCleanupTickets} from '@/lib/recommissioning-gate';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { parseNeedBy } from '@/lib/requester-intake-input';
 /**
@@ -330,14 +330,16 @@ export async function GET(req: NextRequest) {
         page.data.map((ticket) => ticket.requesterId),
       );
 
+      const cleanup=await findPreparationCleanupTickets(pool,auth.tenantId,projectId as UUID,page.data.map(ticket=>ticket.id));
       return NextResponse.json({
         ...page,
         data: page.data.map((ticket) => ({
           ...ticket,
           requesterName: requesterNames.get(ticket.requesterId) ?? 'Unknown requester',
           isOwnRequest: ticket.requesterId === auth.userId,
+          preparationCleanupAllowed: cleanup.has(ticket.id),
         })),
-      });
+      }, {headers:{'Cache-Control':'private, no-store'}});
     } catch (err) {
       return errorResponse(err);
     }

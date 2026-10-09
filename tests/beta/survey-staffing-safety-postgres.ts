@@ -63,6 +63,10 @@ async function main(){
     assert.deepEqual(same.map(res=>res.status),[200,200]);assert.deepEqual(await same[0].json(),await same[1].json());assert.equal(await eventCount(),beforeDup+1);checks++;
     // Replaying an earlier save must not restore its former reporting link.
     await checked(post(first,firstKey),200);assert.equal((await pool.query('SELECT superintendent_id FROM survey_reporting_links WHERE project_id=$1 AND party_chief_id=$2 AND deactivated_at IS NULL',[project,chief])).rows[0].superintendent_id,superB);
+    // Survey staffing cannot enroll non-survey Requesters; administration owns enrollment.
+    const beforeEnrollment=await state();await checked(post({...base,expectedSnapshot:beforeEnrollment.snapshot,partyChiefId:candidate,instrumentManIds:[newIm]}),409);assert.deepEqual(await state(),beforeEnrollment);checks++;
+    // Synthetic correctly assigned roles exercise link/audit rollback without enrollment.
+    await pool.query("UPDATE project_memberships SET role=CASE WHEN user_id=$2 THEN 'PARTY_CHIEF' ELSE 'INSTRUMENT_MAN' END WHERE project_id=$1 AND user_id=ANY($3::uuid[])",[project,candidate,[candidate,newIm]]);
     const beforeFail=await state(),failureKey=randomUUID(),promotion={...base,expectedSnapshot:beforeFail.snapshot!,partyChiefId:candidate,instrumentManIds:[newIm]};
     const failing=new SurveyStaffingPgRepository();failing.record=async()=>{throw Error('Injected staffing audit failure');};
     await checked(handlePostSurveyStaffing(request('POST',promotion,failureKey),ctx,{...deps,repo:failing}),500);
@@ -70,7 +74,7 @@ async function main(){
     assert.equal((await pool.query('SELECT COUNT(*)::int AS n FROM api_idempotency WHERE tenant_id=$1 AND actor_id=$2 AND idempotency_key=$3',[tenant,manager,failureKey])).rows[0].n,0,'Failed save must roll back its ledger claim');checks++;
     await checked(post(promotion,failureKey),200);
     const promoted=(await state()).people;assert.equal(promoted.find(p=>p.id===candidate)?.role,'PARTY_CHIEF');assert.equal(promoted.find(p=>p.id===newIm)?.role,'INSTRUMENT_MAN');
-    assert.equal(promoted.find(p=>p.id===candidate)?.session_version,2);assert.equal(promoted.find(p=>p.id===newIm)?.session_version,2);
+    assert.equal(promoted.find(p=>p.id===candidate)?.session_version,1);assert.equal(promoted.find(p=>p.id===newIm)?.session_version,1);
     // New snapshot hashes capture non-staffing-command changes too.
     for(const mutation of [
       ()=>pool.query('UPDATE aor_nodes SET retired_at=NOW() WHERE id=$1',[uncovered]),

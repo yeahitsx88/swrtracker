@@ -1,0 +1,82 @@
+{
+  "batch": 219,
+  "baseline": "647a42b",
+  "item": "ALPHA-ACCEPTANCE-02",
+  "state": "verified complete for bounded review-decision availability",
+  "production": {
+    "files": 568,
+    "sha256": "2bcd777ae3bbd9a0e89e1c7e7c995b3d4a9c2fe0bc08794e63e159100f17242d",
+    "method": "globally sorted forward-slash relative path + NUL + raw bytes + NUL over src and db/migrations",
+    "runtimeBytesMatch": true
+  },
+  "verification": {
+    "baselineUnits": 648,
+    "currentHostUnits": 656,
+    "pinnedUnits": 656,
+    "strictUnusedTypes": "pass host and Node22.23.3",
+    "productionCompilation": "pass Next15.5.27 Node22.23.3",
+    "postgresSuites": 33,
+    "authenticatedBrowserChecks": 34,
+    "cases": [
+      "manager current decision authority",
+      "decision read cannot be cached",
+      "superintendent current decision authority",
+      "decision read cannot be cached",
+      "destinationLead current decision authority",
+      "decision read cannot be cached",
+      "Chief without responsible team does not acquire request visibility",
+      "Existing Viewer read is retained",
+      "Outside individual visibility remains undisclosed",
+      "Unknown resource stays undisclosed",
+      "Direct mutation independently refuses missing review authority",
+      "Read advice and denied decision preserve request/event bytes",
+      "LIGHT1440 unavailable confirmation",
+      "LIGHT1440 consent disabled",
+      "LIGHT1440 contained page",
+      "LIGHT390 unavailable confirmation",
+      "LIGHT390 consent disabled",
+      "LIGHT390 contained page",
+      "DARK1440 unavailable confirmation",
+      "DARK1440 consent disabled",
+      "DARK1440 contained page",
+      "DARK390 unavailable confirmation",
+      "DARK390 consent disabled",
+      "DARK390 contained page",
+      "Keyboard Escape closes unavailable review",
+      "Loading authority never enables confirmation",
+      "Read failure stays disabled with recovery guidance",
+      "Explicit grant permits consented decision",
+      "Authority revoked after dialog read blocks actual approval",
+      "Fresh dialog reflects revoked grant",
+      "Manager approval retains separate crew assignment",
+      "Stale reviewed state unavailable",
+      "Archived read retains history but no decision",
+      "No browser page errors"
+    ],
+    "captures": [
+      ".local/alpha-closure219/unavailable-light-1440.png",
+      ".local/alpha-closure219/unavailable-light-390.png",
+      ".local/alpha-closure219/unavailable-dark-1440.png",
+      ".local/alpha-closure219/unavailable-dark-390.png"
+    ],
+    "capturesOpened": 4,
+    "pageErrors": [],
+    "scopedDetector": "see final local detector log"
+  },
+  "preserved": [
+    "existing ticket visibility and tenant/project/company/session gates",
+    "current operational role and named-team or exact review-grant authority",
+    "independent administrative grants do not grant review",
+    "existing mutation endpoint payloads, transitions, exact retry and audit behavior",
+    "conventional Team Management and Visual Editor",
+    "history and schema"
+  ],
+  "limitations": [
+    "No whole Alpha acceptance or full role/state/keyboard/visual clearance.",
+    "First pinned harness lacked unchanged Docker/Compose/audit artifacts; corrected final harness passes. Package-manager dependency check initially attempted an install; final established scripts ran directly with pinned dependencies.",
+    "Observer corrected Chief non-disclosure, named dialog/loading selector and complete revocation actor evidence. Same newly owned requests resumed; no retained data reset.",
+    "Lost-reply review retry not independently repeated here; current full SQL replay regressions pass and prior browser evidence remains historical.",
+    "ALPHA-LIFECYCLE-REPLAY-218 remains a separate investigation.",
+    "Inherited release dependency blocker remains separate."
+  ]
+}

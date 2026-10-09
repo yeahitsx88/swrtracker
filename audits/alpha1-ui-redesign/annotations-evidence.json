@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-04T00:55:45.955Z",
+  "branch": "alpha1-ui-redesign",
+  "checkpoint": "0487dcc",
+  "implementation": "9b9ad61fe8524d00a5a12ca439049c3d168ca11f32ce4ceea4fac0d89eeebe71",
+  "ownerAnnotations": [
+    {
+      "ids": [
+        1,
+        9
+      ],
+      "result": "Shared authenticated layout; flush-left224px sidebar, same native drawer below1000px, current server-verified selection on account routes."
+    },
+    {
+      "ids": [
+        2,
+        3
+      ],
+      "result": "Single-line status bubbles in220px status columns;640px contained Home tables."
+    },
+    {
+      "ids": [
+        4,
+        5
+      ],
+      "result": "Search-icon44px nowrap actions;22rem bounded vertical scroll with stickythead,560px normal table minimum; counts andactions visible together ondesktop."
+    },
+    {
+      "ids": [
+        6,
+        8
+      ],
+      "result": "Legacy Menu removed across authenticated pages; Projects uses shared workspace."
+    },
+    {
+      "ids": [
+        7
+      ],
+      "result": "Appearance has validated internal return route and persistent Home/Projects escape."
+    }
+  ],
+  "verification": {
+    "baseline": {
+      "unitTests": 566,
+      "strictTypes": "passed"
+    },
+    "final": {
+      "unitTests": 566,
+      "strictUnusedTypes": "passed",
+      "pinnedNode": "22.23.3",
+      "postgresVersion": 15,
+      "productionBuild": "passed",
+      "productionDependencyAudit": "passed",
+      "postgresSuites": 27,
+      "productionHttpChecks": 52,
+      "lifecycleBrowserChecks": 24,
+      "lostResponseBrowserChecks": 26,
+      "namedAcceptanceCases": {
+        "passed": 55,
+        "total": 55
+      },
+      "annotationBrowserChecks": 568,
+      "currentCaptures": 70,
+      "roleThemeViewportCombinations": 36
+    }
+  },
+  "roles": [
+    "requester",
+    "manager",
+    "superintendent",
+    "chief",
+    "instrument",
+    "admin",
+    "combined-manager",
+    "combined-requester",
+    "combined-superintendent"
+  ],
+  "themes": [
+    "LIGHT",
+    "DARK"
+  ],
+  "widths": [
+    1864,
+    390
+  ],
+  "matrixSuites": {
+    "account-offboarding-commands-postgres.ts": {
+      "at": "2026-10-04T00:52:11.669Z",
+      "exitCode": 0
+    },
+    "offboarding-policy-postgres.ts": {
+      "at": "2026-10-04T00:52:12.871Z",
+      "exitCode": 0
+    },
+    "project-administration-postgres.ts": {
+      "at": "2026-10-04T00:52:14.025Z",
+      "exitCode": 0
+    },
+    "project-capabilities-postgres.ts": {
+      "at": "2026-10-04T00:52:15.087Z",
+      "exitCode": 0
+    },
+    "account-offboarding-concurrency-postgres.ts": {
+      "at": "2026-10-04T00:52:15.616Z",
+      "exitCode": 0
+    },
+    "lifecycle-writer-handlers-postgres.ts": {
+      "at": "2026-10-04T00:52:18.603Z",
+      "exitCode": 0
+    },
+    "project-member-atomic-postgres.ts": {
+      "at": "2026-10-04T00:52:20.036Z",
+      "exitCode": 0
+    },
+    "offboarding-blockers-postgres.ts": {
+      "at": "2026-10-04T00:52:21.416Z",
+      "exitCode": 0
+    },
+    "active-duty-subject-postgres.ts": {
+      "at": "2026-10-04T00:52:23.299Z",
+      "exitCode": 0
+    },
+    "ticket-assignee-eligibility-postgres.ts": {
+      "at": "2026-10-04T00:52:24.417Z",
+      "exitCode": 0
+    },
+    "ticket-replay-visibility-postgres.ts": {
+      "at": "2026-10-04T00:52:25.614Z",
+      "exitCode": 0
+    },
+    "ticket-replay-authority-postgres.ts": {
+      "at": "2026-10-04T00:52:26.835Z",
+      "exitCode": 0
+    },
+    "identity-lifecycle-atomic-postgres.ts": {
+      "at": "2026-10-04T00:52:28.479Z",
+      "exitCode": 0
+    },
+    "notification-worker-lifecycle-postgres.ts": {
+      "at": "2026-10-04T00:52:29.716Z",
+      "exitCode": 0
+    },
+    "survey-teams-postgres.ts": {
+      "at": "2026-10-04T00:52:31.157Z",
+      "exitCode": 0
+    },
+    "survey-staffing-postgres.ts": {
+      "at": "2026-10-04T00:52:32.122Z",
+      "exitCode": 0
+    },
+    "survey-staffing-safety-postgres.ts": {
+      "at": "2026-10-04T00:52:32.688Z",
+      "exitCode": 0
+    },
+    "protected-obligations-postgres.ts": {
+      "at": "2026-10-04T00:52:33.351Z",
+      "exitCode": 0
+    },
+    "protected-obligations-concurrency-postgres.ts": {
+      "at": "2026-10-04T00:52:34.805Z",
+      "exitCode": 0
+    },
+    "superintendent-area-postgres.ts": {
+      "at": "2026-10-04T00:52:35.340Z",
+      "exitCode": 0
+    },
+    "superintendent-area-concurrency-postgres.ts": {
+      "at": "2026-10-04T00:52:36.277Z",
+      "exitCode": 0
+    },
+    "team-workforce-postgres.ts": {
+      "at": "2026-10-04T00:52:36.948Z",
+      "exitCode": 0
+    },
+    "draft-recovery-postgres.ts": {
+      "at": "2026-10-04T00:52:37.385Z",
+      "exitCode": 0
+    },
+    "http": {
+      "at": "2026-10-04T00:54:20.509Z",
+      "exitCode": 0
+    },
+    "browser": {
+      "at": "2026-10-04T00:54:23.627Z",
+      "exitCode": 0
+    }
+  },
+  "review": {
+    "fullReview": "fix; reviewed navigation/account annotations passed; sole P1 pathological chart table sizing",
+    "confirmation": "resolved - ship for the listed P1 correction",
+    "scope": "Confirmation opened12initial/actions/stickyviewportcaptures; scores table sizing fix only.",
+    "securityReleaseApproval": false
+  },
+  "isolation": {
+    "freshOwnedSchemas": true,
+    "retainedCustomerStateUntouched": true,
+    "liveDemoDataAndSettingsPreserved": true,
+    "hostPort": 15493,
+    "inContainerPostgresGuard": 15489,
+    "ignoredAdapters": "Alter only disposable database guard/fixture filenames and external suite dispatch; assertions preserved."
+  },
+  "localEvidence": {
+    "capturesRoot": ".impeccable/review/alpha1-ui/annotations",
+    "capturesCommitted": false,
+    "privateManifestsAndCredentialsCommitted": false,
+    "captures": [
+      {
+        "file": "requester-LIGHT-1864-home.png",
+        "sha256": "5096dde4531fd53af24000c49e151c8e1a4233eb6c8e16f0b1da2ee1e8c549e3",
+        "bytes": 242364
+      },
+      {
+        "file": "requester-LIGHT-1864-chart-values.png",
+        "sha256": "897bffcabafc96074a4e4acd792479c8b19245265542378cf20255abf3e3e902",
+        "bytes": 285983
+      },
+      {
+        "file": "requester-LIGHT-1864-chart-viewport.png",
+        "sha256": "6df1590e54ffab2670c8d58f95f3f922f89d475e5cf8691a020022b9c46656b1",
+        "bytes": 100690
+      },
+      {
+        "file": "requester-LIGHT-1864-chart-actions-viewport.png",
+        "sha256": "ec6ddbcacde6e3bf615afece4f3153b7fb909a362a0cbca4baef514941a0c394",
+        "bytes": 101909
+      },
+      {
+        "file": "requester-LIGHT-1864-chart-sticky-viewport.png",
+        "sha256": "4268254b623a3015c28999fc93c9ba13b3fe9eed9a160580b3509a9939f9ab14",
+        "bytes": 97973
+      },
+      {
+        "file": "requester-LIGHT-1864-appearance.png",
+        "sha256": "621dcbaba333ab4139d93a0b77ddd6fbaaad26b2a92ea9000defbc181b2f65e5",
+        "bytes": 59364
+      },
+      {
+        "file": "requester-LIGHT-1864-profile.png",
+        "sha256": "4c758b7852e423dc092c04c20252eee64d7ccc0c9665b8c89535b97f52a7de6e",
+        "bytes": 57282
+      },
+      {
+        "file": "requester-LIGHT-1864-assignment-details.png",
+        "sha256": "2187890391bec770cf1effce823ee0ce3de275a7ef8b898ec96b7428975d7809",
+        "bytes": 64886
+      },
+      {
+        "file": "requester-LIGHT-1864-switch-project.png",
+        "sha256": "7f274a47ddb45316fdfcb7d7c3b2a832d142c81cedcab6d751fb002100c6ab6c",
+        "bytes": 89828
+      },
+      {
+        "file": "requester-LIGHT-390-home.png",
+        "sha256": "f3613f74b5b7faaac5751ddf5d37ff8fb940370bf0af1c821630b804e81b9b32",
+        "bytes": 185464
+      },
+      {
+        "file": "requester-LIGHT-390-chart-values.png",
+        "sha256": "a8042df374b7626cb8d68d6c3582bf78d5777e2af2af653f99eb506ad533e9c7",
+        "bytes": 222119
+      },
+      {
+        "file": "requester-LIGHT-390-chart-viewport.png",
+        "sha256": "a90b39629d0ffc469c3ae5a2e9e817206f588bef3a15eeccdda1f9cf2c519835",
+        "bytes": 48726
+      },
+      {
+        "file": "requester-LIGHT-390-chart-actions-viewport.png",
+        "sha256": "4d738e606dfd49d628fde14c0d11fef2ad45d513361c1a85097ff1e1edc35eae",
+        "bytes": 48053
+      },
+      {
+        "file": "requester-LIGHT-390-chart-sticky-viewport.png",
+        "sha256": "db4c8e9ba573c68dfd35a4bbb5f2547315b63752a1ca7488780b7d7801d0653f",
+        "bytes": 47861
+      },
+      {
+        "file": "requester-LIGHT-390-appearance.png",
+        "sha256": "afc807177058a79a56e783e1ca634afe3fa37ceb52048087ef1dd24b47a13057",
+        "bytes": 38952
+      },
+      {
+        "file": "requester-LIGHT-390-profile.png",
+        "sha256": "325a3f50e926de7b0f11da0343ba34141b2827517dd40deda094e626fa4ff7d9",
+        "bytes": 36460
+      },
+      {
+        "file": "requester-LIGHT-390-assignment-details.png",
+        "sha256": "006318eeb4c892d4f3ea5913f5db9f7228a72032be7ac26a51367652b8d69d9f",
+        "bytes": 45264
+      },
+      {
+        "file": "requester-LIGHT-390-switch-project.png",
+        "sha256": "be7adc8b698ebb08e3840a3b65bdb42615eec70f79fba779dbeb01f64b2381e8",
+        "bytes": 66314
+      },
+      {
+        "file": "requester-DARK-1864-home.png",
+        "sha256": "9f47df2dabe709236a700f340157e78c8431ea00b83ba8346f2633387b84fe0e",
+        "bytes": 246299
+      },
+      {
+        "file": "requester-DARK-1864-chart-values.png",
+        "sha256": "cb30c06b207dcd7ca19fbcef15880a9131af25b3eaed2b7fc751c6ed633d2e00",
+        "bytes": 292073
+      },
+      {
+        "file": "requester-DARK-1864-chart-viewport.png",
+        "sha256": "8f0ccc1ed5aa5a73db188cb7caf050e90901fe532a67fcdc0cfd418b72f1f627",
+        "bytes": 96074
+      },
+      {
+        "file": "requester-DARK-1864-chart-actions-viewport.png",
+        "sha256": "919fbd5bf3e3e9f22149883ec93be6e3c4e4d29a6e632513f464312a75da086e",
+        "bytes": 104734
+      },
+      {
+        "file": "requester-DARK-1864-chart-sticky-viewport.png",
+        "sha256": "92d34137efb37a15eebf3a1c7f350eebafe5a678824b20a6842f381b324c2e5b",
+        "bytes": 100753
+      },
+      {
+        "file": "requester-DARK-1864-appearance.png",
+        "sha256": "f97b5b232a1409582acb5adad16b5194d324d5d09f4fc06e524b76cff10d7af1",
+        "bytes": 60729
+      },
+      {
+        "file": "requester-DARK-1864-profile.png",
+        "sha256": "ee3d07327910f8df1f3bf9cc660f69d7a9604dd684e45a2bba7963c228601ec8",
+        "bytes": 59046
+      },
+      {
+        "file": "requester-DARK-1864-assignment-details.png",
+        "sha256": "67356352ff8de20c5d8863d82f2243d5d3ea1a37826eb05e71de168b8c818371",
+        "bytes": 67050
+      },
+      {
+        "file": "requester-DARK-1864-switch-project.png",
+        "sha256": "f92057a99b19dc9707cee06daac7df4706e1895b04dc8c610da0da25d28dd426",
+        "bytes": 93483
+      },
+      {
+        "file": "requester-DARK-390-home.png",
+        "sha256": "f41079a3f3d76e545c2623dda845067403bedec5a40aba4328daa22e0ea07661",
+        "bytes": 188850
+      },
+      {
+        "file": "requester-DARK-390-chart-values.png",
+        "sha256": "4ba3e0d804118a5f2376cee5c9a1527478ce62b7c55f8afdad2abf9ec1a59e29",
+        "bytes": 228113
+      },
+      {
+        "file": "requester-DARK-390-chart-viewport.png",
+        "sha256": "eda56d1d24ca060e6cbc1159b848d6bef0999d3a853c791771f7eacc7ae0582c",
+        "bytes": 51752
+      },
+      {
+        "file": "requester-DARK-390-chart-actions-viewport.png",
+        "sha256": "72e0ca7f10df632400158093d37d996c63ace1be3b4d1ebfab674b57e593a713",
+        "bytes": 50273
+      },
+      {
+        "file": "requester-DARK-390-chart-sticky-viewport.png",
+        "sha256": "06a96f9b68cee368d508c2eccdf89869f3473a5b5c4bddbec9d44ebad66dbfeb",
+        "bytes": 50037
+      },
+      {
+        "file": "requester-DARK-390-appearance.png",
+        "sha256": "a57d968913dee47af6a03f52b683a8294593ef889f6bcc3597e88f3376db081d",
+        "bytes": 40085
+      },
+      {
+        "file": "requester-DARK-390-profile.png",
+        "sha256": "114c2816e891bb9063dca46710010b883d0ac735cc7a1d5489f9a0f3835ebc85",
+        "bytes": 37734
+      },
+      {
+        "file": "requester-DARK-390-assignment-details.png",
+        "sha256": "82447439dc0698f0fc9b5fbf8fa248212336100f8e95a06b6f250360d06ec083",
+        "bytes": 46742
+      },
+      {
+        "file": "requester-DARK-390-switch-project.png",
+        "sha256": "0ddaa41951bbfe45d2126fa5aa2dc8f45934aaa79c55b4bd0c8a4761fd9d474d",
+        "bytes": 69232
+      },
+      {
+        "file": "manager-LIGHT-1864-home.png",
+        "sha256": "7d5b9b3a2c7625571acf2cfeb1b528cfc46a334ccb5bc3c9e076ae8fe160c809",
+        "bytes": 252709
+      },
+      {
+        "file": "manager-LIGHT-390-home.png",
+        "sha256": "251ab40ccde3d0f99f94f53d4db68d5162ba18ab956cd501769838c4e0a99d25",
+        "bytes": 197940
+      },
+      {
+        "file": "manager-DARK-1864-home.png",
+        "sha256": "d1521d23ea533b9a1fd7c296fff02a54268facb95298c78525e13bc1d0764222",
+        "bytes": 258205
+      },
+      {
+        "file": "manager-DARK-390-home.png",
+        "sha256": "f1d76a229d4b7df9f221b1fe905ffe8d290fca4f20c7f8c1637d2bed4b15ae7c",
+        "bytes": 202345
+      },
+      {
+        "file": "superintendent-LIGHT-1864-home.png",
+        "sha256": "e20ce40361dd108898037c0a03babcbe9161e25643fb3f2e9dc9ece15a448833",
+        "bytes": 238107
+      },
+      {
+        "file": "superintendent-LIGHT-390-home.png",
+        "sha256": "7a88c6ef45577621c7a9c8f5763317ca6c402dbf479ccc604e87dfcbcc9fe4dc",
+        "bytes": 182767
+      },
+      {
+        "file": "superintendent-DARK-1864-home.png",
+        "sha256": "ba5d80d914f35fe9c499f2b87ad04aa5b7cf646bca864080a91f301af9c9e215",
+        "bytes": 243370
+      },
+      {
+        "file": "superintendent-DARK-390-home.png",
+        "sha256": "d4fbaada9bb8994597dbff4336419876c10f2fdecb0ecb6e5c84329152679108",
+        "bytes": 187168
+      },
+      {
+        "file": "chief-LIGHT-1864-home.png",
+        "sha256": "d7efd099988532b5324cc691b9d5da3d1000742e22fdbe95b506f5be2fc4b6e3",
+        "bytes": 216120
+      },
+      {
+        "file": "chief-LIGHT-390-home.png",
+        "sha256": "b469cfa10ccdec14a351be2c5ea89725addd8e7c79ef4e14ac635052321ea6f1",
+        "bytes": 161885
+      },
+      {
+        "file": "chief-DARK-1864-home.png",
+        "sha256": "6ccd775e2aa8a31976a70270028f74b5ade915903ebc54e7e5b7682385b8a1a4",
+        "bytes": 220900
+      },
+      {
+        "file": "chief-DARK-390-home.png",
+        "sha256": "ed3d6e39f8b0c3037d5af461f3ed1d3fab5fe45a67b889dd609de92b867daf55",
+        "bytes": 165231
+      },
+      {
+        "file": "instrument-LIGHT-1864-home.png",
+        "sha256": "6e488494d4e225a1b78fec0c5e81fbed61bb2d158ea725dfb0b206a19ee68321",
+        "bytes": 211282
+      },
+      {
+        "file": "instrument-LIGHT-390-home.png",
+        "sha256": "07e1a5022d9f9b7adc7a8afe9fbc333f816cfd26f01edecf21dadd1d4cfc2697",
+        "bytes": 160827
+      },
+      {
+        "file": "instrument-DARK-1864-home.png",
+        "sha256": "0b60aedcdaa125d7bd73efdcafa5a5425359e52efcde581b83e4bd611ad17831",
+        "bytes": 215945
+      },
+      {
+        "file": "instrument-DARK-390-home.png",
+        "sha256": "cfbd503e353885c4b0e2b48b8be0d2dbc28a87f2db7dc47137e5ef8f049bf66b",
+        "bytes": 164251
+      },
+      {
+        "file": "admin-LIGHT-1864-home.png",
+        "sha256": "34398a355a64c6f4cea3991c7ca69c548d6e9b43debae902b48694dafc8d9687",
+        "bytes": 60851
+      },
+      {
+        "file": "admin-LIGHT-390-home.png",
+        "sha256": "7b8aeb9b44b2d62dba9e2c7fe692e726b8fe22c62b4950561152b8ab33b6441f",
+        "bytes": 39089
+      },
+      {
+        "file": "admin-DARK-1864-home.png",
+        "sha256": "ae0f0128cd5912226d8b741cc5b0854aeafd318a0aea8afb83a5ac73a1e41af3",
+        "bytes": 61961
+      },
+      {
+        "file": "admin-DARK-390-home.png",
+        "sha256": "b7500a88c1c9dc3b0f32005f07696a4a7b6491005159014facb0e2db4bff6557",
+        "bytes": 39567
+      },
+      {
+        "file": "combined-manager-LIGHT-1864-home.png",
+        "sha256": "a6edf23abd33fefd4dbc851de8bd55585a659570e0469e8d784d35f3778082e1",
+        "bytes": 271863
+      },
+      {
+        "file": "combined-manager-LIGHT-390-home.png",
+        "sha256": "62a67bd7f6749d4c8ecdbac1a16f59a2d733b24d567a310b6599667248143312",
+        "bytes": 212399
+      },
+      {
+        "file": "combined-manager-DARK-1864-home.png",
+        "sha256": "e5ee47fda6277561734ec150860d69cb4f26c7e4b6f393665e94c083190602ce",
+        "bytes": 277562
+      },
+      {
+        "file": "combined-manager-DARK-390-home.png",
+        "sha256": "6f0dfd802ba2dc93dfb4de1e146016fb382ac7f5f998fdbcc8b7182844de1f89",
+        "bytes": 217303
+      },
+      {
+        "file": "combined-requester-LIGHT-1864-home.png",
+        "sha256": "c274f0bbea7a7d8b24efbd1e3df3eceaafc77398b0e3d43576554614a0cc4ca5",
+        "bytes": 231832
+      },
+      {
+        "file": "combined-requester-LIGHT-390-home.png",
+        "sha256": "dba9edd718d1aba16a63cac3f6fbf726c83ac6091f0b59dd6a9569b299304c27",
+        "bytes": 181121
+      },
+      {
+        "file": "combined-requester-DARK-1864-home.png",
+        "sha256": "aaf0335e5e29f704d6f055f3092f2128da7664b3df12c1b04cef2b7ee3bd9f9a",
+        "bytes": 235609
+      },
+      {
+        "file": "combined-requester-DARK-390-home.png",
+        "sha256": "81a7073fbd376ff7d1750505a871c8bafaaa1d7f88633ce412a24b45e4272f06",
+        "bytes": 185133
+      },
+      {
+        "file": "combined-superintendent-LIGHT-1864-home.png",
+        "sha256": "681644fbe53a811ae32c6c82038c7388d112426ff8dfb808b2b5f0217427ffa0",
+        "bytes": 238104
+      },
+      {
+        "file": "combined-superintendent-LIGHT-390-home.png",
+        "sha256": "e76d81bc9916337f668d8c35846e3f314a36f719288a57c837ac805fbd86ede3",
+        "bytes": 174351
+      },
+      {
+        "file": "combined-superintendent-DARK-1864-home.png",
+        "sha256": "fb6e5791522d38a161a43eed54685c8baeb8507b4d7ccaee326b940e965bf9d8",
+        "bytes": 242831
+      },
+      {
+        "file": "combined-superintendent-DARK-390-home.png",
+        "sha256": "da17d8bc4982edef229d4f6487faef531a5d4ab953c3c35aa2ead3559f36c172",
+        "bytes": 178799
+      },
+      {
+        "file": "access-failure-appearance.png",
+        "sha256": "9f2a8ecdcd7bb766fccec165a87d3f8d863984647d2f78eca7e3e4b0717467ab",
+        "bytes": 56182
+      },
+      {
+        "file": "fresh-session-mobile-projects-drawer.png",
+        "sha256": "f13e411229dd3a8c0b126f42b1051fdbec71a3f426f963ce6d8311561d015d99",
+        "bytes": 14809
+      }
+    ]
+  },
+  "priorEvidence": "evidence.json is historical c39437b/43capture/688check acceptance; preserved without relabeling."
+}

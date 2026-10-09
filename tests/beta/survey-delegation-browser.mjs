@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import {randomUUID} from 'node:crypto';import jwt from 'jsonwebtoken';import {Pool} from 'pg';
+assert.equal(process.env.SWR_SURVEY_WORKFLOW_TEST,'1');
+const f=JSON.parse(await fs.readFile('.local-survey-ui.json','utf8')),r=JSON.parse(await fs.readFile('.local-survey-roles.json','utf8')),owned=JSON.parse(await fs.readFile('.local-survey-workflow-db.json','utf8'));
+const url=new URL(owned.databaseUrl);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15495');assert.equal(url.pathname,'/swr_survey_workflow');assert.equal(f.origin,'http://127.0.0.1:3150');
+const db=new Pool({connectionString:url.href}),ticket=randomUUID(),number='DELEGATE-'+randomUUID().slice(0,8);
+await db.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description,aor_node_id,ticket_type,requested_date,ticket_number) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','APPROVED','Survey','Delegation browser check',$6,'LAYOUT',CURRENT_DATE,$7)",[ticket,f.tenant,f.project,f.company,r.requester,f.area,number]);
+const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');const b=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});const checks=[];const check=(v,label)=>{assert(v,label);checks.push(label);};
+async function session(id){const c=await b.newContext({viewport:{width:Number(process.env.SWR_TEST_VIEWPORT_WIDTH)||1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:jwt.sign({sub:id,tenantId:f.tenant,sv:1},f.secret,{algorithm:'HS256',expiresIn:'1h',jwtid:randomUUID()}),url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
+try{
+ const manager=await session(f.manager),p=await manager.newPage();await p.goto(`${f.origin}/projects/${f.project}/survey/operations`);await p.getByRole('tab',{name:/Need Assignment/}).click();await p.getByRole('searchbox',{name:'Find a request',exact:true}).fill(number);
+ const row=p.locator('details.ops-queue-row').filter({hasText:number});await row.locator('summary').click();await row.getByRole('button',{name:'Delegate to a team',exact:true}).click();
+ const dialog=p.getByRole('dialog');await dialog.getByLabel('Responsible team',{exact:true}).selectOption(r.ownTeam);await dialog.getByLabel('I confirm this team assignment.',{exact:true}).check();await p.screenshot({path:'.local-survey-delegation-dialog.png',fullPage:true});await dialog.getByRole('button',{name:'Confirm delegation',exact:true}).click();await dialog.waitFor({state:'hidden'});
+ await p.getByRole('tab',{name:/Need Assignment/}).click();await p.getByRole('searchbox',{name:'Find a request',exact:true}).fill(number);const refreshed=p.locator('details.ops-queue-row').filter({hasText:number});await refreshed.locator('summary').click();await refreshed.getByText('Awaiting crew selection:',{exact:true}).waitFor();check(true,'Manager delegates through reviewed dialog and sees awaiting-crew label');
+ check((await db.query('SELECT status FROM tickets WHERE id=$1',[ticket])).rows[0].status==='APPROVED','Delegation preserves approved status');
+ const ss=await session(r.ss);check((await ss.request.post(`${f.origin}/api/tickets/${ticket}/delegate`,{data:{teamId:r.otherTeam},headers:{'Idempotency-Key':randomUUID()}})).status()===403,'Superintendent cannot redelegate work across teams');
+ const notices=await (await ss.request.get(`${f.origin}/api/projects/${f.project}/survey/notifications`)).json();check(notices.messages.some(n=>n.ticketId===ticket&&n.title==='Work assigned to your team'),'Responsible Superintendent receives actionable delegation notice');
+ const sp=await ss.newPage();await sp.goto(`${f.origin}/projects/${f.project}/survey/operations`);await sp.getByRole('tab',{name:/Need Assignment/}).click();await sp.getByRole('searchbox',{name:'Find a request',exact:true}).fill(number);
+ const sr=sp.locator('details.ops-queue-row').filter({hasText:number});await sr.locator('summary').click();await sr.getByRole('button',{name:'Choose a crew',exact:true}).click();const crew=sp.getByRole('dialog');
+ await crew.getByLabel('I confirm this crew assignment.',{exact:true}).check();
+ check(await crew.getByRole('button',{name:'Confirm crew assignment',exact:true}).isDisabled(),'Empty crew cannot be confirmed');
+ await crew.getByLabel('Party Chief',{exact:true}).selectOption(r.pc);
+ const bounds=await crew.boundingBox();check(bounds.x>=0&&bounds.x+bounds.width<=sp.viewportSize().width,'Crew dialog fits viewport width');
+ check(await crew.locator(`option[value="${r.otherPC}"]`).count()===0,'Other-team Chief is absent from Superintendent choices');
+ await crew.getByLabel('I confirm this crew assignment.',{exact:true}).check();await sp.screenshot({path:'.local-superintendent-assignment-dialog.png',fullPage:true});await crew.getByRole('button',{name:'Confirm crew assignment',exact:true}).click();await crew.waitFor({state:'hidden'});check(true,'Responsible Superintendent hands work to own Party Chief without selecting an Instrument Man');
+ const pending=(await db.query('SELECT status,assigned_party_chief_id,assigned_instrument_man_id FROM tickets WHERE id=$1',[ticket])).rows[0];
+ check(pending.status==='APPROVED'&&pending.assigned_party_chief_id===r.pc&&pending.assigned_instrument_man_id===null,'Chief handoff preserves approved work awaiting field crew');
+ check((await db.query('SELECT count(*)::int n FROM survey_work_delegations WHERE ticket_id=$1 AND ended_at IS NULL',[ticket])).rows[0].n===1,'Team delegation remains active until field crew is selected');
+ const chief=await session(r.pc),cp=await chief.newPage();await cp.goto(`${f.origin}/projects/${f.project}/crew/work`);
+ const chiefNotices=await (await chief.request.get(`${f.origin}/api/projects/${f.project}/survey/notifications`)).json();
+ check(chiefNotices.messages.some(n=>n.ticketId===ticket&&n.title==='Work assigned to you'&&n.message.includes('choose an Instrument Man')),'Chief receives actionable notice explaining the handoff');
+ const inbox=await chief.newPage();await inbox.goto(`${f.origin}/projects/${f.project}/survey/notifications`);
+ await inbox.getByRole('listitem').filter({hasText:number}).filter({has:inbox.getByRole('heading',{name:'Work assigned to you',exact:true})}).getByRole('link',{name:'Open request',exact:true}).click();
+ await inbox.waitForURL(`${f.origin}/projects/${f.project}/tickets/${ticket}`);check(true,'Visible Chief assignment notice opens the assigned request');await inbox.close();
+ await cp.getByRole('row').filter({hasText:number}).getByRole('button',{name:'Choose a crew',exact:true}).click();const ownCrew=cp.getByRole('dialog');
+ await ownCrew.getByLabel('Instrument Man',{exact:true}).selectOption(r.im);await ownCrew.getByLabel('I confirm this crew assignment.',{exact:true}).check();
+ await ownCrew.getByRole('button',{name:'Confirm crew assignment',exact:true}).click();await ownCrew.waitFor({state:'hidden'});
+ check(true,'Assigned Party Chief completes downstream crew selection through Crew Work');
+ const instrument=await session(r.im),imNotices=await (await instrument.request.get(`${f.origin}/api/projects/${f.project}/survey/notifications`)).json();
+ check(imNotices.messages.some(n=>n.ticketId===ticket&&n.title==='Work assigned to you'),'Assigned Instrument Man receives actionable work notice');
+ check((await db.query('SELECT status FROM tickets WHERE id=$1',[ticket])).rows[0].status==='ASSIGNED','Crew selection starts assigned workflow');
+ check((await db.query('SELECT count(*)::int n FROM survey_work_delegations WHERE ticket_id=$1 AND ended_at IS NULL',[ticket])).rows[0].n===0,'Crew selection closes awaiting-crew delegation');
+ console.log(JSON.stringify({checks},null,2));await fs.writeFile('.local-survey-delegation-results.json',JSON.stringify({checks},null,2));
+}finally{await b.close();await db.end();}

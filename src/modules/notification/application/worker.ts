@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import {SYSTEM_AUDIT_ACTOR} from '@/modules/audit/domain/types';
 import { logError, logInfo } from '@/lib/observability';
 import { runWithCorrelationId } from '@/lib/correlation';
 import type { DbClient, UUID } from '@/shared/types';
@@ -55,7 +56,6 @@ export async function runNotificationWorkerCycle(
     transport: INotificationTransport;
     db: DbClient;
     runRepo: BackgroundJobRunRepository;
-    actorId: UUID;
     withTenantLifecycle: TenantNotificationTransaction;
     now?: Date;
   },
@@ -72,7 +72,7 @@ export async function runNotificationWorkerCycle(
     });
     logInfo('Notification worker cycle started', {
       eventType: 'job.notification.started',
-      actorId: deps.actorId,
+      actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
       tenantId: null,
       ticketId: null,
       run_id: runId,
@@ -94,11 +94,11 @@ export async function runNotificationWorkerCycle(
       for (const tenantId of tenants) {
         const current = await deps.withTenantLifecycle(tenantId, async db => {
           const approver = await dispatchApproverTimeoutNotifications(
-            deps.repo, deps.transport, db, { actorId: deps.actorId, tenantId, now });
+            deps.repo, deps.transport, db, { tenantId, now });
           const vacancy = await dispatchDailyVacancyNotifications(
             deps.repo, deps.transport, db, { tenantId, now });
           const orphan = await dispatchOrphanWorkflowRecovery(
-            deps.repo, deps.transport, db, { actorId: deps.actorId, tenantId, now });
+            deps.repo, deps.transport, db, { tenantId, now });
           return { approver, vacancy, orphan };
         });
         result.warningCount += current.approver.warningCount;
@@ -122,7 +122,7 @@ export async function runNotificationWorkerCycle(
       });
       logInfo('Notification worker cycle completed', {
         eventType: 'job.notification.succeeded',
-        actorId: deps.actorId,
+        actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
         tenantId: null,
         ticketId: null,
         run_id: runId,
@@ -146,7 +146,7 @@ export async function runNotificationWorkerCycle(
         'Notification worker cycle failed',
         {
           eventType: 'job.notification.failed',
-          actorId: deps.actorId,
+          actorId: null, actorKind: 'SYSTEM', actorName: SYSTEM_AUDIT_ACTOR,
           tenantId: null,
           ticketId: null,
           run_id: runId,

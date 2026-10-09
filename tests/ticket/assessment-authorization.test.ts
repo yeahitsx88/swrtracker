@@ -87,7 +87,7 @@ test('REQ-001 readable teammate/null assignments cannot request cancellation; ex
     }
     const repo={findByIdInternal:async()=>ticket(workflowVariant,teammateId),patchTicket:async()=>{}} as unknown as ITicketRepository;
     for(const actorRole of ['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF'] as const){
-      assert.equal((await requestFieldCancel(repo,{query:async()=>({rows:[]})},{tenantId,ticketId,actorId,actorRole})).status,'PENDING_PC_APPROVAL');
+      assert.equal((await requestFieldCancel(repo,{query:async()=>({rows:[]})},{tenantId,ticketId,actorId:actorRole==='PARTY_CHIEF'?chiefId:actorId,actorRole})).status,'PENDING_PC_APPROVAL');
     }
   }
 });

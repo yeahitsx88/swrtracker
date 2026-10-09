@@ -174,7 +174,14 @@ export async function runLifecycleSchemaAcceptance(
     // Current application reads require additive migrations after the legacy031 assertions.
     // Callers own032 (not idempotent); apply033 and later before their callback.
     for (const file of migrations.filter(name => name >= '033_')) {
-      await db.query(await readFile(resolve('db/migrations', file), 'utf8'));
+      const sql = await readFile(resolve('db/migrations', file), 'utf8');
+      // The owned fixture already supplies the transaction. Migration042's
+      // standalone wrapper must not commit it and reset SET LOCAL to public.
+      const fixtureSql = file.startsWith('042_')
+        ? sql.replace(/^BEGIN;\r?$/m, '').replace(/^COMMIT;\r?$/m, '') : sql;
+      await db.query(fixtureSql);
+      assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name, schema,
+        'Every runtime migration must remain inside the owned rollback schema');
     }
     if (typeof acceptance === 'function') await acceptance(db,{tenant,project,actor,subject,foreignProject});
     console.log(`Scoped lifecycle PostgreSQL schema checks passed: ${checks}`);

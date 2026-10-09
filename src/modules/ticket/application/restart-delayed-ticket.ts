@@ -3,6 +3,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { Ticket } from '../domain/types';
 import type { ITicketRepository, VisibilityScope } from './ports';
 import { performTransition } from './shared';
+import { ForbiddenError } from '@/shared/errors';
 
 export async function restartDelayedTicket(
   repo: ITicketRepository,
@@ -25,5 +26,6 @@ export async function restartDelayedTicket(
     patch:          {},
     eventType:      'ticket.delay_restarted',
     visibility:     params.visibility,
+    assertTicket: ticket=>{if(params.actorRole==='PARTY_CHIEF'&&ticket.assignedPartyChiefId!==params.actorId)throw new ForbiddenError('Only the assigned Party Chief may restart this work.');},
   });
 }

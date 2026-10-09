@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import {randomUUID,randomBytes,createHash} from 'node:crypto';
 import jwt from 'jsonwebtoken';
 const url=new URL(process.env.DATABASE_URL??'');
-assert.equal(process.env.SWR_TEAM_POSTGRES,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');
+assert.equal(process.env.SWR_TEAM_POSTGRES,'1');assert.equal(url.hostname,'127.0.0.1');if(url.port==='15500'){const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);assert.match(own.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);}else assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');
 const file='.local-fixture.json',mode=process.argv[2],origin=process.env.SWR_ACCEPTANCE_ORIGIN??'http://127.0.0.1:3113';
 assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
 const pg=new Pool({connectionString:url.href,max:6});let checks=0;
@@ -15,8 +15,12 @@ try{
   const schema='phase5_acceptance_'+randomUUID().replaceAll('-','');assert.match(schema,/^phase5_acceptance_[a-f0-9]{32}$/);
   const f={schema};for(const k of ['tenant','foreignTenant','company','foreignCompany','project','otherProject','archivedProject','foreignProject','actor','localAdmin','subject','foreignSubject','foreignAdmin','manager','superintendent','chief','im','area','level','team','draft','fileTicket','attachment','event'])f[k]=randomUUID();
   const db=await pg.connect();
-  try{await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET LOCAL search_path TO "${schema}",public`);
-   for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort())await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));
+  // Migration042 commits its wrapper; retain session schema for later migrations.
+  try{await db.query('BEGIN');await db.query(`CREATE SCHEMA "${schema}"`);await db.query(`SET search_path TO "${schema}",public`);
+   for(const migration of (await fs.readdir('db/migrations')).filter(p=>p.endsWith('.sql')).sort()){await db.query(await fs.readFile('db/migrations/'+migration,'utf8'));assert.equal((await db.query('SELECT current_schema() AS name')).rows[0].name,schema,'Migration must stay in the newly owned schema');}
+   // Migration042 ended its standalone wrapper. Own fixture rows still require
+   // one transaction for deferred team/lead membership and later evidence.
+   await db.query('BEGIN');
    await db.query("INSERT INTO tenants(id,name) VALUES($1,'Synthetic primary'),($2,'Synthetic second')",[f.tenant,f.foreignTenant]);
    await db.query("INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,'Primary GC','GC'),($3,$4,'Second GC','GC')",[f.company,f.tenant,f.foreignCompany,f.foreignTenant]);
    for(const [p,t,status] of [[f.project,f.tenant,'ACTIVE'],[f.otherProject,f.tenant,'ACTIVE'],[f.archivedProject,f.tenant,'ARCHIVED'],[f.foreignProject,f.foreignTenant,'ACTIVE']])await db.query('INSERT INTO projects(id,tenant_id,name,status,crew_build) VALUES($1,$2,$3,$4,\'FULL\')',[p,t,p===f.project?'Acceptance project':status+' project',status]);

@@ -1,0 +1,83 @@
+{
+  "batch": 238,
+  "baseline": "1bc9978455691e160a1ae68334ab14233f19955b",
+  "authority": [
+    "R07/R11 and existing operations query contract: preserve Survey sequencing, scoped demand counts and readable actionable queues; no productivity interpretation.",
+    "Owner Alpha finalization permits navigation/role information/usability corrections while preserving approved components and server/domain semantics.",
+    "Standing verified checkpoint/push directive."
+  ],
+  "classification": "Verified demonstrated default Survey queue order correction, named multi-page Manager/Superintendent paging and keyboard scope criteria; wider navigation/role/state/mobile-table and whole Alpha acceptance remain open.",
+  "production": {
+    "files": 576,
+    "sha256": "c4339016e0d14bd894ddd9f8276ab9bd7a9e1315ae7508a6dc9c70bca6689c3b",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/components/ui/administration-records.tsx",
+      "src/components/ui/record-collection.tsx",
+      "src/app/(projects)/projects/[projectId]/(survey)/survey/operations/page.tsx"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Existing shared tables gain opt-in preserveOrder=false default; only two Survey request collections opt in. Incoming server sequence stays until deliberate column sorting. Existing local filters/selection/export/paging and unrelated table defaults remain."
+  },
+  "before": {
+    "checks": [
+      "Server operations ordering places actual last-created HIGH priority first",
+      "Loaded-record table currently exposes25of43loaded rows with its own paging",
+      "Before table default sorting overrides server operations order"
+    ],
+    "actualRequests": 43,
+    "actualLastCreatedHighPriorityRanksFirstOnServer": true,
+    "renderedFirstDisagreesWithServer": true,
+    "retainedWithoutReset": true
+  },
+  "verification": {
+    "strictUnusedTypes": "pass host and pinned",
+    "unitTests": 690,
+    "focusedTests": 14,
+    "pinnedProductionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "actualCurrentChecks": [
+      "Server operations ordering places actual last-created HIGH priority first",
+      "Loaded-record table currently exposes25of43loaded rows with its own paging",
+      "Manager loaded table retains exact server operations order",
+      "Loaded-table next exposes remaining server rows in original order",
+      "Explicit Record column sort remains available as a deliberate local choice",
+      "Whole-query next page retains current server order",
+      "Superintendent Area workload excludes uncovered Area",
+      "Superintendent loaded table retains its independently scoped server order",
+      "Superintendent retains existing role-specific tabs",
+      "Queue LIGHT1440 viewport contained",
+      "Queue DARK390 viewport contained",
+      "No queue page errors",
+      "Superintendent keyboard tabs move to current open workload",
+      "Keyboard return preserves Superintendent assignment view",
+      "Current LIGHT1440 visible supplied brand image is loaded",
+      "Confirmed queue LIGHT1440 viewport contained",
+      "Current DARK390 visible supplied brand image is loaded",
+      "Confirmed queue DARK390 viewport contained",
+      "Capture and keyboard navigation preserve all request rows and immutable history"
+    ],
+    "capturesOpenedAndReviewed": [
+      ".local/alpha-closure238-confirmation/queue-confirmed-light-1440.png",
+      ".local/alpha-closure238-confirmation/queue-confirmed-dark-390.png"
+    ],
+    "earlierCapturesRetained": [
+      ".local/alpha-closure238-confirmation/queue-light-1440.png",
+      ".local/alpha-closure238-confirmation/queue-dark-390.png"
+    ],
+    "pageErrors": [],
+    "liveFinalArtifactMatches": true
+  },
+  "limitations": [
+    "Before and final confirmation fixtures are separately owned and fully migrated; each43requests were actually drafted/submitted/approved and one current Manager priority revision recorded. No retained fixture resets or historical evidence repair.",
+    "19current criteria comprise12uninterrupted ordering/paging/Area/tab checks plus7capture-readiness/keyboard/history checks on unchanged source and same final data.",
+    "First mobile capture preceded logo load. Capture helper now waits for a visible image with complete/naturalWidth; original images retained, final two opened captures replace the visual acceptance references. No workflows repeated.",
+    "Current mobile long-reference table uses internal horizontal scrolling; partial caption/reference clipping is visible after scrolling. Complete mobile table readability and loaded-page versus whole-query control clarity remain open.",
+    "Named Manager/Superintendent Area workload and role tabs do not establish all role/company/lifecycle/combined-admin/direct-link/back-context states. Current full SQL/unit regressions preserve existing boundaries.",
+    "No change to priority values, Need-By, API ordering/queries/payloads, current authority, assignment/reporting/team/Area meanings, stored history/schema, branding/sidebar or dependencies.",
+    "Org follow-ons, main/deployment/Alpha2 and inherited source-map-js release blocker remain separate; compilation is not release acceptance."
+  ],
+  "next": "Clarify loaded-record versus whole-query controls and verify mobile long-reference readability and existing project/direct-link context under approved navigation rules."
+}

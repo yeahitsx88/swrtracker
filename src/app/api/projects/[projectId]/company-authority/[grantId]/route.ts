@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 import { NextResponse, type NextRequest } from 'next/server';
 import { NotFoundError } from '@/shared/errors';
@@ -12,7 +13,7 @@ import {requireResourceUuid} from '@/lib/resource-uuid';
 
 export const dynamic = 'force-dynamic';
 
-export async function DELETE(
+async function observedDELETE(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string; grantId: string }> },
 ) {
@@ -43,3 +44,5 @@ export async function DELETE(
     return errorResponse(err);
   }
 }
+
+export const DELETE=observeProjectRoute(observedDELETE);

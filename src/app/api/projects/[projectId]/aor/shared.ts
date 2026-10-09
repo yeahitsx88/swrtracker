@@ -1,3 +1,4 @@
+import {assertPreparationNotCancelling} from '@/lib/recommissioning-gate';
 import { ConflictError, NotFoundError } from '@/shared/errors';
 
 
@@ -33,4 +34,5 @@ export async function assertProjectSetupMutable(
   if (project.status === 'ARCHIVED') {
     throw new ConflictError('Archived projects are read-only');
   }
+  await assertPreparationNotCancelling(db,tenantId,projectId);
 }

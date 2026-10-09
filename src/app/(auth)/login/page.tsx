@@ -47,7 +47,7 @@ function LoginForm() {
   }
 
   return (
-    <Card title="Sign in" description="Submit and track survey work requests for your project.">
+    <Card title="Sign In" description="Submit and track survey work requests for your project.">
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
         <Field label="Tenant ID">

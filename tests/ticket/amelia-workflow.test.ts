@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ForbiddenError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, ValidationError } from '@/shared/errors';
 import { assignTicket } from '@/modules/ticket/application/assign-ticket';
 import { approveTicket } from '@/modules/ticket/application/approve-ticket';
 import { completeTicket } from '@/modules/ticket/application/complete-ticket';
@@ -8,6 +8,7 @@ import { reportFieldInability } from '@/modules/ticket/application/field-inabili
 import { returnTicketForCorrection } from '@/modules/ticket/application/return-ticket-for-correction';
 import { submitTicket } from '@/modules/ticket/application/submit-ticket';
 import { updateRequesterTicket } from '@/modules/ticket/application/update-requester-ticket';
+import {reviseNeedBy} from '@/modules/ticket/application/revise-need-by';
 import { revisePriority } from '@/modules/ticket/application/revise-priority';
 import type { ITicketRepository, TicketStatusPatch } from '@/modules/ticket/application/ports';
 import type { Ticket } from '@/modules/ticket/domain/types';
@@ -356,3 +357,9 @@ test('a returned direct SWR keeps its identity and history while passing fresh S
   assert.deepEqual(h.queries.filter(q=>q.sql.includes('INSERT INTO ticket_events')).map(q=>q.params?.[4]),
     ['ticket.resubmitted','ticket.approved','ticket.assigned']);
 });
+for(const kind of ['need-by','priority'] as const){
+ const revise=(h:ReturnType<typeof harness>,expectedVersion?:number)=>kind==='need-by'?reviseNeedBy(h.repo,h.db,{tenantId,ticketId,actorId:managerId,actorRole:'SURVEY_MANAGER',requestedDate:new Date('2026-11-02'),reason:'Reviewed revision',expectedVersion}):revisePriority(h.repo,h.db,{tenantId,ticketId,actorId:managerId,actorRole:'SURVEY_MANAGER',priority:'HIGH',reason:'Reviewed revision',expectedVersion});
+ test(kind+' refuses stale reviewed versions without patch, audit or notice',async()=>{const h=harness(ticket({status:'ASSIGNED',rowVersion:3}));await assert.rejects(revise(h,2),ConflictError);assert.equal(h.current().rowVersion,3);assert.equal(h.queries.length,0);});
+ test(kind+' permits current reviewed version and retains legacy omitted-version contract',async()=>{for(const version of [3,undefined]){const h=harness(ticket({status:'ASSIGNED',rowVersion:3}));await revise(h,version);assert.ok(h.queries.some(q=>q.sql.includes('INSERT INTO ticket_events')));}});
+ test(kind+' rejects invalid reviewed versions without effects',async()=>{for(const version of [-1,1.5,NaN]){const h=harness(ticket({status:'ASSIGNED',rowVersion:3}));await assert.rejects(revise(h,version),ValidationError);assert.equal(h.queries.length,0);}});
+}

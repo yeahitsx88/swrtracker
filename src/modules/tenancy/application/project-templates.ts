@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { TenantRole } from '@/modules/identity/domain/types';
@@ -133,4 +133,25 @@ export async function deleteProjectTemplate(
   }
 
   await repo.deleteProjectTemplate(db, params.tenantId, params.templateId);
+}
+
+/** Current catalog review; existing append-only evidence also detects change-and-revert. */
+export async function reviewProjectTemplate(
+  repo: ITenancyRepository, db: DbClient,
+  params: { tenantId: UUID; templateId: UUID; actorRole: TenantRole | null },
+) {
+  assertTenantAdmin(params.actorRole);
+  const template = await repo.findProjectTemplateById(db, params.tenantId, params.templateId);
+  if (!template) throw new NotFoundError('Project template not found');
+  const referencingProjects = await repo.findProjectsUsingTemplate(db, params.tenantId, params.templateId);
+  const evidence = (await db.query<{ evidence: string }>(`SELECT COALESCE(string_agg(id::text, ',' ORDER BY id), '') AS evidence
+    FROM administrative_events WHERE tenant_id=$1 AND event_type IN ('tenant.template_created','tenant.template_updated')
+    AND changes->'result'->>'id'=$2`, [params.tenantId, params.templateId])).rows[0]?.evidence;
+  if (evidence === undefined) throw new Error('Template review evidence was not returned');
+  const snapshot = createHash('sha256').update(JSON.stringify({
+    id: template.id, name: template.name, crewBuild: template.crewBuild, aorDepth: template.aorDepth,
+    aorLevelLabels: template.aorLevelLabels, disciplineGroups: template.disciplineGroups,
+    createdAt: template.createdAt.toISOString(), evidence,
+  })).digest('hex');
+  return { template, referencingProjects, snapshot };
 }

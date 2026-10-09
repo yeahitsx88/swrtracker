@@ -8,7 +8,7 @@ import {GET as workforceGet,POST as workforcePost} from '../../src/app/api/proje
 import {GET as metricsGet} from '../../src/app/api/projects/[projectId]/metrics/route';
 import {POST as projectPost} from '../../src/app/api/projects/route';
 import {GET as administrationGet} from '../../src/app/api/projects/administration/route';
-import {GET as teamsGet,POST as teamsPost} from '../../src/app/api/projects/[projectId]/survey/teams/route';
+import {GET as teamsGet,POST as teamsPost,DELETE as teamsDelete,PATCH as teamsPatch} from '../../src/app/api/projects/[projectId]/survey/teams/route';
 import {SurveyWorkforcePgRepository} from '../../src/modules/tenancy/infrastructure/survey-workforce.repository';
 import {randomUUID} from 'node:crypto';
 import type {UUID} from '../../src/shared/types';
@@ -60,12 +60,60 @@ async function main(){
  await checked(metricsGet(req(f.superA,`/api/projects/${f.project}/metrics?view=charts&cohort=linkedCrews&instrumentManId=${f.imB}`),ctx()),404);
  await checked(kpi(f.superA,f.imA,'&cohort=areaWorkload'),400);
  await checked(kpi(f.superA,f.imA,'',f.sameProject),403);
- const base={instrumentManId:f.imA,partyChiefId:f.chiefA2,expectedSnapshot:await snapshot()};
- const count=async()=>Number((await pg.query('SELECT count(*) AS n FROM survey_staffing_events WHERE project_id=$1',[f.project])).rows[0].n);
+ // Same-team reorganization now requires an explicit Superintendent-led named team.
+ const workforceTeam=await checked(teamsPost(req(f.manager,`/api/projects/${f.project}/survey/teams`,'POST',{name:'Owned scoped workforce',areaId:f.area,leadUserId:f.superA,memberIds:[f.superA,f.chiefA,f.chiefA2,f.imA]}),ctx()),201);
+ const base={destinationTeamId:workforceTeam.teamId,instrumentManId:f.imA,partyChiefId:f.chiefA2,expectedSnapshot:await snapshot()};
+ const count=async()=>Number((await pg.query("SELECT count(*) AS n FROM survey_staffing_events WHERE project_id=$1 AND payload->>'action'='reorganize-roster'",[f.project])).rows[0].n);
  for(const input of [{...base,instrumentManId:f.imB},{...base,partyChiefId:f.chiefB},{...base,instrumentManId:f.foreignIM},{...base,instrumentManId:f.outsideIM},{...base,expectedSnapshot:'0'.repeat(32)}])await checked(move(f.superA,input),input.expectedSnapshot==='0'.repeat(32)?409:404);
  await checked(move(f.chiefA,base),403);assert.equal(await count(),0);checks++;
  const key=randomUUID();await checked(move(f.superA,base,key),200);await checked(move(f.superA,base,key),200);assert.equal(await count(),1);checks++;
  await checked(read(f.chiefA,`?mode=person&personId=${f.imA}`),404);await checked(kpi(f.chiefA,f.imA),404);
+ assert.deepEqual(ids(await checked(read(f.chiefA2),200)),[f.imA]);checks++;
+ // D1/D4/D5: independently supervised Chief-led destination, deliberately selected.
+ const transferChief=id(25);
+ await pg.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,'transfer-chief@example.test','Destination Chief','not-a-login-hash')",[transferChief,f.tenant,f.company]);
+ await pg.query("INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,'PARTY_CHIEF')",[f.project,transferChief]);
+ await pg.query('INSERT INTO aor_assignments(tenant_id,project_id,user_id,aor_node_id) VALUES($1,$2,$3,$4)',[f.tenant,f.project,f.superA,f.otherArea]);
+ await pg.query('INSERT INTO survey_reporting_links(tenant_id,project_id,superintendent_id,party_chief_id,aor_node_id,assigned_by) VALUES($1,$2,$3,$4,$5,$6)',[f.tenant,f.project,f.superA,transferChief,f.area,f.manager]);
+ const destination=await checked(teamsPost(req(f.manager,`/api/projects/${f.project}/survey/teams`,'POST',{name:'Explicit supervised destination',areaId:f.otherArea,leadUserId:transferChief,memberIds:[transferChief]}),ctx()),201);
+ const destinationInput={instrumentManId:f.imA,partyChiefId:transferChief,destinationTeamId:destination.teamId,expectedSnapshot:await snapshot()};
+ await checked(move(f.superA,{instrumentManId:f.imA,partyChiefId:transferChief,expectedSnapshot:destinationInput.expectedSnapshot}),400);
+ await checked(move(f.superA,{...destinationInput,destinationTeamId:randomUUID()}),404);
+ await checked(move(f.superA,{...destinationInput,partyChiefId:f.chiefA2}),409);
+ const coverageDenied=await checked(move(f.superA,destinationInput),409);assert.equal(coverageDenied.error.code,'TRANSFER_AREA_COVERAGE');checks++;
+ assert.equal((await pg.query('SELECT team_id FROM survey_team_members WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL',[f.tenant,f.project,f.imA])).rows[0].team_id,workforceTeam.teamId);checks++;
+ // Coverage is a separate actual Manager command; the Superintendent never edits it.
+ await checked(teamsPost(req(f.manager,`/api/projects/${f.project}/survey/teams`,'POST',{teamId:destination.teamId,expectedVersion:1,name:'Explicit supervised destination',areaId:f.otherArea,areaIds:[f.area,f.otherArea].sort(),leadUserId:transferChief,memberIds:[transferChief]}),ctx()),200);
+ const fingerprint=async(table:string)=> (await pg.query(`SELECT md5(COALESCE(string_agg(to_jsonb(t)::text,',' ORDER BY to_jsonb(t)::text),'')) AS hash FROM ${table} t WHERE tenant_id=$1 AND project_id=$2`,[f.tenant,f.project])).rows[0].hash;
+ const coverageBefore=await fingerprint('survey_team_areas'),requestsBefore=await fingerprint('tickets');
+ const transferInput={...destinationInput,expectedSnapshot:await snapshot()},transferKey=randomUUID(),beforeTransferEvents=await count();
+ await checked(move(f.superA,transferInput,transferKey),200);await checked(move(f.superA,transferInput,transferKey),200);
+ assert.equal(await count(),beforeTransferEvents+1);assert.equal(await fingerprint('survey_team_areas'),coverageBefore);assert.equal(await fingerprint('tickets'),requestsBefore);checks+=3;
+ assert.equal((await pg.query('SELECT team_id FROM survey_team_members WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL',[f.tenant,f.project,f.imA])).rows[0].team_id,destination.teamId);checks++;
+ assert.equal((await pg.query('SELECT party_chief_id FROM crew_rosters WHERE tenant_id=$1 AND project_id=$2 AND instrument_man_id=$3 AND deactivated_at IS NULL',[f.tenant,f.project,f.imA])).rows[0].party_chief_id,transferChief);checks++;
+ await checked(move(f.superA,{...transferInput,destinationTeamId:workforceTeam.teamId},transferKey),409);
+ const rollbackInput={instrumentManId:f.imA,partyChiefId:f.chiefA2,destinationTeamId:workforceTeam.teamId,expectedSnapshot:await snapshot()},rollbackKey=randomUUID();
+ const rosterBefore=await fingerprint('crew_rosters'),membersBefore=(await pg.query("SELECT md5(string_agg(to_jsonb(m)::text,',' ORDER BY team_id,user_id)) hash FROM survey_team_members m WHERE tenant_id=$1 AND project_id=$2",[f.tenant,f.project])).rows[0].hash;
+ await pg.query("CREATE FUNCTION fail_supervised_transfer() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.payload->>'action'='reorganize-roster' THEN RAISE EXCEPTION 'owned transfer rollback probe'; END IF; RETURN NEW; END $$");
+ await pg.query('CREATE TRIGGER fail_supervised_transfer BEFORE INSERT ON survey_staffing_events FOR EACH ROW EXECUTE FUNCTION fail_supervised_transfer()');
+ await checked(move(f.superA,rollbackInput,rollbackKey),500);
+ await pg.query('DROP TRIGGER fail_supervised_transfer ON survey_staffing_events');await pg.query('DROP FUNCTION fail_supervised_transfer()');
+ assert.equal(await fingerprint('crew_rosters'),rosterBefore);assert.equal((await pg.query("SELECT md5(string_agg(to_jsonb(m)::text,',' ORDER BY team_id,user_id)) hash FROM survey_team_members m WHERE tenant_id=$1 AND project_id=$2",[f.tenant,f.project])).rows[0].hash,membersBefore);checks+=2;
+ await pg.query('UPDATE survey_reporting_links SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND party_chief_id=$3',[f.tenant,f.project,transferChief]);
+ await checked(move(f.superA,transferInput,transferKey),404);
+ await pg.query('UPDATE survey_reporting_links SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND party_chief_id=$3',[f.tenant,f.project,transferChief]);
+ await checked(move(f.superA,rollbackInput,rollbackKey),200);
+ // Eligible unassigned crew member remains within the current named structure.
+ await pg.query('UPDATE crew_rosters SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND instrument_man_id=$3 AND deactivated_at IS NULL',[f.tenant,f.project,f.imA]);
+ assert.equal((await checked(read(f.superA,`?mode=person&personId=${f.imA}`),200)).person.partyChiefId,null);checks++;
+ const unassignedInput={...transferInput,expectedSnapshot:await snapshot()},unassignedKey=randomUUID();
+ await checked(move(f.superA,unassignedInput,unassignedKey),200);await checked(move(f.superA,unassignedInput,unassignedKey),200);
+ assert.equal(await fingerprint('survey_team_areas'),coverageBefore);assert.equal(await fingerprint('tickets'),requestsBefore);checks+=2;
+ await checked(move(f.superA,{...rollbackInput,expectedSnapshot:await snapshot()}),200);
+ // The four deliberate membership transfers increment the original team's version.
+ // Ending the named team retains explicit crew/reporting links and assignments;
+ // subsequent cases intentionally verify the separately retained legacy read path.
+ await checked(teamsDelete(req(f.manager,`/api/projects/${f.project}/survey/teams`,'DELETE',{teamId:workforceTeam.teamId,expectedVersion:5,confirmDelete:true}),ctx()),200);
  assert.deepEqual(ids(await checked(read(f.chiefA2),200)),[f.imA]);checks++;
  await pg.query('UPDATE crew_rosters SET deactivated_at=now() WHERE project_id=$1 AND instrument_man_id=$2',[f.project,f.imA]);
  await checked(kpi(f.superA,f.imA),404);await checked(read(f.chiefA2,`?mode=person&personId=${f.imA}`),404);await checked(move(f.superA,base,key),404);
@@ -97,10 +145,52 @@ async function main(){
  await teamDb.query('COMMIT');teamDb.release();
  await checked(read(f.superA,`?mode=person&personId=${f.imB}`),404);
  await checked(teamsPost(req(f.superA,`/api/projects/${f.project}/survey/teams`,'POST',{name:'Unauthorized',areaId:f.area,leadUserId:f.chiefA,memberIds:[f.chiefA]}),ctx()),403);
- await pg.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1",[f.project]);await checked(move(f.superA,{...base,expectedSnapshot:await snapshot()}),409);
+ // The mixed named team above removes this Superintendent's move authority;
+ // Archived project refusal precedes the later same-team move check.
+ await pg.query("UPDATE projects SET status='ARCHIVED' WHERE id=$1",[f.project]);const archivedEvents=await count();
+ await checked(move(f.superA,{...base,expectedSnapshot:await snapshot()}),409);
+ const managerSnapshot=(await checked(read(f.manager,'?mode=context'),200)).snapshotToken;
+ await checked(move(f.manager,{...base,expectedSnapshot:managerSnapshot}),403); // Manager uses the separate reorganization command.
+ assert.equal(await count(),archivedEvents);checks++;
  await pg.query("UPDATE projects SET status='ACTIVE' WHERE id=$1",[f.project]);
  const repo=new SurveyWorkforcePgRepository();assert.equal(await repo.person(pg,{tenantId:f.foreignTenant,projectId:f.project,actorId:f.superA,actorRole:'SURVEY_SUPERINTENDENT',sessionVersion:1},f.imA),null);checks++;
  await pg.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.admin]);
+ // D5 existing team/role controls must share current explicit supervised scope.
+ const roleSubject=id(26);
+ await pg.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,'supervised-role@example.test','Supervised unassigned IM','not-a-login-hash')",[roleSubject,f.tenant,f.company]);
+ await pg.query("INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,'INSTRUMENT_MAN')",[f.project,roleSubject]);
+ await checked(teamsPost(req(f.manager,`/api/projects/${f.project}/survey/teams`,'POST',{teamId:destination.teamId,expectedVersion:6,name:'Explicit supervised destination',areaId:f.otherArea,areaIds:[f.area,f.otherArea].sort(),leadUserId:transferChief,memberIds:[transferChief,roleSubject]}),ctx()),200);
+ const scopedTeam=(await checked(teamsGet(req(f.superA,`/api/projects/${f.project}/survey/teams?teamId=${destination.teamId}`),ctx()),200)).team;
+ assert.equal(scopedTeam.rowVersion,7);checks++;
+ const roleCoverageBefore=await fingerprint('survey_team_areas');
+ const roleInput={action:'set-role',userId:roleSubject,expectedRole:'INSTRUMENT_MAN',expectedRoleVersion:1,role:'PARTY_CHIEF',confirmRoleChanges:true,reviewedTeamId:destination.teamId,expectedTeamVersion:7};
+ const roleKey=randomUUID(),roleChange=(input:unknown,key=randomUUID())=>teamsPatch(req(f.superA,`/api/projects/${f.project}/survey/teams`,'PATCH',input,key),ctx());
+ await checked(roleChange(roleInput,roleKey),200);await checked(roleChange(roleInput,roleKey),200);
+ await checked(roleChange({...roleInput,expectedRole:'PARTY_CHIEF',expectedRoleVersion:2,role:'INSTRUMENT_MAN'}),200);
+ await pg.query('UPDATE survey_reporting_links SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND party_chief_id=$3',[f.tenant,f.project,transferChief]);
+ await checked(roleChange(roleInput,roleKey),403);await checked(teamsGet(req(f.superA,`/api/projects/${f.project}/survey/teams?teamId=${destination.teamId}`),ctx()),403);
+ await pg.query('UPDATE survey_reporting_links SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND party_chief_id=$3',[f.tenant,f.project,transferChief]);
+ await pg.query('UPDATE aor_assignments SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND aor_node_id=$4',[f.tenant,f.project,f.superA,f.otherArea]);
+ await checked(roleChange(roleInput,roleKey),403);
+ await pg.query('UPDATE aor_assignments SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND aor_node_id=$4',[f.tenant,f.project,f.superA,f.otherArea]);
+ await checked(roleChange({...roleInput,userId:transferChief,expectedRole:'PARTY_CHIEF',role:'INSTRUMENT_MAN'}),403);
+ await pg.query('UPDATE survey_team_members SET deactivated_at=NOW() WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND user_id=$4',[f.tenant,f.project,destination.teamId,transferChief]);
+ await checked(roleChange(roleInput,roleKey),403);
+ await pg.query('UPDATE survey_team_members SET deactivated_at=NULL WHERE tenant_id=$1 AND project_id=$2 AND team_id=$3 AND user_id=$4',[f.tenant,f.project,destination.teamId,transferChief]);
+ const removal={...roleInput,action:'remove-role',expectedRoleVersion:3,role:undefined},removeKey=randomUUID(),teamBefore=await fingerprint('survey_teams');
+ await pg.query("CREATE FUNCTION fail_supervised_role() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.event_type='survey.role_changed' THEN RAISE EXCEPTION 'owned supervised role rollback'; END IF; RETURN NEW; END $$");
+ await pg.query('CREATE TRIGGER fail_supervised_role BEFORE INSERT ON survey_staffing_events FOR EACH ROW EXECUTE FUNCTION fail_supervised_role()');
+ await checked(roleChange(removal,removeKey),500);
+ await pg.query('DROP TRIGGER fail_supervised_role ON survey_staffing_events');await pg.query('DROP FUNCTION fail_supervised_role()');
+ assert.equal(await fingerprint('survey_teams'),teamBefore);assert.equal((await pg.query('SELECT role FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,roleSubject])).rows[0].role,'INSTRUMENT_MAN');assert.equal((await pg.query('SELECT session_version FROM users WHERE tenant_id=$1 AND id=$2',[f.tenant,roleSubject])).rows[0].session_version,3);checks+=3;
+ await checked(roleChange(removal,removeKey),200);await checked(roleChange(removal,removeKey),200);
+ assert.equal((await pg.query('SELECT COUNT(*)::int n FROM survey_team_members WHERE tenant_id=$1 AND project_id=$2 AND user_id=$3 AND deactivated_at IS NULL',[f.tenant,f.project,roleSubject])).rows[0].n,0);assert.equal((await pg.query('SELECT role FROM project_memberships WHERE project_id=$1 AND user_id=$2',[f.project,roleSubject])).rows[0].role,'REQUESTER');assert.equal(await fingerprint('survey_team_areas'),roleCoverageBefore);assert.equal(await fingerprint('tickets'),requestsBefore);checks+=4;
+ // Synthetic cancellation witness stages only the new workforce gate; lifecycle
+ // START/FINISH acceptance belongs to the separately verified D6 helper.
+ await pg.query("UPDATE projects SET status='SETUP' WHERE tenant_id=$1 AND id=$2",[f.tenant,f.project]);
+ await pg.query("INSERT INTO project_preparation_cancellations(id,tenant_id,project_id,started_by,reason,reviewed_evidence) VALUES($1,$2,$3,$4,'Owned workforce gate only','{}'::jsonb)",[randomUUID(),f.tenant,f.project,f.admin]);
+ const cancelling=await checked(move(f.superA,base,key),409);assert.equal(cancelling.error.code,'PROJECT_PREPARATION_CANCELLING');checks++;
+ const roleCancelling=await checked(roleChange(roleInput,roleKey),409);assert.equal(roleCancelling.error.code,'PROJECT_PREPARATION_CANCELLING');checks++;
  console.log(JSON.stringify({result:'passed',checks,fixture:f}));
  }finally{await pg.end();await getPool().end();}
 }

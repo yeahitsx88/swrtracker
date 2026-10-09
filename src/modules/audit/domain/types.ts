@@ -6,6 +6,8 @@
  */
 import type { UUID } from '@/shared/types';
 
+export const SYSTEM_AUDIT_ACTOR = 'SWRTracker System';
+
 export type AuditEventType =
   | 'ticket.created'
   | 'ticket.draft_saved'
@@ -20,12 +22,15 @@ export type AuditEventType =
   | 'ticket.field_inability_reported'
   | 'ticket.field_inability_rejected'
   | 'ticket.rejected'
+  | 'ticket.rejection_proposed'
+  | 'ticket.rejection_proposal_resolved'
   | 'ticket.rejection_overridden'
   | 'ticket.priority_set_by_whitelist'
   | 'ticket.priority_elevated'
   | 'ticket.priority_revised'
   | 'ticket.need_by_revised'
   | 'ticket.assigned'
+  | 'ticket.team_delegated'
   | 'ticket.party_chief_assigned'
   | 'ticket.unassigned'
   | 'workflow.orphan_escalation'
@@ -56,7 +61,8 @@ export interface TicketEvent {
   id: UUID;
   ticketId: UUID;
   tenantId: UUID;
-  actorId: UUID;
+  actorId: UUID | null;
+  actorKind: 'USER' | 'SYSTEM';
   eventType: AuditEventType;
   payload: Record<string, unknown>;
   createdAt: Date;

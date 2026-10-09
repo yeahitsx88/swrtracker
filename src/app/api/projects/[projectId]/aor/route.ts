@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
 import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
 /**
@@ -21,7 +22,7 @@ import { assertProjectSetupMutable, resolveProjectSetupActorRole } from './share
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
@@ -130,9 +131,12 @@ export async function POST(
   }
 }
 
-export async function GET(
+async function observedGET(
   req: NextRequest,
   ctx: { params: Promise<{ projectId: string }> },
 ) {
   return handleGetAor(req, ctx);
 }
+
+export const POST=observeProjectRoute(observedPOST);
+export const GET=observeProjectRoute(observedGET);

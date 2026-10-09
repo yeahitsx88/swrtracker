@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { errorResponse } from '@/lib/api-error';
@@ -19,7 +20,7 @@ import type { UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
+async function observedGET(req: NextRequest, { params }: { params: Promise<{ projectId: string }> }) {
   try {
     const auth = await requireAuth(req);
     const { projectId } = await params;
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
     let filters = parseMetricsQuery(search);
     return await withTransaction(async db=>{
     if(memberId||filters.crewId||filters.instrumentManId)await db.query('SELECT id FROM projects WHERE tenant_id=$1 AND id=$2 FOR SHARE',[auth.tenantId,projectUuid]);
-    const role = await resolveProjectInsightRole(auth, projectUuid, db);
+    const role = await resolveProjectInsightRole(auth, projectUuid, db, !!memberId);
     if (role === 'BILLING_VIEWER') throw new ForbiddenError('Billing access does not grant request analytics');
     // Tenant administrators retain read-only project health, not workflow authority.
     let visibility = await resolveVisibility(db, auth.tenantId, projectUuid, auth.userId, role === 'TENANT_ADMIN' ? 'VIEWER' : role, memberId&&role==='SURVEY_MANAGER'?undefined:filters.cohort);
@@ -72,3 +73,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ proj
     return errorResponse(error);
   }
 }
+
+export const GET=observeProjectRoute(observedGET);

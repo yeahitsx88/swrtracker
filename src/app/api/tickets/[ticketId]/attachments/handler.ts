@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
 import { appendAuditEvent } from '@/modules/audit/application';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation, withTicketRead } from '@/lib/ticket-route-helpers';
 import { requireResourceUuid } from '@/lib/resource-uuid';
 import { pool } from '@/lib/db';
 import { assertUploadAuthority, uploadAttachment } from '@/modules/attachment/application';
@@ -246,7 +246,7 @@ export async function handleDownloadTicketAttachment(
     const { ticketId, attachmentId } = await params;
     const expected = await deps.getTicketRouteContext(req, ticketId);
     requireResourceUuid(attachmentId, 'attachmentId');
-    return await deps.withTicketMutation(req, expected, async (db, ctx) => {
+    return await deps.withTicketRead(req, expected, async (db, ctx) => {
       const ticket = await deps.createTicketRepo().findById(db, ctx.tenantId, ctx.ticketId, ctx.visibility);
       if (!ticket) throw new NotFoundError('Ticket not found');
       const attachment = await deps.findAttachment(ctx.tenantId, ctx.ticketId, attachmentId, db);
@@ -285,7 +285,7 @@ export interface TicketAttachmentDownloadDeps {
   createTicketRepo: () => ITicketRepository;
   findAttachment: (tenantId: string, ticketId: string, attachmentId: string, db: DbClient) => Promise<AttachmentRow | null>;
   createStorage: () => Pick<AttachmentStorage, 'read'>;
-  withTicketMutation: typeof withTicketMutation;
+  withTicketRead: typeof withTicketRead;
 }
 
 const defaultDownloadDeps: TicketAttachmentDownloadDeps = {
@@ -301,5 +301,5 @@ const defaultDownloadDeps: TicketAttachmentDownloadDeps = {
     return rows[0] ?? null;
   },
   createStorage: () => new LocalAttachmentStorage(),
-  withTicketMutation,
+  withTicketRead,
 };

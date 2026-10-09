@@ -13,8 +13,8 @@ function fixture(){
  {userId:id(6),name:'Assigned IM',email:'im@example.test',role:'INSTRUMENT_MAN',partyChiefId:id(4)}];
  const writes:unknown[]=[];
  const repo:WorkforceRepository={
- context:async()=>({status:'ACTIVE',crewBuild:'FULL'}),lockProject:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
- lockActor:async()=>true,lockSubjects:async()=>{},lockTransferScope:async()=>{},snapshot:async()=>'a'.repeat(32),
+ destinations:async()=>({data:[],total:0,limit:10,offset:0}),context:async()=>({status:'ACTIVE',crewBuild:'FULL'}),lockProject:async()=>({status:'ACTIVE',crewBuild:'FULL'}),
+ assertTransferScope:async()=>true,lockActor:async()=>true,lockSubjects:async()=>{},lockTransferScope:async()=>{},snapshot:async()=>'a'.repeat(32),
  person:async(_db,_actor,userId)=>people.find(p=>p.userId===userId)??null,
  personnel:async(_db,_actor,q)=>({data:people,total:3,limit:q.limit,offset:q.offset,snapshotToken:'a'.repeat(32)}),
  move:async(_db,_actor,im,chief)=>{writes.push([im,chief]);},record:async(_db,_actor,payload)=>{writes.push(payload);}
@@ -23,28 +23,42 @@ function fixture(){
 }
 test('Superintendent transfers an assigned Instrument Man between their assigned Chiefs with an audit event',async()=>{
  const f=fixture();
- assert.deepEqual(await moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),expectedSnapshot:'a'.repeat(32)}),{changed:true});
+ assert.deepEqual(await moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),destinationTeamId:id(7),expectedSnapshot:'a'.repeat(32)}),{changed:true});
  assert.equal(f.writes.length,2);
  assert.deepEqual(f.writes[0],[id(6),id(5)]);
  assert.equal((f.writes[1] as Record<string,unknown>).previousPartyChiefId,id(4));
 });
 test('out-of-pool Instrument Men and destination Chiefs fail without writes',async()=>{
  for(const input of [{instrumentManId:id(99),partyChiefId:id(5)},{instrumentManId:id(6),partyChiefId:id(99)}]){
- const f=fixture();await assert.rejects(moveWorkforceMember(f.repo,db,actor,{...input,expectedSnapshot:'a'.repeat(32)}),NotFoundError);assert.deepEqual(f.writes,[]);
+ const f=fixture();await assert.rejects(moveWorkforceMember(f.repo,db,actor,{...input,destinationTeamId:id(7),expectedSnapshot:'a'.repeat(32)}),NotFoundError);assert.deepEqual(f.writes,[]);
  }
 });
 test('Party Chief has read-only member access and cannot expand or reorganize their workforce',async()=>{
  const f=fixture();const pc={...actor,actorRole:'PARTY_CHIEF' as const};
  assert.equal((await readWorkforceMember(f.repo,db,pc,id(6))).name,'Assigned IM');
- await assert.rejects(moveWorkforceMember(f.repo,db,pc,{instrumentManId:id(6),partyChiefId:id(5),expectedSnapshot:'a'.repeat(32)}),ForbiddenError);
+ await assert.rejects(moveWorkforceMember(f.repo,db,pc,{instrumentManId:id(6),partyChiefId:id(5),destinationTeamId:id(7),expectedSnapshot:'a'.repeat(32)}),ForbiddenError);
  await assert.rejects(readWorkforceMember(f.repo,db,pc,id(99)),NotFoundError);assert.deepEqual(f.writes,[]);
 });
 test('stale staffing, changed actor authority, and archived projects reject workforce transfers',async()=>{
  for(const kind of ['snapshot','actor','archive']){
  const f=fixture();if(kind==='snapshot')f.repo.snapshot=async()=>'b'.repeat(32);if(kind==='actor')f.repo.lockActor=async()=>false;if(kind==='archive')f.repo.lockProject=async()=>({status:'ARCHIVED',crewBuild:'FULL'});
- await assert.rejects(moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),expectedSnapshot:'a'.repeat(32)}),kind==='actor'?ForbiddenError:ConflictError);assert.deepEqual(f.writes,[]);
+ await assert.rejects(moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),destinationTeamId:id(7),expectedSnapshot:'a'.repeat(32)}),kind==='actor'?ForbiddenError:ConflictError);assert.deepEqual(f.writes,[]);
  }
 });
 test('unrelated project roles cannot inspect workforce members',async()=>{
  const f=fixture();await assert.rejects(readWorkforceMember(f.repo,db,{...actor,actorRole:'REQUESTER'},id(6)),ForbiddenError);
+});
+
+test('a Superintendent cannot move a person outside their current supervised teams',async()=>{
+ const f=fixture();f.repo.assertTransferScope=async()=>{throw new ForbiddenError('Outside supervised team authority');};
+ await assert.rejects(moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),destinationTeamId:id(7),expectedSnapshot:'a'.repeat(32)}),ForbiddenError);
+ assert.deepEqual(f.writes,[]);
+});
+
+test('an omitted explicit destination fails before persistence',async()=>{
+ const f=fixture();await assert.rejects(moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(5),expectedSnapshot:'a'.repeat(32)} as import('@/modules/tenancy/application/survey-workforce').WorkforceMove),/specific existing destination/);assert.deepEqual(f.writes,[]);
+});
+test('an unchanged Chief still reconciles explicitly reviewed missing destination membership',async()=>{
+ const f=fixture();f.repo.assertTransferScope=async()=>false;
+ assert.deepEqual(await moveWorkforceMember(f.repo,db,actor,{instrumentManId:id(6),partyChiefId:id(4),destinationTeamId:id(7),expectedSnapshot:'a'.repeat(32)}),{changed:true});assert.equal(f.writes.length,2);
 });

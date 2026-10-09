@@ -5,6 +5,7 @@ import type { ProjectRole } from '@/modules/identity/domain/types';
 import { logError, logInfo } from '@/lib/observability';
 import { assertValidTransition, type TicketStatus, type WorkflowVariant } from '../domain/transitions';
 import type { DbClient, UUID } from '@/shared/types';
+import {assertSubmittedRecoveryTransition} from '../domain/submitted-recovery';
 
 export interface WorkflowKernelTicket {
   id: UUID;
@@ -47,17 +48,30 @@ export function assertWorkflowActorHasRole(
 }
 
 export async function executeWorkflowTransition<TTicket extends WorkflowKernelTicket>(
-  db: DbClient,
-  command: WorkflowKernelCommand<TTicket>,
+  db: DbClient, command: WorkflowKernelCommand<TTicket>,
 ): Promise<TTicket> {
+  return executeTransition(db,command,ticket=>{
+    assertWorkflowActorHasRole(command.actorRole,command.permittedRoles);
+    assertValidTransition(ticket.workflowVariant,ticket.status,command.to);
+  });
+}
+
+/** Purpose-specific recovery; current authority is established by the recovery use case.
+ * No caller-supplied generic transition override or fabricated operational role. */
+export async function executeSubmittedRecoveryTransition<TTicket extends WorkflowKernelTicket & {ticketNumber:string|null;firstSubmittedAt?:Date|null}>(
+ db:DbClient, command:Omit<WorkflowKernelCommand<TTicket>,'actorRole'|'permittedRoles'|'to'|'eventType'>,
+):Promise<TTicket>{
+ return executeTransition(db,{...command,to:'RETURNED_FOR_CORRECTION',eventType:'ticket.returned_for_correction'},ticket=>assertSubmittedRecoveryTransition(ticket,'RETURNED_FOR_CORRECTION'));
+}
+
+async function executeTransition<TTicket extends WorkflowKernelTicket>(db:DbClient,command:Omit<WorkflowKernelCommand<TTicket>,'actorRole'|'permittedRoles'>,assertTransition:(ticket:TTicket)=>void):Promise<TTicket>{
   try {
     const ticket = await command.readTicket();
     if (!ticket) {
       throw new NotFoundError(`Ticket ${command.ticketId} not found`);
     }
 
-    assertWorkflowActorHasRole(command.actorRole, command.permittedRoles);
-    assertValidTransition(ticket.workflowVariant, ticket.status, command.to);
+    assertTransition(ticket);
 
     await command.patchTicket(
       { ...command.patch, status: command.to },

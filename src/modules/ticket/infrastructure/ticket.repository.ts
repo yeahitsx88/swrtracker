@@ -190,11 +190,11 @@ export class TicketRepository implements ITicketRepository {
         survey_cancel_requested_by, survey_cancel_requested_role, survey_cancel_reason, survey_cancel_requested_at,
         completed_at, closed_at, rejection_reason, parent_ticket_id,
         priority, priority_set_by, priority_set_reason,
-        created_at, updated_at
+        created_at, updated_at, original_requested_date
       ) VALUES (
         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
         $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,
-        $26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38
+        $26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39
       )`,
       [
         ticket.id, ticket.tenantId, ticket.projectId, ticket.aorNodeId,
@@ -209,6 +209,7 @@ export class TicketRepository implements ITicketRepository {
         ticket.completedAt, ticket.closedAt, ticket.rejectionReason, ticket.parentTicketId,
         ticket.priority, ticket.prioritySetBy, ticket.prioritySetReason,
         ticket.createdAt, ticket.updatedAt,
+        ticket.originalRequestedDate?.toISOString().slice(0, 10) ?? null,
       ],
     );
   }

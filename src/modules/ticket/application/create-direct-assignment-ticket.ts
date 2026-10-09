@@ -139,6 +139,7 @@ export async function createDirectAssignmentTicket(
     fieldChannel:            params.fieldChannel ?? null,
     description:             params.description,
     requestedDate:           params.requestedDate,
+    originalRequestedDate:   params.requestedDate,
     submittedAt:             null,
     approvedAt:              null,
     assignedAt:              now,

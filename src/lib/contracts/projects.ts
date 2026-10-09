@@ -57,6 +57,8 @@ export interface ProjectMembersResponse {
 }
 
 export interface ProjectCompanyAccessResponse {
+  projectStatus: string;
+  invitationCreationBlockedReason: 'ARCHIVED' | 'PREPARATION_CANCELLATION' | 'RECOMMISSIONING' | null;
   companies: Array<{ id: string; name: string }>;
   requesters: Array<{
     userId: string;

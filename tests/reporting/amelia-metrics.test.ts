@@ -57,12 +57,12 @@ test('metrics retain requester, crew, Area and department visibility', async () 
       partyChiefId: id('chief'), departmentId: id('department'), aorNodeIds: [id('area'), id('child')] } });
   }
 });
-test('metrics retain company intersection and missing Area fails closed', async () => {
+test('metrics retain company intersection and resolve current team coverage', async () => {
   for (const actorRole of ['SURVEY_MANAGER', 'PARTY_CHIEF', 'SURVEY_SUPERINTENDENT'] as const) {
     const db = database((sql, params) => {
       assert.ok(sql.includes('AND t.company_id = $'));
       assert.equal(params.at(-1), 'company');
-      if (actorRole === 'SURVEY_SUPERINTENDENT') assert.ok(sql.includes('AND 1 = 0'));
+      if (actorRole === 'SURVEY_SUPERINTENDENT') assert.ok(sql.includes('FROM survey_team_members'));
     });
     await getAmeliaMetrics(new AmeliaMetricsReader(), db, { ...base, visibility: { ...base.visibility, actorRole, companyType: 'SUBCONTRACTOR' } });
   }

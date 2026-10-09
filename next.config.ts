@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Let attachment routes enforce their 30 MiB file / 31 MiB multipart bounds.
+  experimental: { middlewareClientMaxBodySize: 32 * 1024 * 1024 },
   // Server-side only packages — not bundled for the browser
   serverExternalPackages: ['pg', 'bcrypt', 'jsonwebtoken'],
   async headers() {

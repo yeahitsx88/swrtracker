@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import {NextResponse,type NextRequest} from 'next/server';
 import {requireActiveAuth} from '@/lib/auth';
 import {withTransaction} from '@/lib/with-transaction';
@@ -18,8 +19,11 @@ async function handle(req:NextRequest,ctx:Context){
   const result=await withTransaction(async db=>{
    if(!key)return {status:200,body:{preview:await repo.preview(db,auth,id,input)}};
    return executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST:/api/projects/${id}/survey/manager-handover`,idempotencyKey:key},input,async()=>({status:200,body:{result:await appointSurveyManager(repo,db,auth,id,input as ReturnType<typeof parseManagerAppointment>)}}));
-  },{req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{await assertProjectAdministrator(db,current,id);}});
+  },{req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{await assertProjectAdministrator(db,current,id);await repo.assertEditableProject(db,current,id);}});
   const response=NextResponse.json(result.body,{status:result.status});response.headers.set('Cache-Control','private, no-store');return response;
  }catch(error){return errorResponse(error);}
 }
-export const GET=handle;export const POST=handle;
+
+
+export const GET=observeProjectRoute(handle);
+export const POST=observeProjectRoute(handle);

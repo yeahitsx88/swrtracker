@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-08",
+  "baseline": "3277404",
+  "scope": "D1/D4 supported Superintendent Instrument Man transfer and D5 transfer boundary; preserved current role workflows",
+  "classification": {
+    "D1": "verified complete for supported personnel transfer",
+    "D4": "verified complete for supported Manager and Superintendent transfer",
+    "D5": "transfer increment verified; broader team/role boundary reconciliation remains open"
+  },
+  "authority": "Owner D1-D8 and Decision54; preserve Visual5866772",
+  "verification": {
+    "strictUnusedTypes": "passed host/pinned Node22.23.3",
+    "units": {
+      "pinned": 642,
+      "unitSet": 641,
+      "additional": "environment-scoped lifecycle PostgreSQL invocation"
+    },
+    "productionCompile": "passed matching pinned lock Node22.23.3",
+    "currentRuntime": "swr-superintendent-final-web, local3220",
+    "productionMigrationRawByteMatches": 568,
+    "postgresql": {
+      "freshSchemas": true,
+      "ownedDatabase": "Alpha acceptance197",
+      "regressionSuites": 9,
+      "workforceHandlerChecks": 116,
+      "scopedRoleChecks": 54,
+      "recoveryChecks": 66
+    },
+    "browser": {
+      "checks": 36,
+      "captures": [
+        ".impeccable/review/superintendent-conventional-light-1440.png",
+        ".impeccable/review/superintendent-visual-light-1440.png",
+        ".impeccable/review/superintendent-conventional-light-390.png",
+        ".impeccable/review/superintendent-visual-light-390.png",
+        ".impeccable/review/superintendent-conventional-dark-1440.png",
+        ".impeccable/review/superintendent-visual-dark-1440.png",
+        ".impeccable/review/superintendent-conventional-dark-390.png",
+        ".impeccable/review/superintendent-visual-dark-390.png"
+      ],
+      "errors": [],
+      "conditions": "actual production Edge Light/Dark1440/390 reduced motion; native visual proposal and shared review, conventional actual mutation/lost-reply exact retry"
+    },
+    "detector": "single current empty report",
+    "finishReview": "fresh full ship, no material fixes",
+    "documenter": "No changes; incumbent Axiom preserved"
+  },
+  "preserved": [
+    "complete source/destination coverage",
+    "request/ticket assignments and history",
+    "reporting links and individual Area grants",
+    "project access and administrative authority",
+    "tenant/project/company isolation",
+    "atomic team/crew/audit/notice/ledger",
+    "current authorization before replay",
+    "stale consent requires current reload"
+  ],
+  "scopeLimits": [
+    "IM-to-Chief supported transfer; no new whole-crew visual operation",
+    "Existing role changes in directly led teams retain resolved obligation rules; further D5 boundary reconciliation remains open",
+    "Only existing supervised unassigned personnel; no project-wide available pool or Area-overlap authority",
+    "Synthetic active work and cancellation witness stages are not connected lifecycle/workflow journeys",
+    "Historical workforce repair/Area helpers compile new explicit contract but obsolete fixture scopes are not current acceptance",
+    "First test witness used nonexistent generic id column, fixed; superseded capture falsely lacked named-team projection, corrected and final36checks retained",
+    "Known inherited design drift not repaired/canonized",
+    "Full Alpha connected-role acceptance and inherited release blocker separate",
+    "No push/deploy/main merge/Alpha2"
+  ]
+}

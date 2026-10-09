@@ -1,0 +1,49 @@
+{
+  "checks": [
+    "requester actual credential login",
+    "requester current authenticated project navigation",
+    "role-requester has contained document width",
+    "viewer actual credential login",
+    "viewer current authenticated project navigation",
+    "role-viewer has contained document width",
+    "superintendent actual credential login",
+    "superintendent current authenticated project navigation",
+    "role-superintendent has contained document width",
+    "chief actual credential login",
+    "chief current authenticated project navigation",
+    "role-chief has contained document width",
+    "instrument actual credential login",
+    "instrument current authenticated project navigation",
+    "role-instrument has contained document width",
+    "tenantOnly actual credential login",
+    "tenantOnly current authenticated project navigation",
+    "role-tenantOnly has contained document width",
+    "manager actual credential login",
+    "Live entry shows current fixture Instrument Man",
+    "Live chart contains no synthetic demo default",
+    "live-chart-light-desktop has contained document width",
+    "Live visual cancellation discards proposal",
+    "Live entry returns keyboard focus",
+    "Manager selects Dark through current appearance API; got 200",
+    "live-chart-dark-mobile has contained document width",
+    "Archived live chart provides no move controls",
+    "archived-chart-dark-mobile has contained document width",
+    "No browser page errors"
+  ],
+  "captureNames": [
+    "role-requester.png",
+    "role-viewer.png",
+    "role-superintendent.png",
+    "role-chief.png",
+    "role-instrument.png",
+    "role-tenantOnly.png",
+    "live-chart-light-desktop.png",
+    "live-chart-dark-mobile.png",
+    "archived-chart-dark-mobile.png"
+  ],
+  "fixtureKind": "fresh owned synthetic",
+  "entry": "actual /projects/[projectId]/survey/teams",
+  "limits": [
+    "Live commit/exact retry is a separate named case; this receipt covers credential navigation, live proposal cancellation, keyboard return and read-only states."
+  ]
+}

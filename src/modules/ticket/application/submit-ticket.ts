@@ -1,3 +1,4 @@
+import { notifySurveySubmission } from './survey-submission-notifications';
 /**
  * SubmitTicket — Variant 1 only (DRAFT → SUBMITTED).
  * Requires an urgent reason when the requested date misses the configured lead-time notice.
@@ -176,6 +177,8 @@ export async function submitTicket(
     payload: { ticketNumber, returnCycle: ticket.returnCycle ?? 0, urgentReason: missesLeadTime ? urgentReason : null },
     idempotencyKey: `${params.ticketId}:submit:${ticket.returnCycle ?? 0}`,
   });
+
+  await notifySurveySubmission(db, params.tenantId, params.ticketId, params.actorId);
 
   return {
     ...ticket,

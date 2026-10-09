@@ -1,4 +1,4 @@
-import { ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
 import type { Ticket } from '../domain/types';
@@ -17,15 +17,18 @@ export async function reviseNeedBy(
     requestedDate: Date;
     reason: string;
     visibility?: VisibilityScope;
+    expectedVersion?: number;
   },
 ): Promise<Ticket> {
   if (params.actorRole !== 'SURVEY_MANAGER') throw new ForbiddenError('Only the Survey Lead may revise Need-By');
   if (!params.reason.trim()) throw new ValidationError('reason is required');
   if (Number.isNaN(params.requestedDate.getTime())) throw new ValidationError('requestedDate is invalid');
+  if(params.expectedVersion!==undefined&&(!Number.isSafeInteger(params.expectedVersion)||params.expectedVersion<0))throw new ValidationError('expectedVersion must be a nonnegative integer');
   const ticket = params.visibility
     ? await repo.findById(db, params.tenantId, params.ticketId, params.visibility)
     : await repo.findByIdInternal(db, params.tenantId, params.ticketId);
   if (!ticket) throw new NotFoundError(`Ticket ${params.ticketId} not found`);
+  if(params.expectedVersion!==undefined&&ticket.rowVersion!==params.expectedVersion)throw new ConflictError('This request changed after your review. Reload it and confirm the current revision.');
   if (['COMPLETED', 'REQUESTER_CANCELED', 'FIELD_CANCELED', 'SURVEY_CANCELED'].includes(ticket.status)) {
     throw new ValidationError('Need-By cannot change on a terminal SWR');
   }

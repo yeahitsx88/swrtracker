@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
@@ -10,7 +11,7 @@ import { reportFieldInability } from '@/modules/ticket/application/field-inabili
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ ticketId: string }> }) {
+async function observedPOST(req: NextRequest, { params }: { params: Promise<{ ticketId: string }> }) {
   return withRequestCorrelation(req, async () => {
     try {
       const { ticketId } = await params;
@@ -34,3 +35,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tic
     }
   });
 }
+
+export const POST=observeProjectRoute(observedPOST);

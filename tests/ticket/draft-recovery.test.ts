@@ -46,10 +46,13 @@ test('restore keeps identity/files and requires current requester, reason, windo
   }
   await assert.rejects(() => recoverDraft(h.db, { ...scope, reason: 'short' }), ValidationError);
 });
-test('draft authority locks current project membership and never derives recovery from tenant role', async () => {
-  const h = harness(); await assert.rejects(() => lockDraftActor(h.db, scope, 'PROJECT_ADMIN'), ForbiddenError);
-  assert.match(h.calls[0]!.sql, /u.session_version = \$5/);
-  assert.match(h.calls[0]!.sql, /FOR SHARE OF pm, p, u, c/); assert.equal(h.calls[0]!.values?.[3], 'PROJECT_ADMIN');
+test('draft authority requires a current independent grant for every actor', async () => {
+  const calls: {sql:string;values?:unknown[]}[]=[];
+  const db={query:async(sql:string,values?:unknown[])=>{calls.push({sql,values});return {rows:sql.includes('COALESCE(session_version')?[{session_version:1,deactivated_at:null}]:[]};}} as DbClient;
+  await assert.rejects(() => lockDraftActor(db, scope, 'PROJECT_ADMIN'), ForbiddenError);
+  const membership=calls.find(c=>c.sql.includes('FROM project_memberships pm'))!;
+  assert.match(membership.sql, /u.session_version = \$5/);
+  assert.match(membership.sql, /FOR SHARE OF pm, p, u, c/); assert.equal(membership.values?.[3], 'PROJECT_ADMIN');
 });
 test('partial intake accepts omissions/nulls but rejects malformed supplied values and rollover dates', () => {
   assert.deepEqual(parseRequesterIntake({}).changes, {});
@@ -68,4 +71,11 @@ test('normal visibility predicates hide deleted drafts for every operational rol
   const company = buildVisibilityClause({ actorId: scope.actorId, actorRole: 'REQUESTER', projectId: scope.projectId,
     companyId: 'company' as UUID, companyType: 'SUBCONTRACTOR' }, 1);
   assert.match(company.sql, /t.status <> 'DRAFT'/);
+});
+
+// Regression: Central IT identity must not substitute for the independent project grant.
+test('Tenant Admin alone cannot read or recover drafts through the former central bypass', async () => {
+  const db={query:async(sql:string)=>({rows:sql.includes('FROM tenant_memberships')?[{role:'TENANT_ADMIN'}]:sql.includes('COALESCE(session_version')?[{session_version:1,deactivated_at:null}]:sql.includes('FROM users u JOIN projects p')?[{company_id:'owned-company',status:'ACTIVE'}]:[]})} as DbClient;
+  await assert.rejects(()=>lockDraftActor(db,scope,'PROJECT_ADMIN',false),ForbiddenError);
+  await assert.rejects(()=>lockDraftActor(db,scope,'PROJECT_ADMIN'),ForbiddenError);
 });

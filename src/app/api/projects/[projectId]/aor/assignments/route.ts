@@ -1,3 +1,4 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import type { NextRequest } from 'next/server';
 import {
   handleDeleteAorAssignments,
@@ -6,16 +7,19 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   ctx: { params: Promise<{ projectId: string }> },
 ) {
   return handlePostAorAssignments(req, ctx);
 }
 
-export async function DELETE(
+async function observedDELETE(
   req: NextRequest,
   ctx: { params: Promise<{ projectId: string }> },
 ) {
   return handleDeleteAorAssignments(req, ctx);
 }
+
+export const POST=observeProjectRoute(observedPOST);
+export const DELETE=observeProjectRoute(observedDELETE);
