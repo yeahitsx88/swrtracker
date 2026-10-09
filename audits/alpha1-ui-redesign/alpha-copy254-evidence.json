@@ -1,0 +1,29 @@
+{
+  "status": "implemented-awaiting-pinned-and-browser-verification",
+  "baseline": "605a838",
+  "criterion": "A6 queued unsupported attachment validation copy",
+  "productionChange": {
+    "file": "src/modules/attachment/infrastructure/index.ts",
+    "scope": "One validation error string only. Allowlist, limits, status, authorization, persistence and retry conditions unchanged."
+  },
+  "source": {
+    "files": 576,
+    "sha256": "d00147c204fbdeb7d38e7175b482f4d48b120b62fef430ede0bdb8889ae502e4"
+  },
+  "verification": {
+    "hostNode": "24.13.1",
+    "next": "15.5.27",
+    "strictTypecheck": "passed",
+    "fullUnits": 693,
+    "focusedExistingRegressions": 75,
+    "hostProductionCompilation": "passed; supplemental, not pinned acceptance",
+    "buildWarning": "Existing Survey operations.css autoprefixer end/flex-end warning; no CSS edits."
+  },
+  "pending": [
+    "Node22.23.3 pinned production build",
+    "Current authenticated invalid-file HTTP/browser error and editable recovery",
+    "Current PostgreSQL gate once Docker runtime restored"
+  ],
+  "sourceImpact": "Only unsupported-file error text changes. E251 limits/type/count/retry/authorization and E252 connected cycles remain bounded historical/current-contract evidence; they are not freshly rerun against this source. Staffing/role/lifecycle/history implementation bytes are unchanged.",
+  "deferred": "Org Chart follow-ons, release advisory remediation, deployment, main merge and Alpha2 unchanged."
+}

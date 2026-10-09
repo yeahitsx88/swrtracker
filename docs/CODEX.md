@@ -4672,3 +4672,14 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Classification: preparatory work only, UNVERIFIED runtime fixture; no A3 acceptance receipt. Current253 production compilation/fullSQL/authenticated HTTP/browser acceptance not run. A1/E251 andA2/E252 preserved; A3-A7 and full Alpha remain open. Separate release advisory unchanged.
 - Next: restore verification runtime safely, then execute the named A3 cases and gates documented in the preparation report. No new owner business decision blocks.
 - Production behavior changed: no. Checkpoint is recoverable preparation, not completed staffing acceptance.
+
+
+### 2026-10-08 - Batch 254 — queued validation copy; runtime acceptance pending
+- Intent: continue independent approved A6 wording while Docker blocks A3; IMPLEMENTER in Attachment infrastructure, projectwide exception only for acceptance documentation.
+- Files touched: src/modules/attachment/infrastructure/index.ts; audits/alpha1-ui-redesign/alpha-copy254-evidence.json; docs/ALPHA1_{COMPLETION_REGISTER,ACCEPTANCE_CLOSURE,FINAL_ACCEPTANCE_MATRIX}.md; append-only log.
+- Behavior changed: one unsupported-file validation error removes obsolete Amelia beta reference and names current allowed format families as the recovery action. Same allowlist, extension/MIME checks,30MiB limit, status/authorization/persistence/retry. No new dependencies, contracts, schemas, staffing, ownership, history or permissions.
+- Verification: before-edit pinned/host strict693units from253 preserved. After-edit host Node24.13.1 strict-unused types and693units pass;75existing focused attachment/transfer/team/navigation/Org regressions pass in established shared-process registration. Host Next15.5.27 production compilation passes with existing unrelated operations.css autoprefixer warning; no CSS changes. No new mirror test for reversible copy.
+- Source/impact: exactly one production file/string changed versus605a838. E251 full source digest no longer matches; current digest inE254. Validation conditions and all other production files unchanged. Prior bounded E251/E252 contract evidence retained explicitly, not claimed freshly rerun against254.
+- Classification: implemented awaiting current pinned/HTTP/browser verification. Docker engine still unavailable after terminal startup failure; no current SQL,Node22.23.3 production build or current invalid-file browser receipt. A3-A7/full Alpha remain open; no new business decision. Org Chart deferrals and separate release advisory unchanged.
+- Next: healthy Docker engine, current pinned/fullSQL gates and invalid-file recovery proof; then complete A3 conventional/Visual role/person/intact-crew/blocker acceptance. No factory reset or retained data removal permitted.
+- Production behavior changed: yes, error wording only. Checkpoint is partial verification, not full Alpha acceptance.
