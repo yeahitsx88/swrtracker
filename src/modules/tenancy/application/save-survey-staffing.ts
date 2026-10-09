@@ -92,7 +92,7 @@ export async function saveSurveyStaffing(repo: SurveyStaffingRepository, db: DbC
     const superintendent = await repo.member(db, tenantId, projectId, input.superintendentId);
     if (superintendent?.role !== 'SURVEY_SUPERINTENDENT') throw new ValidationError('Choose an active project Survey Superintendent');
     if (!await repo.superintendentCoversArea(db, tenantId, projectId, input.superintendentId, input.areaId)) {
-      throw new ForbiddenError('The selected Superintendent is not authorized for this Area');
+      throw new ForbiddenError('The selected Superintendent does not cover this Area yet. Give them Area coverage in Team Management → Personnel → Change role first');
     }
   }
 

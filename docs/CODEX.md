@@ -4955,3 +4955,16 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Verification: units/typecheck/build pass. A 1280×900 sweep of all role screens was taken before and after; Review Requests went 1.8 → 1.3 screens, Crew Work has no page overflow and Status/actions are visible. A 390×844 Team editor check confirmed the sticky bar is in view.
 - Open: see the assessment's open recommendations (history card, company-ID association, invitation table, Area picker, dashboard data toggles, audit header, phone card layout).
 - Production behavior changed: yes (presentation/flow only).
+
+### 2026-10-09 - Batch 296: Survey Manager Superintendent Area coverage (Decision 56)
+- Intent: owner report: a crew move was refused with "The selected Superintendent must already cover this Area". Cause: the Superintendent (a role-changed account) had no individual Area, and active projects had no way to give one. Named-team Areas correctly do not count.
+- Changed behavior:
+  - New GET/POST /api/projects/:projectId/survey/superintendent-coverage (SHARED review; EXCLUSIVE idempotent grant). Survey Manager only.
+  - The grant creates or reuses the individual assignment and the SURVEY_REVIEWER grant on one live top-level Area, with snapshot, reason and confirmation.
+  - A Team Management → Personnel → Change role "Area Coverage" section for Superintendents, with blocked-action reasons. It holds its own lock with the sibling handover and obligations editors.
+  - Crew-move and staffing refusals now name the fix: give coverage via Change role, or set a Chief with no Area through Staffing.
+- Files: application/grant-superintendent-area.ts, infrastructure/superintendent-coverage.repository.ts (registered writer), the route and handler, ui/superintendent-area-grant.tsx, a team-management.tsx mount, apiClient, and message edits in survey-reorganization.repository.ts and save-survey-staffing.ts. Tests: tests/tenancy/grant-superintendent-area.test.ts.
+- Verification: strict typecheck and 746 units pass. Live HTTP on the disposable DB (12/12): Manager review and grant; Project Admin and Party Chief 403; stale 409; exact retry returns the recorded result; complete coverage 409; existing half reused. Audit rows were inspected, and a browser grant was completed through the form.
+- Disposable test data (127.0.0.1:15491 only): a North assignment for instrument@amelia.local was inserted directly at the owner's request, then completed and extended to South/East through the new command. An "East Area" top-level node was inserted for the browser check.
+- Limitations: PostgreSQL acceptance suites not run (retained container out of bounds). Removal still uses the existing cleanup, which needs another covered replacement Superintendent.
+- Production behavior changed: yes (new owner-approved governed write).

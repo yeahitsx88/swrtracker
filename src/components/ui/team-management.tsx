@@ -24,6 +24,7 @@ import { MemberKpiEntry } from './member-kpi-entry';
 import { ProtectedSurveyObligations } from './protected-survey-obligations';
 import {SurveyRoleReview} from './survey-role-review';
 import { SuperintendentAreaObligations } from './superintendent-area-obligations';
+import { SuperintendentAreaGrant } from './superintendent-area-grant';
 
 type Mode = 'personnel' | 'teams' | 'areas';
 function useEditorHeadingFocus(transition = false) {
@@ -120,12 +121,12 @@ function RoleEditor({ projectId, person, project, cancel, saved, reload }: { pro
   const [role,setRole] = useState<ManagedSurveyRole>(roles.includes(person.role as ManagedSurveyRole) ? person.role as ManagedSurveyRole : roles[0]!);
   const [confirmed,setConfirmed] = useState(false),command = useTeamCommand();
   const [handoverLocked,setHandoverLocked]=useState(false),[areaLocked,setAreaLocked]=useState(false),[roleLocked,setRoleLocked]=useState(false),[roleUncertain,setRoleUncertain]=useState(false);
-  const [handoverRevision,setHandoverRevision]=useState(0),[areaRevision,setAreaRevision]=useState(0);
+  const [handoverRevision,setHandoverRevision]=useState(0),[areaRevision,setAreaRevision]=useState(0),[grantLocked,setGrantLocked]=useState(false);
   const roleLock=useRef(false),handoverLock=useRef(false),areaLock=useRef(false),roleRunning=useRef(false);
   const frozenRole=useRef<Parameters<typeof apiClient.changeSurveyRole>[1]|null>(null);
   const onHandoverLock=useCallback((locked:boolean)=>{handoverLock.current=locked;setHandoverLocked(locked);},[]);
   const onAreaLock=useCallback((locked:boolean)=>{areaLock.current=locked;setAreaLocked(locked);},[]);
-  const readOnly=project.status==='ARCHIVED',frozen=roleLocked||handoverLocked||areaLocked||removing||reloading||command.stale;
+  const readOnly=project.status==='ARCHIVED',frozen=roleLocked||handoverLocked||areaLocked||grantLocked||removing||reloading||command.stale;
   const editorHeading = useEditorHeadingFocus();
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -151,10 +152,11 @@ function RoleEditor({ projectId, person, project, cancel, saved, reload }: { pro
       [command.stale,'This person changed since you opened the review. Use Reload personnel first.'],
       [handoverLocked,'Finish or cancel the open responsibility handover below first.'],
       [areaLocked,'Finish or cancel the open Area responsibility change below first.'],
+      [grantLocked,'Finish or reload the open Area coverage grant below first.'],
       [!roleUncertain&&role===person.role,`${roleLabel(person.role)} is already their role. Choose a different one.`,'tm-role-select'],
       [!roleUncertain&&!confirmed,'Tick the confirmation box.','tm-role-confirm'],
     ])}>{command.busy?'Saving…':roleUncertain?'Retry unchanged role change':'Save role'}</Button><Button type="button" variant="secondary" disabled={roleLocked||handoverLocked||areaLocked||removing||reloading||command.busy} onClick={()=>{if(command.stale)void reloadRole();else cancel();}}>{command.error?'Reload personnel':'Cancel'}</Button>{!readOnly&&<Button type="button" variant="secondary" disabled={frozen||command.busy} onClick={()=>setRemoving(true)}>Review Role Removal</Button>}</div>
-  </form>{removing&&<SurveyRoleReview projectId={projectId} person={person} remove reload={reload} cancel={cancel} saved={saved}/>}<ProtectedSurveyObligations projectId={projectId} userId={person.userId} disabled={roleLocked||areaLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||areaLock.current||removing||reloading||command.stale} invalidateVersion={handoverRevision} onLockChange={onHandoverLock} onResolved={()=>childResolved('area')}/>{person.role==='SURVEY_SUPERINTENDENT'?<SuperintendentAreaObligations projectId={projectId} superintendentId={person.userId} disabled={roleLocked||handoverLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||handoverLock.current||removing||reloading||command.stale} invalidateVersion={areaRevision} onLockChange={onAreaLock} onUnlinked={()=>childResolved('handover')}/>:null}</div>;
+  </form>{removing&&<SurveyRoleReview projectId={projectId} person={person} remove reload={reload} cancel={cancel} saved={saved}/>}<ProtectedSurveyObligations projectId={projectId} userId={person.userId} disabled={roleLocked||areaLocked||grantLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||areaLock.current||removing||reloading||command.stale} invalidateVersion={handoverRevision} onLockChange={onHandoverLock} onResolved={()=>childResolved('area')}/>{person.role==='SURVEY_SUPERINTENDENT'&&!readOnly?<SuperintendentAreaGrant projectId={projectId} superintendentId={person.userId} disabled={roleLocked||handoverLocked||areaLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||handoverLock.current||areaLock.current||removing||reloading||command.stale} onLockChange={setGrantLocked} onGranted={()=>childResolved('area')}/>:null}{person.role==='SURVEY_SUPERINTENDENT'?<SuperintendentAreaObligations projectId={projectId} superintendentId={person.userId} disabled={roleLocked||handoverLocked||grantLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||handoverLock.current||removing||reloading||command.stale} invalidateVersion={areaRevision} onLockChange={onAreaLock} onUnlinked={()=>childResolved('handover')}/>:null}</div>;
 }
 function TeamEditor({ projectId, project, initial, cancel, saved, reload }: { projectId: string; project: TeamProjectContext; initial: SurveyTeamDetail | null; cancel: () => void; saved: (outcome: 'saved' | 'deleted') => void;reload:()=>Promise<unknown> }) {
   const [name,setName] = useState(initial?.name ?? ''), [selectedAreas,setSelectedAreas] = useState<TeamArea[]>(initial ? initial.areas ?? [{ id: initial.areaId, name: initial.areaName }] : []);

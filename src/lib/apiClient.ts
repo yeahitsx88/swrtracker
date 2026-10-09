@@ -122,7 +122,13 @@ export const apiClient = {
   unlinkSuperintendentArea(projectId:string,input:import('@/modules/tenancy/application/superintendent-area.types').UnlinkSuperintendentAreaInput,idempotencyKey:string):Promise<import('@/modules/tenancy/application/superintendent-area.types').UnlinkSuperintendentAreaResult>{
     return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`,{method:'PATCH',body:input,headers:{'Idempotency-Key':idempotencyKey}});
   },
-  getSurveyStaffing(projectId: string, partyChiefId: string, query: import('@/modules/tenancy/application/read-survey-staffing').StaffingReadQuery): Promise<{ staffing: import('@/modules/tenancy/application/read-survey-staffing').SurveyStaffingDetail }> {
+  reviewSuperintendentCoverage(projectId:string,superintendentId:string):Promise<import('@/modules/tenancy/application/grant-superintendent-area').SuperintendentCoverageReview>{
+    return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/superintendent-coverage`,{superintendentId}));
+  },
+  grantSuperintendentArea(projectId:string,input:import('@/modules/tenancy/application/grant-superintendent-area').GrantSuperintendentAreaInput,idempotencyKey:string):Promise<import('@/modules/tenancy/application/grant-superintendent-area').GrantSuperintendentAreaResult>{
+    return apiRequest(`/api/projects/${encodeURIComponent(projectId)}/survey/superintendent-coverage`,{method:'POST',body:input,headers:{'Idempotency-Key':idempotencyKey}});
+  },
+  getSurveyStaffing(projectId: string, partyChiefId: string, query:import('@/modules/tenancy/application/read-survey-staffing').StaffingReadQuery): Promise<{ staffing: import('@/modules/tenancy/application/read-survey-staffing').SurveyStaffingDetail }> {
     return apiRequest(withQuery(`/api/projects/${encodeURIComponent(projectId)}/survey/staffing`, { partyChiefId, ...query }));
   },
   saveSurveyStaffing(projectId: string, input: import('@/modules/tenancy/application/save-survey-staffing').SurveyStaffingInput, idempotencyKey: string): Promise<{ success: boolean; changed: boolean }> {

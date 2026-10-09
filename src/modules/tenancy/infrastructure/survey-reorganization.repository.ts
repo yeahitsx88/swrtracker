@@ -33,11 +33,12 @@ export class SurveyReorganizationPgRepository extends SurveyStaffingPgRepository
   const state:Record<string,unknown>={destination};let subject:UUID;
   if(selection.kind==='CREW'){
    subject=selection.partyChiefId;
-   if(destination.areas.length!==1||destination.areas[0]?.departmentId!==null)blockers.push('Resolve ambiguous or department Area coverage through existing administration');
+   if(destination.areas.length===0)blockers.push('This Party Chief has no individual Area yet. Set their Area and Superintendent with Team Management → Personnel → Staffing instead of a crew move');
+   else if(destination.areas.length!==1||destination.areas[0]?.departmentId!==null)blockers.push('This Party Chief has several or department-based Areas. Resolve them with Team Management → Personnel → Staffing before moving the crew');
    if(!await this.activeArea(db,actor.tenantId,actor.projectId,selection.areaId))throw new NotFoundError('Active Area not found');
    if(project.crewBuild==='FULL'){
     if(!selection.superintendentId||(await this.member(db,actor.tenantId,actor.projectId,selection.superintendentId))?.role!=='SURVEY_SUPERINTENDENT')throw new ConflictError('Select an eligible current Superintendent');
-    if(!await this.superintendentCoversArea(db,actor.tenantId,actor.projectId,selection.superintendentId,selection.areaId))throw new ConflictError('The selected Superintendent must already cover this Area');
+    if(!await this.superintendentCoversArea(db,actor.tenantId,actor.projectId,selection.superintendentId,selection.areaId))throw new ConflictError('The selected Superintendent does not cover this Area yet. Give them Area coverage in Team Management → Personnel → Change role, then preview again');
    }else if(selection.superintendentId)throw new ConflictError('This crew build has no Superintendent tier');
    if(destination.teams.length>1)blockers.push('Resolve multiple named teams before moving this crew');
    const cohort=[subject,...destination.roster],members=await teamRepo.members(db,actor.tenantId,actor.projectId,cohort);
