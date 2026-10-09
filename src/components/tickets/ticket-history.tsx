@@ -21,6 +21,8 @@ const LABELS: Record<string, string> = {
   'ticket.follow_up_created': 'Follow-up SWR created',
   'attachment.uploaded': 'Attachment uploaded',
   'attachment.downloaded': 'Attachment downloaded',
+  'attachment.withdrawn': 'Attachment withdrawn',
+  'ticket.comment_added': 'Comment added',
 };
 
 const LIFECYCLE_ORDER: Record<string, number> = {

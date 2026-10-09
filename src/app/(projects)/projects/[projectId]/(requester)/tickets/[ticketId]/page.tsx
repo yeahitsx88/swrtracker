@@ -37,7 +37,9 @@ export default function TicketDetailPage() {
   const projectId = params.projectId;
   const ticketId = params.ticketId;
   const router = useRouter();
-  const role = useProjectWorkspace()?.capabilities.operationalRole;
+  const workspaceContext = useProjectWorkspace();
+  const role = workspaceContext?.capabilities.operationalRole;
+  const actorId = workspaceContext?.actorId;
 
   const [ticket, setTicket] = useState<TicketRecord | null>(null);
   const [capabilities, setCapabilities] = useState<TicketCapabilities>(NO_CAPABILITIES);
@@ -291,7 +293,9 @@ export default function TicketDetailPage() {
                 </p>
               )}
               {uploadLocked ? <p className="muted" role="status">Showing files from the last confirmed response. The list will update after a confirmed upload or reload.</p> : null}
-              {!uploadLocked || attachments.length > 0 ? <AttachmentList attachments={attachments} /> : null}
+              {!uploadLocked || attachments.length > 0 ? <AttachmentList attachments={attachments} actorId={actorId}
+                canWithdraw={attachment => !uploadLocked && (attachment.purpose === 'REQUEST_INSTRUCTION' ? capabilities.canUploadRequestInstruction : capabilities.canUploadFieldSupport)}
+                onWithdrawn={withdrawn => { setAttachments(items => items.map(item => item.id === withdrawn.id ? withdrawn : item)); setHistoryRevision(revision => revision + 1); setSuccess('File withdrawn. It remains in the request history.'); }} /> : null}
             </div>
           </Card> : null}
 

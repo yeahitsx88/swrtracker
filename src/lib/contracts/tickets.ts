@@ -139,6 +139,8 @@ export interface AttachmentRecord {
   contentSha256: string;
   createdAt: string;
   downloadUrl: string;
+  withdrawnAt?: string | null;
+  withdrawalReason?: string | null;
 }
 
 export interface AttachmentResponse {

@@ -52,8 +52,13 @@ function attachmentResponse(row: AttachmentRow) {
     contentSha256: row.content_sha256,
     createdAt: new Date(row.created_at).toISOString(),
     downloadUrl: `/api/tickets/${row.ticket_id}/attachments/${row.id}`,
+    withdrawnAt: row.withdrawn_at ? new Date(row.withdrawn_at).toISOString() : null,
+    withdrawalReason: row.withdrawal_reason ?? null,
   };
 }
+
+/** Raster images the browser can show safely inline for preview. */
+const INLINE_PREVIEW_TYPES = new Set(['image/png', 'image/jpeg']);
 
 function parsePurpose(value: FormDataEntryValue | null): AttachmentPurpose {
   if (value === 'REQUEST_INSTRUCTION' || value === 'FIELD_SUPPORT') return value;
@@ -192,6 +197,8 @@ interface AttachmentRow {
   return_cycle: number;
   content_sha256: string;
   created_at: Date | string;
+  withdrawn_at?: Date | string | null;
+  withdrawal_reason?: string | null;
 }
 
 export interface TicketAttachmentsGetRouteDeps {
@@ -206,7 +213,7 @@ const defaultGetDeps: TicketAttachmentsGetRouteDeps = {
   listAttachments: async (tenantId, ticketId) => {
     const { rows } = await pool.query<AttachmentRow>(
       `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, storage_key, size_bytes,
-              purpose, return_cycle, content_sha256, created_at
+              purpose, return_cycle, content_sha256, created_at, withdrawn_at, withdrawal_reason
        FROM attachments WHERE tenant_id = $1 AND ticket_id = $2
        ORDER BY return_cycle, created_at, id`,
       [tenantId, ticketId],
@@ -251,6 +258,10 @@ export async function handleDownloadTicketAttachment(
       if (!ticket) throw new NotFoundError('Ticket not found');
       const attachment = await deps.findAttachment(ctx.tenantId, ctx.ticketId, attachmentId, db);
       if (!attachment) throw new NotFoundError('Attachment not found');
+      if (attachment.withdrawn_at) {
+        throw new ConflictError('This file was withdrawn by its uploader and is no longer available to download.', 'ATTACHMENT_WITHDRAWN');
+      }
+      const inline = req.nextUrl.searchParams.get('disposition') === 'inline' && INLINE_PREVIEW_TYPES.has(attachment.mime_type);
       const bytes = await deps.createStorage().read(attachment.storage_key);
       // Build a valid response before persisting a successful download audit.
       const normalizedFilename=Buffer.from(attachment.filename,'utf8').toString('utf8');
@@ -261,9 +272,10 @@ export async function handleDownloadTicketAttachment(
         headers: {
           'Content-Type': attachment.mime_type,
           'Content-Length': String(bytes.byteLength),
-          'Content-Disposition': 'attachment; filename="'+fallback+'"; filename*=UTF-8\'\''+encoded,
+          'Content-Disposition': (inline ? 'inline' : 'attachment')+'; filename="'+fallback+'"; filename*=UTF-8\'\''+encoded,
           'X-Content-Type-Options': 'nosniff',
           'Cache-Control': 'private, no-store',
+          ...(inline ? { 'Content-Security-Policy': "default-src 'none'; img-src 'self'; sandbox" } : {}),
         },
       });
       await appendAuditEvent(db, {
@@ -271,7 +283,7 @@ export async function handleDownloadTicketAttachment(
         tenantId: ctx.tenantId,
         actorId: ctx.actorId,
         eventType: 'attachment.downloaded',
-        payload: { attachmentId, filename: attachment.filename, contentSha256: attachment.content_sha256 },
+        payload: { attachmentId, filename: attachment.filename, contentSha256: attachment.content_sha256, ...(inline ? { view: 'inline-preview' } : {}) },
       });
       return response;
     });
@@ -294,7 +306,7 @@ const defaultDownloadDeps: TicketAttachmentDownloadDeps = {
   findAttachment: async (tenantId, ticketId, attachmentId, db) => {
     const { rows } = await db.query<AttachmentRow>(
       `SELECT id, ticket_id, tenant_id, uploaded_by, filename, mime_type, storage_key, size_bytes,
-              purpose, return_cycle, content_sha256, created_at
+              purpose, return_cycle, content_sha256, created_at, withdrawn_at, withdrawal_reason
        FROM attachments WHERE tenant_id = $1 AND ticket_id = $2 AND id = $3 LIMIT 1`,
       [tenantId, ticketId, attachmentId],
     );

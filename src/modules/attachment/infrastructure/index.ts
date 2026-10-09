@@ -39,7 +39,7 @@ export class AttachmentRepository implements IAttachmentRepository {
       [tenantId, ticketId],
     );
     const { rows } = await db.query<{ count: number }>(
-      `SELECT COUNT(*)::int AS count FROM attachments WHERE tenant_id = $1 AND ticket_id = $2`,
+      `SELECT COUNT(*)::int AS count FROM attachments WHERE tenant_id = $1 AND ticket_id = $2 AND withdrawn_at IS NULL`,
       [tenantId, ticketId],
     );
     return rows[0]?.count ?? 0;

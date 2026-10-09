@@ -834,3 +834,8 @@ main {
 .input-with-icon > .icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .input-with-icon > .input { padding-left: 2.1rem; max-width: none; }
 @media (max-width: 600px) { .request-filter-bar .field { flex: 1 1 45%; } .request-filter-bar .request-filter-search { flex-basis: 100%; } }
+
+/* ---------- Attachment preview / withdrawal dialog ---------- */
+.attachment-dialog { --popout-inset: 1.25rem; width: min(900px, calc(100vw - 2rem)); max-height: 88dvh; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--bg-elevated); color: var(--ink); overflow: hidden; }
+.attachment-dialog::backdrop { background: rgb(24 38 50 / 48%); }
+.attachment-preview { display: block; max-width: 100%; max-height: 70dvh; margin: 0 auto; object-fit: contain; background: var(--surface-sunken); }

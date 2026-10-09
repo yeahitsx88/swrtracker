@@ -53,6 +53,8 @@ export type AuditEventType =
   | 'approver.timeout_unlocked'
   | 'attachment.uploaded'
   | 'attachment.downloaded'
+  | 'attachment.withdrawn'
+  | 'ticket.comment_added'
   | 'user.role_changed'
   | 'whitelist.entry_added'
   | 'whitelist.entry_removed';
