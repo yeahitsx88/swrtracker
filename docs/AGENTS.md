@@ -36,4 +36,6 @@ AUDITOR normally reports; IMPLEMENTER fixes authorized scope; TEST_WRITER adds c
 
 Use the next sequential migration number and preserve deployed files. Prefer repeatable additive changes with preflight checks. Do not silently repair historical evidence or drop columns without authorization. Run migration operators sequentially.
 
+New SQL migration files must not contain top-level BEGIN/COMMIT/ROLLBACK statements: db/migrate.ts owns the migration and bookkeeping transaction. Preserve deployed migration042's historical explicit transaction; its constraint change is repeatable, but its bookkeeping was outside the runner transaction. Do not copy that pattern.
+
 Follow [test standards](skills/test-standards.md) and [workflow invariants](skills/workflow-invariants.md). Cover valid/invalid state, wrong role, foreign scope, revoked/stale access, replay authority, concurrency, fault rollback and history preservation as applicable. Mocks alone do not establish real isolation or locks. One passing suite is not the release gate.

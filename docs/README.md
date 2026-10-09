@@ -10,7 +10,7 @@ SWRTracker is a modular monolith for construction Survey work requests. Next.js 
 - [CODEX.md](CODEX.md): implementation history and restart point.
 - [DEPLOYMENT.md](DEPLOYMENT.md): migration, attachment, ingress and worker contracts.
 - [Alpha 1 report](../audits/alpha1/REPORT.md): audit register and verification.
-- [Alpha 1 design reference](design/alpha1/README.md): complete design change inventory, checkpoints and future Alpha 2 integration with continuing hardening work.
+- [Alpha 1 design reference](design/alpha1/README.md): historical design inventories and the complete Alpha1 baseline integration.
 
 ## Toolchain and local setup
 
@@ -79,7 +79,7 @@ Keep .env*, .local*, .data/, build caches, stores and new screenshots ignored. P
 
 ## Current Role Access and Support Audit
 
-[Role access audit and integration reference](design/alpha1/role-access-audit.md) covers the approved eight-role matrix, Tenant Admin custom-role wizard, new scoped Help Desk, member restoration and measured project diagnostics. Current source passes strict types, 584 units/pinned build, 30 PostgreSQL suites and the separately owned production role checks. Their sanitized receipts are in `audits/alpha1-ui-redesign/role-access-evidence.json`; counts do not replace the documented High/Medium findings.
+[Role access audit and integration reference](design/alpha1/role-access-audit.md) covers the approved eight-role matrix, Tenant Admin custom-role wizard, new scoped Help Desk, member restoration and measured project diagnostics. That historical role-access checkpoint passed strict types, 584 units/pinned build, 30 PostgreSQL suites and separately owned production role checks. The audited Alpha1 baseline has 707 unit tests and 33 PostgreSQL suites; fresh reconciliation evidence is recorded in [the register](../audits/alpha1-reconciliation/REGISTER.md). Their sanitized receipts are in `audits/alpha1-ui-redesign/role-access-evidence.json`; counts do not replace the documented High/Medium findings.
 
 `tests/beta/role-access-http.mjs` is opt-in (`SWR_ROLE_ACCESS=1`) and requires an explicitly owned synthetic manifest, a different-schema retained-demo guard, loopback PostgreSQL `127.0.0.1:15493/swr_team_isolated`, an origin/runtime on that manifest's schema and its JWT secret. The manifest provides active GC membership/independent administration, a separate Tenant Admin without operational membership, Manager/Superintendent/Chief/Instrument Man/Requester/Viewer, associated company, foreign tenant and scoped assignments. It is not a generic clean-clone seed command or permission to reuse retained data. The fixture setup and browser capture helpers remain ignored/local. Source audit and API receipts do not claim execution of every core field transition.
 

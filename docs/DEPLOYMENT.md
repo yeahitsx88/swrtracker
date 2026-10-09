@@ -30,11 +30,29 @@ The full platform (API/UI + background notification worker) can be launched with
 docker compose up --build
 ```
 
-Apply all pending migrations through034 before starting the new build. The
+Apply all pending migrations through044 before starting the Alpha1 baseline (and
+all subsequent migrations required by the selected reconciliation runtime). The
 025–027 authentication migrations add per-session logout revocation, reset-request
 throttling and an encrypted reset email outbox; later migrations add current
 administrative/lifecycle storage. With local `.env`, run `pnpm db:migrate` before
 `docker compose up --build`.
+
+### Alpha1 upgrade and forward-only recovery
+
+Quiesce application and worker writes before upgrading a retained database from
+034. Back up the database and private attachment volume together; restore them
+to an isolated environment and verify retained record identities, append-only
+history and authenticated attachment SHA-256/denial controls before cutover.
+Apply 035–044 sequentially before starting the matching runtime and workers.
+These migrations introduce role validation (035), SYSTEM events with NULL human
+actor IDs (043), and governed preparation cancellation (044), among other features.
+
+After these migrations are applied, ordinary rollback means a compatible forward
+fix. Never restart the pre-migration hardening runtime against that database.
+A no-fast-forward merge provides a code review/revert boundary only for an
+unmigrated environment; it is not a schema rollback. Historical migrations remain
+unchanged. A backup restore is a separate coordinated recovery operation, including
+attachments and explicit treatment of all writes since the backup.
 
 ## Service Layout
 

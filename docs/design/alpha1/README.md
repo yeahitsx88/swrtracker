@@ -1,12 +1,12 @@
 # Alpha 1 Design Changes
 
-Start here for the design work on `alpha1-ui-redesign` and its eventual integration with continuing `alpha1-audit-hardening` improvements for Alpha 2. This directory is the reference hub: it connects the complete change inventory, approved design contracts, implementation notes, checkpoints and verification evidence. Implementation stays in the existing application/module locations.
+Start here for the complete Alpha1 baseline developed on `alpha1-ui-redesign`: authenticated UI, backend hardening, functional modules and migrations 035–044. The owner approved adoption into `alpha1-audit-hardening` through a reviewed no-fast-forward merge on 2026-10-09. Alpha2, main integration and deployment remain separate. This directory connects historical inventories, approved contracts, implementation notes and verification evidence.
 
 ## Branch boundary
 
-The design branch starts at hardening commit `b8ff81494c6701bb7f84550b40c247f4588b28cb`. The implementation checkpoint indexed here is `66b66ad0f57475e06cdb36b614e16e0d354612b2`. Its 18 commits change 116 files relative to that base. Documentation/evidence prepared after that checkpoint is listed separately. Remote branches have not been fetched or verified by this documentation pass; use the latest authoritative hardening ref for eventual integration.
+The branch starts at hardening commit `b8ff81494c6701bb7f84550b40c247f4588b28cb`. The audited checkpoint is `45af79ac8c01a084e6a75bb13452384ade1628bf`, 120 commits ahead and zero behind the fetched hardening ref on 2026-10-09. Earlier manifests pinned to `66b66ad0f57475e06cdb36b614e16e0d354612b2` and later role-access checkpoints remain immutable historical snapshots; they do not inventory current HEAD. Follow the [reconciliation register](../../../audits/alpha1-reconciliation/REGISTER.md) for integration refs, current verification and outstanding work.
 
-The branch includes presentation behavior, role-aware navigation, existing server-scoped reads, validated Home drill-down filters, appearance, documentation/tests and the owner-authorized administration restoration. Restoration crosses authenticated employee provisioning, reused Identity creation, Tenancy membership/independent grants and Audit evidence; invitations, request configuration and templates add optional exact retry support. The inventory now includes administrative APIs, Tenancy/Audit source and lifecycle writer coverage. There are no migration, contract, package manifest, lockfile or Dockerfile changes. Client navigation and remembered project context supply no authorization; current server checks remain authoritative before resource use and recorded replay.
+The complete baseline includes presentation/navigation, administrative restoration, Help Desk, Requester/Viewer custom-role aliases, survey notifications and rejection proposals, work delegations, submitted-request recovery, preparation cancellation, system audit identity and request telemetry. Migrations 035–044 and backend contracts must travel with their UI. At the audited checkpoint package dependencies, lockfile and Dockerfile matched the hardening base; the separately approved reconciliation dependency update is recorded independently. Client navigation and remembered project context supply no authorization; current server checks remain authoritative before resource use and recorded replay.
 
 ## Reference map
 
@@ -78,31 +78,26 @@ The Survey/Viewer digest also records 27 PostgreSQL suites, 52 HTTP checks, 24 l
 
 Sanitized JSON is versioned. Raw screenshots, logs, private fixture manifests, credentials and demo runtime settings remain ignored/local; capture hashes and local paths in the artifacts do not make those images available in a fresh clone. Local screenshots are verification captures, not required shipping assets. A clean clone can inspect source/contracts/evidence; new runtime acceptance requires newly owned fixtures described in [the verification guide](../../README.md). The new restoration runners require an explicitly owned custom fixture/runtime and retained-demo different-schema guard; the generic lifecycle setup is insufficient by itself. See [restoration verification boundaries](administration-restoration.md#verification-and-limitations).
 
-## Integrate when Alpha 2 is authorized
+## Controlled Alpha1 integration
 
-1. Preserve both development lines. Continue hardening on `alpha1-audit-hardening` and design work on `alpha1-ui-redesign`. Update this inventory and the appropriate contracts/evidence after future design checkpoints; keep earlier evidence immutable.
-2. In a clean isolated checkout, identify the latest authoritative hardening and design refs. Fetch when ready to use remote refs; include any intended local commits before choosing them. Record their exact SHAs and common ancestor. Do not move the hardening branch backward to this document's historical base.
-3. Create the Alpha 2 integration branch from the latest hardening ref, then merge the complete design branch. A reviewable local sequence, to run at that later time, is:
+The owner approved a no-fast-forward merge of the complete governance-corrected
+redesign into hardening. Fetch and record both exact SHAs, common ancestor and
+ahead/behind counts. Inspect accessible worktree/clone refs and uncommitted work.
+Known corrective work in worktree010a is preserved separately by owner direction;
+the clean D:/Programming/SWRTracker checkout owns the hardening update.
 
-   ```sh
-   git switch -c codex/alpha2-integration <latest-hardening-ref>
-   git merge --no-ff --no-commit <latest-design-ref>
-   ```
+Prepare codex/alpha1-audit-reconciliation from the verified hardening SHA in an
+isolated checkout, then merge the corrected redesign with --no-ff. Review the
+result and run pinned strict types, units, PostgreSQL, production compilation and
+new owned HTTP/browser acceptance before advancing hardening to the reviewed
+merge commit. Record current source/migration digests and limitations in the
+reconciliation register. Existing receipts do not verify new source.
 
-   The branch name is a suggested integration name. No integration branch, merge, push or Alpha 2 initialization is performed by preparing this reference.
-4. Resolve overlaps by preserving current hardening contracts and approved design behavior together. Review semantic changes even when Git merges cleanly. Pay particular attention to capability/access loading in AccountShell/ProjectShellHeader, navigation/logout, Home data/filter adapters, detail returns, shared Card/record/KPI/help components, appearance and route-backed administrative layouts. Reconcile employee Identity/Tenancy/Audit coordination, lifecycle writer inventory, fresh-authority checks before idempotent replay, invitation/config/template retries and shared command owners/notices with the latest hardening contracts. Do not accept an entire side wholesale. Reconcile PRODUCT.md, DESIGN.md and its sidecar, including explicitly recorded drift; preserve both CODEX histories without decoding/re-encoding historical invalid bytes.
-5. Verify the combined result at its new source digest: strict/unused TypeScript, unit tests, pinned production build/audit, actual PostgreSQL and HTTP authority/lifecycle suites, employee provisioning, existing lifecycle/lost-response cases and all 55 named acceptance cases. Rerun the design and restoration browser runners across roles, independent admin combinations, Light/Dark and desktop/mobile. Check every administrative tab, functioning creation, exact retries, competing sibling locks, originating/shared notices, archived protection, denied/restored access, help, table actions and drawer dismissal. Provision the explicitly owned restoration fixture/runtime and retained-demo guard separately. Use new disposable data; never seed/reset retained state. Existing receipts do not verify the merged code.
-6. Record new integration evidence and resolve the existing Alpha 1 audit's remaining decisions/findings through their own authority process. Commit the reviewed merge when authorized. Push/release/Alpha 2 readiness remain explicit later actions.
-
-For read-only comparisons at that time:
-
-```sh
-git merge-base <latest-hardening-ref> <latest-design-ref>
-git diff --name-status <common-ancestor> <latest-design-ref>
-git log --reverse --oneline <common-ancestor>..<latest-design-ref>
-```
-
-Refresh `changes.json` and `files.md` with the new exact design checkpoint if the branch advances. Git blob IDs in the current manifest can verify that the indexed files match the pinned commit independently of Windows checkout line endings.
+After integration, complete the approved telemetry retention/post-response,
+prototype/runner portability, dependency and CSS increments separately. Migration
+and rollback contracts are in ../../DEPLOYMENT.md. Main, publication, deployment
+and Alpha2 remain separate actions. Historical Git-blob manifests below remain
+pinned snapshots and are not rewritten to claim current verification.
 
 ## Role Access and Support Checkpoints
 
