@@ -1,5 +1,5 @@
 .review-workspace { gap: 1rem; }
-.review-heading, .review-search, .review-pagination { display:flex; align-items:end; gap:.75rem; flex-wrap:wrap; }
+.review-heading, .review-search, .review-pagination { display:flex; align-items:flex-end; gap:.75rem; flex-wrap:wrap; }
 .review-heading { align-items:center; justify-content:space-between; }
 .review-heading .muted { margin-top:.5rem; }
 .review-search > label { flex:1 1 320px; }
@@ -45,7 +45,7 @@
 .review-swatch { width:10px; height:10px; flex-shrink:0; }
 .review-months { display:flex; overflow-x:auto; gap:.25rem; padding:.5rem; scrollbar-color:var(--brand) var(--bg); }
 .review-months button { min-width:64px; display:grid; gap:.5rem; border:0; background:none; font:inherit; font-size:.75rem; color:var(--ink); cursor:pointer; padding:.25rem; }
-.review-month-column { height:140px; display:flex; align-items:end; justify-content:center; }
+.review-month-column { height:140px; display:flex; align-items:flex-end; justify-content:center; }
 .review-month-column > span { width:26px; background:var(--brand); }
 .review-pagination { align-items:center; font-size:.875rem; }
 .review-request { border-top:1px solid var(--line); }

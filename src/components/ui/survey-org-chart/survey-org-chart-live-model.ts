@@ -1,5 +1,5 @@
 import type { SurveyOrganization } from '@/modules/tenancy/application/read-survey-organization';
-import type { Person, SurveyRole } from './fixtures';
+import type { Person, SurveyRole } from './model';
 
 const roles: Record<string, SurveyRole> = { SURVEY_MANAGER: 'Survey Manager', SURVEY_SUPERINTENDENT: 'Survey Superintendent', PARTY_CHIEF: 'Party Chief', INSTRUMENT_MAN: 'Instrument Man' };
 export interface LiveChartPerson extends Person { details: string[]; retainedCrew: string[] }

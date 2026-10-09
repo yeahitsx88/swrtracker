@@ -1,5 +1,5 @@
 .home-workspace { display: grid; gap: 1.1rem; }
-.home-heading { display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: .75rem; }
+.home-heading { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: .75rem; }
 .home-heading h1 { margin: 0; font-size: clamp(1.4rem, 2vw, 1.8rem); letter-spacing: -.02em; line-height: 1.25; }
 .home-heading p { color: var(--muted); margin: .3rem 0 0; }
 .home-heading-actions { display: flex; align-items: center; gap: .75rem; }

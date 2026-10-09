@@ -20,7 +20,7 @@
 .ops-tabs button[aria-selected="true"] { border-bottom-color: var(--action); color: var(--action); background: var(--surface-selected); }
 .ops-tabs button:hover { background: var(--surface-hover); }
 .ops-tabs button span { font-size: .8rem; font-variant-numeric: tabular-nums; background: var(--bg-elevated); padding: .1rem .4rem; border-radius: 6px; }
-.ops-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .8rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.ops-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .8rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
 .ops-filters label, .ops-pagination label { display: grid; gap: .35rem; font-size: .8rem; font-weight: 600; min-width: 0; }
 .ops-filters select, .ops-filters input, .ops-pagination select { min-width: 0; width: 100%; min-height: 44px; border: 1px solid var(--line-strong); border-radius: 10px; padding: .5rem .6rem; background: var(--bg-elevated); color: var(--ink); font: inherit; font-size: 1rem; max-width: 100%; }
 .ops-filters .ops-search { flex: 1 1 260px; }

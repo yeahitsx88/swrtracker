@@ -114,3 +114,15 @@ Latest administration refinement: [Pop-ups and Task Refinements](administration-
 - [Reusing removed companies](company-reuse.md): find retained tenant records by name and explicitly add the original ID back to a project.
 
 - [Shared design audit and refinement](design-refinement.md): approved rounded buttons and sidebar destinations, softer panels, distinct navigation icons, readable hover/disabled states, and restrained Home metric accents; existing page layouts and tenant customization remain intact.
+
+## Reconciled baseline execution
+
+The controlled no-fast-forward merge is `7c039ec` (parents `b8ff814` and `68ce7a4`),
+prepared on `codex/alpha1-audit-reconciliation` and advanced through the clean
+owned D checkout. The separately discovered010a corrective work was preserved
+by explicit owner direction. Current increments add migration045, after-response
+seven-day observation maintenance, production-only chart models/entry, portable
+indexed acceptance runners and the narrow postcss>source-map-js1.2.2 override.
+The [register](../../../audits/alpha1-reconciliation/REGISTER.md) names final
+source digests, current receipts and verification limits. These statements do
+not refresh or alter the historical pinned blob manifests above.

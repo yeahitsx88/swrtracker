@@ -2,7 +2,7 @@
 
 Accepted fixture V1 reference: `dda015ed3ddc2fe85d1c52c95e3b1a668dcbe1a3` on preserved `codex/survey-team-org-poc`. Alpha integrated that feature at `988988a`; the read-only hierarchy increment starts from `fd30b8c`.
 
-## Operational read-only view
+## Historical read-only checkpoint contract
 
 TeamManagementEntry supplies its current project ID only after its existing workforce context resolves to SURVEY_MANAGER. The launcher is still disabled while an operational editor/command owns the workspace. The large native dialog retains its fixed Close header, independent body scrolling, Escape behavior and focus restoration.
 
@@ -18,13 +18,23 @@ The adapter reads pages of100 with explicit display ceilings:500 current survey 
 
 The live view preserves the V1 fixed viewport, pinned unscaled50–150% zoom, collapse controls and contained scrolling. Move grips, Move/Move Crew actions, move reviews, Confirm and Reset Demo are absent. Event guards also refuse fixture move proposals in read-only mode. No API writes, live local move projections, staffing edits, hierarchy edits or ticket/history changes are enabled.
 
-## Fixture compatibility
+## Production model and historical reproduction
 
-`survey-org-chart-workspace.tsx` retains the accepted fixture/local-state experience when no organization is supplied. `fixtures.ts` and its move rules remain unchanged. Standalone `/prototypes/survey-team` and the no-project launcher at `/prototypes/survey-team/workspace` remain development-only demos. Their drag/drop, review/cancel/confirm, reset, collapse and zoom are fixture-only. The `?entry=1` harness mounts the actual TeamManagementEntry with intercepted read-only fixture responses; it exercises the operational launcher contract, not real authorization.
+The launcher requires a project ID and the workspace requires current authorized
+organization data. Production imports `model.ts` for chart types and client move
+rules; the backend remains authoritative. Synthetic personnel and fixture-only
+projection live in `tests/ui/fixtures/survey-org-chart.ts`. No prototype route,
+no-project launcher or local demo mutation control is shipped.
 
-Run the original `tests/ui/survey-team-prototype-browser.mjs` with the documented loopback/Playwright environment; standalone22groups and `SWR_POC_OVERLAY=1`23groups protect V1. `survey-org-chart-entry-browser.mjs` protects role/context gates and editor exclusion. Accepted fixture receipts stay unchanged. Current captures/logs are ignored.
+The accepted prototype can be reproduced at the immutable V1 commit
+`dda015ed3ddc2fe85d1c52c95e3b1a668dcbe1a3` in an isolated checkout using its original
+`tests/ui/survey-team-prototype-browser.mjs` and documented loopback prerequisites.
+The entry harness at `45af79a` is historical evidence only. Current acceptance is
+`tests/beta/reconciliation-browser.mjs`, using actual Team Management and newly
+owned project fixtures, including governed review, cancel, commit and exact retry.
+Historical receipts remain source-bound and unchanged.
 
-## Current live verification
+## Historical read-only verification
 
 `tests/tenancy/survey-organization.test.ts` covers semantic distinctions, no inferred edges, retained links, bounded complete pagination, Manager-only access, current-session revalidation and the read-only snapshot contract.
 
@@ -32,4 +42,14 @@ Run the original `tests/ui/survey-team-prototype-browser.mjs` with the documente
 
 Live evidence covers actual current PostgreSQL/HTTP/browser authorization and tenant/project isolation, multi-page personnel, reporting versus named-team leadership and multiple Areas, a separate-connection concurrent team update with a coherent aggregate snapshot, refused write methods, revoked access, archived/MEDIUM/SLIM views, no unintended writes, retained domain-table hashes, existing staffing/team/Area/KPI controls and desktop/mobile layout. Supporting shared-department detail, unavailable former-Chief relationships and non-account headcount remain explicitly outside the expanded view. Full touch dragging is inapplicable to live read-only mode; other browser engines and large-project performance are unverified.
 
-Strict types, all normal units, focused suites and pinned Node22.23.3 production compilation are recorded in docs/CODEX.md. The inherited source-map-js/GHSA-68fv-2mgg-jv7q Docker audit/release blocker remains separate and unfixed. No deployment or production staffing-mutation approval is implied.
+Strict types, all normal units, focused suites and pinned Node22.23.3 production compilation are recorded in docs/CODEX.md. That checkpoint inherited the source-map-js/GHSA-68fv-2mgg-jv7q blocker; current reconciliation has a separate patched dependency/image receipt. No deployment or production staffing-mutation approval is implied.
+
+## Current operational contract
+
+The real Team Management entry supplies project context. Current Managers and
+scoped Superintendents use the existing governed visual reviews; Archived charts
+remain read-only. Current hierarchy reads, explicit reporting/Area/team facts,
+backend authority, retry keys, stale snapshots and atomic evidence retain their
+established contracts. No synthetic personnel fallback or local demo save ships.
+Reconciliation receipts cover actual review/cancel/commit, exact retry after a
+lost reply, stale-review refusal, focus return and current read-only states.

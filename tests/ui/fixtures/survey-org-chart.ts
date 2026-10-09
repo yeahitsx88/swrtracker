@@ -1,14 +1,4 @@
-export type SurveyRole = 'Survey Manager' | 'Survey Superintendent' | 'Party Chief' | 'Instrument Man';
-export interface Person {
-  id: string;
-  name: string;
-  role: SurveyRole;
-  parentId: string | null;
-  team?: string;
-  area?: string;
-}
-export interface ProposedMove { personId: string; destinationId: string }
-
+import {canMove,type Person,type ProposedMove} from '../../../src/components/ui/survey-org-chart/model';
 const chiefs = [
   ['chief-1', 'Noah Johnson', 'sup-1', 'Structures', 'North Process', 3],
   ['chief-2', 'Elena Martinez', 'sup-1', 'Utilities', 'North Process', 2],
@@ -34,13 +24,6 @@ export function createFixture(): Person[] {
     ]),
     ...['Harper Ellis', 'Chris Nguyen', 'Taylor James'].map((name, i): Person => ({ id: `available-${i}`, name, role: 'Instrument Man', parentId: null })),
   ];
-}
-
-export function canMove(person: Person, destination: Person) {
-  return person.parentId !== destination.id && (
-    person.role === 'Instrument Man' && destination.role === 'Party Chief' ||
-    person.role === 'Party Chief' && destination.role === 'Survey Superintendent'
-  );
 }
 
 /** Fixture-only projection. Crew members keep their Chief and travel with that subtree. */

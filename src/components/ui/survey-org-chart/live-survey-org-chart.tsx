@@ -5,7 +5,7 @@ import {getErrorMessage} from '@/lib/errors';
 import type {CommandOwner} from '@/lib/frozen-command';
 import type {SurveyOrganization} from '@/modules/tenancy/application/read-survey-organization';
 import type {WorkforcePerson} from '@/modules/tenancy/application/survey-workforce';
-import type {ProposedMove} from './fixtures';
+import type {ProposedMove} from './model';
 import {Button,ErrorBanner} from '@/components/ui';
 import {AdministrationDialog} from '../administration-dialog';
 import {SurveyReorganization} from '../survey-reorganization';

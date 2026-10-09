@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createFixture, canMove, projectMove } from '../../src/app/prototypes/survey-team/fixtures';
+import {createFixture,projectMove} from './fixtures/survey-org-chart';
+import {canMove} from '../../src/components/ui/survey-org-chart/model';
 
 test('prototype accepts only IM-to-Chief and Chief-to-Superintendent moves, excluding current parent', () => {
   const people = createFixture();
