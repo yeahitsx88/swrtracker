@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
@@ -5,10 +6,12 @@ import {NextRequest} from 'next/server';
 import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
 import {acquireTenantLifecycleLock} from '../../src/lib/tenant-lifecycle-lock';
-import {GET} from '../../src/app/api/projects/[projectId]/request-recovery/route';
-import {POST} from '../../src/app/api/projects/[projectId]/request-recovery/[ticketId]/route';
+import {GET as GETHandler} from '../../src/app/api/projects/[projectId]/request-recovery/route';
+import {POST as POSTHandler} from '../../src/app/api/projects/[projectId]/request-recovery/[ticketId]/route';
 import {handlePostSurveyTeam as TEAM} from '../../src/app/api/projects/[projectId]/survey/teams/handler';
 import type {UUID} from '../../src/shared/types';
+const GET=inUnitRequestScope(GETHandler);
+const POST=inUnitRequestScope(POSTHandler);
 async function main(){
  const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_RECONCILIATION_TEST,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.match(url.searchParams.get('options')??'',/^-c search_path=d23_current_[a-f0-9]{32},public$/);
  const owned=JSON.parse(await readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(owned.owner,'Alpha acceptance197');assert.equal(owned.hostPort,15500);assert.match(owned.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);const pool=getPool(),checks:string[]=[];

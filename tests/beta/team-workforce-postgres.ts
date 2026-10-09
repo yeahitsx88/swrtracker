@@ -1,17 +1,25 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 // Actual HTTP handlers and repositories against a fresh disposable database. Never use Sabine.
 import assert from 'node:assert/strict';
 import {Pool} from 'pg';
 import {NextRequest} from 'next/server';
 import {signToken} from '../../src/lib/auth';
 import {getPool} from '../../src/lib/db';
-import {GET as workforceGet,POST as workforcePost} from '../../src/app/api/projects/[projectId]/survey/workforce/route';
-import {GET as metricsGet} from '../../src/app/api/projects/[projectId]/metrics/route';
+import {GET as workforceGetHandler,POST as workforcePostHandler} from '../../src/app/api/projects/[projectId]/survey/workforce/route';
+import {GET as metricsGetHandler} from '../../src/app/api/projects/[projectId]/metrics/route';
 import {POST as projectPost} from '../../src/app/api/projects/route';
 import {GET as administrationGet} from '../../src/app/api/projects/administration/route';
-import {GET as teamsGet,POST as teamsPost,DELETE as teamsDelete,PATCH as teamsPatch} from '../../src/app/api/projects/[projectId]/survey/teams/route';
+import {GET as teamsGetHandler,POST as teamsPostHandler,DELETE as teamsDeleteHandler,PATCH as teamsPatchHandler} from '../../src/app/api/projects/[projectId]/survey/teams/route';
 import {SurveyWorkforcePgRepository} from '../../src/modules/tenancy/infrastructure/survey-workforce.repository';
 import {randomUUID} from 'node:crypto';
 import type {UUID} from '../../src/shared/types';
+const workforceGet=inUnitRequestScope(workforceGetHandler);
+const workforcePost=inUnitRequestScope(workforcePostHandler);
+const metricsGet=inUnitRequestScope(metricsGetHandler);
+const teamsGet=inUnitRequestScope(teamsGetHandler);
+const teamsPost=inUnitRequestScope(teamsPostHandler);
+const teamsDelete=inUnitRequestScope(teamsDeleteHandler);
+const teamsPatch=inUnitRequestScope(teamsPatchHandler);
 const id=(n:number)=>`96000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
 export const fixture={tenant:id(1),company:id(2),project:id(3),foreignTenant:id(4),foreignCompany:id(5),foreignProject:id(6),sameProject:id(7),
  manager:id(10),admin:id(11),superA:id(12),superB:id(13),chiefA:id(14),chiefB:id(15),outsideChief:id(16),imA:id(17),imB:id(18),outsideIM:id(19),requester:id(20),foreignIM:id(21),inactiveIM:id(22),chiefA2:id(24),area:id(30),level:id(31),otherArea:id(32)};

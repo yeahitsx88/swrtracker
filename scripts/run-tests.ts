@@ -6,6 +6,7 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import '../tests/setup/next-async-storage';
 
 async function collectTests(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });

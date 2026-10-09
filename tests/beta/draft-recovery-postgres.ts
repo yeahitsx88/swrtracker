@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 // Actual routes over session-local schema clones. Uses the isolated 15489 database; never mutates retained public fixtures.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -6,18 +7,25 @@ import { Pool } from 'pg';
 import { NextRequest } from 'next/server';
 import { getPool } from '../../src/lib/db';
 import { signToken } from '../../src/lib/auth';
-import { POST as save } from '../../src/app/api/projects/[projectId]/drafts/route';
-import { GET as detail, PATCH as edit } from '../../src/app/api/tickets/[ticketId]/route';
-import { POST as submit } from '../../src/app/api/tickets/[ticketId]/submit/route';
-import { DELETE as remove } from '../../src/app/api/tickets/[ticketId]/draft/route';
-import { POST as restore } from '../../src/app/api/projects/[projectId]/drafts/[ticketId]/restore/route';
-import { GET as deleted } from '../../src/app/api/projects/[projectId]/deleted-drafts/route';
+import {POST as saveHandler} from '../../src/app/api/projects/[projectId]/drafts/route';
+import {GET as detailHandler,PATCH as editHandler} from '../../src/app/api/tickets/[ticketId]/route';
+import {POST as submitHandler} from '../../src/app/api/tickets/[ticketId]/submit/route';
+import {DELETE as removeHandler} from '../../src/app/api/tickets/[ticketId]/draft/route';
+import {POST as restoreHandler} from '../../src/app/api/projects/[projectId]/drafts/[ticketId]/restore/route';
+import {GET as deletedHandler} from '../../src/app/api/projects/[projectId]/deleted-drafts/route';
 import { GET as list } from '../../src/app/api/tickets/route';
 import { handlePostTicketAttachments } from '../../src/app/api/tickets/[ticketId]/attachments/handler';
 import { getTicketRouteContext, withTicketMutation } from '../../src/lib/ticket-route-helpers';
 import { TicketRepository } from '../../src/modules/ticket/infrastructure/ticket.repository';
 import { AttachmentRepository, validateAttachmentObjectMetadata } from '../../src/modules/attachment/infrastructure';
 import type { UUID } from '../../src/shared/types';
+const save=inUnitRequestScope(saveHandler);
+const detail=inUnitRequestScope(detailHandler);
+const edit=inUnitRequestScope(editHandler);
+const submit=inUnitRequestScope(submitHandler);
+const remove=inUnitRequestScope(removeHandler);
+const restore=inUnitRequestScope(restoreHandler);
+const deleted=inUnitRequestScope(deletedHandler);
 
 const id = (n: number) => `86000000-0000-4000-8000-${String(n).padStart(12, '0')}` as UUID;
 const tenant = id(1), project = id(2), company = id(3), owner = id(4), admin = id(5), other = id(6), area = id(7);

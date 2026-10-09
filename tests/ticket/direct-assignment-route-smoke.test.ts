@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
@@ -6,10 +7,14 @@ import { getPool } from '@/lib/db';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import type { Ticket } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';
-import { POST as createTicketRoute } from '@/app/api/tickets/route';
-import { POST as assignTicketRoute } from '@/app/api/tickets/[ticketId]/assign/route';
-import { POST as startTicketRoute } from '@/app/api/tickets/[ticketId]/start/route';
-import { POST as completeTicketRoute } from '@/app/api/tickets/[ticketId]/complete/route';
+import { POST as createTicketRouteHandler } from '@/app/api/tickets/route';
+import { POST as assignTicketRouteHandler } from '@/app/api/tickets/[ticketId]/assign/route';
+import { POST as startTicketRouteHandler } from '@/app/api/tickets/[ticketId]/start/route';
+import { POST as completeTicketRouteHandler } from '@/app/api/tickets/[ticketId]/complete/route';
+const createTicketRoute=inUnitRequestScope(createTicketRouteHandler);
+const assignTicketRoute=inUnitRequestScope(assignTicketRouteHandler);
+const startTicketRoute=inUnitRequestScope(startTicketRouteHandler);
+const completeTicketRoute=inUnitRequestScope(completeTicketRouteHandler);
 
 type JsonObject = Record<string, unknown>;
 type PoolLike = {

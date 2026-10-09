@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 // Opt-in regression test: actual repositories and HTTP handlers over pg_temp
 // schema clones. All writes are session-local and the outer transaction rolls back.
 import assert from 'node:assert/strict';
@@ -10,12 +11,15 @@ import { resolveVisibility } from '../../src/lib/resolve-visibility';
 import { getTicketRouteContext, withTicketRead } from '../../src/lib/ticket-route-helpers';
 import { TicketRepository } from '../../src/modules/ticket/infrastructure/ticket.repository';
 import { listLocalNotificationPreviews } from '../../src/modules/notification/application/local-preview';
-import { GET as detail, PATCH as edit } from '../../src/app/api/tickets/[ticketId]/route';
+import {GET as detailHandler,PATCH as editHandler} from '../../src/app/api/tickets/[ticketId]/route';
 import { POST as create } from '../../src/app/api/tickets/route';
-import { POST as cancel } from '../../src/app/api/tickets/[ticketId]/field-cancel/route';
+import {POST as cancelHandler} from '../../src/app/api/tickets/[ticketId]/field-cancel/route';
 import { handleGetTicketHistory as history } from '../../src/app/api/tickets/[ticketId]/history/handler';
 import { handleGetTicketAttachments as metadata, handleDownloadTicketAttachment as download, type TicketAttachmentDownloadDeps } from '../../src/app/api/tickets/[ticketId]/attachments/handler';
 import type { DbClient, UUID } from '../../src/shared/types';
+const detail=inUnitRequestScope(detailHandler);
+const edit=inUnitRequestScope(editHandler);
+const cancel=inUnitRequestScope(cancelHandler);
 
 const id=(n:number)=>`85000000-0000-4000-8000-${String(n).padStart(12,'0')}` as UUID;
 const tenant=id(1),foreignTenant=id(2),company=id(3),project=id(4),unassignedProject=id(5),foreignProject=id(6);

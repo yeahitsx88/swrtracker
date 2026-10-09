@@ -2,7 +2,7 @@
 
 ## Alpha 1 migration and release gate
 
-Apply pending migrations through034 before the Alpha1 application starts. Migration033 gates recommissioning; an older runtime must not resume against a preparing project. Migration034 refuses inconsistent ticket/event tenant ownership without repair. Investigate and obtain an explicit operational resolution; never delete evidence to force success. It adds immutable update/delete/truncate protection and a tenant-bound ticket FK while preserving existing worker actor attribution.
+Apply pending migrations through045 before the reconciled Alpha1 application starts. Migration045 adds the tenant/time/ID observation-retention index;035–044 are part of the adopted baseline. Migration033 gates recommissioning; an older runtime must not resume against a preparing project. Migration034 refuses inconsistent ticket/event tenant ownership without repair. Investigate and obtain an explicit operational resolution; never delete evidence to force success. It adds immutable update/delete/truncate protection and a tenant-bound ticket FK while preserving existing worker actor attribution.
 
 Run one migration operator at a time. Database owners/superusers can bypass triggers; application roles should not own tables. Use current [verification commands](README.md) and the [Alpha1 report](../audits/alpha1/REPORT.md). Hosted backup/restore, ingress/source limiting, mail and support recovery remain separate beta gates.
 
@@ -30,8 +30,7 @@ The full platform (API/UI + background notification worker) can be launched with
 docker compose up --build
 ```
 
-Apply all pending migrations through044 before starting the Alpha1 baseline (and
-all subsequent migrations required by the selected reconciliation runtime). The
+Apply all pending migrations through045 before starting the reconciled Alpha1 baseline. The
 025â€“027 authentication migrations add per-session logout revocation, reset-request
 throttling and an encrypted reset email outbox; later migrations add current
 administrative/lifecycle storage. With local `.env`, run `pnpm db:migrate` before
@@ -89,3 +88,20 @@ be inferred from volume retention. No destructive cleanup is implemented here.
 - Compose forces production cookie settings and binds the web port to loopback.
 - Reset links are never returned by the API or written to console logs. The queued bearer payload is AES-GCM encrypted and cleared after delivery or expiry. Configure the webhook and monitor worker errors before relying on self-service password reset.
 - Logout denies only the presented token; other logins for the same account remain valid. Expired revocation and rate-limit records are pruned by the worker.
+
+### Request observation maintenance
+
+Next.js `after()` persists verified metadata after the HTTP response finishes.
+Observations are eventually available; acceptance waits for the specific
+correlation ID with a bounded deadline. The separate pool remains limited to two
+connections,300ms connection acquisition,100ms lock timeout and250ms statement
+timeout. Failures log only the class/reference and do not alter business state.
+Diagnostic response shapes and the24-hour report window remain unchanged.
+
+Both notification-worker entry points prune observations older than seven days,
+in tenant-scoped batches of at most1,000 per tenant per cycle under the SHARED
+lifecycle barrier. Concurrent workers skip locked rows. Maintenance errors are
+logged and retried next cycle; requests, audit history and support records are
+never pruned by this job. Run the existing loop or one-shot worker regularly.
+Migration045 is additive and runner-owned;001–044, including the historical042
+transaction exception, remain unchanged.

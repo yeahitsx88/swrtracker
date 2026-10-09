@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
@@ -5,8 +6,9 @@ import {NextRequest} from 'next/server';
 import {runLifecycleSchemaAcceptance} from './account-offboarding-postgres';
 import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
-import {POST} from '../../src/app/api/projects/[projectId]/members/route';
+import {POST as POSTHandler} from '../../src/app/api/projects/[projectId]/members/route';
 import type {UUID} from '../../src/shared/types';
+const POST=inUnitRequestScope(POSTHandler);
 
 runLifecycleSchemaAcceptance(async(db,f)=>{
  await db.query(await readFile('db/migrations/032_administrative_events.sql','utf8'));

@@ -1,13 +1,16 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
 import { COOKIE_NAME, signToken } from '@/lib/auth';
 import { getPool } from '@/lib/db';
-import { POST as createTicketRoute } from '@/app/api/tickets/route';
-import { POST as assignTicketRoute } from '@/app/api/tickets/[ticketId]/assign/route';
+import { POST as createTicketRouteHandler } from '@/app/api/tickets/route';
+import { POST as assignTicketRouteHandler } from '@/app/api/tickets/[ticketId]/assign/route';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import type { Ticket } from '@/modules/ticket/domain/types';
 import type { UUID } from '@/shared/types';
+const createTicketRoute=inUnitRequestScope(createTicketRouteHandler);
+const assignTicketRoute=inUnitRequestScope(assignTicketRouteHandler);
 
 type JsonObject = Record<string, unknown>;
 type IdempotencyRow = {

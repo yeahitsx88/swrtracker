@@ -9,6 +9,7 @@ import { dispatchPasswordResetEmails, pruneExpiredAuthSecurityRecords } from '@/
 import { dispatchAdministrativeNotifications } from '@/modules/identity/infrastructure/administrative-notification-outbox';
 import { withTransaction } from '@/lib/with-transaction';
 import {SYSTEM_AUDIT_ACTOR} from '@/modules/audit/domain/types';
+import {pruneExpiredRequestObservations} from '@/modules/support/infrastructure/observation-retention';
 
 const intervalSeconds = Number(process.env.NOTIFICATION_WORKER_INTERVAL_SECONDS || 300);
 const intervalMs = Number.isFinite(intervalSeconds) && intervalSeconds > 0
@@ -40,6 +41,7 @@ async function runCycle(): Promise<void> {
   }
   isRunning = true;
   try {
+    await pruneExpiredRequestObservations(pool);
     await pruneExpiredAuthSecurityRecords(pool);
     await runNotificationWorkerCycle({
       repo: new NotificationRepository(),

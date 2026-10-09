@@ -1,0 +1,32 @@
+{
+  "checks": [
+    "Correlation header reaches completed response",
+    "HTTP body completes while telemetry INSERT remains deliberately blocked",
+    "Blocked observation is not synchronously available",
+    "Specific observation eventually persists after lock release",
+    "Bounded pool/lock timeouts leave completed successful responses independent of telemetry",
+    "Observation recorder uses at most two independent connections",
+    "Blocked recording and timeouts preserve all business/history/support records",
+    "Recorder refuses stale authority after waiting at lifecycle barrier",
+    "Fresh-authority refusal writes no observation",
+    "Pre-handler verified ticket and status survive after scheduling",
+    "Denied business command and fresh-authority refusal preserve business state"
+  ],
+  "httpLatencyMs": [
+    37.38,
+    24.68,
+    33.35,
+    37.03,
+    38.32,
+    38.9
+  ],
+  "poolLimit": 2,
+  "lockTimeoutMs": 100,
+  "connectionTimeoutMs": 300,
+  "statementTimeoutMs": 250,
+  "eventualDeadlineMs": 5000,
+  "retainedWitness": "376c8ff75a0b6116668095694a64e4e3e468e28831d5e47eafbfbfa745ae6804",
+  "limits": [
+    "Latency samples are local observations, not production SLOs. The previous synchronous recorder awaited the same bounded persistence path; no statistically controlled pre-change latency benchmark was captured."
+  ]
+}

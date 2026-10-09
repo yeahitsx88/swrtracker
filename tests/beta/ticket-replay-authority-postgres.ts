@@ -1,14 +1,19 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {NextRequest} from 'next/server';
 import {runLifecycleSchemaAcceptance} from './account-offboarding-postgres';
 import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
-import {POST as approve} from '../../src/app/api/tickets/[ticketId]/approve/route';
-import {POST as assign} from '../../src/app/api/tickets/[ticketId]/assign/route';
-import {POST as rejectInability} from '../../src/app/api/tickets/[ticketId]/field-inability/reject/route';
-import {POST as validateInability} from '../../src/app/api/tickets/[ticketId]/field-inability/validate/route';
+import {POST as approveHandler} from '../../src/app/api/tickets/[ticketId]/approve/route';
+import {POST as assignHandler} from '../../src/app/api/tickets/[ticketId]/assign/route';
+import {POST as rejectInabilityHandler} from '../../src/app/api/tickets/[ticketId]/field-inability/reject/route';
+import {POST as validateInabilityHandler} from '../../src/app/api/tickets/[ticketId]/field-inability/validate/route';
 import type {UUID} from '../../src/shared/types';
+const approve=inUnitRequestScope(approveHandler);
+const assign=inUnitRequestScope(assignHandler);
+const rejectInability=inUnitRequestScope(rejectInabilityHandler);
+const validateInability=inUnitRequestScope(validateInabilityHandler);
 
 runLifecycleSchemaAcceptance(async(db,f)=>{
  const pg=getPool(),oldQuery=pg.query,oldConnect=pg.connect,oldSecret=process.env.JWT_SECRET;

@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Concurrent workers each respect 1000-row tenant batch and skip locked rows",
+    "Concurrent batches leave exactly 300 expired plus two retained boundaries",
+    "Tenant batch cannot delete foreign observations",
+    "Next cycle removes remaining expired rows",
+    "Repeat deletion is idempotent",
+    "Exactly seven days and newer observations survive cutoff",
+    "Requests, events, files, administrative evidence and support records unchanged",
+    "Lifecycle-lock timeout preserves expired rows for retry",
+    "Next cycle retries failed tenant maintenance",
+    "Worker-cycle maintenance preserves retained domain records",
+    "Retention wired into src/workers/notification-worker.ts",
+    "Retention wired into src/workers/notification-worker-loop.ts",
+    "Retention index reapplication is repeatable"
+  ],
+  "fixtureKind": "new owned schema; current clean install through045",
+  "retainedWitness": "5162639b3bde2ecf48ee24d4397a38cdd94e93bbe5f187ae0170d27d5ee8b04a"
+}

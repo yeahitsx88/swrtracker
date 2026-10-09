@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
@@ -5,9 +6,12 @@ import {NextRequest} from 'next/server';
 import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
 import {acquireTenantLifecycleLock} from '../../src/lib/tenant-lifecycle-lock';
-import {PATCH} from '../../src/app/api/projects/[projectId]/members/[userId]/role/route';
-import {GET as handoverPreview,POST as handover} from '../../src/app/api/projects/[projectId]/survey/manager-handover/route';
+import {PATCH as PATCHHandler} from '../../src/app/api/projects/[projectId]/members/[userId]/role/route';
+import {GET as handoverPreviewHandler,POST as handoverHandler} from '../../src/app/api/projects/[projectId]/survey/manager-handover/route';
 import type {UUID} from '../../src/shared/types';
+const PATCH=inUnitRequestScope(PATCHHandler);
+const handoverPreview=inUnitRequestScope(handoverPreviewHandler);
+const handover=inUnitRequestScope(handoverHandler);
 
 async function main(){
  const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_FINALIZATION_TEST,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15498');assert.equal(url.pathname,'/swr_finalization_184');

@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 // Opt-in loopback acceptance in a newly owned, fully migrated schema.
 import assert from 'node:assert/strict';
 import {randomUUID, createHash} from 'node:crypto';
@@ -12,11 +13,14 @@ import {DEFAULT_LOGIN_RATE_LIMIT_POLICY} from '../../src/modules/identity/applic
 import {pruneExpiredAuthSecurityRecords} from '../../src/modules/identity/infrastructure/password-reset-email-outbox';
 import {handlePostLogin} from '../../src/app/api/auth/login/handler';
 import {GET as appearance, PUT as saveAppearance} from '../../src/app/api/account/appearance/route';
-import {GET as preview, POST as recommission} from '../../src/app/api/projects/[projectId]/recommission/route';
-import {POST as activate} from '../../src/app/api/projects/[projectId]/activate/route';
+import {GET as previewHandler,POST as recommissionHandler} from '../../src/app/api/projects/[projectId]/recommission/route';
+import {POST as activateHandler} from '../../src/app/api/projects/[projectId]/activate/route';
 import {POST as createTicket} from '../../src/app/api/tickets/route';
 import {handlePostProject} from '../../src/app/api/projects/post-handler';
 import type {UUID} from '../../src/shared/types';
+const preview=inUnitRequestScope(previewHandler);
+const recommission=inUnitRequestScope(recommissionHandler);
+const activate=inUnitRequestScope(activateHandler);
 
 async function main() {
   const url = new URL(process.env.DATABASE_URL ?? '');

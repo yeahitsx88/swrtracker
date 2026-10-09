@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 // Reuse the disposable lifecycle schema; no retained rehearsal/production writes.
 import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
@@ -8,19 +9,27 @@ import {NextRequest} from 'next/server';
 import {runLifecycleSchemaAcceptance} from './account-offboarding-postgres';
 import {getPool} from '../../src/lib/db';
 import {signToken,requireActiveAuth} from '../../src/lib/auth';
-import {GET as previewMove,POST as move} from '../../src/app/api/projects/[projectId]/survey/reorganization/route';
-import {GET as listAdministrators,POST as administrators} from '../../src/app/api/projects/[projectId]/administrators/route';
-import {POST as grantCompany} from '../../src/app/api/projects/[projectId]/company-authority/route';
-import {DELETE as revokeCompany} from '../../src/app/api/projects/[projectId]/company-authority/[grantId]/route';
+import {GET as previewMoveHandler,POST as moveHandler} from '../../src/app/api/projects/[projectId]/survey/reorganization/route';
+import {GET as listAdministratorsHandler,POST as administratorsHandler} from '../../src/app/api/projects/[projectId]/administrators/route';
+import {POST as grantCompanyHandler} from '../../src/app/api/projects/[projectId]/company-authority/route';
+import {DELETE as revokeCompanyHandler} from '../../src/app/api/projects/[projectId]/company-authority/[grantId]/route';
 import {handleGetProjects} from '../../src/app/api/projects/get-handler';
 import {handlePostForgotPassword} from '../../src/app/api/auth/forgot-password/handler';
 import {handlePostResetPassword} from '../../src/app/api/auth/reset-password/handler';
 import {handlePostLogin} from '../../src/app/api/auth/login/handler';
 import {dispatchPasswordResetEmails} from '../../src/modules/identity/infrastructure/password-reset-email-outbox';
 import {assertCentralITRemovalSafe} from '../../src/modules/tenancy/application/tenant-continuity';
-import {GET as managerPreview,POST as appointManager} from '../../src/app/api/projects/[projectId]/survey/manager-handover/route';
+import {GET as managerPreviewHandler,POST as appointManagerHandler} from '../../src/app/api/projects/[projectId]/survey/manager-handover/route';
 import {handleOffboarding} from '../../src/app/api/accounts/[userId]/offboarding/handler';
 import type {UUID} from '../../src/shared/types';
+const previewMove=inUnitRequestScope(previewMoveHandler);
+const move=inUnitRequestScope(moveHandler);
+const listAdministrators=inUnitRequestScope(listAdministratorsHandler);
+const administrators=inUnitRequestScope(administratorsHandler);
+const grantCompany=inUnitRequestScope(grantCompanyHandler);
+const revokeCompany=inUnitRequestScope(revokeCompanyHandler);
+const managerPreview=inUnitRequestScope(managerPreviewHandler);
+const appointManager=inUnitRequestScope(appointManagerHandler);
 const evidence:{name:string;pass:boolean}[]=[];
 async function main(){
 await runLifecycleSchemaAcceptance(async(db,f)=>{

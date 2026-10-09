@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import type {NextRequest} from 'next/server';
+import {after,type NextRequest} from 'next/server';
 import {requireActiveAuth,type AuthContext} from './auth';
 import {pool} from './db';
 import {resolveProjectCapabilities} from './project-capabilities';
@@ -27,10 +27,14 @@ export function observeProjectRoute<C extends Context,R extends Response>(handle
   let correlationId=randomUUID() as UUID,errorCode:string|null=null;
   if(response.status>=400){try{const data=await response.clone().json();if(uuid.test(data?.error?.correlationId))correlationId=data.error.correlationId;if(typeof data?.error?.code==='string'&&/^[A-Z0-9_]{1,80}$/.test(data.error.code))errorCode=data.error.code;}catch{/* Streaming/non-JSON responses have no error code. */}}
   try{response.headers.set('X-Request-ID',correlationId);}catch{/* Preserve immutable responses. */}
-  if(auth&&projectId&&['GET','POST','PATCH','PUT','DELETE'].includes(req.method))try{
+  if(auth&&projectId&&['GET','POST','PATCH','PUT','DELETE'].includes(req.method)){
    const route=req.nextUrl.pathname.replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi,'[id]').slice(0,240);
-   await recordRequestObservation(req,auth,{projectId,route,method:req.method,status:response.status,durationMs,correlationId,errorCode,ticketId,priorStatus});
-  }catch{logError('Project request observation could not be recorded',{eventType:'diagnostics.observation_failed',correlation_id:correlationId});}
+   const expected=auth,input={projectId,route,method:req.method,status:response.status,durationMs,correlationId,errorCode,ticketId,priorStatus};
+   after(async()=>{
+    try{await recordRequestObservation(req,expected,input);}
+    catch(error){logError('Project request observation could not be recorded',{eventType:'diagnostics.observation_failed',correlation_id:correlationId,error_class:error instanceof Error?error.name:'UnknownError'});}
+   });
+  }
   return response;
  };
 }

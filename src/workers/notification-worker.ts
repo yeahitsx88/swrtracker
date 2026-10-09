@@ -7,9 +7,11 @@ import { NotificationRepository, EmailNotificationTransport } from '@/modules/no
 import { PgBackgroundJobRunRepository } from '@/modules/notification/infrastructure/job-run.repository';
 import { dispatchPasswordResetEmails, pruneExpiredAuthSecurityRecords } from '@/modules/identity/infrastructure/password-reset-email-outbox';
 import {SYSTEM_AUDIT_ACTOR} from '@/modules/audit/domain/types';
+import {pruneExpiredRequestObservations} from '@/modules/support/infrastructure/observation-retention';
 
 
 async function main(): Promise<void> {
+  await pruneExpiredRequestObservations(pool);
   await pruneExpiredAuthSecurityRecords(pool);
   await dispatchPasswordResetEmails(pool);
   const result = await runNotificationWorkerCycle({

@@ -1,15 +1,17 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
 import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
 import { COOKIE_NAME, signToken } from '@/lib/auth';
 import { getPool } from '@/lib/db';
-import { POST as followUpRoute } from '@/app/api/tickets/[ticketId]/follow-up/route';
+import { POST as followUpRouteHandler } from '@/app/api/tickets/[ticketId]/follow-up/route';
 import { createFollowUpTicket } from '@/modules/ticket/application/create-follow-up-ticket';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import type { ITicketRepository } from '@/modules/ticket/application/ports';
 import type { Ticket } from '@/modules/ticket/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
+const followUpRoute=inUnitRequestScope(followUpRouteHandler);
 
 const tenantId = 'tenant-1' as UUID;
 const projectId = 'project-1' as UUID;

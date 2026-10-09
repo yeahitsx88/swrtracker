@@ -1,3 +1,4 @@
+import {inUnitRequestScope} from '../setup/unit-request-scope';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile,readdir} from 'node:fs/promises';
@@ -6,8 +7,9 @@ import {NextRequest} from 'next/server';
 import {getPool} from '../../src/lib/db';
 import {signToken} from '../../src/lib/auth';
 import {acquireTenantLifecycleLock} from '../../src/lib/tenant-lifecycle-lock';
-import {POST as restart} from '../../src/app/api/tickets/[ticketId]/restart-delay/route';
+import {POST as restartHandler} from '../../src/app/api/tickets/[ticketId]/restart-delay/route';
 import type {UUID} from '../../src/shared/types';
+const restart=inUnitRequestScope(restartHandler);
 
 async function main(){
  const url=new URL(process.env.DATABASE_URL??'');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(process.env.SWR_TEAM_POSTGRES,'1');
