@@ -5,7 +5,8 @@ import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { homeRequestFilters } from '@/lib/home-request-filters';
 import { useProjectWorkspace } from '@/components/ui/project-shell-header';
-import { operationsStatusLabel } from '@/lib/operations-view';
+import { RequestFilterBar } from '@/components/tickets/request-filter-bar';
+import type { TicketStatus } from '@/lib/contracts';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { TicketRecord } from '@/lib/contracts';
@@ -17,6 +18,8 @@ import { Icon } from '@/components/ui/icon';
 import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
 
 const LIMIT = 20;
+const REQUESTER_STATUSES: TicketStatus[] = ['SUBMITTED', 'RETURNED_FOR_CORRECTION', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'COMPLETED', 'REJECTED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED', 'FIELD_CANCELED'];
+const REQUESTER_QUEUES = [{ value: '', label: 'All requests' }, { value: 'open', label: 'Open' }, { value: 'overdue', label: 'Overdue' }, { value: 'completed', label: 'Completed' }];
 export default function MyRequestsPage() {
   return <Suspense fallback={<p role="status">Loading requests…</p>}><MyRequestsContent /></Suspense>;
 }
@@ -55,12 +58,12 @@ function MyRequestsContent() {
       actions={workspace?.project.status === 'ACTIVE' ? <Link className="button" href={`/projects/${projectId}/request/new`}><Icon name="plus" />New request</Link> : undefined}
     >
       <div className="stack">
-        {query && <div className="row"><p className="muted">Filtered requests{parsed.filters.status ? ` · ${operationsStatusLabel(parsed.filters.status)}` : ''}</p><Link className="app-link" href={`/projects/${projectId}/my-requests`}>Clear filters</Link></div>}
+        <RequestFilterBar label="Filter your requests" statuses={REQUESTER_STATUSES} queues={REQUESTER_QUEUES} />
         <ScopedKpiEntry projectId={projectId} audience="requester" />
         {error ? <ErrorBanner message={error} /> : null}
         {loading ? <p className="muted" role="status">Loading requests…</p> : null}
         {!loading && !error ? (
-          <TicketList
+          <TicketList compactTools
             projectId={projectId}
             tickets={tickets}
             areaNames={areaNames}

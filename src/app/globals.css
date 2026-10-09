@@ -824,3 +824,13 @@ main {
 .scroll-to-top { border-radius: var(--button-radius); z-index: 20; width: 44px; height: 44px; padding: 0; display: grid; place-items: center; box-shadow: 0 3px 10px rgb(46 46 46 / 20%); }
 @media (max-width: 759px) { .scroll-to-top { margin-bottom: var(--bottom-bar); } }
 .popout-dialog:has(> .scroll-to-top) { padding-bottom: 60px; }
+
+/* ---------- Request filter bar ---------- */
+.request-filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.65rem 0.75rem; padding: 0.75rem; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--surface-sunken); }
+.request-filter-bar .field { flex: 0 1 12rem; }
+.request-filter-bar .request-filter-search { flex: 1 1 16rem; }
+.request-filter-actions { display: flex; gap: 0.4rem; }
+.input-with-icon { position: relative; display: block; }
+.input-with-icon > .icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.input-with-icon > .input { padding-left: 2.1rem; max-width: none; }
+@media (max-width: 600px) { .request-filter-bar .field { flex: 1 1 45%; } .request-filter-bar .request-filter-search { flex-basis: 100%; } }

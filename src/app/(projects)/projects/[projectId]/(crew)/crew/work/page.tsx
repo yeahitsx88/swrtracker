@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { homeRequestFilters } from '@/lib/home-request-filters';
-import { operationsStatusLabel } from '@/lib/operations-view';
+import { RequestFilterBar } from '@/components/tickets/request-filter-bar';
+import type { TicketStatus } from '@/lib/contracts';
+
+const CREW_STATUSES: TicketStatus[] = ['ASSIGNED', 'IN_PROGRESS', 'DELAYED'];
 import { useTicketPage } from '@/lib/use-ticket-page';
 import { PaginationControls } from '@/components/forms';
 import { CrewWorkActions, TicketList } from '@/components/tickets';
@@ -51,7 +54,7 @@ function CrewWorkContent() {
       </>}
     >
       <div className="stack">
-        {query && <div className="row"><p className="muted">Filtered requests{parsed.filters.status ? ` · ${operationsStatusLabel(parsed.filters.status)}` : ''}</p><Link className="app-link" href={`/projects/${projectId}/crew/work`}>Clear filters</Link></div>}
+        <RequestFilterBar label="Filter crew work" statuses={CREW_STATUSES} />
         {parsed.error && <ErrorBanner message={parsed.error} />}
         <ScopedKpiEntry projectId={projectId} audience="field" />
         {workflow.dialog}
@@ -59,7 +62,7 @@ function CrewWorkContent() {
         {work.error ? <ErrorBanner message={work.error} /> : null}
         {work.loading ? <p className="muted" role="status">Loading crew work queue…</p> : null}
         {!work.loading && !work.error && !parsed.error ? (
-          <TicketList
+          <TicketList compactTools
             projectId={projectId}
             tickets={work.data?.data ?? []}
             areaNames={areaNames}
