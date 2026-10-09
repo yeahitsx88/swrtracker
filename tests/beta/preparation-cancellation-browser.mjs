@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -30,7 +31,7 @@ for(const [status,id] of Object.entries(projects)){
  await pool.query("INSERT INTO project_admin_grants(tenant_id,project_id,user_id,origin,granted_by) VALUES($1,$2,$3,'EXPLICIT',$4)",[tenant,id,people.admin,people.central]);
 }
 await pool.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','DRAFT','Survey','Owned preparation cancellation draft')",[draft,tenant,projects.SETUP,company,people.admin]);
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const endpoint=origin+'/api/projects/'+projects.SETUP+'/preparation-cancellation';
 const foreignTenant=randomUUID(),foreignCompany=randomUUID(),foreignCentral=randomUUID();await pool.query("INSERT INTO tenants(id,name) VALUES($1,'Owned foreign D6')",[foreignTenant]);await pool.query("INSERT INTO companies(id,tenant_id,name,type) VALUES($1,$2,'Foreign GC','GC')",[foreignCompany,foreignTenant]);await pool.query("INSERT INTO users(id,tenant_id,company_id,email,name,password_hash) VALUES($1,$2,$3,$4,'Foreign Central','fixture')",[foreignCentral,foreignTenant,foreignCompany,foreignCentral+'@example.test']);await pool.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[foreignTenant,foreignCentral]);tokens.foreign=jwt.sign({sub:foreignCentral,tenantId:foreignTenant,sv:1},settings.JWT_SECRET,{expiresIn:'1h'});
 async function shot(page,path){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path,fullPage:true});}

@@ -208,7 +208,9 @@
     "Assigned Instrument Man completes work",
     "Connected cycle retains identity and number",
     "Connected transitions retain atomic history",
-    "Revoked independent administrator cannot read diagnostics"
+    "Revoked independent administrator cannot read diagnostics",
+    "Actual HTTP support audit failure refuses business commit",
+    "HTTP audit fault preserves support business records"
   ],
   "limits": [
     "Default route probes establish unauthenticated refusal, not full authorization for every branch. Role, lifecycle and fault cases also use the full PostgreSQL suites."

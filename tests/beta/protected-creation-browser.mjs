@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -8,7 +9,7 @@ const origin=process.env.SWR_CREATION_CONTROLS_ORIGIN??'http://127.0.0.1:3202';a
 const folder=origin.endsWith(':3202')?'.local/creation-controls/initial':'.local/creation-controls/final';
 const env=JSON.parse(await fs.readFile('.local/finalization/environment.json','utf8')),f=JSON.parse(await fs.readFile('.local/finalization/protected-creation-fixture.json','utf8')),u=new URL(env.DATABASE_URL);assert.equal(u.port,'15498');assert.equal(u.pathname,'/swr_finalization_184');
 const pool=new Pool({connectionString:u.href});assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[f.tenant])).rows[0]?.name,'Owned creation195');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 function check(value,label){assert(value,label);checks.push(label);}
 async function json(response,status=200){assert.equal(response.status(),status,'Actual authenticated response');return response.json();}
 async function session(who,width=1440,height=1000){const c=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:origin,httpOnly:true,sameSite:'Lax'}]);return c;}

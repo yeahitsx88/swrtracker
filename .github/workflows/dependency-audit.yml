@@ -44,6 +44,7 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
+      - run: node scripts/check-acceptance-syntax.mjs
       - run: pnpm test
       - run: pnpm test:postgres
       - run: pnpm build

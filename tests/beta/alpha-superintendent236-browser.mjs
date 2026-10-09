@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Current production browser acceptance: actual queue delegation and Chief crew selection.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -11,7 +12,7 @@ assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);
 assert.match(f.schema,/^alpha_queue236_[a-f0-9]{32}$/);assert.equal(f.origin,process.env.SWR_QUEUE_CONFIRMATION==='1'?'http://127.0.0.1:3267':'http://127.0.0.1:3266');
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).split(/\r?\n/).filter(x=>x.includes('=')).map(x=>{const i=x.indexOf('=');return[x.slice(0,i),x.slice(i+1)];}));
 const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL);
 const browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 function check(v,label){assert(v,label);checks.push(label);}
 async function json(r,status=200){const body=await r.text();assert.equal(r.status(),status,body);return JSON.parse(body);}

@@ -1,8 +1,9 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Explicitly opted-in, newly owned design fixture. Never changes retained demo state.
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';import {pathToFileURL} from 'node:url';import {randomUUID} from 'node:crypto';import jwt from 'jsonwebtoken';
 assert.equal(process.env.SWR_ADMIN_DESIGN,'1');const origin=process.env.SWR_ACCEPTANCE_ORIGIN;assert.equal(origin,'http://127.0.0.1:3125');
 const f=JSON.parse(await fs.readFile('.local-admin-fixture.json','utf8')),retained=JSON.parse(await fs.readFile('.local-demo-fixture.json','utf8'));assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);assert.notEqual(f.schema,retained.schema);assert.ok(f.enriched);
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}),captures=[],checks=[];
+const {chromium}=await import(playwrightModuleURL);const browser=await chromium.launch({headless:true,channel:'msedge'}),captures=[],checks=[];
 const out='.impeccable/review/administration/current';await fs.mkdir(out,{recursive:true});
 async function shot(page,name){await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>document.fonts.ready);const file=out+'/'+name+'.png';await page.screenshot({path:file,fullPage:true});captures.push(file);}
 async function context(role,theme,width){const c=await browser.newContext({viewport:{width,height:884},colorScheme:theme,reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:jwt.sign({sub:f[role],tenantId:f.tenant,sv:1},process.env.JWT_SECRET,{expiresIn:'1h'}),url:origin}]);const response=await c.request.put(origin+'/api/account/appearance',{headers:{'Idempotency-Key':randomUUID()},data:{scope:'PERSONAL',mode:theme.toUpperCase()}});assert.equal(response.status(),200);return c;}

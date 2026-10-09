@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../../../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -6,7 +7,7 @@ import {Pool} from 'pg';
 assert.equal(process.env.SWR_FINALIZATION_TEST,'267');
 const folder='.local/alpha-closure267';assert.equal(await fs.stat(folder+'/browser-results.json').then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;}),false);const e=JSON.parse(await fs.readFile(folder+'/environment.json','utf8')),f=JSON.parse(await fs.readFile(folder+'/fixture.json','utf8')),origin=f.origin,u=new URL(e.DATABASE_URL);assert.equal(origin,'http://127.0.0.1:3307');assert.match(f.schema,/^alpha_administration267_[a-f0-9]{32}$/);assert.equal(u.hostname,'127.0.0.1');assert.equal(u.port,'15500');assert.equal(u.pathname,'/swr_team_isolated');assert.equal(u.searchParams.get('options'),'-c search_path='+f.schema+',public');
 const pool=new Pool({connectionString:u.href});assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[f.tenant])).rows[0]?.name,'Owned membership267');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];const base='/api/projects/'+f.project;
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];const base='/api/projects/'+f.project;
 function check(value,label){assert(value,label);checks.push(label);}
 async function json(r,status=200){assert.equal(r.status(),status,'Actual authenticated response status');return r.json();}
 async function session(who,width=1440,height=1000){const c=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:origin,httpOnly:true,sameSite:'Lax'}]);return c;}

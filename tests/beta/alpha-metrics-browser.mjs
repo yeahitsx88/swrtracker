@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Current authenticated aggregate-to-drilldown acceptance; real owned SQL empty state.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -11,7 +12,7 @@ const env=Object.fromEntries((await fs.readFile(dir+'/host.env','utf8')).split(/
 const url=new URL(env.DATABASE_URL),own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));
 assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');assert.match(schema,/^alpha_metrics214_[a-f0-9]{32}$/);assert.equal(url.searchParams.get('options'),'-c search_path='+schema+',public');
 const id=n=>`20000000-0000-4000-8000-${String(n).padStart(12,'0')}`,tenant=id(1),project=id(2),sup=id(9),origin='http://127.0.0.1:3232';
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],captures=[],errors=[];function check(value,label){assert(value,label);checks.push(label);}
 const token=jwt.sign({sub:sup,tenantId:tenant,sv:1},env.JWT_SECRET,{expiresIn:'1h',jwtid:randomUUID()});
 async function capture(p,name){if(name.startsWith('linked-'))await p.getByRole('region',{name:'Matching KPI requests'}).scrollIntoViewIfNeeded();if(name.startsWith('real-unlinked-'))await p.getByText(/No linked crews in your authorized Areas/i).scrollIntoViewIfNeeded();const path=dir+'/'+name+'.png';await p.screenshot({path,fullPage:false});captures.push(path);check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' page overflow contained');}

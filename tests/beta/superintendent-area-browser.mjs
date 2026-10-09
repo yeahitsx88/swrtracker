@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import {Pool} from 'pg';
 import jwt from 'jsonwebtoken';
@@ -7,7 +8,7 @@ import fs from 'node:fs';
 const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_TEAM_POSTGRES,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');
 const pg=new Pool({connectionString:url.href}),id=n=>`99010000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const project=randomUUID(),level=randomUUID(),area=randomUUID(),other=randomUUID(),chief=randomUUID(),selected='00000000-0000-4000-8000-'+randomUUID().slice(-12),duplicate='00000000-0000-4000-8000-'+randomUUID().slice(-12),otherAssignment='00000000-0000-4000-8000-'+randomUUID().slice(-12),johnGrant=randomUUID(),jasonGrant=randomUUID(),jasonAssignment=randomUUID(),chiefAssignment=randomUUID(),reporting=randomUUID(),ticket=randomUUID();
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({headless:true,channel:'msedge'});
 const origin='http://127.0.0.1:3107',base=`${origin}/api/projects/${project}`,staffing=base+'/survey/staffing',protectedPath=base+'/survey/protected-obligations',rolePath=base+'/survey/teams';
 const token=jwt.sign({sub:id(10),tenantId:id(1),sv:1},process.env.JWT_SECRET,{expiresIn:'1h',jwtid:randomUUID()});let checks=0;
 const check=(a,b,message)=>{assert.deepEqual(a,b,message);checks++;};

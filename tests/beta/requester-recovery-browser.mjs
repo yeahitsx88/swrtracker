@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Synthetic, intercepted UI acceptance; the review container has no database.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 assert.equal(process.env.SWR_DRAFT_UI, '1');
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser = await chromium.launch({ headless:true, executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' });
+const { chromium } = await import(playwrightModuleURL);
+const browser = await chromium.launch({ headless:true, channel:'msedge' });
 const base='http://127.0.0.1:3107';
 const project='86000000-0000-4000-8000-000000000002', area='86000000-0000-4000-8000-000000000007';
 const ticketId='86000000-0000-4000-8000-000000000010';

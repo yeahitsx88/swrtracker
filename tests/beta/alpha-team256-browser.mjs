@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {writeFileSync} from 'node:fs';
@@ -10,7 +11,7 @@ assert.match(f.schema,/^alpha_team253_[a-f0-9]{32}$/);assert.equal(f.origin,'htt
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];}));
 const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
 const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');
-const out=dir+'/a3-'+randomUUID();await fs.mkdir(out);const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),contexts={},cases=[],captures=[],errors=[],attempts=[];
+const out=dir+'/a3-'+randomUUID();await fs.mkdir(out);const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),contexts={},cases=[],captures=[],errors=[],attempts=[];
 f.a3??={teams:{},requests:[],phases:{}};
 function progress(){writeFileSync(out+'/progress.json',JSON.stringify({cases,captures,pageErrors:errors,attempts,a3:f.a3},null,2));}
 function check(value,label){assert(value,label);cases.push(label);progress();}

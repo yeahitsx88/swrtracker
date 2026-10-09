@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -9,7 +10,7 @@ const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.jso
 const values=Object.fromEntries((await fs.readFile('.local/alpha-acceptance197/runner.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];})),url=new URL(values.DATABASE_URL);url.port='15500';assert.equal(url.hostname,'127.0.0.1');assert.equal(url.pathname,'/swr_team_isolated');
 const f=JSON.parse(await fs.readFile(evidenceDir+'/role-fixture.json','utf8')),origin=process.env.SWR_ALPHA_ORIGIN??'http://127.0.0.1:3210',pool=new Pool({connectionString:url.href});assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[f.tenant])).rows[0].name,'Owned Alpha acceptance197');
 assert.ok(['http://127.0.0.1:3210','http://127.0.0.1:3222'].includes(origin),'Owned pinned local runtime required');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],errors=[],captures=[],matrix=[];
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],errors=[],captures=[],matrix=[];
 const check=(v,label)=>{assert(v,label);checks.push(label);},terminal=new Set(['COMPLETED','SURVEY_CANCELED','REQUESTER_CANCELED','FIELD_CANCELED','REJECTED']);
 function expected(who){const role=f.roles[who];return f.population.filter(t=>{
  if(['SURVEY_MANAGER','VIEWER','CAD_LEAD','CAD_TECHNICIAN'].includes(role))return true;

@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -6,7 +7,7 @@ assert.equal(process.env.SWR_INTAKE_CYCLE,'251');
 const dir='.local/alpha-closure251',f=JSON.parse(await fs.readFile(dir+'/fixture.json','utf8'));
 assert.match(f.schema,/^alpha_intake251_[a-f0-9]{32}$/);assert.equal(f.origin,'http://127.0.0.1:3299');
 assert.equal(await fs.access(dir+'/before.json').then(()=>true,()=>false),false);
-const {chromium}=await import(pathToFileURL('D:/Programming/Personal Workout App/node_modules/playwright/index.mjs').href);
+const {chromium}=await import(playwrightModuleURL);
 const b=await chromium.launch({channel:'msedge',headless:true});
 try {
 const c=await b.newContext();await c.addCookies([{name:'swr_session',value:f.tokens.requester,url:f.origin}]);const p=await c.newPage();

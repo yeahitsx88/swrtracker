@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -5,7 +6,7 @@ import {pathToFileURL} from 'node:url';
 assert.equal(process.env.SWR_ALPHA_HOME_TEST,'207');
 const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);
 const f=JSON.parse(await fs.readFile('.local/alpha-closure206/role-fixture.json','utf8')),origin='http://127.0.0.1:3223';
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 function check(v,n){assert(v,n);checks.push(n);}
 try{
  const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens.tenantOnly,url:origin,httpOnly:true,sameSite:'Lax'}]);

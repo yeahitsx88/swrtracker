@@ -1,11 +1,12 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 const url=new URL(process.env.DATABASE_URL??'');
 if(process.env.SWR_TEAM_POSTGRES!=='1'||url.hostname!=='127.0.0.1'||url.port!=='15489'||url.pathname!=='/swr_team_isolated')throw new Error('Disposable loopback fixture only');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 const id=n=>`20000000-0000-4000-8000-${String(n).padStart(12,'0')}`,project=id(2),origin='http://127.0.0.1:3107';
 const token=(user,sv=1)=>jwt.sign({sub:user,tenantId:id(1),sv},process.env.JWT_SECRET,{expiresIn:'1h',jwtid:randomUUID()});
 try{

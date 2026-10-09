@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../../../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -13,7 +14,7 @@ function check(v,label){assert(v,label);checks.push(label);}
 assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[f.tenant])).rows[0].name,'Owned catalog271');
 // Distinct controlled initial Central profile; the previous actor's revoked grant/session remains revoked.
 const progress=await fs.readFile(dir+'/template272-progress.json','utf8').then(JSON.parse,e=>{if(e.code==='ENOENT')return null;throw e;});if(!progress)await pool.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[f.tenant,f.people.adminGrant1]);else assert.equal((await pool.query('SELECT role FROM tenant_memberships WHERE tenant_id=$1 AND user_id=$2',[f.tenant,f.people.adminGrant1])).rows[0]?.role,'TENANT_ADMIN');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 async function context(who,width=1440){const c=await browser.newContext({viewport:{width,height:width===390?720:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
 async function json(r,status=200){assert.equal(r.status(),status);return r.json();}
 async function post(c,path,body,key=randomUUID(),status=201){return json(await c.request.post(f.origin+path,{data:body,headers:{'Idempotency-Key':key}}),status);}

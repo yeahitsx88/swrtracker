@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Real authenticated editor, concurrent command and explicit stale-state recovery.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -7,7 +8,7 @@ import {randomUUID} from 'node:crypto';
 const require=createRequire(import.meta.url),{Pool}=require('pg'),bcrypt=require('bcrypt');
 const url=new URL(process.env.DATABASE_URL??''),origin=process.env.SWR_UI_ORIGIN??'http://127.0.0.1:3107';
 assert.equal(process.env.SWR_TEAM_POSTGRES,'1');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(origin,'http://127.0.0.1:3107');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const {chromium}=await import(playwrightModuleURL);
 const id=n=>'96000000-0000-4000-8000-'+String(n).padStart(12,'0'),resource=origin+'/api/projects/'+id(3)+'/survey/workforce';
 const pg=new Pool({connectionString:url.href});let browser,token,checks=0;
 const check=(actual,expected,message)=>{assert.deepEqual(actual,expected,message);checks++;};

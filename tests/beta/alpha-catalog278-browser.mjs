@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -12,7 +13,7 @@ const pool=new Pool({connectionString:u.href}),checks=[],captures=[],errors=[];
 assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[f.tenant])).rows[0].name,'Owned catalog278');
 const state=await fs.readFile(dir+'/catalog278-progress.json','utf8').then(JSON.parse,e=>{if(e.code==='ENOENT')return {phase:'initial',cases:[]};throw e;});checks.push(...state.cases);
 async function check(v,label){assert(v,label);if(!checks.includes(label))checks.push(label);state.cases=checks;await fs.writeFile(dir+'/catalog278-progress.json',JSON.stringify(state));}
-const {chromium}=await import(pathToFileURL('D:/Programming/Personal Workout App/node_modules/playwright/index.mjs').href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 async function context(who,width=1440){const c=await browser.newContext({viewport:{width,height:width===390?800:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
 async function json(r,status=200){assert.equal(r.status(),status);return r.json();}
 const admin=await context('admin');

@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "Authenticated exact30MiB file passes experimental32MiB middleware and bounded multipart parser; got 201 {\"attachment\":{\"id\":\"cb4b5e8f-ab4d-485e-a05f-e3b5f9000532\",\"ticketId\":\"4f92556f-5e3c-4e93-9452-667d546e2206\",\"tenantId\":\"4f558dc4-bd51-4837-bf1f-d2279d08947f\",\"uploadedBy\":\"ce6a1c8a-a7c6-44fb-aa18-2502dd6cfab2\",\"filename\":\"owned-boundary.txt\",\"mimeType\":\"text/plain\",\"sizeBytes\":31457280,\"purpose\":\"REQUEST_INSTRUCTION\",\"returnCycle\":0,\"contentSha256\":\"f70523088c8cf513ff6b708b516b3902ec0e68b08f703825a886d05b1de999e8\",\"createdAt\":\"2026-10-09T13:06:24.583Z\",\"downloadUrl\":\"/api/tickets/4f92556f-5e3c-4e93-9452-667d546e2206/attachments/cb4b5e8f-ab4d-485e-a05f-e3b5f9000532\"}}",
+    "Persisted file metadata matches original bytes",
+    "Exact upload retry retains one attachment identity",
+    "Authenticated attachment read succeeds",
+    "Downloaded storage bytes match original hash",
+    "Successful exact retry inserts exactly once",
+    "Above30MiB file is rejected through authenticated runtime",
+    "Foreign tenant cannot attach to owned request",
+    "Rejected size/foreign uploads preserve attachment records",
+    "Authorized byte read has atomic download evidence"
+  ],
+  "contentSha256": "f70523088c8cf513ff6b708b516b3902ec0e68b08f703825a886d05b1de999e8",
+  "fileBytes": 31457280,
+  "middlewareClientMaxBodySize": 33554432,
+  "limits": [
+    "Authenticated multipart boundary and actual storage/download hashes tested on owned runtime; arbitrary disconnected clients and upstream hosting proxies are outside local acceptance."
+  ]
+}

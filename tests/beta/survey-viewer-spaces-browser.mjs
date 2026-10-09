@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Real production-browser acceptance; newly owned fixtures and explicit opt-in only.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -12,7 +13,7 @@ assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);
 assert.notEqual(f.schema,retained.schema);
 const origin=process.env.SWR_ACCEPTANCE_ORIGIN;
 assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const {chromium}=await import(playwrightModuleURL);
 const browser=await chromium.launch({headless:true,executablePath:process.env.SWR_BROWSER_EXECUTABLE??'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
 const output='.impeccable/review/survey-viewer/final';
 await fs.mkdir(output,{recursive:true});

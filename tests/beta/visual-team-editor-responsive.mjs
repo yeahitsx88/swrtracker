@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -5,7 +6,7 @@ import {randomUUID} from 'node:crypto';
 assert.equal(process.env.SWR_VISUAL_TEAM,'198');
 const owned=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(owned.hostPort,15500);assert.match(owned.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);
 const f=JSON.parse(await fs.readFile('.local/visual-team198/fixture.json','utf8')),origin='http://127.0.0.1:3213';
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const captures=[],errors=[];let checks=0;
 try{for(const who of ['manager','superintendent'])for(const mode of ['LIGHT','DARK']){
  const c=await browser.newContext({viewport:{width:390,height:820},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:origin,httpOnly:true}]);

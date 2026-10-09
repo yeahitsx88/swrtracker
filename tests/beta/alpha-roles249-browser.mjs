@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -7,7 +8,7 @@ assert.equal(process.env.SWR_ALPHA_ACCEPTANCE,'249');
 const evidenceDir='.local/alpha-closure249-confirmation';const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);
 const values=Object.fromEntries((await fs.readFile(evidenceDir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];})),url=new URL(values.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');
 const f=JSON.parse(await fs.readFile(evidenceDir+'/role-fixture.json','utf8')),origin=f.origin,pool=new Pool({connectionString:url.href});assert.match(f.schema,/^alpha_roles249_[a-f0-9]{32}$/);assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');assert.equal(origin,'http://127.0.0.1:3297');assert.equal(await fs.stat(evidenceDir+'/role-results.json').then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;}),false,'Completed evidence must not be overwritten.');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],errors=[],captures=[],matrix=[];
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],errors=[],captures=[],matrix=[];
 const check=(v,label)=>{assert(v,label);checks.push(label);},terminal=new Set(['COMPLETED','SURVEY_CANCELED','REQUESTER_CANCELED','FIELD_CANCELED','REJECTED']);
 function expected(who){const role=f.roles[who];return f.population.filter(t=>{
  if(['SURVEY_MANAGER','VIEWER','CAD_LEAD','CAD_TECHNICIAN'].includes(role))return true;

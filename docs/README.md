@@ -54,7 +54,7 @@ For PostgreSQL acceptance, provision a **disposable** database named **swr_team_
 pnpm test:postgres
 ~~~
 
-The runner initializes only an entirely empty public schema, then runs 33 suites in owned schemas (23 matrix, 7 additional and 3 metrics suites), including authenticated project employee provisioning. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
+The runner initializes only an entirely empty public schema, then runs34 suites in owned schemas (23 matrix,7 additional,3 metrics and observation retention), including authenticated project employee provisioning. It never upgrades retained public schemas. Explicit historical migration assertions remain historical; runtime fixtures apply current migrations. [Test standards](skills/test-standards.md) describe real database and negative-case evidence.
 
 HTTP/browser acceptance requires a separate fixture and production runtime wired to its generated schema. tests/beta/scoped-offboarding-acceptance.mjs setup creates the schema and private .local-runtime.env; it requires .local-test.env. Supply SWR_ACCEPTANCE_ORIGIN as a loopback URL, that runtime's JWT_SECRET, and SWR_PLAYWRIGHT_MODULE pointing to an existing Playwright ESM module. Run scoped-offboarding-case-matrix.mjs external, then report: all 55 named cases require the same current source/migration digest. The acceptance cleanup mode removes only the fixture's owned schema. Keep credentials and runtime files ignored.
 
@@ -79,8 +79,27 @@ Keep .env*, .local*, .data/, build caches, stores and new screenshots ignored. P
 
 ## Current Role Access and Support Audit
 
-[Role access audit and integration reference](design/alpha1/role-access-audit.md) covers the approved eight-role matrix, Tenant Admin custom-role wizard, new scoped Help Desk, member restoration and measured project diagnostics. That historical role-access checkpoint passed strict types, 584 units/pinned build, 30 PostgreSQL suites and separately owned production role checks. The audited Alpha1 baseline has 707 unit tests and 33 PostgreSQL suites; fresh reconciliation evidence is recorded in [the register](../audits/alpha1-reconciliation/REGISTER.md). Their sanitized receipts are in `audits/alpha1-ui-redesign/role-access-evidence.json`; counts do not replace the documented High/Medium findings.
+[Role access audit and integration reference](design/alpha1/role-access-audit.md) covers the approved eight-role matrix, Tenant Admin custom-role wizard, new scoped Help Desk, member restoration and measured project diagnostics. That historical role-access checkpoint passed strict types, 584 units/pinned build, 30 PostgreSQL suites and separately owned production role checks. The audited Alpha1 baseline has 707 unit tests and 33 PostgreSQL suites; the reconciled current gate also includes observation retention (34 SQL suites), and fresh evidence is recorded in [the register](../audits/alpha1-reconciliation/REGISTER.md). Their sanitized receipts are in `audits/alpha1-ui-redesign/role-access-evidence.json`; counts do not replace the documented High/Medium findings.
 
 `tests/beta/role-access-http.mjs` is opt-in (`SWR_ROLE_ACCESS=1`) and requires an explicitly owned synthetic manifest, a different-schema retained-demo guard, loopback PostgreSQL `127.0.0.1:15493/swr_team_isolated`, an origin/runtime on that manifest's schema and its JWT secret. The manifest provides active GC membership/independent administration, a separate Tenant Admin without operational membership, Manager/Superintendent/Chief/Instrument Man/Requester/Viewer, associated company, foreign tenant and scoped assignments. It is not a generic clean-clone seed command or permission to reuse retained data. The fixture setup and browser capture helpers remain ignored/local. Source audit and API receipts do not claim execution of every core field transition.
 
 `tests/beta/role-access-conditions-browser.mjs` uses the same explicitly owned manifest/runtime guard and existing local Playwright/Edge installation to verify existing-account company eligibility and Archived restoration restrictions. It creates synthetic records only in that owned schema.
+
+## Reconciliation acceptance
+
+[Alpha1 reconciliation register](../audits/alpha1-reconciliation/REGISTER.md)
+records source/migration digests and current receipts. Preserve original audits,
+contracts and pinned manifests. Use `node scripts/check-acceptance-syntax.mjs` for
+all maintained/archived MJS modules; this is also in CI. Browser runners require
+an absolute `SWR_PLAYWRIGHT_MODULE` input before any fixture mutation.
+[Archive index](../tests/archive/alpha1/INDEX.json) maps moved historical runners.
+
+The `reconciliation-fixture.ts`/HTTP/browser/telemetry/attachment/visual runners
+require `SWR_RECONCILIATION=1` and a newly owned loopback PostgreSQL15 fixture at
+15489 named `swr_team_isolated`. Fixture creation refuses an existing manifest;
+it is not a reset. Use its generated private runtime env with the current
+production image at3320 and the local TLS ingress at3321 for credential browser
+acceptance. TLS keys, manifests, secrets, captures and logs remain ignored.
+`reconciliation-upgrade.mjs` separately owns and removes its populated034 schema.
+The performance runner additionally requires an isolated7c039ec runtime at3322
+and pg_stat_statements/session-local auto_explain on that owned database only.

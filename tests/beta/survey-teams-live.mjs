@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
@@ -18,8 +19,8 @@ const people=await request('GET','?mode=personnel&limit=10');assert.ok(people.da
 await request('GET','?mode=context',undefined,403,token(id(7)));
 await request('GET','?mode=personnel',undefined,401,token(manager,1));
 await request('GET','?mode=areas',undefined,403,token(id(13),1,id(11)));
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 try{
   const context=await browser.newContext({viewport:{width:1440,height:900}});
   await context.addCookies([{name:'swr_session',value:managerToken,url:origin}]);

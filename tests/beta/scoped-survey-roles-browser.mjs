@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -6,7 +7,7 @@ import {Pool} from 'pg';
 assert.equal(process.env.SWR_FINALIZATION_TEST,'1');
 const env=JSON.parse(await fs.readFile('.local/finalization/environment.json','utf8')),url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15498');assert.equal(url.pathname,'/swr_finalization_184');
 const f=JSON.parse(await fs.readFile('.local/finalization/scoped-role-fixture.json','utf8'));assert.equal(f.origin,'http://127.0.0.1:3185');
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],errors=[],captures=[],endpoint=f.origin+'/api/projects/'+f.project+'/survey/teams',subject=randomUUID(),managerSubject=randomUUID(),name='Owned subordinate '+subject.slice(0,6),managerName='Owned resolved Superintendent '+managerSubject.slice(0,6);
 function check(value,label){assert(value,label);checks.push(label);}
 async function session(who){const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}

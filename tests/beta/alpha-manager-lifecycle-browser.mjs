@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -8,7 +9,7 @@ const dir='.local/alpha-closure220',f=JSON.parse(await fs.readFile(dir+'/fixture
 assert.match(f.schema,/^alpha_handover220_[a-f0-9]{32}$/);assert.equal(f.origin,'http://127.0.0.1:3240');
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return [s.slice(0,i),s.slice(i+1)];}));
 const url=new URL(env.DATABASE_URL);assert.equal(url.port,'15500');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),cases=[],errors=[],c={};
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),cases=[],errors=[],c={};
 function check(v,s){assert(v,s);cases.push(s);}
 async function json(r,status=200){assert.equal(r.status(),status,await r.text());return r.json();}
 async function post(who,path,data,key=randomUUID(),status=200){return json(await c[who].request.post(f.origin+path,{data,headers:{'Idempotency-Key':key}}),status);}

@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -11,7 +12,7 @@ assert.equal(await fs.access(dir+'/results.json').then(()=>true,()=>false),false
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];}));
 const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
 const pool=new Pool({connectionString:url.href});
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],captures=[],errors=[],witnesses=[];
 function check(v,label){assert(v,label);checks.push(label);}
 async function json(r,status=200){const text=await r.text();assert.equal(r.status(),status,text);return JSON.parse(text);}

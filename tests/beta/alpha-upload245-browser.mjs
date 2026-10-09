@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {Pool} from 'pg';
@@ -11,7 +12,7 @@ assert.equal(await fs.stat(dir+'/results.json').then(()=>true,e=>{if(e.code==='E
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];}));
 const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
 const prior=await fs.readFile(dir+'/progress.json','utf8').then(JSON.parse,e=>{if(e.code==='ENOENT')return null;throw e;});
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL('D:/Programming/Personal Workout App/node_modules/playwright/index.mjs').href),browser=await chromium.launch({channel:'msedge',headless:true}),contexts={},checks=[],captures=[],errors=[];if(prior){checks.push(...prior.checks);captures.push(...prior.captures);}
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),contexts={},checks=[],captures=[],errors=[];if(prior){checks.push(...prior.checks);captures.push(...prior.captures);}
 async function save(){await fs.writeFile(dir+'/fixture.json',JSON.stringify(f));await fs.writeFile(dir+'/progress.json',JSON.stringify({checks,captures,pageErrors:errors},null,2));}
 async function check(value,label){assert(value,label);if(!checks.includes(label))checks.push(label);await save();}
 async function json(r,status=200){assert.equal(r.status(),status,await r.text());return r.json();}

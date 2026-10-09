@@ -1,0 +1,10 @@
+{
+  "literalImportGaps": [],
+  "requiredModulePreflight": [
+    "maintained reconciliation browser",
+    "archived prototype entry"
+  ],
+  "syntaxCommand": "node scripts/check-acceptance-syntax.mjs",
+  "browserCorrectness": "separate current runtime receipt",
+  "unavailableModulePreflight": "refused before fixture mutation"
+}

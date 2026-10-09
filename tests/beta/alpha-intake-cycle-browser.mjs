@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Actual requester partial-draft/intake acceptance; fresh owned fixture only.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -11,7 +12,7 @@ assert.match(f.schema,/^alpha_intake215_[a-f0-9]{32}$/);assert.equal(f.origin,'h
 const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).split(/\r?\n/).filter(x=>x.includes('=')).map(x=>{const i=x.indexOf('=');return[x.slice(0,i),x.slice(i+1)];}));
 const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 function check(v,label){assert(v,label);checks.push(label);}
 async function json(r,status=200){const body=await r.text();assert.equal(r.status(),status,body);return JSON.parse(body);}
 async function session(who){const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}

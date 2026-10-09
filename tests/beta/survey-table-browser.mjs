@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import jwt from 'jsonwebtoken';
 assert.equal(process.env.SWR_SURVEY_WORKFLOW_TEST,'1');
 const f=JSON.parse(await fs.readFile('.local-survey-ui.json','utf8'));assert.equal(f.origin,'http://127.0.0.1:3150');
-const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');
-const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[];function check(value,label){assert(value,label);checks.push(label);}
 try{
  const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});

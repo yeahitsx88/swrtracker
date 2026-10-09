@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -32,7 +33,7 @@ try{
  check((await request('localAdmin',base+'/companies',{companies:[{id,associatedAt:record.associatedAt}],confirmed:true},'DELETE')).status===200,'Remove only the project association');
  match=await get('  '+label.toUpperCase().replaceAll(' ','   ')+'  ');check(match.status===200&&match.body.matchingCompanies[0].id===id&&!match.body.matchingCompanies[0].associated,'Case and whitespace lookup finds retained original ID');
  check((await request('localAdmin',base+'/companies',{name:label,type:'GC',confirmed:true})).status===409,'Removed company still blocks duplicate registration');check(await total()===count,'Rejected registration preserves company count');
- const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+ const {chromium}=await import(playwrightModuleURL);const browser=await chromium.launch({channel:'msedge',headless:true});
  const row=(await db.query('SELECT tenant_id,session_version FROM users WHERE id=$1',[f.localAdmin])).rows[0],context=await browser.newContext({viewport:{width:1440,height:960}});await context.addCookies([{name:'swr_session',value:jwt.sign({sub:f.localAdmin,tenantId:row.tenant_id,sv:row.session_version},process.env.JWT_SECRET,{expiresIn:'1h'}),url:origin}]);const p=await context.newPage();
  async function shot(name){await p.waitForLoadState('networkidle');await p.evaluate(async()=>{await document.fonts.ready;document.activeElement?.blur();window.scrollTo(0,0);await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});const path='.impeccable/review/'+name+'.png';await p.screenshot({path,fullPage:true});shots.push(path);check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' has no page overflow');}
  try{

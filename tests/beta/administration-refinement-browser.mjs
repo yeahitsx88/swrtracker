@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -18,7 +19,7 @@ async function request(actor,path,body,method=body?'POST':'GET',key=randomUUID()
 function check(value,label){assert(value,label);checks++;evidence.push(label);}
 
 const shots=[];const base=`/projects/${f.project}`,api=`/api/projects/${f.project}`;
-const {chromium}=await import(process.env.SWR_PLAYWRIGHT_MODULE??'file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');const browser=await chromium.launch({executablePath:process.env.SWR_EDGE_PATH??'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const {chromium}=await import(playwrightModuleURL);const browser=await chromium.launch({channel:'msedge',headless:true});
 async function contextFor(actor){const row=(await db.query('SELECT tenant_id,session_version FROM users WHERE id=$1',[f[actor]])).rows[0];const context=await browser.newContext({viewport:{width:1107,height:884}});await context.addCookies([{name:'swr_session',value:jwt.sign({sub:f[actor],tenantId:row.tenant_id,sv:row.session_version},process.env.JWT_SECRET,{expiresIn:'1h'}),url:origin}]);return context;}
 const context=await contextFor('localAdmin'),p=await context.newPage();
 async function shot(name){await p.waitForLoadState('networkidle');await p.evaluate(async()=>{await document.fonts.ready;document.activeElement?.blur();window.scrollTo(0,0);await Promise.race([Promise.all([...document.images].filter(i=>i.getClientRects().length).map(i=>i.decode().catch(()=>{}))),new Promise(resolve=>setTimeout(resolve,1200))]);await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});const path='.impeccable/review/'+name+'.png';await p.screenshot({path,fullPage:true});shots.push(path);check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' has no page overflow');}

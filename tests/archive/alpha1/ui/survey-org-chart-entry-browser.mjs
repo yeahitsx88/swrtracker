@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../../../playwright-runtime.mjs';
 // Read-only API doubles in an explicitly development-only component harness.
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { mkdir } from 'node:fs/promises';
 const origin = process.env.SWR_POC_ORIGIN;
 if (!origin || !/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(origin)) throw new Error('Use an owned loopback fixture runtime');
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const { chromium } = await import(playwrightModuleURL);
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 try {
   await mkdir('.local/org-poc', { recursive: true });

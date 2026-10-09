@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -7,7 +8,7 @@ assert.equal(process.env.SWR_CONNECTED_TEST,'209');
 const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);
 const settings=Object.fromEntries((await fs.readFile('.local/alpha-closure209/host-runtime.env','utf8')).split(/\r?\n/).filter(x=>x.includes('=')).map(x=>{const i=x.indexOf('=');return[x.slice(0,i),x.slice(i+1)];})),url=new URL(settings.DATABASE_URL),f=JSON.parse(await fs.readFile('.local/alpha-closure209/fixture.json','utf8'));assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');assert.match(f.schema,/^alpha_connected209_[a-f0-9]{32}$/);assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');assert.equal(f.origin,'http://127.0.0.1:3225');
 const pool=new Pool({connectionString:url.href});
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],errors=[],captures=[];const check=(v,label)=>{assert(v,label);checks.push(label);};
 async function session(actor,width=1440,dark=false){const c=await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce',colorScheme:dark?'dark':'light'});await c.addCookies([{name:'swr_session',value:f.tokens[actor],url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
 async function read(key){return (await pool.query('SELECT * FROM tickets WHERE tenant_id=$1 AND id=$2',[f.tenant,f.tickets[key]])).rows[0];}

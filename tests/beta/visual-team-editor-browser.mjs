@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -7,7 +8,7 @@ assert.equal(process.env.SWR_VISUAL_TEAM,'198');
 const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.hostPort,15500);assert.match(own.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);
 const values=Object.fromEntries((await fs.readFile('.local/alpha-acceptance197/runner.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];})),url=new URL(values.DATABASE_URL);url.port='15500';
 const f=JSON.parse(await fs.readFile('.local/visual-team198/fixture.json','utf8')),origin=process.env.SWR_VISUAL_ORIGIN??'http://127.0.0.1:3211';assert(['http://127.0.0.1:3211','http://127.0.0.1:3213'].includes(origin));
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],captures=[],errors=[],base=origin+'/api/projects/'+f.project,org=base+'/survey/organization',teams=base+'/survey/teams',work=base+'/survey/workforce',moves=base+'/survey/reorganization';
 function check(v,n){assert(v,n);checks.push(n);}async function json(res,status=200){assert.equal(res.status(),status,await res.text());return res.json();}
 async function context(who){const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:origin,httpOnly:true,sameSite:'Lax'}]);return c;}

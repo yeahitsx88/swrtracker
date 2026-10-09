@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {randomUUID} from 'node:crypto';
@@ -6,14 +7,14 @@ import {pathToFileURL} from 'node:url';
 const require=createRequire(import.meta.url),{Pool}=require('pg'),bcrypt=require('bcrypt');
 const origin='http://127.0.0.1:3107',url=new URL(process.env.DATABASE_URL??'');
 if(process.env.SWR_TEAM_POSTGRES!=='1'||url.hostname!=='127.0.0.1'||url.port!=='15489'||url.pathname!=='/swr_team_isolated')throw Error('Owned disposable loopback only');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const {chromium}=await import(playwrightModuleURL);
 const id=n=>`98000000-0000-4000-8000-${String(n).padStart(12,'0')}`,pg=new Pool({connectionString:url.href});
 let checks=0;const check=(a,b,message)=>{assert.deepEqual(a,b,message);checks++;};
 const password='Synthetic-reviewer-browser-only',hash=await bcrypt.hash(password,10);
 const project=randomUUID(),level=randomUUID(),area=randomUUID(),area2=randomUUID(),grant=randomUUID(),otherGrant=randomUUID();
 const extra=[3,4,5,6].map(n=>({name:`Area${n}`,area:randomUUID(),grant:randomUUID(),replacementGrant:randomUUID(),replacementAssignment:randomUUID()}));
 const api=`/api/projects/${project}/survey/protected-obligations`;
-const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const browser=await chromium.launch({channel:'msedge',headless:true});
 async function session(n,width=1440){
  const response=await fetch(origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({tenantId:id(1),email:`${n}@reviewer.example.invalid`,password})});check(response.status,200,'real login');
  const bearer=response.headers.get('set-cookie')?.match(/swr_session=([^;]+)/)?.[1];assert.ok(bearer);

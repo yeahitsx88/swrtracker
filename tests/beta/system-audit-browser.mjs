@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -24,7 +25,7 @@ const repo=new NotificationRepository(),sent=[];process.env.SYSTEM_ACTOR_ID=requ
 const result=await runNotificationWorkerCycle({db:getPool(),runRepo:new PgBackgroundJobRunRepository(),transport:{send:async message=>{sent.push(message);}},withTenantLifecycle:withTenantNotificationTransaction,repo:{listApproverTimeoutCandidates:(db,now,scope)=>repo.listApproverTimeoutCandidates(db,now,scope??tenant),listVacancyEscalationCandidates:async()=>[],listOrphanWorkflowCandidates:async()=>[],reassignOrphanWorkflowTicket:async()=>{throw Error('Unexpected reassignment');}}});
 check(result.unlockedCount===1&&sent.length===1,'Actual bounded background dispatch emits one system escalation');
 const rows=(await pg.query('SELECT actor_id,actor_kind FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2 ORDER BY created_at,id',[tenant,ticket])).rows;check(rows.length===2&&rows.some(r=>r.actor_kind==='SYSTEM'&&r.actor_id===null)&&rows.some(r=>r.actor_kind==='USER'&&r.actor_id===requester),'Configured employee is ignored; human submission retained');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),token=jwt.sign({sub:requester,tenantId:tenant,sv:1},settings.JWT_SECRET,{expiresIn:'1h'});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),token=jwt.sign({sub:requester,tenantId:tenant,sv:1},settings.JWT_SECRET,{expiresIn:'1h'});
 try{
  for(const mode of ['LIGHT','DARK'])for(const width of [1440,390]){
   const c=await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:token,url:origin}]);

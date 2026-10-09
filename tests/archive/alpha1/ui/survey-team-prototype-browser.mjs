@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../../../playwright-runtime.mjs';
 // Fixture UI acceptance only: no database, credentials or production API calls.
 // SWR_PLAYWRIGHT_MODULE points to an existing Playwright ESM module.
 import assert from 'node:assert/strict';
@@ -7,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 const origin = process.env.SWR_POC_ORIGIN;
 if (!origin || !/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(origin)) throw new Error('SWR_POC_ORIGIN must be an explicitly owned loopback dev runtime');
 if (!process.env.SWR_PLAYWRIGHT_MODULE) throw new Error('Set SWR_PLAYWRIGHT_MODULE to an existing Playwright module');
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const { chromium } = await import(playwrightModuleURL);
 const preview = process.argv.includes('--preview');
 const overlay = process.env.SWR_POC_OVERLAY === '1';
 const targetPath = overlay ? '/prototypes/survey-team/workspace' : '/prototypes/survey-team';

@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../../tests/playwright-runtime.mjs';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 const local='.local-customer-rehearsal',out='audits/customer-lifecycle-rehearsal/operations';
 const state=JSON.parse(await fs.readFile(local+'/operations.json','utf8')),manifest=JSON.parse(await fs.readFile(local+'/manifest.json','utf8'));
 const f=manifest.datasets.human,origin='http://localhost:3116';
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({headless:true,channel:'msedge'});
 const results=[],errors=[];
 const successorOnly=process.argv[2]==='successor';
 const actors=successorOnly?[state.successor]:[state.successor??state.jordan,state.manager,state.superintendents[0],state.crews[0].chief,state.crews[0].ims[0],state.people.find(p=>p.role==='REQUESTER'&&p.companyType==='SUBCONTRACTOR')];

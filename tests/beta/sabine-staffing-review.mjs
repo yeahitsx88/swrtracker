@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Owned local preview acceptance: no staffing/request writes or screenshots.
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
@@ -7,8 +8,8 @@ const config = JSON.parse(fs.readFileSync('.data/sabine/runtime.json','utf8'));
 const manifest = JSON.parse(fs.readFileSync('.data/sabine/manifest.json','utf8'));
 const database = new URL(config.DATABASE_URL);
 assert.equal(database.hostname,'127.0.0.1'); assert.equal(database.port,'15488'); assert.equal(database.pathname,'/swr_sabine_simulation');
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser = await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const { chromium } = await import(playwrightModuleURL);
+const browser = await chromium.launch({headless:true,channel:'msedge'});
 const origin = 'http://127.0.0.1:3106';
 try {
   for (const width of [810,390]) {

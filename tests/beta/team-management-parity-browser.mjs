@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -16,7 +17,7 @@ for(const [who,role] of Object.entries(roles)){const id=people[who]=randomUUID()
 await pool.query("INSERT INTO aor_levels(id,tenant_id,project_id,depth,label) VALUES($1,$2,$3,0,'Area')",[level,tenant,project]);for(const [id,name] of [[areaA,'Source Area'],[areaB,'Destination Area']])await pool.query('INSERT INTO aor_nodes(id,tenant_id,project_id,level_id,name,code) VALUES($1,$2,$3,$4,$5,$5)',[id,tenant,project,level,name]);
 for(const [who,area] of [['superintendent',areaA],['superintendent',areaB],['chief',areaA],['destination',areaB]])await pool.query('INSERT INTO aor_assignments(tenant_id,project_id,user_id,aor_node_id) VALUES($1,$2,$3,$4)',[tenant,project,people[who],area]);
 for(const [who,area] of [['chief',areaA],['destination',areaB]])await pool.query('INSERT INTO survey_reporting_links(tenant_id,project_id,superintendent_id,party_chief_id,aor_node_id,assigned_by) VALUES($1,$2,$3,$4,$5,$6)',[tenant,project,people.superintendent,people[who],area,people.manager]);await pool.query('INSERT INTO crew_rosters(tenant_id,project_id,party_chief_id,instrument_man_id) VALUES($1,$2,$3,$4)',[tenant,project,people.chief,people.instrument]);
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:tokens.manager,url:origin,httpOnly:true,sameSite:'Lax'}]);
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:tokens.manager,url:origin,httpOnly:true,sameSite:'Lax'}]);
 const base=origin+'/api/projects/'+project,moves=base+'/survey/workforce',teams=base+'/survey/teams';
 function check(v,n){assert(v,n);checks.push(n);}async function json(response,status=200){assert.equal(response.status(),status,await response.text());return response.json();}
 async function team(name,lead,members){return (await json(await c.request.post(teams,{data:{teamId:null,expectedVersion:null,name,areaId:areaA,areaIds:[areaA,areaB],leadUserId:lead,memberIds:members},headers:{'Idempotency-Key':randomUUID()}}),201)).teamId;}

@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -8,7 +9,7 @@ const origin=process.env.SWR_MEMBERSHIP_SUPPORT_ORIGIN??'http://127.0.0.1:3205';
 const folder=origin.endsWith(':3208')?'.local/membership-support/accepted2':origin.endsWith(':3205')?'.local/membership-support/initial':origin.endsWith(':3206')?'.local/membership-support/final':'.local/membership-support/accepted';
 const e=JSON.parse(await fs.readFile('.local/finalization/environment.json','utf8')),f=JSON.parse(await fs.readFile('.local/finalization/protected-membership-support-fixture.json','utf8')),u=new URL(e.DATABASE_URL);assert.equal(u.port,'15498');assert.equal(u.pathname,'/swr_finalization_184');
 const pool=new Pool({connectionString:u.href});assert.equal((await pool.query('SELECT name FROM tenants WHERE id=$1',[f.tenant])).rows[0]?.name,'Owned membership196');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];const base='/api/projects/'+f.project;
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];const base='/api/projects/'+f.project;
 function check(value,label){assert(value,label);checks.push(label);}
 async function json(r,status=200){assert.equal(r.status(),status,'Actual authenticated response status');return r.json();}
 async function session(who,width=1440,height=1000){const c=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[who],url:origin,httpOnly:true,sameSite:'Lax'}]);return c;}

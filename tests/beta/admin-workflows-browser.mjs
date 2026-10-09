@@ -1,8 +1,9 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Production browser acceptance in explicitly owned synthetic fixtures.
 import {Pool} from 'pg';import assert from 'node:assert/strict';import fs from 'node:fs/promises';import jwt from 'jsonwebtoken';import {randomUUID} from 'node:crypto';import {pathToFileURL} from 'node:url';
 assert.equal(process.env.SWR_ADMIN_RESTORATION,'1');const f=JSON.parse(await fs.readFile(process.env.SWR_ADMIN_FIXTURE_FILE??'.local-restoration-fixture.json','utf8')),retained=JSON.parse(await fs.readFile('.local-demo-fixture.json','utf8'));assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);assert.notEqual(f.schema,retained.schema);
-const origin=process.env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}),captures=[],receipt=[];let checks=0;
+const origin=process.env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'}),captures=[],receipt=[];let checks=0;
 const dbUrl=new URL(process.env.DATABASE_URL);assert.equal(dbUrl.hostname,'127.0.0.1');assert.equal(dbUrl.port,'15493');assert.equal(dbUrl.pathname,'/swr_team_isolated');dbUrl.searchParams.delete('options');const pg=new Pool({connectionString:dbUrl.href,options:'-c search_path='+f.schema+',public'});
 const out='.impeccable/review/admin-restoration/current';await fs.mkdir(out,{recursive:true});
 const check=(v,label)=>{assert(v,label);checks++;receipt.push(label);};

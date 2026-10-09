@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../../tests/playwright-runtime.mjs';
 // Authorized assisted rehearsal. Does not implement privileged invitations or email transport.
 import fs from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
@@ -14,8 +15,8 @@ const env=Object.fromEntries(cfg.Config.Env.map(s=>{const i=s.indexOf('=');retur
 assert.equal(env.POSTGRES_DB,'swr_team_isolated');
 const url=new URL('postgresql://127.0.0.1:15489/swr_team_isolated');url.username=env.POSTGRES_USER||'postgres';url.password=env.POSTGRES_PASSWORD;
 const pool=new Pool({connectionString:url.href}),db=await pool.connect();
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 const alex=await browser.newContext(),jordan=await browser.newContext({viewport:{width:1440,height:1000}});
 const a=await alex.newPage(),j=await jordan.newPage(),origin='http://localhost:3116';
 const report={baseline:manifest.baseline,startedAt:new Date().toISOString(),status:'IN_PROGRESS',assistance:[],checks:[]};

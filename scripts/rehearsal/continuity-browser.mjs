@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../../tests/playwright-runtime.mjs';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 const root='.local-customer-rehearsal',out='audits/customer-lifecycle-rehearsal/continuity';
 const s=JSON.parse(await fs.readFile(root+'/operations.json','utf8')),f=JSON.parse(await fs.readFile(root+'/manifest.json','utf8')).datasets.human;
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 const checks=[],errors=[],timings=[];
 function check(name,value){checks.push({name,pass:!!value});assert.ok(value,name);}
 await fs.mkdir(out,{recursive:true});

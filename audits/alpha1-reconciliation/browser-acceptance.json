@@ -23,11 +23,30 @@
     "Live chart contains no synthetic demo default",
     "live-chart-light-desktop has contained document width",
     "Live visual cancellation discards proposal",
+    "Owned destination Chief is explicitly enrolled in named team",
+    "Uncertain actual commit holds outer chart",
+    "Actual visual commit retries exact reviewed payload and key",
+    "Live graph reflects committed crew reassignment",
+    "Separate governed team save invalidates reviewed staffing snapshot",
+    "Stale visual review blocks further writes",
     "Live entry returns keyboard focus",
     "Manager selects Dark through current appearance API; got 200",
     "live-chart-dark-mobile has contained document width",
     "Archived live chart provides no move controls",
     "archived-chart-dark-mobile has contained document width",
+    "manager actual credential login",
+    "alignment-home-light-1440 has contained document width",
+    "alignment-operations-light-1440 has contained document width",
+    "alignment-review-light-1440 has contained document width",
+    "alignment-home-light-390 has contained document width",
+    "alignment-operations-light-390 has contained document width",
+    "alignment-review-light-390 has contained document width",
+    "alignment-home-dark-1440 has contained document width",
+    "alignment-operations-dark-1440 has contained document width",
+    "alignment-review-dark-1440 has contained document width",
+    "alignment-home-dark-390 has contained document width",
+    "alignment-operations-dark-390 has contained document width",
+    "alignment-review-dark-390 has contained document width",
     "No browser page errors"
   ],
   "captureNames": [
@@ -39,11 +58,23 @@
     "role-tenantOnly.png",
     "live-chart-light-desktop.png",
     "live-chart-dark-mobile.png",
-    "archived-chart-dark-mobile.png"
+    "archived-chart-dark-mobile.png",
+    "alignment-home-light-1440.png",
+    "alignment-operations-light-1440.png",
+    "alignment-review-light-1440.png",
+    "alignment-home-light-390.png",
+    "alignment-operations-light-390.png",
+    "alignment-review-light-390.png",
+    "alignment-home-dark-1440.png",
+    "alignment-operations-dark-1440.png",
+    "alignment-review-dark-1440.png",
+    "alignment-home-dark-390.png",
+    "alignment-operations-dark-390.png",
+    "alignment-review-dark-390.png"
   ],
   "fixtureKind": "fresh owned synthetic",
   "entry": "actual /projects/[projectId]/survey/teams",
   "limits": [
-    "Live commit/exact retry is a separate named case; this receipt covers credential navigation, live proposal cancellation, keyboard return and read-only states."
+    "Edge desktop/mobile viewports; other engines and physical touch devices unverified."
   ]
 }

@@ -1,8 +1,9 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';import jwt from 'jsonwebtoken';import {Pool} from 'pg';
 assert.equal(process.env.SWR_ROLE_ACCESS,'1');const env=process.env;
 const f=JSON.parse(await fs.readFile(env.SWR_ROLE_FIXTURE_FILE??'.local-roleaudit-fixture.json','utf8')),retained=JSON.parse(await fs.readFile('.local-demo-fixture.json','utf8'));assert.notEqual(f.schema,retained.schema);
 const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');url.searchParams.set('options','-c search_path='+f.schema+',public');const db=new Pool({connectionString:url.href});
-const {chromium}=await import(env.SWR_PLAYWRIGHT_MODULE??'file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');const browser=await chromium.launch({executablePath:env.SWR_EDGE_PATH??'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});const origin=env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);const shots=[],checks=[];
+const {chromium}=await import(playwrightModuleURL);const browser=await chromium.launch({channel:'msedge',headless:true});const origin=env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);const shots=[],checks=[];
 const check=(value,label)=>{assert(value,label);checks.push(label);};
 function contrast(a,b){const lum=c=>c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
 async function context(actor,width=1107,touch=false){const state=(await db.query('SELECT tenant_id,session_version FROM users WHERE id=$1',[f[actor]])).rows[0];assert(state);const c=await browser.newContext({viewport:{width,height:884},hasTouch:touch,reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:jwt.sign({sub:f[actor],tenantId:state.tenant_id,sv:state.session_version},env.JWT_SECRET,{expiresIn:'1h'}),url:origin}]);return c;}

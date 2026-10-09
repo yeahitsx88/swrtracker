@@ -1,8 +1,9 @@
+import {playwrightModuleURL} from '../../tests/playwright-runtime.mjs';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 const local='.local-customer-rehearsal',out='audits/customer-lifecycle-rehearsal/operations';
 const s=JSON.parse(await fs.readFile(local+'/operations.json','utf8')),f=JSON.parse(await fs.readFile(local+'/manifest.json','utf8')).datasets.human;
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'}),origin='http://localhost:3116';
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({headless:true,channel:'msedge'}),origin='http://localhost:3116';
 const results=[];
 async function session(actor){const c=await browser.newContext({viewport:{width:1440,height:1000}}),p=await c.newPage();await p.goto(origin+'/login');await p.getByLabel('Tenant ID',{exact:true}).fill(f.tenant);await p.getByLabel('Email',{exact:true}).fill(actor.email);await p.getByLabel('Password',{exact:true}).fill(f.password);await p.getByRole('button',{name:'Sign In',exact:true}).click();await p.waitForURL('**/projects');return {c,p};}
 try{

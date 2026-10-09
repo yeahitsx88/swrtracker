@@ -1,7 +1,8 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';import {randomUUID} from 'node:crypto';import {pathToFileURL} from 'node:url';
 const run=process.env.SWR_ALPHA_EVIDENCE??'197';assert.ok(['197','206'].includes(run));const evidenceDir=run==='206'?'.local/alpha-closure206':'.local/alpha-acceptance197',capturePrefix=run==='206'?'alpha-closure206':'alpha-acceptance197';
 assert.equal(process.env.SWR_ALPHA_ACCEPTANCE,'197');const f=JSON.parse(await fs.readFile(evidenceDir+'/role-fixture.json','utf8')),origin=process.env.SWR_ALPHA_ORIGIN??'http://127.0.0.1:3210';assert.ok(['http://127.0.0.1:3210','http://127.0.0.1:3222'].includes(origin),'Owned pinned local runtime required');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];function check(v,n){assert(v,n);checks.push(n);}
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];function check(v,n){assert(v,n);checks.push(n);}
 async function shot(p,name){const path='.impeccable/review/'+capturePrefix+'-'+name+'.png';await p.screenshot({path,fullPage:false});captures.push(path);}
 try{
  for(const who of ['requester','manager','superintendent','chief','instrument','viewer','admin','tenantOnly']){

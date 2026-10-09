@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -10,7 +11,7 @@ const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8'))
 assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
 assert.equal(await fs.stat(dir+'/results.json').then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;}),false,'Completed recovery fixture is immutable evidence; provision a new owned fixture for another full run.');
 const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),contexts={},checks=[],captures=[],errors=[];
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),contexts={},checks=[],captures=[],errors=[];
 try{const prior=JSON.parse(await fs.readFile(dir+'/progress.json','utf8'));checks.push(...prior.checks);captures.push(...prior.captures);errors.push(...prior.errors);}catch(e){if(e.code!=='ENOENT')throw e;}
 function check(v,label){assert(v,label);checks.push(label);}
 async function save(){await fs.writeFile(dir+'/fixture.json',JSON.stringify(f));await fs.writeFile(dir+'/progress.json',JSON.stringify({checks,captures,errors},null,2));}

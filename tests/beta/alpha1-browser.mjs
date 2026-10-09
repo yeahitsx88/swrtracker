@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Production-browser regressions in setup's owned disposable schema only.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -10,7 +11,7 @@ assert.equal(process.env.SWR_TEAM_POSTGRES,'1');assert.equal(url.hostname,'127.0
 const f=JSON.parse(await fs.readFile('.local-fixture.json','utf8'));assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);
 const origin=process.env.SWR_ACCEPTANCE_ORIGIN;assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
 const pg=new Pool({connectionString:url.href,options:'-c search_path='+f.schema+',public'});
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const {chromium}=await import(playwrightModuleURL);
 const browser=await chromium.launch({headless:true,executablePath:process.env.SWR_BROWSER_EXECUTABLE??'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
 const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();page.setDefaultTimeout(15000);
 let checks=0;const errors=[];page.on('pageerror',e=>errors.push(e.message));

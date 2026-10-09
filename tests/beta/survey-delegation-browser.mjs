@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';import {randomUUID} from 'node:crypto';import jwt from 'jsonwebtoken';import {Pool} from 'pg';
 assert.equal(process.env.SWR_SURVEY_WORKFLOW_TEST,'1');
 const f=JSON.parse(await fs.readFile('.local-survey-ui.json','utf8')),r=JSON.parse(await fs.readFile('.local-survey-roles.json','utf8')),owned=JSON.parse(await fs.readFile('.local-survey-workflow-db.json','utf8'));
 const url=new URL(owned.databaseUrl);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15495');assert.equal(url.pathname,'/swr_survey_workflow');assert.equal(f.origin,'http://127.0.0.1:3150');
 const db=new Pool({connectionString:url.href}),ticket=randomUUID(),number='DELEGATE-'+randomUUID().slice(0,8);
 await db.query("INSERT INTO tickets(id,tenant_id,project_id,company_id,requester_id,workflow_variant,status,craft,description,aor_node_id,ticket_type,requested_date,ticket_number) VALUES($1,$2,$3,$4,$5,'STANDARD_APPROVAL','APPROVED','Survey','Delegation browser check',$6,'LAYOUT',CURRENT_DATE,$7)",[ticket,f.tenant,f.project,f.company,r.requester,f.area,number]);
-const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');const b=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});const checks=[];const check=(v,label)=>{assert(v,label);checks.push(label);};
+const {chromium}=await import(playwrightModuleURL);const b=await chromium.launch({channel:'msedge',headless:true});const checks=[];const check=(v,label)=>{assert(v,label);checks.push(label);};
 async function session(id){const c=await b.newContext({viewport:{width:Number(process.env.SWR_TEST_VIEWPORT_WIDTH)||1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:jwt.sign({sub:id,tenantId:f.tenant,sv:1},f.secret,{algorithm:'HS256',expiresIn:'1h',jwtid:randomUUID()}),url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
 try{
  const manager=await session(f.manager),p=await manager.newPage();await p.goto(`${f.origin}/projects/${f.project}/survey/operations`);await p.getByRole('tab',{name:/Need Assignment/}).click();await p.getByRole('searchbox',{name:'Find a request',exact:true}).fill(number);

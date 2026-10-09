@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -6,7 +7,7 @@ import {Pool} from 'pg';
 assert.equal(process.env.SWR_FINALIZATION_TEST,'1');
 const env=JSON.parse(await fs.readFile('.local/finalization/environment.json','utf8')),url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15498');assert.equal(url.pathname,'/swr_finalization_184');
 const f=JSON.parse(await fs.readFile('.local/finalization/submitted-recovery-fixture.json','utf8')),origin=process.env.SWR_RECOVERY_ORIGIN??'http://127.0.0.1:3186';assert(['http://127.0.0.1:3186','http://127.0.0.1:3187','http://127.0.0.1:3188'].includes(origin));
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],errors=[],captures=[],endpoint=origin+'/api/projects/'+f.project+'/request-recovery',nonce=randomUUID().slice(0,8);
 function check(value,label){assert(value,label);checks.push(label);}
 async function json(response,status=200){assert.equal(response.status(),status);return response.json();}

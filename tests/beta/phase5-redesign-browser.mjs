@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Intercepted presentation acceptance. No database or live account mutations.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
 assert.equal(process.env.SWR_REDESIGN_UI,'1');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 const base='http://127.0.0.1:3107',project='96000000-0000-4000-8000-000000000002',area='96000000-0000-4000-8000-000000000003',id='96000000-0000-4000-8000-000000000004';
 fs.mkdirSync('.impeccable/review',{recursive:true});
 let checks=0;

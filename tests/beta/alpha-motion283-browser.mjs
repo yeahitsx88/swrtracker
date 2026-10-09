@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -8,7 +9,7 @@ assert.equal(await fs.stat(dir+'/motion-results.json').then(()=>true,e=>{if(e.co
 const f=JSON.parse(await fs.readFile('.local/alpha-closure282/role-fixture.json','utf8'));
 assert.match(f.schema,/^alpha_tables282_[a-f0-9]{32}$/);
 assert.equal(f.origin,'http://127.0.0.1:3315');
-const {chromium}=await import(pathToFileURL('D:/Programming/Personal Workout App/node_modules/playwright/index.mjs').href);
+const {chromium}=await import(playwrightModuleURL);
 const browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],errors=[];
 async function check(value,label){assert(value,label);checks.push(label);await fs.writeFile(dir+'/motion-progress.json',JSON.stringify({checks,errors}));}
 try {

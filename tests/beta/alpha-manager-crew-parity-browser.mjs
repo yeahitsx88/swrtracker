@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID,createHash} from 'node:crypto';
@@ -8,7 +9,7 @@ const dir='.local/alpha-closure211',f=JSON.parse(await fs.readFile(dir+'/fixture
 assert.match(f.schema,/^alpha_crew211_[a-f0-9]{32}$/);assert.equal(f.origin,'http://127.0.0.1:3226');
 const settings=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).split(/\r?\n/).filter(x=>x.includes('=')).map(x=>{const i=x.indexOf('=');return [x.slice(0,i),x.slice(i+1)];}));
 const url=new URL(settings.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 const origin=f.origin,base=origin+'/api/projects/'+f.project;
 function check(v,s){assert(v,s);checks.push(s);}async function json(r,status=200){assert.equal(r.status(),status,await r.text());return r.json();}
 async function session(key){const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:f.tokens[key],url:origin,httpOnly:true,sameSite:'Lax'}]);return c;}

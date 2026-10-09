@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
@@ -6,7 +7,7 @@ const require=createRequire(import.meta.url),{Pool}=require('pg'),bcrypt=require
 const origin=process.env.SWR_UI_ORIGIN??'http://127.0.0.1:3107';
 const dburl=new URL(process.env.DATABASE_URL??'');
 if(process.env.SWR_TEAM_POSTGRES!=='1'||origin!=='http://127.0.0.1:3107'||dburl.hostname!=='127.0.0.1'||dburl.port!=='15489'||dburl.pathname!=='/swr_team_isolated')throw Error('Owned disposable loopback preview/fixture required');
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const {chromium}=await import(playwrightModuleURL);
 const id=n=>'96000000-0000-4000-8000-'+String(n).padStart(12,'0'),project=id(3),tenant=id(1);
 const pg=new Pool({connectionString:dburl.href});
 const password='Synthetic-increment-browser-only';

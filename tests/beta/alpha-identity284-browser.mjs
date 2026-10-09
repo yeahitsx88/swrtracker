@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {createHash,createDecipheriv,randomBytes} from 'node:crypto';
@@ -8,7 +9,7 @@ const dir='.local/alpha-closure284',f=JSON.parse(await fs.readFile(dir+'/role-fi
 assert.match(f.schema,/^alpha_identity284_[a-f0-9]{32}$/);assert.equal(f.origin,'http://127.0.0.1:3316');const origin='https://127.0.0.1:3317';
 assert.equal(await fs.stat(dir+'/identity-results.json').then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e}),false,'Preserve completed identity receipt');
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(l=>{const i=l.indexOf('=');return[l.slice(0,i),l.slice(i+1)];})),u=new URL(env.DATABASE_URL);assert.equal(u.port,'15500');assert.equal(u.searchParams.get('options'),'-c search_path='+f.schema+',public');
-const pool=new Pool({connectionString:u.href}),{chromium}=await import(pathToFileURL('D:/Programming/Personal Workout App/node_modules/playwright/index.mjs').href),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
+const pool=new Pool({connectionString:u.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 async function check(v,label){assert(v,label);checks.push(label);await fs.writeFile(dir+'/identity-progress.json',JSON.stringify({checks,captures,errors}));}
 async function witness(){const result={};for(const table of ['tickets','ticket_events','ticket_assignment_history','survey_reporting_links','crew_rosters','survey_team_members','aor_assignments','project_admin_grants','project_memberships'])result[table]=(await pool.query('SELECT to_jsonb(r) body FROM '+table+' r ORDER BY to_jsonb(r)::text')).rows;return JSON.stringify(result);}
 async function context(width=1440){const c=await browser.newContext({viewport:{width,height:1000},colorScheme:width===390?'dark':'light',reducedMotion:'reduce',ignoreHTTPSErrors:true});return c;}

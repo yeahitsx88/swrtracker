@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Authenticated browser checks against the newly owned PostgreSQL/production fixture.
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -9,7 +10,7 @@ const origin = process.env.SWR_ORG_READ_ORIGIN;
 const dbUrl = new URL(process.env.DATABASE_URL ?? '');
 if (process.env.SWR_ORG_READ_ACCEPTANCE !== '1' || origin !== 'http://127.0.0.1:3171' || dbUrl.hostname !== '127.0.0.1' || dbUrl.port !== '15496' || dbUrl.pathname !== '/swr_org_read_20261006') throw new Error('Use the explicitly owned read-only Org Chart fixture/runtime');
 const f = JSON.parse(await readFile('.local/org-read/fixture.json', 'utf8'));
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const { chromium } = await import(playwrightModuleURL);
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const pool = new Pool({ connectionString: dbUrl.href, max: 2 });
 const checks = [], errors = [], writes = [];

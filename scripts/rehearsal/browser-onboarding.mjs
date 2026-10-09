@@ -1,10 +1,11 @@
+import {playwrightModuleURL} from '../../tests/playwright-runtime.mjs';
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 const manifest=JSON.parse(await fs.readFile('.local-customer-rehearsal/manifest.json','utf8'));
 const f=manifest.datasets.auto;
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();
 const out='audits/customer-lifecycle-rehearsal';
 try {

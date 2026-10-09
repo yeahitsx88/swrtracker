@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {writeFileSync} from 'node:fs';
@@ -9,7 +10,7 @@ const dir='.local/alpha-closure252',f=JSON.parse(await fs.readFile(dir+'/fixture
 assert.match(f.schema,/^alpha_cycle252_[a-f0-9]{32}$/);assert.equal(f.origin,'http://127.0.0.1:3300');
 const env=Object.fromEntries((await fs.readFile(dir+'/host-runtime.env','utf8')).trim().split(/\r?\n/).map(s=>{const i=s.indexOf('=');return[s.slice(0,i),s.slice(i+1)];}));const url=new URL(env.DATABASE_URL);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15500');assert.equal(url.searchParams.get('options'),'-c search_path='+f.schema+',public');
 const run=randomUUID(),out=dir+'/run-'+run;await fs.mkdir(out);f.runs=[...(f.runs??[]),{id:run,path:out,source:'d55bfad'}];await fs.writeFile(dir+'/fixture.json',JSON.stringify(f));
-const pool=new Pool({connectionString:url.href}),{chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true}),c={},cases=[],captures=[],errors=[],records=[];
+const pool=new Pool({connectionString:url.href}),{chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true}),c={},cases=[],captures=[],errors=[],records=[];
 function progress(){writeFileSync(out+'/progress.json',JSON.stringify({cases,captures,pageErrors:errors,records},null,2));}
 function check(v,label){assert(v,label);cases.push(label);progress();}
 async function json(r,status=200){const text=await r.text();assert.equal(r.status(),status,text);return JSON.parse(text);}

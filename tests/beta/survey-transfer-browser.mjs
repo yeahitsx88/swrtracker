@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -7,8 +8,8 @@ assert.equal(process.env.SWR_SURVEY_WORKFLOW_TEST,'1');
 const f=JSON.parse(await fs.readFile('.local-survey-ui.json','utf8')),r=JSON.parse(await fs.readFile('.local-survey-roles.json','utf8')),owned=JSON.parse(await fs.readFile('.local-survey-workflow-db.json','utf8'));
 const url=new URL(owned.databaseUrl);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15495');assert.equal(url.pathname,'/swr_survey_workflow');assert.equal(f.origin,'http://127.0.0.1:3150');
 const db=new Pool({connectionString:url.href});
-const {chromium}=await import('file:///C:/Users/xwall/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs');
-const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[];function check(value,label){assert(value,label);checks.push(label);}
 async function session(id){const c=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});await c.addCookies([{name:'swr_session',value:jwt.sign({sub:id,tenantId:f.tenant,sv:1},f.secret,{algorithm:'HS256',expiresIn:'1h',jwtid:randomUUID()}),url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
 try{

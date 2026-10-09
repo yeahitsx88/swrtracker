@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
-import {randomUUID,createHash} from 'node:crypto';
+import {randomUUID} from 'node:crypto';
 import {Pool} from 'pg';
 assert.equal(process.env.SWR_RECONCILIATION,'1');
 const f=JSON.parse(await readFile('.local-reconciliation-fixture.json','utf8'));
@@ -54,6 +54,9 @@ try{
  // Current grant revocation denies read; actor is deliberately left revoked.
  await db.query('UPDATE project_admin_grants SET revoked_at=now(),revoked_by=$3 WHERE tenant_id=$1 AND user_id=$2',[f.tenant,f.people.projectOnly,f.people.admin]);
  check((await request('projectOnly',base+'/diagnostics')).status===403,'Revoked independent administrator cannot read diagnostics');
+ const supportCount=(await db.query('SELECT count(*)::int n FROM project_support_tickets WHERE tenant_id=$1',[f.tenant])).rows[0].n;
+ await db.query("CREATE FUNCTION reconciliation_support_fault() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.tenant_id='"+f.tenant+"'::uuid AND NEW.event_type='support.created' THEN RAISE EXCEPTION 'Owned atomic rollback witness'; END IF; RETURN NEW; END $$");await db.query('CREATE TRIGGER reconciliation_support_fault BEFORE INSERT ON administrative_events FOR EACH ROW EXECUTE FUNCTION reconciliation_support_fault()');
+ try{check((await request('requester',base+'/help-desk',{subject:'Owned rollback',description:'This synthetic support write must roll back.',confirmed:true})).status===500,'Actual HTTP support audit failure refuses business commit');check((await db.query('SELECT count(*)::int n FROM project_support_tickets WHERE tenant_id=$1',[f.tenant])).rows[0].n===supportCount,'HTTP audit fault preserves support business records');}finally{await db.query('DROP TRIGGER reconciliation_support_fault ON administrative_events');await db.query('DROP FUNCTION reconciliation_support_fault()');}
  await writeFile('audits/alpha1-reconciliation/http-acceptance.json',JSON.stringify({checks,limits:['Default route probes establish unauthenticated refusal, not full authorization for every branch. Role, lifecycle and fault cases also use the full PostgreSQL suites.'],fixtureKind:'fresh owned synthetic',observationRead:'bounded correlation wait'},null,2)+'\n');
  console.log('HTTP reconciliation acceptance: '+checks.length+' checks');
 }finally{await db.end();}

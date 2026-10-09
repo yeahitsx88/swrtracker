@@ -1,6 +1,7 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const { chromium } = await import(playwrightModuleURL);
 const browser = await chromium.launch({ headless: true, executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' });
 const origin = 'http://127.0.0.1:3107', projectId = '17764988-064e-4754-8a9b-ab3f32d902e2';
 const id = n => `30000000-0000-4000-8000-${String(n).padStart(12,'0')}`;

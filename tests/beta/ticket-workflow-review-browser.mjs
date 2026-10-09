@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
@@ -8,7 +9,7 @@ const env=JSON.parse(await fs.readFile('.local/finalization/environment.json','u
 assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15498');assert.equal(url.pathname,'/swr_finalization_184');
 const f=JSON.parse(await fs.readFile('.local/finalization/fixture.json','utf8'));assert.equal(f.origin,'http://127.0.0.1:3185');
 const pool=new Pool({connectionString:url.href});
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href),browser=await chromium.launch({channel:'msedge',headless:true});
+const {chromium}=await import(playwrightModuleURL),browser=await chromium.launch({channel:'msedge',headless:true});
 const checks=[],errors=[],captures=[];const check=(v,label)=>{assert(v,label);checks.push(label);};
 async function session(actor,width=1440,dark=false){const c=await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce',colorScheme:dark?'dark':'light'});await c.addCookies([{name:'swr_session',value:f.tokens[actor],url:f.origin,httpOnly:true,sameSite:'Lax'}]);return c;}
 async function read(key){return (await pool.query('SELECT * FROM tickets WHERE id=$1',[f.tickets[key]])).rows[0];}

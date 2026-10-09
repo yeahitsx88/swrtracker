@@ -1,7 +1,8 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Synthetic UI acceptance only; no database, credentials or imported records.
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
-const { chromium } = await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const { chromium } = await import(playwrightModuleURL);
 const browser = await chromium.launch({ headless: true, executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' });
 const origin='http://127.0.0.1:3107', project='20000000-0000-4000-8000-000000000002';
 const buckets=(labels)=>labels.map((label,index)=>({key:label,label,count:100-index*5}));

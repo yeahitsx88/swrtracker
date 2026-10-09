@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 import assert from 'node:assert/strict';
 import {Pool} from 'pg';
 import jwt from 'jsonwebtoken';
@@ -7,8 +8,8 @@ import {pathToFileURL} from 'node:url';
 const url=new URL(process.env.DATABASE_URL??'');assert.equal(process.env.SWR_TEAM_POSTGRES,'1');assert.equal(url.hostname,'127.0.0.1');if(url.port==='15500'){const own=JSON.parse(await fs.readFile('.local/alpha-acceptance197/ownership.json','utf8'));assert.equal(own.owner,'Alpha acceptance197');assert.equal(own.hostPort,15500);assert.match(own.container,/^swr-alpha-acceptance197-db-[a-f0-9]{8}$/);}else assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');
 const f=JSON.parse(await fs.readFile('.local-fixture.json','utf8'));assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);
 const origin=process.env.SWR_ACCEPTANCE_ORIGIN??'http://127.0.0.1:3113';assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
-const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+const {chromium}=await import(playwrightModuleURL);
+const browser=await chromium.launch({headless:true,channel:'msedge'});
 const pg=new Pool({connectionString:url.href}),context=await browser.newContext({viewport:{width:1440,height:1000}});
 await context.addCookies([{name:'swr_session',value:jwt.sign({sub:f.actor,tenantId:f.tenant,sv:1},process.env.JWT_SECRET,{expiresIn:'1h',jwtid:randomUUID()}),url:origin,httpOnly:true,sameSite:'Lax'}]);
 const page=await context.newPage();page.setDefaultTimeout(15000);let checks=0;const errors=[];page.on('pageerror',error=>errors.push(error.message));

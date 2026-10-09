@@ -1,3 +1,4 @@
+import {playwrightModuleURL} from '../playwright-runtime.mjs';
 // Explicitly owned synthetic UI fixture; never seed/reset retained databases.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -10,7 +11,7 @@ const f=JSON.parse(await fs.readFile('.local-fixture.json','utf8'));
 assert.match(f.schema,/^phase5_acceptance_[a-f0-9]{32}$/);
 const origin=process.env.SWR_ACCEPTANCE_ORIGIN;
 assert.match(origin,/^http:\/\/127\.0\.0\.1:\d+$/);
-const {chromium}=await import(pathToFileURL(process.env.SWR_PLAYWRIGHT_MODULE).href);
+const {chromium}=await import(playwrightModuleURL);
 const browser=await chromium.launch({headless:true,executablePath:process.env.SWR_BROWSER_EXECUTABLE??'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
 const out='.impeccable/review/alpha1-ui';
 await fs.mkdir(out,{recursive:true});
