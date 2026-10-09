@@ -850,3 +850,17 @@ main {
 .comment-meta { margin: 0 0 0.2rem; color: var(--muted); font-size: 0.82rem; }
 .comment-meta strong { color: var(--ink); }
 .comment-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* ---------- Notification inbox ---------- */
+.inbox-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.inbox-item { display: grid; grid-template-columns: 0.75rem minmax(0, 1fr); gap: 0.6rem; padding: 0.8rem 0.5rem; border-top: 1px solid var(--line); }
+.inbox-item:first-child { border-top: 0; }
+.inbox-dot { width: 0.55rem; height: 0.55rem; margin-top: 0.45rem; border-radius: 50%; background: transparent; }
+.inbox-unread { background: var(--surface-sunken); }
+.inbox-unread .inbox-dot { background: var(--action); }
+.inbox-title { margin: 0; font-weight: 600; }
+.inbox-unread .inbox-title { font-weight: 700; }
+.inbox-message { margin: 0.15rem 0 0; color: var(--ink); overflow-wrap: anywhere; }
+.inbox-meta { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.82rem; }
+.nav-count { margin-left: auto; min-width: 1.4rem; padding: 0 0.4rem; border-radius: 999px; background: var(--action); color: #fff; font-size: 0.72rem; font-weight: 700; line-height: 1.4rem; text-align: center; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

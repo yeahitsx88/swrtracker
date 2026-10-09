@@ -3,14 +3,19 @@ import test from 'node:test';
 import { findProjectLandingHref, getProjectLandingHref, getProjectNavigation, getMembershipLandingHref } from '@/components/ui/project-navigation';
 
 test('Home navigation preserves role-specific work and authorized scoped team views', () => {
-  assert.deepEqual(getProjectNavigation('REQUESTER').map(i => i.label), ['Home','New Request','Requests','Drafts','Help Desk']);
+  assert.deepEqual(getProjectNavigation('REQUESTER').map(i => i.label), ['Home','New Request','Requests','Drafts','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('SURVEY_MANAGER').map(i => i.label), ['Home','Survey Operations','Field Report Review','Team Management','All Requests','Review Requests','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('PARTY_CHIEF').map(i => i.label), ['Home','Crew Work','Field Report Review','Team Management','Review Requests','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('INSTRUMENT_MAN').map(i => i.label), ['Home','Crew Work','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('SURVEY_SUPERINTENDENT').map(i => i.label), ['Home','All Requests','Survey Operations','Crew Work','Field Report Review','Team Management','Review Requests','Notifications','Help Desk']);
 });
+test('every operational role, but not administration alone, has a notifications inbox', () => {
+  for (const role of ['REQUESTER','VIEWER','AREA_VIEWER','CAD_LEAD','DEPARTMENT_MANAGER'] as const) assert.ok(getProjectNavigation(role).some(i => i.label === 'Notifications' && i.href('p') === '/projects/p/notifications'), role);
+  assert.ok(!getProjectNavigation('PROJECT_ADMIN',true).some(i => i.label === 'Notifications'));
+  assert.ok(!getProjectNavigation(null,true).some(i => i.label === 'Notifications'));
+});
 test('independent administration coexists with operations without granting them', () => {
-  assert.deepEqual(getProjectNavigation('REQUESTER',true).map(i => i.label), ['Home','New Request','Requests','Drafts','Admin','Help Desk']);
+  assert.deepEqual(getProjectNavigation('REQUESTER',true).map(i => i.label), ['Home','New Request','Requests','Drafts','Admin','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation('SURVEY_MANAGER',true).map(i => i.label), ['Home','Survey Operations','Field Report Review','Team Management','All Requests','Admin','Review Requests','Notifications','Help Desk']);
   assert.deepEqual(getProjectNavigation(null,true).map(i => i.label), ['Home','Admin','Help Desk']);
   assert.deepEqual(getProjectNavigation(null,false), []);
@@ -20,7 +25,7 @@ test('independent administration coexists with operations without granting them'
 });
 test('non-active projects retain history destinations without advertising new requests', () => {
   for (const status of ['SETUP','ARCHIVED'] as const) {
-    assert.deepEqual(getProjectNavigation('REQUESTER',false,status).map(i => i.label), ['Home','Requests','Drafts','Help Desk']);
+    assert.deepEqual(getProjectNavigation('REQUESTER',false,status).map(i => i.label), ['Home','Requests','Drafts','Notifications','Help Desk']);
     assert.ok(getProjectNavigation('SURVEY_MANAGER',true,status).some(i => i.label === 'Admin'));
   }
 });

@@ -69,7 +69,8 @@ export function getProjectNavigation(role: ProjectRole | null, canAdminister=fal
   // The existing team page permits scoped read access for Superintendent and Chief.
   if (role === 'SURVEY_SUPERINTENDENT' || role === 'PARTY_CHIEF') items.push(teamManagement);
   if(role&&['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF'].includes(role))items.push({label:'Review Requests',href:id=>`/projects/${id}/survey/review`});
-  if(role && ['SURVEY_MANAGER','SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(role))items.push({label:'Notifications',href:id=>`/projects/${id}/survey/notifications`});
+  // Every operational role has a personal inbox; independent administration alone does not.
+  if(role && role!=='PROJECT_ADMIN')items.push({label:'Notifications',href:id=>`/projects/${id}/notifications`});
   if(role||canAdminister)items.push({label:'Help Desk',href:id=>`/projects/${id}/help-desk`});
   return role || canAdminister ? [home, ...items.map(item => ({...item, group: item === admin ? 'Administration' as const : item === teamManagement ? 'People' as const : 'Work' as const}))] : [];
 }

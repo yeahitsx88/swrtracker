@@ -10,6 +10,7 @@ import { getProjectNavigation } from './project-navigation';
 import { accountNavigation } from './account-navigation';
 import { AccountSignOut } from './account-sign-out';
 import { closePopup } from './popup-motion';
+import { useUnreadNotices } from './use-unread-notices';
 
 const ICONS: Record<string, IconName> = { 'Review Requests':'check', Notifications: 'alert', Home: 'home', 'New Request': 'plus', Requests: 'list', Drafts: 'draft', 'All Requests': 'search', 'Crew Work': 'crew', 'Survey Operations': 'gauge', 'Field Report Review': 'check', 'Team Management': 'team', Admin: 'settings', 'Help Desk': 'support', Appearance: 'sliders', Profile: 'user', 'Assignment Details': 'crew' };
 
@@ -23,6 +24,7 @@ export function ProjectNav({ projectId, role, canAdminister, canCreateProject = 
   const trigger = useRef<HTMLButtonElement>(null);
   const backdrop = useRef(false);
   const items = projectId ? getProjectNavigation(role, canAdminister, status) : [];
+  const unread = useUnreadNotices(items.some(item => item.label === 'Notifications') ? projectId : undefined, pathname);
   function close() { closePopup(dialog.current,()=>{setOpen(false);trigger.current?.focus({preventScroll:true});}); }
   useEffect(() => { dialog.current?.close(); setOpen(false); }, [pathname]);
   useEffect(() => {
@@ -45,7 +47,7 @@ export function ProjectNav({ projectId, role, canAdminister, canCreateProject = 
       return groupItems.length ? <div className="workspace-nav-group" key={group}>{group !== 'Home' && <p className="workspace-nav-label">{group}</p>}{groupItems.map(item => {
         const href = item.href(projectId!);
         const active = pathname === href || (item.label !== 'Home' && pathname.startsWith(`${href}/`));
-        return <Link key={item.label} href={href} aria-current={active ? 'page' : undefined} onClick={() => { if (open) close(); }}><Icon name={ICONS[item.label] ?? 'list'} /><span>{item.label === 'Admin' ? 'Project Administration' : item.label}</span></Link>;
+        return <Link key={item.label} href={href} aria-current={active ? 'page' : undefined} onClick={() => { if (open) close(); }}><Icon name={ICONS[item.label] ?? 'list'} /><span>{item.label === 'Admin' ? 'Project Administration' : item.label}</span>{item.label === 'Notifications' && unread > 0 ? <span className="nav-count" aria-label={`${unread} unread`}>{unread > 99 ? '99+' : unread}</span> : null}</Link>;
       })}</div> : null;
     })}
     {canCreateProject&&<div className="workspace-nav-group"><p className="workspace-nav-label">Tenant IT</p><Link href="/accounts" aria-current={pathname==='/accounts'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="team"/>Tenant Accounts</Link><Link href="/accounts/reviews" aria-current={pathname==='/accounts/reviews'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="list"/>Central IT Reviews</Link><Link href="/accounts/templates" aria-current={pathname==='/accounts/templates'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="file"/>Project Templates</Link><Link href="/accounts/roles" aria-current={pathname==='/accounts/roles'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="shield"/>Custom Roles</Link><Link href="/accounts/help-desk" aria-current={pathname==='/accounts/help-desk'?'page':undefined} onClick={()=>{if(open)close();}}><Icon name="support"/>Help Desk</Link></div>}
