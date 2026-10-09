@@ -9,7 +9,8 @@ import { TICKET_TYPE_LABELS } from '@/lib/display-labels';
 import type { AorLevelRecord, AorNodeRecord, TicketResponse, TicketType } from '@/lib/contracts';
 import type { DirectAssignmentOptions } from '@/modules/ticket/application/direct-assignment-options';
 import { AorNodePicker } from '@/components/aor';
-import { Card, ErrorBanner } from '@/components/ui';
+import { Button, Card, ErrorBanner } from '@/components/ui';
+import { blockersFrom } from '@/components/ui/action-blockers';
 import { Icon } from '@/components/ui/icon';
 
 const TYPES = Object.keys(TICKET_TYPE_LABELS) as TicketType[];
@@ -42,8 +43,17 @@ export function DirectAssignmentForm({ projectId }: { projectId: string }) {
 
   const requester = options?.requesters.find(person => person.id === form.requesterId);
   const needsDepartment = !!requester && !requester.departmentId;
-  const ready = form.aorNodeId && form.ticketType && form.requesterId && form.instrumentManId && form.requestedDate &&
-    form.fieldContact.trim() && form.description.trim() && (!needsDepartment || form.departmentId);
+  const blockers = blockersFrom([
+    [!form.aorNodeId, 'Choose the Area.', 'da-area'],
+    [!form.ticketType, 'Choose a request type.', 'da-type'],
+    [!form.requestedDate, 'Enter the Need-By date.', 'da-date'],
+    [!form.description.trim(), 'Describe the work in Request details.', 'da-details'],
+    [!form.fieldContact.trim(), 'Enter a point of contact.', 'da-contact'],
+    [!form.requesterId, 'Choose the requester this work is for.', 'da-requester'],
+    [needsDepartment && !form.departmentId, 'Choose a department for this requester.', 'da-department'],
+    [!form.instrumentManId, 'Choose an Instrument Man.', 'da-instrument'],
+  ]);
+  const ready = blockers.length === 0;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -74,39 +84,39 @@ export function DirectAssignmentForm({ projectId }: { projectId: string }) {
         <form className="stack form-narrow" onSubmit={submit}>
           <fieldset className="stack" disabled={busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             <p className="section-label">The work</p>
-            <label className="field"><span className="field-label">Area</span><AorNodePicker label="Area" {...tree} value={form.aorNodeId} onChange={set('aorNodeId')} /></label>
-            <label className="field"><span className="field-label">Request type</span>
+            <label className="field" id="da-area"><span className="field-label">Area</span><AorNodePicker label="Area" {...tree} value={form.aorNodeId} onChange={set('aorNodeId')} /></label>
+            <label className="field" id="da-type"><span className="field-label">Request type</span>
               <select className="select" value={form.ticketType} onChange={event => set('ticketType')(event.target.value)}><option value="">Select a request type</option>
                 {TYPES.map(type => <option key={type} value={type}>{TICKET_TYPE_LABELS[type]}</option>)}</select></label>
-            <label className="field"><span className="field-label">Need-By date</span><input className="input" type="date" value={form.requestedDate} onChange={event => set('requestedDate')(event.target.value)} /></label>
-            <label className="field"><span className="field-label">Request details</span><textarea className="textarea" value={form.description} maxLength={4000} onChange={event => set('description')(event.target.value)} /></label>
+            <label className="field" id="da-date"><span className="field-label">Need-By date</span><input className="input" type="date" value={form.requestedDate} onChange={event => set('requestedDate')(event.target.value)} /></label>
+            <label className="field" id="da-details"><span className="field-label">Request details</span><textarea className="textarea" value={form.description} maxLength={4000} onChange={event => set('description')(event.target.value)} /></label>
             <div className="row">
-              <label className="field" style={{ flex: '1 1 14rem' }}><span className="field-label">Point of contact</span><input className="input" value={form.fieldContact} maxLength={200} onChange={event => set('fieldContact')(event.target.value)} /></label>
+              <label className="field" id="da-contact" style={{ flex: '1 1 14rem' }}><span className="field-label">Point of contact</span><input className="input" value={form.fieldContact} maxLength={200} onChange={event => set('fieldContact')(event.target.value)} /></label>
               <label className="field" style={{ flex: '1 1 10rem' }}><span className="field-label">Phone / radio (optional)</span><input className="input" value={form.fieldChannel} maxLength={100} onChange={event => set('fieldChannel')(event.target.value)} /></label>
             </div>
             <label className="field"><span className="field-label">Craft / discipline (optional)</span><input className="input" value={form.craft} maxLength={100} onChange={event => set('craft')(event.target.value)} /></label>
 
             <p className="section-label">Requested for</p>
-            <label className="field"><span className="field-label">Requester</span>
+            <label className="field" id="da-requester"><span className="field-label">Requester</span>
               <select className="select" value={form.requesterId} onChange={event => set('requesterId')(event.target.value)}><option value="">Choose the person this work is for</option>
                 {options.requesters.map(person => <option key={person.id} value={person.id}>{person.name} · {person.email}</option>)}</select>
               <span className="muted field-help">They see the request in their list and are notified like any other request.</span></label>
             {needsDepartment ? (
-              <label className="field"><span className="field-label">Department</span>
+              <label className="field" id="da-department"><span className="field-label">Department</span>
                 <select className="select" value={form.departmentId} onChange={event => set('departmentId')(event.target.value)}><option value="">Choose a department</option>
                   {options.departments.map(department => <option key={department.id} value={department.id}>{department.name}</option>)}</select>
                 <span className="muted field-help">This requester has no department yet, so choose one for this request.</span></label>
             ) : null}
 
             <p className="section-label">Crew</p>
-            <label className="field"><span className="field-label">Instrument Man</span>
+            <label className="field" id="da-instrument"><span className="field-label">Instrument Man</span>
               <select className="select" value={form.instrumentManId} onChange={event => set('instrumentManId')(event.target.value)}><option value="">Choose an Instrument Man</option>
                 {options.instrumentMen.map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
             <label className="field"><span className="field-label">Party Chief (optional)</span>
               <select className="select" value={form.partyChiefId} onChange={event => set('partyChiefId')(event.target.value)}><option value="">No Party Chief</option>
                 {options.partyChiefs.map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
           </fieldset>
-          <div className="row"><button type="submit" className="button" disabled={!ready || busy}>{busy ? 'Assigning…' : 'Create and assign'}</button>
+          <div className="row"><Button type="submit" disabled={busy} blockers={blockers} blockedTitle="Can’t create and assign yet">{busy ? 'Assigning…' : 'Create and assign'}</Button>
             <Link className="button button-secondary" href={`/projects/${projectId}/survey/operations`}>Cancel</Link></div>
         </form>
       ) : null}

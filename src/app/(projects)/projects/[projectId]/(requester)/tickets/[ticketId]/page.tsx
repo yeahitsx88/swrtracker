@@ -13,6 +13,7 @@ import type { AorNodeRecord, AorLevelRecord, AttachmentRecord, TicketCapabilitie
 import { AttachmentList, AttachmentUploader, TicketDetails, TicketHistory } from '@/components/tickets';
 import { TicketConversation } from '@/components/tickets/ticket-conversation';
 import { Button, Card, ErrorBanner, Input, Select, SuccessBanner, Textarea } from '@/components/ui';
+import { blockersFrom } from '@/components/ui/action-blockers';
 import { Field } from '@/components/forms';
 import { AorNodePicker } from '@/components/aor';
 import { TICKET_STATUS_LABELS } from '@/lib/contracts';
@@ -80,6 +81,14 @@ export default function TicketDetailPage() {
   const dirty = Boolean(ticket && (editArea !== (ticket.aorNodeId ?? '') || editType !== (ticket.ticketType ?? '') ||
     editCraft !== ticket.craft || editFieldContact !== (ticket.fieldContact ?? '') || editFieldChannel !== (ticket.fieldChannel ?? '') ||
     editDescription !== ticket.description || editRequestedDate !== (ticket.requestedDate?.slice(0,10) ?? '')));
+  const staleReason: [boolean, string] = [stale, 'This request changed since it loaded. Use Refresh to load the latest before acting.'];
+  const dirtyReason: [boolean, string, string] = [dirty, 'You have unsaved changes. Save them first (or Refresh to discard them).', 'ticket-save-changes'];
+  const pendingReasons = (except: 'save' | 'submit' | 'delete'): Array<[boolean, string]> => [
+    [except !== 'save' && Boolean(saveAttempt.current.command), 'The last save is unconfirmed. Use Retry Save first.'],
+    [except !== 'submit' && Boolean(submitAttempt.current.command), 'The last submit is unconfirmed. Retry it first.'],
+    [except !== 'delete' && Boolean(deleteAttempt.current.command), 'The last delete is unconfirmed. Use Retry Delete Draft first.'],
+  ];
+  const settledBlockers = blockersFrom([staleReason, dirtyReason, [uncertain, 'An earlier action is unconfirmed. Retry it first.']]);
 
   const canUpload = capabilities.canUploadRequestInstruction || capabilities.canUploadFieldSupport;
   useUnsavedProgress(dirty || uncertain || uploadLocked);
@@ -227,11 +236,11 @@ export default function TicketDetailPage() {
           <p>{deleteReview.description||'No request details entered.'}</p>
           <p>Remove this saved draft from your working list. Its record, files and history are retained for the existing 30-day Project Admin recovery period. No request number has been assigned.</p>
           <p>You return to Drafts. Any unsaved field changes will be discarded.</p>
-          <label className="tm-check"><input type="checkbox" checked={deleteConsent} disabled={deleteAttempt.current.locked||deleting||loading} onChange={event=>setDeleteConsent(event.target.checked)}/><span>I confirm deletion of this saved draft.</span></label>
+          <label className="tm-check" id="ticket-delete-confirm"><input type="checkbox" checked={deleteConsent} disabled={deleteAttempt.current.locked||deleting||loading} onChange={event=>setDeleteConsent(event.target.checked)}/><span>I confirm deletion of this saved draft.</span></label>
           {error?<ErrorBanner message={error}/>:null}
           {deleteAttempt.current.command&&!deleteAttempt.current.stale&&!deleting?<p role="status">The result is uncertain. Retry unchanged deletion to recover its recorded result.</p>:null}
           {stale?<p role="status">The saved draft or your access changed. Reload it before reviewing deletion again.</p>:null}
-          <div className="row"><Button type="submit" variant="danger" disabled={!deleteConsent||stale||deleting||loading}>{deleting?'Deleting…':deleteAttempt.current.command?'Retry Delete Draft':'Confirm Draft Deletion'}</Button>
+          <div className="row"><Button type="submit" variant="danger" disabled={deleting||loading} blockedTitle="Can’t delete yet" blockers={blockersFrom([staleReason,[!deleteConsent,'Tick the confirmation box first.','ticket-delete-confirm']])}>{deleting?'Deleting…':deleteAttempt.current.command?'Retry Delete Draft':'Confirm Draft Deletion'}</Button>
           {stale?<Button type="button" variant="secondary" disabled={loading} onClick={()=>void loadAll(true).then(ok=>{if(ok){setDeleteReview(null);setDeleteConsent(false);}})}>Reload Request</Button>:<Button type="button" variant="secondary" disabled={deleteAttempt.current.locked||deleting||loading} onClick={()=>{workflow.owner.release('requester-fields');setDeleteReview(null);setDeleteConsent(false);}}>Keep Draft</Button>}</div>
         </form>
       </AdministrationDialog>:null}
@@ -260,7 +269,7 @@ export default function TicketDetailPage() {
                 <Field label="Request Details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
                 <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
               </fieldset>
-              <Button disabled={working || stale || Boolean(submitAttempt.current.command || deleteAttempt.current.command)} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.command ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
+              <Button id="ticket-save-changes" disabled={working} blockedTitle="Can’t save right now" blockers={blockersFrom([staleReason, ...pendingReasons('save')])} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.command ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
             </Card>
           ) : null}
 
@@ -312,21 +321,21 @@ export default function TicketDetailPage() {
         <aside className="detail-aside" aria-label="Request actions">
           <Card title="Actions">
             <div className="action-panel">
-              {capabilities.canApproveSurveyCancel ? <Button variant="danger" disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('approve-stop')}>Approve Stop-Work Cancellation</Button> : null}
+              {capabilities.canApproveSurveyCancel ? <Button variant="danger" disabled={working} blockers={settledBlockers} blockedTitle="Can’t approve yet" onClick={() => reviewRequesterAction('approve-stop')}>Approve Stop-Work Cancellation</Button> : null}
               {capabilities.canSubmit ? (
-                <Button disabled={working || dirty || stale || Boolean(saveAttempt.current.command || deleteAttempt.current.command)} onClick={() => void submitDraft()}>
+                <Button disabled={working} blockedTitle="Can’t submit yet" blockers={blockersFrom([staleReason, dirtyReason, ...pendingReasons('submit')])} onClick={() => void submitDraft()}>
                   {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
                 </Button>
               ) : null}
               {dirty ? <p role="status" className="muted">Unsaved changes. Save or deliberately reload them before submitting or reviewing another request action.</p> : null}
               {capabilities.canCreateFollowUp ? (
-                <Button disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('follow-up')}>
+                <Button disabled={working} blockers={settledBlockers} blockedTitle="Can’t create a follow-up yet" onClick={() => reviewRequesterAction('follow-up')}>
                   Create Follow-Up Request
                 </Button>
               ) : null}
-              {capabilities.canDeleteDraft ? <Button variant="secondary" disabled={working || stale || Boolean(saveAttempt.current.command || submitAttempt.current.command)} onClick={() => {if(ticket&&!uncertain&&workflow.owner.claim('requester-fields')){setDeleteConsent(false);setDeleteReview(ticket);}}}>Delete Draft</Button> : null}
+              {capabilities.canDeleteDraft ? <Button variant="secondary" disabled={working} blockedTitle="Can’t delete the draft yet" blockers={blockersFrom([staleReason, ...pendingReasons('delete')])} onClick={() => {if(ticket&&!uncertain&&workflow.owner.claim('requester-fields')){setDeleteConsent(false);setDeleteReview(ticket);}}}>Delete Draft</Button> : null}
               {capabilities.canRequesterCancel ? (
-                <Button variant="secondary" disabled={working || uncertain || stale || dirty} onClick={() => reviewRequesterAction('requester-cancel')}>
+                <Button variant="secondary" disabled={working} blockers={settledBlockers} blockedTitle="Can’t cancel yet" onClick={() => reviewRequesterAction('requester-cancel')}>
                   Cancel My Request
                 </Button>
               ) : null}

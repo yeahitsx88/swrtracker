@@ -26,6 +26,7 @@ import {
   SuccessBanner,
   Textarea,
 } from '@/components/ui';
+import { blockersFrom } from '@/components/ui/action-blockers';
 
 const STEP_TITLES = ['Area', 'Type', 'Need-By', 'Details', 'Attachments', 'Review'];
 const TICKET_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
@@ -357,11 +358,17 @@ export default function NewRequestPage() {
               Next
             </Button>
           ) : (
-            <Button disabled={submitting || stale || actionIntent.current === false} onClick={() => void saveOrSubmit(true)}>
+            <Button disabled={submitting} blockedTitle="Can’t submit right now" blockers={blockersFrom([
+              [stale, 'This draft conflicted with a newer change. Open the saved draft details and reload before submitting.'],
+              [actionIntent.current === false, 'The last Save Draft is unconfirmed. Use Retry Save Draft first so nothing is saved twice.'],
+            ])} onClick={() => void saveOrSubmit(true)}>
               {submitting ? 'Submitting…' : actionIntent.current === true ? 'Retry Submit' : 'Submit Request'}
             </Button>
           )}
-          <Button variant="secondary" disabled={submitting || stale || actionIntent.current === true} onClick={() => void saveOrSubmit(false)}>
+          <Button variant="secondary" disabled={submitting} blockedTitle="Can’t save the draft right now" blockers={blockersFrom([
+            [stale, 'This draft conflicted with a newer change. Open the saved draft details and reload before saving.'],
+            [actionIntent.current === true, 'The last Submit is unconfirmed. Use Retry Submit first so nothing is sent twice.'],
+          ])} onClick={() => void saveOrSubmit(false)}>
             {submitting ? 'Saving…' : actionIntent.current === false ? 'Retry Save Draft' : 'Save Draft'}
           </Button>
           {actionIntent.current === true && activeStep < STEP_TITLES.length-1 ? <Button disabled={submitting} onClick={() => void saveOrSubmit(true)}>Retry Submit</Button> : null}
