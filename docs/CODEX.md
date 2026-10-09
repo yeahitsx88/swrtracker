@@ -4794,3 +4794,13 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Impeccable inline finish: disposition ship; persistence pass, fidelity faithful, bounded ceiling reached, material fixes none; keep scoped ownership/history/read-only. Documenter No changes to incumbent system.
 - Known gaps: A6 task/navigation/table/KPI reconciliation and A7; source-map-js/GHSA release blocker separate. No deployment/Alpha2/deferred Org expansion.
 - Production behavior changed: yes (presentation only).
+
+
+### 2026-10-08 - Batch 281
+- Intent: TEST_WRITER/AUDITOR current approved A6 KPI/member/command drilldown acceptance; no production edit. Project-wide sequential acceptance exception applies.
+- Files touched: tests/beta/alpha-roles281-bootstrap.mjs, alpha-roles281-fixture.ts, alpha-kpi281-browser.mjs, alpha-command281-browser.mjs; E281; three Alpha registers.
+- Behavior verified:122current checks; exact independent populations and identity parity, activity/current-date distinction, member mandatory focus and role/foreign refusals, combined authority, failed/empty recovery, keyboard focus/scroll, sort/filter/export/direct reload;14opened theme/device captures.
+- Verification: baseline strict698units, final strict andfocused reporting/navigation pass; E280 pinned698units/build/full33SQL explicitly retained at identical576production/migration/config bytes. All44migrations used in freshownedUUIDschema; retained fixtures untouched. E281 names stopped observer corrections and synthetic population/viewport limits.
+- Impeccable inline bounded review: ship for named criteria, persistence pass, fidelity incumbent, bounded ceiling; material fixes none, preserve exact scope/ownership/history. Documenter No changes.
+- Known gaps: A6 recorded-values/column/server-local paging/remaining task tables and A7; no full Alpha claim, source-map-js/GHSA release remediation, deployment/main/Alpha2 or deferred Org expansion.
+- Production behavior changed: no.
