@@ -877,3 +877,9 @@ main {
 .simple-table th, .simple-table td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--line); }
 .simple-table th { color: var(--muted); font-size: 0.78rem; font-weight: 700; background: var(--surface-sunken); }
 .title-form { align-items: flex-end; }
+
+/* ---------- Tenant audit log ---------- */
+.table-scroll { overflow-x: auto; }
+.audit-table td { vertical-align: top; }
+.audit-table code { font-size: 0.8rem; }
+.audit-details { max-width: 32rem; max-height: 18rem; overflow: auto; margin: 0.4rem 0 0; padding: 0.5rem; background: var(--surface-sunken); border-radius: 6px; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -13,6 +13,7 @@ import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {FrozenCommand,CommandOwner} from '@/lib/frozen-command';
 import {Button,Card,ErrorBanner,Input,SuccessBanner} from '@/components/ui';
 import {AccountOffboarding} from '@/components/ui/account-offboarding';
+import {TenantAuditLog} from '@/components/ui/tenant-audit-log';
 import type {Page} from '@/shared/types';
 import type {OffboardingResult} from '@/lib/contracts/account-offboarding';
 type Account={userId:string;name:string;email:string;companyName:string;disabledAt:string|null};
@@ -40,7 +41,7 @@ function ReviewEditor({review,onResolved,onLockChange,owner}:{owner:CommandOwner
 }
 export function TenantAccountsWorkspace(){
  const pathname=usePathname();
- const tabs=[{id:'tenant-accounts',label:'Tenant Accounts',href:'/accounts'},{id:'tenant-reviews',label:'Central IT Reviews',href:'/accounts/reviews'},{id:'tenant-templates',label:'Project Templates',href:'/accounts/templates'},{id:'tenant-roles',label:'Custom Roles',href:'/accounts/roles'},{id:'tenant-help-desk',label:'Help Desk',href:'/accounts/help-desk'}];
+ const tabs=[{id:'tenant-accounts',label:'Tenant Accounts',href:'/accounts'},{id:'tenant-reviews',label:'Central IT Reviews',href:'/accounts/reviews'},{id:'tenant-templates',label:'Project Templates',href:'/accounts/templates'},{id:'tenant-roles',label:'Custom Roles',href:'/accounts/roles'},{id:'tenant-help-desk',label:'Help Desk',href:'/accounts/help-desk'},{id:'tenant-audit',label:'Audit Log',href:'/accounts/audit'}];
  const activeId=tabs.find(tab=>tab.href===pathname)?.id??'tenant-accounts';
  const owner=useRef(new CommandOwner()).current;const locked=useSyncExternalStore(owner.subscribe,owner.snapshot,owner.snapshot)!==null;const setLocked=()=>{};
  useAdministrationProgress(owner,'/accounts');
@@ -54,5 +55,6 @@ export function TenantAccountsWorkspace(){
  <AdministrationArea id="tenant-templates"><ProjectTemplates owner={owner}/></AdministrationArea>
  <AdministrationArea id="tenant-roles"><CustomRoles owner={owner}/></AdministrationArea>
  <AdministrationArea id="tenant-help-desk"><HelpDesk owner={owner}/></AdministrationArea>
+<AdministrationArea id="tenant-audit"><TenantAuditLog/></AdministrationArea>
  </AdministrationWorkspace>;
 }
