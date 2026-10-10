@@ -1,6 +1,8 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { DismissButton, useDismissibleNotice } from './feedback';
 import { Icon, type IconName } from './icon';
 import { HeadingHelp } from './heading-help';
 import './administration-workspace.css';
@@ -17,6 +19,22 @@ export function useAdministrationNotice(id:string,notice?:Notice){
   return()=>publish?.(id,undefined);
  },[publish,id,source,message,href,tone]);
 }
+/**
+ * A retained editor's result shown above the workspace. Completion messages follow the
+ * shared dismiss lifecycle; errors and in-progress states stay. "Return to" appears only
+ * when the editor lives on another section than the one being viewed.
+ */
+function WorkspaceNotice({notice}:{notice:Notice}){
+ const pathname=usePathname();
+ const completion=notice.tone==='success';
+ const lifecycle=useDismissibleNotice(completion?notice.message:'');
+ if(completion&&!lifecycle.visible)return null;
+ const elsewhere=new URL(notice.href,'http://local').pathname!==pathname;
+ return <div className={notice.tone==='error'?'error-banner':completion?'success-banner notice-dismissible':'administration-command-review'} role={notice.tone==='error'?'alert':'status'} {...(completion?lifecycle.pauseProps:{})}>
+  <span><strong>{notice.source}: </strong>{notice.message}{elsewhere?<> <Link className="app-link" href={notice.href}>Return to {notice.source}</Link></>:null}</span>
+  {completion?<DismissButton onClick={lifecycle.dismiss}/>:null}
+ </div>;
+}
 /** Route-backed pages share their layout so editors retain exact uncertain commands. */
 export function AdministrationWorkspace({ title, description, sections, activeId, children }: {
   title: string; description: ReactNode; sections: Array<{ id: string; label: string; href?: string; icon?: IconName }>; activeId?: string; children: ReactNode;
@@ -30,7 +48,7 @@ export function AdministrationWorkspace({ title, description, sections, activeId
         {sections.map(section => <Link key={section.id} className="button button-secondary" aria-current={activeId===section.id?'page':undefined} href={section.href??`#${section.id}`}>{section.icon&&<Icon name={section.icon}/>}<span>{section.label}</span></Link>)}
       </nav>
     </header>
-    {Object.entries(notices).map(([id,notice])=><div key={id} className={notice.tone==='error'?'error-banner':notice.tone==='success'?'success-banner':'administration-command-review'} role={notice.tone==='error'?'alert':'status'}><strong>{notice.source}: </strong>{notice.message} <Link className="app-link" href={notice.href}>Return to {notice.source}</Link></div>)}
+    {Object.entries(notices).map(([id,notice])=><WorkspaceNotice key={id} notice={notice}/>)}
     <ActiveArea.Provider value={activeId}>{children}</ActiveArea.Provider>
   </div></Notices.Provider>;
 }

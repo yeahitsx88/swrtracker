@@ -73,3 +73,12 @@
 .administration-table td.record-actions .button { white-space:nowrap; padding:.4rem .7rem; }
 .administration-table :is(th,td).record-actions { position:sticky; right:0; z-index:1; background:var(--bg-elevated); box-shadow:-8px 0 8px -8px rgb(0 0 0 / .18); }
 .administration-table th.record-actions { background:var(--surface-sunken); }
+
+/* Spreadsheet-style resizing on every table: drag the edge between headings. */
+th[data-column] { position: relative; padding-right: 18px; }
+.record-sized-columns { table-layout: fixed; }
+.record-sized-columns td { overflow-wrap: anywhere; }
+.record-column-resize { z-index: 1; }
+.record-column-resize::after { opacity: .55; }
+.administration-table th:hover > .record-column-resize::after, .record-column-resize:active::after { opacity: 1; background: var(--action); }
+@media (pointer: coarse) { .record-column-resize { width: 20px; } }

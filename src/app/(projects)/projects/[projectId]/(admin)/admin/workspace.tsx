@@ -34,7 +34,7 @@ export function AdminProjectWorkspace() {
   const policyBlocked=owner.blocked(policyToken),policyLocked=policy.locked||policyBlocked;
   const readingPolicy=useRef(false);const [policyReadFailed,setPolicyReadFailed]=useState(false);
   void ownerToken;
-  const tabs = [{id:'admin-personnel',icon:'team' as const,label:'Personnel',href:base},{id:'admin-companies',icon:'building' as const,label:'Companies',href:base+'/companies'},{id:'admin-settings',icon:'settings' as const,label:'Project Settings',href:base+'/settings'},{id:'admin-areas',icon:'pin' as const,label:'Areas',href:base+'/areas'},{id:'admin-departments',icon:'building' as const,label:'Departments',href:base+'/departments'},{id:'admin-access-recovery',icon:'shield' as const,label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',icon:'chart' as const,label:'Diagnostics',href:base+'/diagnostics'}];
+  const tabs = [{id:'admin-personnel',icon:'team' as const,label:'Personnel',href:base},{id:'admin-companies',icon:'building' as const,label:'Companies',href:base+'/companies'},{id:'admin-areas',icon:'pin' as const,label:'Areas',href:base+'/areas'},{id:'admin-departments',icon:'building' as const,label:'Departments',href:base+'/departments'},{id:'admin-access-recovery',icon:'shield' as const,label:'Access and Recovery',href:base+'/access-recovery'},{id:'admin-diagnostics',icon:'chart' as const,label:'Diagnostics',href:base+'/diagnostics'},{id:'admin-settings',icon:'settings' as const,label:'Project Settings',href:base+'/settings'}];
   const activeId = pathname===base+'/request-policy'?'admin-settings':tabs.find(tab=>tab.href===pathname)?.id??'admin-personnel';
 
   const [leadTimeEnforcementEnabled, setLeadTimeEnforcementEnabled] = useState(true);

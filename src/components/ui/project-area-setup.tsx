@@ -20,6 +20,7 @@ export function ProjectAreaSetup({ projectId }: { projectId: string }) {
   const editable = status === 'SETUP';
   const [tree, setTree] = useState<{ levels: AorLevelRecord[]; nodes: AorNodeRecord[] }>();
   const [revision, setRevision] = useState(0);
+  const [treeOpen, setTreeOpen] = useState(true), [treeVersion, setTreeVersion] = useState(0);
   const [error, setError] = useState<string>();
   const [success, setSuccess] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -69,13 +70,17 @@ export function ProjectAreaSetup({ projectId }: { projectId: string }) {
   function branch(parentId: string | null) {
     const children = (tree?.nodes ?? []).filter(node => node.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name));
     if (!children.length) return null;
-    return <ul className="area-tree">{children.map(node => (
-      <li key={node.id}>
-        <span className="area-node"><strong>{node.name}</strong> <span className="chip">{node.code}</span> <span className="muted">{levelById.get(node.levelId)?.label}</span></span>
-        {branch(node.id)}
-      </li>
-    ))}</ul>;
+    return <ul className="area-tree">{children.map(node => {
+      const label = <span className="area-node"><strong>{node.name}</strong> <span className="chip">{node.code}</span> <span className="muted">{levelById.get(node.levelId)?.label}</span></span>;
+      const inner = branch(node.id);
+      const count = (tree?.nodes ?? []).filter(item => item.parentId === node.id).length;
+      // Branches collapse; the key re-mounts them when Expand all / Collapse all is chosen.
+      return <li key={node.id}>{inner
+        ? <details className="area-branch" open={treeOpen} key={`${node.id}:${treeVersion}`}><summary>{label} <span className="muted">· {count} inside</span></summary>{inner}</details>
+        : label}</li>;
+    })}</ul>;
   }
+  const hasBranches = (tree?.nodes ?? []).some(node => node.parentId !== null);
 
   return (
     <Card title="Areas" description="The Area structure requesters choose from and survey staff are assigned to. Ticket numbers use the Area code.">
@@ -89,6 +94,7 @@ export function ProjectAreaSetup({ projectId }: { projectId: string }) {
             <p className="section-label">Levels</p>
             {levels.length ? <ol className="area-levels">{levels.map(level => <li key={level.id}><span className="chip">{level.depth + 1}</span> {level.label}</li>)}</ol> : <p className="muted">No levels yet. Start with the top level, for example “Unit” or “General Area”.</p>}
             <p className="section-label">Areas</p>
+            {hasBranches ? <div className="row"><button type="button" className="button button-secondary" onClick={() => { setTreeOpen(true); setTreeVersion(v => v + 1); }}>Expand all</button><button type="button" className="button button-secondary" onClick={() => { setTreeOpen(false); setTreeVersion(v => v + 1); }}>Collapse all</button></div> : null}
             {tree.nodes.length ? branch(null) : <p className="muted">No Areas yet.</p>}
           </div>
         ) : null}

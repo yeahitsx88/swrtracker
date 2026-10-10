@@ -8,6 +8,7 @@ import type { AuditLogPage } from '@/modules/audit/application/tenant-audit-log'
 import { Card } from './card';
 import { ErrorBanner } from './feedback';
 import { Icon } from './icon';
+import { ResizableTable, ResizableTh } from './resizable-table';
 
 type Filters = { projectId: string; source: string; eventType: string; actor: string; from: string; to: string };
 const EMPTY: Filters = { projectId: '', source: '', eventType: '', actor: '', from: '', to: '' };
@@ -65,8 +66,8 @@ export function TenantAuditLog() {
       {!page && !error ? <p className="muted" role="status">Loading audit events…</p> : null}
       {page ? (page.rows.length ? (
         <div className="table-scroll">
-          <table className="simple-table audit-table">
-            <thead><tr><th scope="col">When</th><th scope="col">Project</th><th scope="col">Event</th><th scope="col">Actor</th><th scope="col">Subject</th><th scope="col">Details</th></tr></thead>
+          <ResizableTable storageKey="tenant-audit-log" className="simple-table audit-table">
+            <thead><tr><ResizableTh column="when" scope="col">When</ResizableTh><ResizableTh column="project" scope="col">Project</ResizableTh><ResizableTh column="event" scope="col">Event</ResizableTh><ResizableTh column="actor" scope="col">Actor</ResizableTh><ResizableTh column="subject" scope="col">Subject</ResizableTh><ResizableTh column="details" scope="col">Details</ResizableTh></tr></thead>
             <tbody>{page.rows.map(row => (
               <tr key={`${row.source}:${row.id}`}>
                 <td><time dateTime={row.occurredAt}>{new Date(row.occurredAt).toLocaleString()}</time></td>
@@ -77,7 +78,7 @@ export function TenantAuditLog() {
                 <td><details><summary>View</summary><pre className="audit-details">{JSON.stringify(row.details, null, 2)}</pre></details></td>
               </tr>
             ))}</tbody>
-          </table>
+          </ResizableTable>
         </div>
       ) : <div className="empty-state"><strong>No matching events</strong><span>Broaden the dates or clear filters.</span></div>) : null}
       {page && (offset > 0 || page.hasMore) ? (

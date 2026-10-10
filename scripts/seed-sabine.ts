@@ -75,6 +75,7 @@ async function main() {
     await db.query("INSERT INTO tenant_memberships(tenant_id,user_id,role) VALUES($1,$2,'TENANT_ADMIN')",[tenant,admin]);
     for(const p of [live,history]) {
       await db.query("INSERT INTO departments(id,tenant_id,project_id,name,manager_title,created_by) VALUES($1,$2,$3,'Construction','Construction Manager',$4)",[uid(`${p}:department`),tenant,p,admin]);
+      await db.query("INSERT INTO department_titles(tenant_id,department_id,title,default_priority,assignment_layer) VALUES($1,$2,'Construction Manager','MED_HIGH','MANAGER')",[tenant,uid(`${p}:department`)]);
       for(const a of areaNames) await db.query('INSERT INTO aor_assignments(project_id,tenant_id,user_id,aor_node_id) VALUES($1,$2,$3,$4)',[p,tenant,uid(`super:${group(a)}`),areaId(p,a)]);
       for(let i=1;i<=42;i++) {
         const frequencies = new Map<string,number>();

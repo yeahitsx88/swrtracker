@@ -60,6 +60,8 @@ async function main(): Promise<void> {
     await db.query("INSERT INTO aor_nodes (id, project_id, tenant_id, level_id, name, code) VALUES ($1, $2, $3, $4, 'North Area', 'NORTH'), ($5, $2, $3, $4, 'South Area', 'SOUTH')",
       [ids.areaNorth, ids.project, ids.tenant, ids.level, ids.areaSouth]);
     await db.query("INSERT INTO departments (id, tenant_id, project_id, name, manager_title, created_by) VALUES ($1, $2, $3, 'Construction', 'Construction Manager', $4)", [ids.department, ids.tenant, ids.project, ids.admin]);
+    // Same as createDepartment: the head title is part of the department title catalog.
+    await db.query("INSERT INTO department_titles (tenant_id, department_id, title, default_priority, assignment_layer) VALUES ($1, $2, 'Construction Manager', 'MED_HIGH', 'MANAGER')", [ids.tenant, ids.department]);
     await db.query(`INSERT INTO company_authority_grants (tenant_id, project_id, company_id, user_id, granted_by)
       VALUES ($1, $2, $3, $4, $5)`, [ids.tenant, ids.project, ids.subco, ids.authority, ids.admin]);
 

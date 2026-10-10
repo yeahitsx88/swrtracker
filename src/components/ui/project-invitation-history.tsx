@@ -9,6 +9,7 @@ import {Button,Card,ErrorBanner,Input,Select,SuccessBanner} from '@/components/u
 import {useProjectWorkspace} from './project-shell-header';
 import {InvitationCancellationReview} from './invitation-cancellation-review';
 import './administration-records.css';
+import { ResizableTable, ResizableTh } from './resizable-table';
 const states:Array<[InvitationHistoryFilter,string]>=[['HISTORY','Accepted, expired and cancelled'],['ALL','All invitations'],['PENDING','Pending'],['ACCEPTED','Accepted'],['EXPIRED','Expired'],['CANCELLED','Cancelled']];
 const stateLabels={PENDING:'Pending',ACCEPTED:'Accepted',EXPIRED:'Expired',CANCELLED:'Cancelled'};
 function timestamp(value:string){return new Date(value).toLocaleString();}
@@ -37,12 +38,12 @@ function History({projectId,owner,revision,onInvitesChanged}:{projectId:string;o
  </form>
  {busy&&<p role="status">Loading current invitation records…</p>}
  {response&&<><p className="muted">Status at last refresh: {timestamp(response.observedAt)}. Expiry and recorded acceptance or cancellation dates are shown separately. Scroll the table sideways to see every detail.</p>
- <div className="administration-table-scroll record-scrollable" tabIndex={0} role="region" aria-label="Invitation history table"><table className="administration-table"><caption className="administration-table-caption">Project Invitation Records</caption><thead><tr>{['Email / Reference','Company / Role','Status','Created','Expires','Recorded Outcome','Action'].map(label=><th scope="col" key={label}>{label}</th>)}</tr></thead><tbody>{response.data.map(invitation=><tr key={invitation.id}>
+ <div className="administration-table-scroll record-scrollable" tabIndex={0} role="region" aria-label="Invitation history table"><ResizableTable storageKey="invitation-history" className="administration-table"><caption className="administration-table-caption">Project Invitation Records</caption><thead><tr>{['Email / Reference','Company / Role','Status','Created','Expires','Recorded Outcome','Action'].map(label=><ResizableTh column={label} scope="col" key={label}>{label}</ResizableTh>)}</tr></thead><tbody>{response.data.map(invitation=><tr key={invitation.id}>
  <td><span className="administration-company-id">{invitation.email}</span><details><summary>Invitation ID</summary><span className="administration-company-id">{invitation.id}</span></details></td>
  <td><span className="administration-company-id">{invitation.companyName}</span><div>{roleLabel(invitation.role)}</div></td><td>{stateLabels[invitation.state]}</td><td>{timestamp(invitation.createdAt)}</td><td>{timestamp(invitation.expiresAt)}</td>
  <td>{invitation.acceptedAt&&<div>Accepted: {timestamp(invitation.acceptedAt)}</div>}{invitation.canceledAt&&<div>Cancelled: {timestamp(invitation.canceledAt)}</div>}{!invitation.acceptedAt&&!invitation.canceledAt&&'No recorded acceptance or cancellation'}</td>
  <td>{invitation.canCancel?<InvitationCancellationReview projectId={projectId} inviteId={invitation.id} email={invitation.email} owner={owner} disabled={locked} onSaved={()=>{setSuccess('Invitation cancelled. Its record and history are retained.');onInvitesChanged();}}/>:<span>Read only</span>}</td>
- </tr>)}</tbody></table></div>
+ </tr>)}</tbody></ResizableTable></div>
  {!response.data.length&&<p>{response.total?'No invitations on this page. Use Previous Invitation History or search again.':'No invitations match this state and search.'}</p>}
  <div className="row"><Button variant="secondary" disabled={locked||view.offset===0} onClick={()=>setView({...view,offset:Math.max(0,view.offset-25)})}>Previous Invitation History</Button><span role="status">{response.data.length?response.offset+1:0}–{response.data.length?response.offset+response.data.length:0} of {response.total} invitations</span><Button variant="secondary" disabled={locked||response.offset+response.limit>=response.total} onClick={()=>setView({...view,offset:view.offset+25})}>Next Invitation History</Button></div>
  </>}

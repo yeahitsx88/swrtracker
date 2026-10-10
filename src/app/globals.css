@@ -890,3 +890,11 @@ main {
 /* The floating Back to top control rises above a sticky action bar instead of covering its buttons. */
 body:has(.sticky-actions) .scroll-to-top { translate: 0 -4.5rem; }
 @media (max-width: 640px) { body:has(.sticky-actions) .scroll-to-top { translate: 0 -8rem; } }
+/* Dismissible completion messages (shared lifecycle in feedback.tsx). */
+.notice-dismissible { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.notice-dismiss { flex: 0 0 auto; min-width: 32px; min-height: 32px; margin: -.3rem -.4rem -.3rem 0; border: 0; border-radius: var(--button-radius); background: transparent; color: inherit; font-size: 1.25rem; line-height: 1; cursor: pointer; }
+.notice-dismiss:hover { background: rgb(0 0 0 / .06); }
+.notice-dismiss:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+.area-branch > summary { cursor: pointer; list-style-position: outside; }
+.area-branch > summary::marker { color: var(--muted); }
+.area-branch[open] > summary { margin-bottom: .35rem; }

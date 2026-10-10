@@ -9,6 +9,7 @@ import { blockersFrom } from './action-blockers';
 import { Card } from './card';
 import { ErrorBanner, SuccessBanner } from './feedback';
 import { useProjectWorkspace } from './project-shell-header';
+import { ResizableTable, ResizableTh } from './resizable-table';
 
 interface Department { id: string; name: string; managerTitle: string }
 interface DepartmentTitle { id: string; title: string; defaultPriority: string; assignmentLayer: 'MANAGER' | 'SUPERINTENDENT' }
@@ -73,12 +74,12 @@ export function ProjectDepartments({ projectId }: { projectId: string }) {
           <section key={department.id} className="department-card">
             <div className="toolbar"><h3 className="panel-title">{department.name}</h3><span className="muted">Head: {department.managerTitle}</span></div>
             {(titles[department.id] ?? []).length ? (
-              <table className="simple-table">
-                <thead><tr><th scope="col">Title</th><th scope="col">Assigned by</th><th scope="col">Default priority</th></tr></thead>
+              <ResizableTable storageKey="department-titles" className="simple-table">
+                <thead><tr><ResizableTh column="title" scope="col">Title</ResizableTh><ResizableTh column="layer" scope="col">Assigned by</ResizableTh><ResizableTh column="priority" scope="col">Default priority</ResizableTh></tr></thead>
                 <tbody>{(titles[department.id] ?? []).map(title => (
                   <tr key={title.id}><td>{title.title}</td><td>{title.assignmentLayer === 'MANAGER' ? 'Department manager' : 'Superintendent'}</td><td>{priorityLabel(title.defaultPriority)}</td></tr>
                 ))}</tbody>
-              </table>
+              </ResizableTable>
             ) : <p className="muted">No titles yet.</p>}
             {editable ? <TitleForm busy={busy} onSubmit={(title, layer, priority, reset) => send(`/api/projects/${projectId}/departments/${department.id}/titles`,
               { title, assignmentLayer: layer, defaultPriority: priority }, `Title “${title}” added to ${department.name}.`, reset)} /> : null}
