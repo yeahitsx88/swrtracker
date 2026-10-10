@@ -4968,3 +4968,27 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Disposable test data (127.0.0.1:15491 only): a North assignment for instrument@amelia.local was inserted directly at the owner's request, then completed and extended to South/East through the new command. An "East Area" top-level node was inserted for the browser check.
 - Limitations: PostgreSQL acceptance suites not run (retained container out of bounds). Removal still uses the existing cleanup, which needs another covered replacement Superintendent.
 - Production behavior changed: yes (new owner-approved governed write).
+
+### 2026-10-10 - Batch 297: workflow audit, plain errors and dashboard drag-and-drop
+- Intent: owner-authorized application-wide workflow audit. Follow every role's workflows through to persisted outcomes; make errors plain-language; fix confusing controls; replace dashboard positioning buttons with direct drag-and-drop. Evidence and inventory are in docs/WORKFLOW_AUDIT_20261010.md.
+- Commits: 4e34c33 (errors), 6732df2 (dashboard), c85b2df (lifecycle), 96d1010 (requests), 8116d83 (access/ids), d570e58 (account), 9afd823 (admin), 0ec72f0 (teams), 468f43b (sign-in).
+- Changed behavior (presentation and flow only):
+  - Plain status-based error wording with next steps; NetworkError keeps exact-retry intent; ids and field names translated.
+  - Silently disabled actions across lifecycle, account, team and admin screens now explain themselves (blocked actions gain an optional step reveal).
+  - Review dialog shows request facts; approved requests link to assignment; Operations confirms saves and shows a role message to non-survey roles.
+  - Draft guidance, deletion confirmation and no Cancel on drafts.
+  - Stuck "Loading…" fixed in the preparation-cancellation and invitation-cancellation panels.
+  - Sign-in remembers the tenant id on the device.
+  - Dashboard drag with column snapping, keyboard alternative and per-browser persistence.
+- Not changed: server rules, roles, tenancy and authorization. One server text change: request-setting validation wording.
+- Verification:
+  - Strict typecheck and 760 units pass.
+  - Browser walkthroughs on the disposable DB: full lifecycle including reject, return-and-resubmit, delay/restart, stop-work approval and follow-up.
+  - 23 cross-tenant and role API probes refused, with a second isolation tenant fixture.
+  - 8 unauthorized page visits show plain messages.
+  - Admin and role sweeps are clean.
+  - 15-check dashboard drag test.
+  - Production build verified at the end of the batch.
+- Open (decisions): rejection notification recipients; requester uploads after submission; tenant lookup by email; the dev-server login redirect origin (verify on a production proxy before changing).
+- Not run: PostgreSQL acceptance suites and maintained runners (retained fixtures out of bounds), plus the invitation, reset-email, recommissioning and template workflows.
+- Production behavior changed: yes (presentation/flow).
