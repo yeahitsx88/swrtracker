@@ -4992,3 +4992,18 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Open (decisions): rejection notification recipients; requester uploads after submission; tenant lookup by email; the dev-server login redirect origin (verify on a production proxy before changing).
 - Not run: PostgreSQL acceptance suites and maintained runners (retained fixtures out of bounds), plus the invitation, reset-email, recommissioning and template workflows.
 - Production behavior changed: yes (presentation/flow).
+
+### 2026-10-10 - Batch 298: consolidated user audit (UAR-001…028)
+- Intent: owner-supplied audit directive built from five user-review files. Correct recurring causes across shared components, verify Project Admin authority with a pure Project Admin, and record pending decisions without implementing them. Register: docs/USER_AUDIT_REGISTER_20261010.md.
+- Commits: 98c6e42 (shared notices, table resizing, admin clarity, seed fix), a9beb56 (dashboard column selector regression).
+- Key finding: the reviewer's "Project Admin" account also holds Tenant Admin. A pure Project Admin (granted through the real Tenant-Admin endpoint) was refused on all 17 elevation/tenant probes and sees no grant, template, review or tenant surfaces. UAR-008/011/013 are verified rather than changed.
+- Changed behavior:
+  - Dismissible, auto-dismissing completion messages; sign-in notices persist.
+  - No stale "Return to" links; accurate company/whitelist messages; forms reset after creation.
+  - Spreadsheet-style column resizing on every shared table plus a shared ResizableTable; width sliders removed.
+  - Template card hidden from Project Admin; "Disable account…" wording; "Create a Company" section; collapsible Area tree; Diagnostics dialog; settings order; explained custom-role wizard.
+  - Seeds add department head titles.
+- Not changed (decisions D1–D8 in the register): dual Project Admin/operational roles, admin term consolidation, universal container dragging, departments after activation, department–company link, disable reason taxonomy, company details, work following a promoted person.
+- Verification: strict typecheck and 761 units. Browser lifecycle 16/16, dashboard 15/15, resize 12/12, UAR UI 13/13, notices 8/8, role-change refusal. API: Project Admin 17/17 and boundaries 23/23 refused. Production build at batch end.
+- Limitations: five maintained runners updated (syntax-checked only); PostgreSQL suites not run; previously seeded databases still lack the department head-title row.
+- Production behavior changed: yes (presentation/flow; one seed fix).
