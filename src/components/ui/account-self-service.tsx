@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { apiRequest, createIdempotencyKey } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button } from './button';
+import {blockersFrom} from './action-blockers';
 import { ErrorBanner, SuccessBanner } from './feedback';
 
 /** Your own name and password. The server re-checks your session for each change. */
@@ -37,9 +38,9 @@ function NameForm({ name, onNameChanged }: { name: string; onNameChanged: (name:
     <div className="stack form-narrow">
       {error ? <ErrorBanner message={error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
-      <label className="field"><span className="field-label">Display name</span>
+      <label className="field" id="acct-name"><span className="field-label">Display name</span>
         <input className="input" value={value} maxLength={120} autoComplete="name" onChange={event => setValue(event.target.value)} required /></label>
-      <Button type="submit" disabled={busy || !value.trim() || value.trim() === name}>{busy ? 'Saving…' : 'Save name'}</Button>
+      <Button type="submit" disabled={busy} blockedTitle="Nothing to save yet" blockers={blockersFrom([[!value.trim(), 'Enter the name you want shown.', 'acct-name'], [!!value.trim() && value.trim() === name, 'This is already your name. Change it first.', 'acct-name']])}>{busy ? 'Saving…' : 'Save name'}</Button>
     </div>
   </form>;
 }
@@ -68,16 +69,21 @@ function PasswordForm() {
     <div className="stack form-narrow">
       {error ? <ErrorBanner message={error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
-      <label className="field"><span className="field-label">Current password</span>
+      <label className="field" id="acct-current"><span className="field-label">Current password</span>
         <input className="input" type="password" value={current} autoComplete="current-password" onChange={event => setCurrent(event.target.value)} required /></label>
-      <label className="field"><span className="field-label">New password</span>
+      <label className="field" id="acct-new"><span className="field-label">New password</span>
         <input className="input" type="password" value={next} minLength={8} autoComplete="new-password" aria-describedby="password-rule" onChange={event => setNext(event.target.value)} required />
         <span id="password-rule" className="muted field-help">At least 8 characters. A longer passphrase is stronger.</span></label>
-      <label className="field"><span className="field-label">Confirm new password</span>
+      <label className="field" id="acct-confirm"><span className="field-label">Confirm new password</span>
         <input className="input" type="password" value={confirm} autoComplete="new-password" aria-invalid={mismatch} onChange={event => setConfirm(event.target.value)} required />
         {mismatch ? <span className="field-help" role="alert" style={{ color: 'var(--danger)' }}>The new passwords do not match.</span> : null}</label>
       <div className="row">
-        <Button type="submit" disabled={busy || !current || next.length < 8 || mismatch || !confirm}>{busy ? 'Changing…' : 'Change password'}</Button>
+        <Button type="submit" disabled={busy} blockedTitle="Can’t change the password yet" blockers={blockersFrom([
+          [!current, 'Enter your current password.', 'acct-current'],
+          [next.length < 8, 'Choose a new password of at least 8 characters.', 'acct-new'],
+          [!confirm, 'Type the new password again to confirm it.', 'acct-confirm'],
+          [mismatch, 'The new passwords do not match.', 'acct-confirm'],
+        ])}>{busy ? 'Changing…' : 'Change password'}</Button>
         <Link className="text-link" href="/forgot-password">Forgot your current password?</Link>
       </div>
     </div>
