@@ -87,8 +87,26 @@ export function statusMessage(status: number): string {
 const ROLE_WORDS: Array<[RegExp, string]> = [
   [/\bTENANT_ADMIN\b/g, 'Tenant Admin'], [/\bPROJECT_ADMIN\b/g, 'Project Admin'], [/\bSURVEY_MANAGER\b/g, 'Survey Manager'],
   [/\bSURVEY_SUPERINTENDENT\b/g, 'Survey Superintendent'], [/\bPARTY_CHIEF\b/g, 'Party Chief'], [/\bINSTRUMENT_MAN\b/g, 'Instrument Man'],
-  [/\bAOR assignments\b/g, 'Area assignments'], [/\bAOR node\b/g, 'Area'],
+  [/\bAOR assignments\b/g, 'Area assignments'], [/\bAOR nodes?\b/g, 'Area'], [/\bAOR\b/g, 'Area'],
 ];
+/** Server field names (API contract wording) shown to operators as plain words. */
+const FIELD_WORDS: Record<string, string> = {
+  inviteToken: 'the invitation link', tenantId: 'the organization', companyId: 'the company', userId: 'the person',
+  requestedDate: 'the Need-By date', fieldContact: 'the point of contact', rejectionReason: 'a rejection reason',
+  urgentReason: 'the urgent reason', departmentId: 'the department', assignedPartyChiefId: 'the selected Party Chief',
+  assignedInstrumentManId: 'the selected Instrument Man', requesterId: 'the requester', aorNodeId: 'the Area',
+  parentId: 'the parent Area', managerTitle: 'the head title', leadTimeDays: 'lead-time days', sizeBytes: 'the file size',
+  superintendentId: 'the Superintendent', crewBuild: 'the crew build', templateId: 'the template', aorDepth: 'the number of Area levels',
+  aorLevelLabels: 'the Area level names', defaultPriority: 'the default priority', assignmentLayer: 'the assignment layer',
+  maxAttachmentsPerTicket: 'the maximum files per request', leadTimeEnforcementEnabled: 'the lead-time setting', assignmentId: 'the assignment',
+  acknowledgeWarnings: 'the warning acknowledgement', contentSha256: 'the file check',
+};
+const STALE_VERSION_MESSAGE = 'This record changed since you opened it. Reload to see the latest, then try again.';
+function plainFields(text: string): string {
+  if (/\bexpectedVersion\b/.test(text)) return STALE_VERSION_MESSAGE;
+  const replaced = text.replace(/\b[a-z]+[A-Z][A-Za-z0-9]*\b/g, word => FIELD_WORDS[word] ?? word);
+  return replaced === text ? text : replaced.charAt(0).toUpperCase() + replaced.slice(1);
+}
 const sentence = (text: string) => { const trimmed = text.trim(); return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`; };
 const isSessionProblem = (error: ApiClientError) =>
   error.code === 'AUTH_SESSION_REVOKED' || /session|authentication required|mutation identity|sign in again/i.test(error.message);
@@ -102,7 +120,7 @@ export function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof NetworkError) return error.message;
   if (error instanceof TypeError && /fetch|network|load failed/i.test(error.message)) return NETWORK_MESSAGE;
   if (error instanceof ApiClientError) {
-    const raw = ROLE_WORDS.reduce((text, [pattern, word]) => text.replace(pattern, word), error.message.trim())
+    const raw = plainFields(ROLE_WORDS.reduce((text, [pattern, word]) => text.replace(pattern, word), error.message.trim()))
       // Internal record IDs mean nothing to operators.
       .replace(/\bTicket [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} not found\b/gi, 'This request was not found')
       .replace(/\s*\(?\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b\)?/gi, '');

@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/apiClient';
 import type { ProjectCompanyAccessResponse } from '@/lib/contracts/projects';
 import { ApiClientError,getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, Select, SuccessBanner } from '@/components/ui';
+import {blockersFrom} from '@/components/ui/action-blockers';
 import {AdministrationSection,AdministrationRecords} from '@/components/ui/administration-records';
 import {AdministrationBatch,type AdministrationAction} from '@/components/ui/administration-batch';
 import {CommandOwner,FrozenCommand} from '@/lib/frozen-command';
@@ -87,10 +88,10 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvi
                 ))}
               </Select>
             </Field>
-            <Field label="Requester Email">
+            <Field label="Requester Email" id="sa-email">
               <Input disabled={loading||busy!==null||ownerToken!==null} type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
             </Field>
-            <Button disabled={loading||busy !== null || blocked || gate.stale || archived || overview.invitationCreationBlockedReason!==null || !companyId || !email.trim()} onClick={() => void invite()}>
+            <Button disabled={loading||busy !== null || blocked || gate.stale} blockedTitle="Can’t create the invitation yet" blockers={gate.command?[]:blockersFrom([[archived,'This project is closed, so invitations are read-only.'],[overview.invitationCreationBlockedReason!==null,overview.invitationCreationBlockedReason??''],[!companyId,'Choose the subcontractor company.'],[!email.trim(),'Enter the requester’s email address.','sa-email']])} onClick={() => void invite()}>
               {busy === 'invite' ? 'Creating...' : gate.command&&!gate.stale?'Retry Unchanged Invitation':'Create Invitation'}
             </Button>
             {overview.invitationCreationBlockedReason&&<p role="status">{overview.invitationCreationBlockedReason==='PREPARATION_CANCELLATION'?'New invitations are unavailable while preparation cancellation is in progress. Central IT may cancel eligible reviewed invitations below.':overview.invitationCreationBlockedReason==='RECOMMISSIONING'?'New invitations are unavailable during reopening preparation. Reopen the project before inviting requesters.':'Archived projects are read-only. Invitation records remain available below.'}</p>}
@@ -104,7 +105,7 @@ export function SubcontractorAccess({ projectId,owner,companiesRevision=0,onInvi
 
             <AdministrationSection title="Subcontractor Requesters" locked={ownerToken!==null}>
             <AdministrationRecords scrollable label="subcontractor requesters" rows={overview.requesters} id={r=>r.userId} columns={[{key:'name',label:'Name',text:r=>r.name},{key:'email',label:'Email',text:r=>r.email},{key:'company',label:'Company',text:r=>r.companyName},{key:'view',label:'Company view',text:r=>r.authorityGrantId?'Granted':'Own requests'}]} selected={selected} onSelection={setSelected} disabled={loading||busy!==null||ownerToken!==null} eligible={()=>true} actions={r=><Button disabled={loading||busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch([{url:r.authorityGrantId?`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`:`/api/projects/${projectId}/company-authority`,method:r.authorityGrantId?'DELETE':'POST',body:r.authorityGrantId?{}:{userId:r.userId},label:`${r.authorityGrantId?'Revoke':'Grant'} ${r.companyName} view for ${r.name} (${r.email})`}])}>{r.authorityGrantId?'Revoke Company View':'Grant Company View'}</Button>}/>
-            <div className="row">{[true,false].map(enabled=><Button key={String(enabled)} variant="secondary" disabled={!selected.length||busy!==null||ownerToken!==null||archived||!!batch} onClick={()=>setBatch(overview.requesters.filter(r=>selected.includes(r.userId)&&!!r.authorityGrantId!==enabled).map(r=>({url:enabled?`/api/projects/${projectId}/company-authority`:`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`,method:enabled?'POST':'DELETE',body:enabled?{userId:r.userId}:{},label:`${enabled?'Grant':'Revoke'} ${r.companyName} view for ${r.name} (${r.email})`})))}>{enabled?'Review selected Company View grants':'Review selected Company View revocations'}</Button>)}</div>
+            <div className="row">{[true,false].map(enabled=><Button key={String(enabled)} variant="secondary" disabled={busy!==null||ownerToken!==null||!!batch} blockedTitle="Nothing selected" blockers={blockersFrom([[archived,'This project is closed, so access is read-only.'],[!selected.length,'Tick the requesters in the table first.']])} onClick={()=>setBatch(overview.requesters.filter(r=>selected.includes(r.userId)&&!!r.authorityGrantId!==enabled).map(r=>({url:enabled?`/api/projects/${projectId}/company-authority`:`/api/projects/${projectId}/company-authority/${r.authorityGrantId}`,method:enabled?'POST':'DELETE',body:enabled?{userId:r.userId}:{},label:`${enabled?'Grant':'Revoke'} ${r.companyName} view for ${r.name} (${r.email})`})))}>{enabled?'Review selected Company View grants':'Review selected Company View revocations'}</Button>)}</div>
             {batch&&<AdministrationBatch actions={batch} owner={owner} reload={()=>load(true)} onDone={()=>void load()} onCancel={()=>{setBatch(undefined);setSelected([]);}}/>}
             </AdministrationSection>
 

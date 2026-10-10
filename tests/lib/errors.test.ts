@@ -68,3 +68,12 @@ test('internal record ids never reach the operator', () => {
     'This request was not found. It may have been removed, or you may no longer have access.');
   assert.equal(getErrorMessage(new ApiClientError('ConflictError', 'Superintendent (10000000-0000-4000-8000-000000000013) changed', 409), 'x'), 'Superintendent changed');
 });
+
+test('server field names are shown as plain words; version conflicts ask for a reload', () => {
+  assert.equal(getErrorMessage(new ApiClientError('ValidationError', 'inviteToken is invalid or expired', 400), 'x'), 'The invitation link is invalid or expired');
+  assert.equal(getErrorMessage(new ApiClientError('ValidationError', 'assignedPartyChiefId must be an active Party Chief on this project', 400), 'x'),
+    'The selected Party Chief must be an active Party Chief on this project');
+  assert.equal(getErrorMessage(new ApiClientError('ValidationError', 'parentId is required for non-root AOR nodes', 400), 'x'), 'The parent Area is required for non-root Area');
+  assert.match(getErrorMessage(new ApiClientError('ValidationError', 'expectedVersion must be a nonnegative integer', 400), 'x'), /^This record changed since you opened it/);
+  assert.equal(getErrorMessage(new ApiClientError('ValidationError', 'Choose an active project Area', 400), 'x'), 'Choose an active project Area', 'plain messages are untouched');
+});

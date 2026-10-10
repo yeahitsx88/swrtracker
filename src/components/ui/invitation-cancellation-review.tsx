@@ -24,9 +24,10 @@ function Review({projectId,inviteId,owner,token,onClose,onSaved}:{projectId:stri
   reading.current=true;const epoch=++generation.current;setBusy(true);setError(undefined);
   try{const result=await apiRequest<{preview:InvitationCancellationPreview}>(url);if(epoch!==generation.current||!gate.reload())return;setPreview(result.preview);setReason('');setConsent(false);}
   catch(e){if(epoch===generation.current)setError(getErrorMessage(e,'Current invitation could not be loaded. Your reviewed command remains held until Reload Invitation succeeds.'));}
-  finally{reading.current=false;if(epoch===generation.current){setBusy(false);render(n=>n+1);}}
+  finally{if(epoch===generation.current){reading.current=false;setBusy(false);render(n=>n+1);}}
  }
- useEffect(()=>{void load();return()=>{generation.current++;};},[projectId,inviteId]);
+ // A superseded read (remount or selection change) must not block the current one.
+ useEffect(()=>{void load();return()=>{generation.current++;reading.current=false;};},[projectId,inviteId]);
  async function submit(){
   if(busy||owner.blocked(token)||gate.stale||!preview||!gate.command&&(!preview.canCancel||!consent||reason.trim().length<10)||!owner.claim(token))return;
   const command=gate.begin({snapshot:preview.snapshot,reason:reason.trim(),confirmed:true},crypto.randomUUID());if(!command)return;

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { apiClient, apiRequest } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import type { AorLevelRecord, AorNodeRecord } from '@/lib/contracts';
+import { Button } from './button';
+import { blockersFrom } from './action-blockers';
 import { Card } from './card';
 import { ErrorBanner, SuccessBanner } from './feedback';
 import { useProjectWorkspace } from './project-shell-header';
@@ -95,34 +97,39 @@ export function ProjectAreaSetup({ projectId }: { projectId: string }) {
             <form className="settings-item" onSubmit={addLevel}>
               <div><h3>Add a level</h3><p className="muted">Levels go from broadest to most specific. The next level is level {levels.length + 1}.</p></div>
               <div className="row form-narrow">
-                <label className="field" style={{ flex: '1 1 16rem' }}><span className="field-label">Level name</span>
+                <label className="field" id="as-level-name" style={{ flex: '1 1 16rem' }}><span className="field-label">Level name</span>
                   <input className="input" value={levelLabel} maxLength={60} onChange={event => setLevelLabel(event.target.value)} placeholder="For example: CWA" /></label>
-                <button type="submit" className="button" disabled={busy || !levelLabel.trim()}>Add level</button>
+                <Button type="submit" disabled={busy} blockers={blockersFrom([[!levelLabel.trim(), 'Enter the level name, for example Unit or CWA.', 'as-level-name']])} blockedTitle="Can’t add the level yet">Add level</Button>
               </div>
             </form>
             {levels.length ? (
               <form className="settings-item" onSubmit={addNode}>
                 <div><h3>Add an Area</h3><p className="muted">Areas below the top level sit inside an Area from the level above.</p></div>
                 <div className="stack form-narrow">
-                  <label className="field"><span className="field-label">Level</span>
+                  <label className="field" id="as-level"><span className="field-label">Level</span>
                     <select className="select" value={nodeLevel} onChange={event => { setNodeLevel(event.target.value); setNodeParent(''); }}>
                       <option value="">Choose a level</option>{levels.map(level => <option key={level.id} value={level.id}>{level.depth + 1}. {level.label}</option>)}
                     </select></label>
                   {selectedLevel && selectedLevel.depth > 0 ? (
-                    <label className="field"><span className="field-label">Inside</span>
+                    <label className="field" id="as-parent"><span className="field-label">Inside</span>
                       <select className="select" value={nodeParent} onChange={event => setNodeParent(event.target.value)}>
                         <option value="">Choose the containing Area</option>{parentChoices.map(node => <option key={node.id} value={node.id}>{node.name} ({node.code})</option>)}
                       </select>
                       {!parentChoices.length ? <span className="muted field-help">Add an Area at the level above first.</span> : null}</label>
                   ) : null}
                   <div className="row">
-                    <label className="field" style={{ flex: '2 1 14rem' }}><span className="field-label">Area name</span>
+                    <label className="field" id="as-area-name" style={{ flex: '2 1 14rem' }}><span className="field-label">Area name</span>
                       <input className="input" value={nodeName} maxLength={120} onChange={event => setNodeName(event.target.value)} placeholder="For example: CWA-1100 Pipe Rack" /></label>
-                    <label className="field" style={{ flex: '1 1 8rem' }}><span className="field-label">Code</span>
+                    <label className="field" id="as-area-code" style={{ flex: '1 1 8rem' }}><span className="field-label">Code</span>
                       <input className="input" value={nodeCode} maxLength={20} onChange={event => setNodeCode(event.target.value.replace(/[^A-Za-z0-9]/g, ''))} placeholder="N1100" /></label>
                   </div>
                   <span className="muted field-help">The code appears in request numbers, for example FSS-{nodeCode.trim().toUpperCase() || 'N1100'}-00042.</span>
-                  <button type="submit" className="button" disabled={busy || !selectedLevel || !nodeName.trim() || !nodeCode.trim() || (selectedLevel.depth > 0 && !nodeParent)}>Add Area</button>
+                  <Button type="submit" disabled={busy} blockedTitle="Can’t add the Area yet" blockers={blockersFrom([
+                    [!selectedLevel, 'Choose the level this Area belongs to.', 'as-level'],
+                    [!!selectedLevel && selectedLevel.depth > 0 && !nodeParent, 'Choose the Area it sits inside.', 'as-parent'],
+                    [!nodeName.trim(), 'Enter the Area name.', 'as-area-name'],
+                    [!nodeCode.trim(), 'Enter a short code; it appears in request numbers.', 'as-area-code'],
+                  ])}>Add Area</Button>
                 </div>
               </form>
             ) : null}

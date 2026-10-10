@@ -28,15 +28,15 @@ function assertConfigAdmin(
 ): void {
   if (actorTenantRole === 'TENANT_ADMIN') return;
   if (actorProjectRole === 'PROJECT_ADMIN') return;
-  throw new ForbiddenError('Only PROJECT_ADMIN or TENANT_ADMIN may manage project request configuration');
+  throw new ForbiddenError('Only a Project Admin or Tenant Admin can change request settings.');
 }
 
 function assertLeadTimeDays(leadTimeDays: number): void {
   if (!Number.isInteger(leadTimeDays)) {
-    throw new ValidationError('leadTimeDays must be an integer');
+    throw new ValidationError('Lead-time days must be a whole number.');
   }
   if (leadTimeDays < MIN_LEAD_TIME_DAYS || leadTimeDays > MAX_LEAD_TIME_DAYS) {
-    throw new ValidationError(`leadTimeDays must be between ${MIN_LEAD_TIME_DAYS} and ${MAX_LEAD_TIME_DAYS}`);
+    throw new ValidationError(`Lead-time days must be between ${MIN_LEAD_TIME_DAYS} and ${MAX_LEAD_TIME_DAYS}.`);
   }
 }
 
@@ -83,7 +83,7 @@ export async function updateProjectRequestConfig(
   if (maxAttachmentsPerTicket !== null &&
       (!Number.isInteger(maxAttachmentsPerTicket) || maxAttachmentsPerTicket < 1 ||
        maxAttachmentsPerTicket > MAX_ATTACHMENTS_PER_TICKET)) {
-    throw new ValidationError(`maxAttachmentsPerTicket must be null or an integer between 1 and ${MAX_ATTACHMENTS_PER_TICKET}`);
+    throw new ValidationError(`Maximum files per request must be blank (no limit) or a whole number from 1 to ${MAX_ATTACHMENTS_PER_TICKET}.`);
   }
 
   const project = await repo.findProjectById(db, params.tenantId, params.projectId);

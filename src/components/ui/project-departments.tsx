@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { priorityLabel } from '@/lib/display-labels';
+import { Button } from './button';
+import { blockersFrom } from './action-blockers';
 import { Card } from './card';
 import { ErrorBanner, SuccessBanner } from './feedback';
 import { useProjectWorkspace } from './project-shell-header';
@@ -86,11 +88,11 @@ export function ProjectDepartments({ projectId }: { projectId: string }) {
           <form className="settings-item" onSubmit={addDepartment}>
             <div><h3>Add a department</h3><p className="muted">The head title is added to the department’s title catalog automatically.</p></div>
             <div className="row form-narrow">
-              <label className="field" style={{ flex: '1 1 14rem' }}><span className="field-label">Department name</span>
+              <label className="field" id="dp-name" style={{ flex: '1 1 14rem' }}><span className="field-label">Department name</span>
                 <input className="input" value={name} maxLength={120} onChange={event => setName(event.target.value)} placeholder="For example: QA/QC" /></label>
-              <label className="field" style={{ flex: '1 1 14rem' }}><span className="field-label">Head title</span>
+              <label className="field" id="dp-head" style={{ flex: '1 1 14rem' }}><span className="field-label">Head title</span>
                 <input className="input" value={managerTitle} maxLength={120} onChange={event => setManagerTitle(event.target.value)} placeholder="For example: QA/QC Manager" /></label>
-              <button type="submit" className="button" disabled={busy || !name.trim() || !managerTitle.trim()}>Add department</button>
+              <Button type="submit" disabled={busy} blockedTitle="Can’t add the department yet" blockers={blockersFrom([[!name.trim(), 'Enter the department name.', 'dp-name'], [!managerTitle.trim(), 'Enter the head title, for example QA/QC Manager.', 'dp-head']])}>Add department</Button>
             </div>
           </form>
         ) : null}
@@ -103,9 +105,10 @@ function TitleForm({ busy, onSubmit }: { busy: boolean; onSubmit: (title: string
   const [title, setTitle] = useState('');
   const [layer, setLayer] = useState<'MANAGER' | 'SUPERINTENDENT'>('SUPERINTENDENT');
   const [priority, setPriority] = useState<string>('NORMAL');
+  const titleId = useId();
   return (
     <form className="row title-form" onSubmit={event => { event.preventDefault(); if (title.trim()) onSubmit(title.trim(), layer, priority, () => setTitle('')); }}>
-      <label className="field" style={{ flex: '2 1 12rem' }}><span className="field-label">New title</span>
+      <label className="field" id={titleId} style={{ flex: '2 1 12rem' }}><span className="field-label">New title</span>
         <input className="input" value={title} maxLength={120} onChange={event => setTitle(event.target.value)} placeholder="For example: QA/QC Inspector" /></label>
       <label className="field" style={{ flex: '1 1 10rem' }}><span className="field-label">Assigned by</span>
         <select className="select" value={layer} onChange={event => setLayer(event.target.value as 'MANAGER' | 'SUPERINTENDENT')}>
@@ -113,7 +116,7 @@ function TitleForm({ busy, onSubmit }: { busy: boolean; onSubmit: (title: string
       <label className="field" style={{ flex: '1 1 9rem' }}><span className="field-label">Default priority</span>
         <select className="select" value={priority} onChange={event => setPriority(event.target.value)}>
           {PRIORITIES.map(value => <option key={value} value={value}>{priorityLabel(value)}</option>)}</select></label>
-      <button type="submit" className="button button-secondary" disabled={busy || !title.trim()}>Add title</button>
+      <Button type="submit" variant="secondary" disabled={busy} blockedTitle="Can’t add the title yet" blockers={blockersFrom([[!title.trim(), 'Enter the title name.', titleId]])}>Add title</Button>
     </form>
   );
 }

@@ -17,9 +17,10 @@ export function ProjectPreparationCancellation({projectId,owner,onFinished}:{pro
   reading.current=true;const epoch=++generation.current;setBusy(true);setError(undefined);
   try{const result=await apiRequest<{preview:PreparationCancellationPreview}>(url);if(epoch!==generation.current||!gate.reload())return;setPreview(result.preview);setReason('');setConsent(false);setReadFailed(false);owner.release(token);}
   catch(cause){if(epoch===generation.current){setReadFailed(gate.stale);setError(getErrorMessage(cause,'Unable to load current preparation evidence. Reload and review before acting.'));}}
-  finally{reading.current=false;if(epoch===generation.current)setBusy(false);}
+  finally{if(epoch===generation.current){reading.current=false;setBusy(false);}}
  }
- useEffect(()=>{void load();return()=>{generation.current++;};},[projectId]);
+ // A superseded read (remount or project change) must not block the current one.
+ useEffect(()=>{void load();return()=>{generation.current++;reading.current=false;};},[projectId]);
  async function submit(){
   if(!preview||busy||owner.blocked(token)||gate.stale||!consent||reason.trim().length<10||reason.trim().length>1000||preview.status!=='SETUP'||preview.cancellationId&&preview.blockers.length&&!gate.command||!owner.claim(token))return;
   const attempt=gate.begin({action:preview.cancellationId?'FINISH':'START',snapshot:preview.snapshot,reason:reason.trim(),confirmed:true},crypto.randomUUID());
