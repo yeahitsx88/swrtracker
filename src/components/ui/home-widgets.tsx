@@ -58,7 +58,7 @@ export function HomeWidgets({children,storageKey,audience}:{children:ReactNode;s
  },[shown]);
 
  function target(x:number,y:number,id:string):{column:Column;index:number}{
-  const columnNodes=[...board.current?.querySelectorAll<HTMLElement>('[data-column]')??[]];
+  const columnNodes=[...board.current?.querySelectorAll<HTMLElement>(':scope > [data-board-column]')??[]];
   let column:Column=0;
   if(count===2&&columnNodes.length===2){const right=columnNodes[1]!.getBoundingClientRect();column=x>=right.left-8?1:0;}
   const peers=[...(columnNodes[column]?.querySelectorAll<HTMLElement>(':scope > [data-widget]')??[])].filter(node=>node.dataset.widget!==id);
@@ -129,7 +129,7 @@ export function HomeWidgets({children,storageKey,audience}:{children:ReactNode;s
   <span role="status" className="sr-only">{message}</span>
   <p id="home-widgets-help" className="sr-only">Each card has a move handle. Press Space to pick a card up, the arrow keys to move it, Enter to drop it, or Escape to cancel.</p>
   <div ref={board} className="home-widget-columns" data-columns={count} data-audience={audience}>
-   {columns.map((column,columnIndex)=><div className="home-widget-column" data-column={columnIndex} key={columnIndex}>
+   {columns.map((column,columnIndex)=><div className="home-widget-column" data-board-column={columnIndex} key={columnIndex}>
     {column.map(id=>{
      const widget=widgets.find(item=>item.id===id);if(!widget)return null;
      const isDragged=dragging?.id===id;
