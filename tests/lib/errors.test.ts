@@ -62,3 +62,9 @@ test('permission and missing-record messages keep the rule and add the next step
   assert.equal(getErrorMessage(new ApiClientError('RateLimitError', 'Too many requests', 429), 'x'), 'Too many attempts in a short time. Wait a minute, then try again.');
   assert.equal(getErrorMessage(new ApiClientError('ValidationError', 'Choose an active project Area', 400), 'x'), 'Choose an active project Area');
 });
+
+test('internal record ids never reach the operator', () => {
+  assert.equal(getErrorMessage(new ApiClientError('NotFoundError', 'Ticket b815bcf4-5958-41a9-b3aa-c3bfbae9fd92 not found', 404), 'x'),
+    'This request was not found. It may have been removed, or you may no longer have access.');
+  assert.equal(getErrorMessage(new ApiClientError('ConflictError', 'Superintendent (10000000-0000-4000-8000-000000000013) changed', 409), 'x'), 'Superintendent changed');
+});

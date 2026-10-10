@@ -116,6 +116,11 @@ export default function SurveyOperationsPage() {
     }
   }
 
+  // Same rule as the navigation: Operations belongs to the Survey Manager and Superintendents.
+  const operationalRole = workspace?.capabilities.operationalRole;
+  if (workspace && operationalRole !== 'SURVEY_MANAGER' && operationalRole !== 'SURVEY_SUPERINTENDENT') {
+    return <section className="panel stack"><h1>Survey Operations</h1><p>Survey Operations is used by the Survey Manager and Survey Superintendents. Your project role works from other pages.</p><p><Link className="app-link" href={`/projects/${projectId}/home`}>Return to Home</Link></p></section>;
+  }
   return (
     <div className="stack ops-workspace">
       {workflow.dialog}

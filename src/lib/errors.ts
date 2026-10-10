@@ -102,7 +102,10 @@ export function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof NetworkError) return error.message;
   if (error instanceof TypeError && /fetch|network|load failed/i.test(error.message)) return NETWORK_MESSAGE;
   if (error instanceof ApiClientError) {
-    const raw = ROLE_WORDS.reduce((text, [pattern, word]) => text.replace(pattern, word), error.message.trim());
+    const raw = ROLE_WORDS.reduce((text, [pattern, word]) => text.replace(pattern, word), error.message.trim())
+      // Internal record IDs mean nothing to operators.
+      .replace(/\bTicket [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} not found\b/gi, 'This request was not found')
+      .replace(/\s*\(?\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b\)?/gi, '');
     if (error.status >= 500 || error.type === 'InternalError') {
       const reference = error.correlationId ? ` If it keeps happening, contact support and mention reference ${error.correlationId.slice(0, 8)}.` : '';
       return `${sentence(fallback)} ${statusMessage(500)}${reference}`;
