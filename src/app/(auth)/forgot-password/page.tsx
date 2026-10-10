@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { readRememberedTenant } from '@/lib/remembered-tenant';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
@@ -9,6 +10,7 @@ import { Field } from '@/components/forms';
 
 export default function ForgotPasswordPage() {
   const [tenantId, setTenantId] = useState('');
+  useEffect(() => { setTenantId(current => current || readRememberedTenant()); }, []);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

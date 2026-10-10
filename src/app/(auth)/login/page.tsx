@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { readRememberedTenant, rememberTenant, TENANT_HELP } from '@/lib/remembered-tenant';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { getSafeReturnPath } from '@/lib/safe-return-path';
@@ -25,6 +26,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  useEffect(() => { if (!searchParams.get('tenantId')) setTenantId(current => current || readRememberedTenant()); }, [searchParams]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,6 +38,7 @@ function LoginForm() {
     setLoading(true);
     try {
       await apiClient.login({ tenantId: tenantId.trim(), email: email.trim(), password });
+      rememberTenant(tenantId.trim());
       const returnTo = getSafeReturnPath(searchParams.get('returnTo'));
       router.push(returnTo);
       router.refresh();
@@ -51,7 +54,8 @@ function LoginForm() {
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
         <Field label="Tenant ID">
-          <Input value={tenantId} onChange={(event) => setTenantId(event.target.value)} required />
+          <Input value={tenantId} onChange={(event) => setTenantId(event.target.value)} required aria-describedby="tenant-help" />
+          <span id="tenant-help" className="muted field-help">{TENANT_HELP}</span>
         </Field>
         <Field label="Email">
           <Input
