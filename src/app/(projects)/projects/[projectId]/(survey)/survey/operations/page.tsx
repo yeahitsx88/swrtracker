@@ -23,11 +23,11 @@ import './operations.css';
 import { Icon } from '@/components/ui/icon';
 import { formatCalendarDate } from '@/lib/calendar-date';
 import { humanizeCode, priorityLabel } from '@/lib/display-labels';
-import {TeamDelegation} from '@/components/ui/team-delegation';
 import {useProjectWorkspace} from '@/components/ui/project-shell-header';
 import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
 import type {CommandOwner} from '@/lib/frozen-command';
-import {CrewAssignment} from '@/components/ui/crew-assignment';
+import {ManagerOversightActions,SurveyAssignmentActions} from '@/components/tickets/request-operations';
+import {useRequestDetailsDialog} from '@/components/tickets/request-details-dialog';
 
 export default function SurveyOperationsPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -45,6 +45,7 @@ export default function SurveyOperationsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [tab, setTab] = useState<'overview' | 'assignment' | 'open' | 'messages'>('overview');
   const [query, setQuery] = useState('');
+  const details = useRequestDetailsDialog(projectId, () => void loadOperations());
   // Deep links (e.g. from a request page) may open a tab with a search already applied.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search), requested = params.get('tab'), search = params.get('q');
@@ -124,6 +125,7 @@ export default function SurveyOperationsPage() {
   return (
     <div className="stack ops-workspace">
       {workflow.dialog}
+      {details.dialog}
       {error ? <ErrorBanner message={error} /> : null}
       {ticketQuery.error ? <ErrorBanner message={ticketQuery.error} /> : null}
       {success ? <SuccessBanner message={success} /> : null}
@@ -167,7 +169,7 @@ export default function SurveyOperationsPage() {
           {!ticketQuery.loading && !ticketQuery.error && ticketPage.total === 0 ? <p className="muted">No requests match this view. Clear filters to see the full queue.</p> : null}
           <RecordCollection preserveOrder label="operation requests on this page" records={<>{ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket}
-              readOnly={superintendent} projectId={projectId}
+              readOnly={superintendent} projectId={projectId} onOpen={details.open}
               disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>{setSuccess(`${ticket.ticketNumber ?? 'The request'} is saved. The list below is refreshed.`);void loadOperations();}} />
           ))}</>}/>
         </div>
@@ -181,18 +183,12 @@ export default function SurveyOperationsPage() {
               <summary><span>{ticket.ticketNumber ?? 'Draft request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
               <div className="stack ops-row-body">
                 <div className="row" style={{ justifyContent: 'space-between' }}>
-                  <Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>{ticket.ticketNumber ?? ticket.id}</Link>
+                  <button type="button" className="app-link" onClick={()=>details.open(ticket.id)}>{ticket.ticketNumber ?? ticket.id}</button>
                   <StatusBadge status={ticket.status} viewerIsRequester={false} />
                 </div>
                 <p>{ticket.description}</p>
                 <p className="muted">Need-By {ticket.requestedDate ? formatCalendarDate(ticket.requestedDate) : 'Not set'} · {priorityLabel(ticket.priority)} priority</p>
-                {!superintendent ? <div className="row">
-                  {ticket.status === 'SUBMITTED' ? <Button disabled={actionDisabled||busy===ticket.id} onClick={() => workflow.open(ticket,'approve')}>Approve Request</Button> : null}
-                  {['SUBMITTED','APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'return')}>Return for Correction</Button>:null}
-                  <Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,ticket.priority==='HIGH'?'normal':'high')}>Set {ticket.priority==='HIGH'?'Normal':'High'} Priority</Button>
-                  <Button variant="secondary" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'need-by')}>Revise Need-By Date</Button>
-                  <Button variant="danger" disabled={actionDisabled||busy===ticket.id} onClick={()=>workflow.open(ticket,'cancel')}>Cancel Request</Button>
-                </div> : null}
+                {!superintendent ? <ManagerOversightActions ticket={ticket} disabled={actionDisabled||busy===ticket.id} workflow={workflow}/> : null}
               </div>
             </details>
           ))}</>}/>
@@ -222,14 +218,14 @@ export default function SurveyOperationsPage() {
   );
 }
 
-function AssignmentRow({ ticket,disabled,owner,readOnly,projectId,onDelegated }: {
-  ticket: TicketRecord; disabled:boolean; owner:CommandOwner; readOnly?:boolean; projectId:string;onDelegated:()=>void;
+function AssignmentRow({ ticket,disabled,owner,readOnly,onDelegated,onOpen }: {
+  ticket: TicketRecord; disabled:boolean; owner:CommandOwner; readOnly?:boolean; projectId:string;onDelegated:()=>void;onOpen:(ticketId:string)=>void;
 }) {
   return <details className="ops-queue-row">
     <summary><span>{ticket.ticketNumber??'Request'} <span className="ops-row-title">{ticket.description}</span></span></summary>
     <div className="stack ops-row-body"><p>{ticket.description}</p>
-      <TeamDelegation ticket={ticket} canDelegate={!readOnly} disabled={disabled} owner={owner} onDelegated={onDelegated}/>
-      <div className="row"><CrewAssignment ticket={ticket} owner={owner} disabled={disabled} restrictToSelectedTeam={readOnly} allowChiefOnly={ticket.status==='APPROVED'} onSaved={onDelegated}/><Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request {ticket.ticketNumber}</Link></div>
+      <SurveyAssignmentActions ticket={ticket} owner={owner} disabled={disabled} readOnly={!!readOnly} onSaved={onDelegated}/>
+      <div className="row"><button type="button" className="app-link" onClick={()=>onOpen(ticket.id)}>Open request {ticket.ticketNumber}</button></div>
     </div>
   </details>;
 }

@@ -5007,3 +5007,36 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 - Verification: strict typecheck and 761 units. Browser lifecycle 16/16, dashboard 15/15, resize 12/12, UAR UI 13/13, notices 8/8, role-change refusal. API: Project Admin 17/17 and boundaries 23/23 refused. Production build at batch end.
 - Limitations: five maintained runners updated (syntax-checked only); PostgreSQL suites not run; previously seeded databases still lack the department head-title row.
 - Production behavior changed: yes (presentation/flow; one seed fix).
+
+### 2026-10-10 - Batch 299: Request Details workflow consolidation (RQ-001…004)
+- Intent: owner directive "Request Details Workflow Consolidation". Make Request Details the consistent entry point for actions a user is already authorized to perform. Keep the dedicated work screens and established business logic. No lifecycle, role, hierarchy, notification-channel or schema change.
+- Root cause: request actions lived only in role-specific screens (the Review Requests dialog, Survey Operations rows, Crew Work rows, Field Report Review rows). The detail page knew only requester capabilities, and every list opened it as a separate page.
+- Changed behavior:
+  - One `RequestDetails` component serves both the request page and a new popup (`useRequestDetailsDialog`).
+  - The popup opens from All Requests, Review Requests, Survey Operations (Need Assignment and Open Requests), Crew Work, Field Report Review and My Requests. Lists keep their page, filters, sorting and scroll, and refresh in place after an action. Drafts still open their editor page, and "Open as a full page" remains available.
+  - The Actions panel adds:
+    - Review request: the existing decision dialog, offered only when the server's review availability says so; otherwise its reason is shown.
+    - Needs a crew: Survey Manager or Superintendent delegation and crew choice.
+    - The assigned Party Chief's crew choice, restart and stop-work.
+    - The assigned Instrument Man's field actions.
+    - Field report decisions (survey leadership only).
+    - Survey Manager oversight.
+  - When nothing applies, the panel says so, with a closed-request variant.
+  - Eligibility rules are shared (`src/lib/request-operation-rules.ts`, used through `request-operations.tsx`) by the dedicated screens and Request Details. The review dialog moved unchanged to `review-decision.tsx`.
+  - Review dialog: a changed (stale) review shows the plain-language note, not the server's raw transition text. Reload wording names what is reloaded.
+  - Fixed during the batch: Survey Operations did not render the popup it opened.
+- Authorization: unchanged. Every operation is the existing endpoint with its existing server checks. Visibility of controls follows the shared rules and server review availability.
+- Verification:
+  - Strict typecheck, 766 units (new: `tests/ui/request-operations.test.ts`), production build.
+  - Browser, on the disposable database:
+    - Superintendent approval and Party Chief assignment from the All Requests popup.
+    - Party Chief Instrument Man assignment in Request Details.
+    - Instrument Man Start Work from the Crew Work popup, with the list refreshed in place.
+    - Requester popup: no survey actions, conversation present, Escape closes.
+    - Survey Manager oversight from Survey Operations; Review Requests popup; closed-request message.
+    - Field Report Review decision in the popup; requester sees no reviewer-only notes.
+    - Concurrent reviewers: one approval, the second is held with a plain note and Reload request. A double-click confirm approves once.
+    - Other-tenant admin sees nothing.
+  - Regression: lifecycle (submit, approve, assign, start, delay, complete), inability report and return loop, dashboard 15/15, boundary probes 23/23.
+- Limitations: PostgreSQL acceptance suites and maintained runners not run (retained fixtures out of bounds). A requester draft opened from a list still uses its full editor page by design.
+- Production behavior changed: yes (presentation/flow).

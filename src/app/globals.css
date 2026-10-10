@@ -898,3 +898,7 @@ body:has(.sticky-actions) .scroll-to-top { translate: 0 -4.5rem; }
 .area-branch > summary { cursor: pointer; list-style-position: outside; }
 .area-branch > summary::marker { color: var(--muted); }
 .area-branch[open] > summary { margin-bottom: .35rem; }
+/* Grouped contextual actions in the Request Details Actions panel. */
+.action-section { display: grid; gap: .5rem; padding-top: .6rem; border-top: 1px solid var(--line); }
+.action-section-title { margin: 0; font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.action-panel .action-section .row { flex-wrap: wrap; }

@@ -12,3 +12,7 @@
 /* Recovery facts, consent and actions keep their natural height inside the scrolling body. */
 .request-recovery-dialog > .popout-body { display:flex; flex-direction:column; }
 .request-recovery-dialog > .popout-body > * { flex-shrink:0; }
+/* Request Details over a list: wide enough for details beside actions; the body scrolls. */
+.administration-dialog.request-details-dialog { width: min(1180px, calc(100vw - 2rem)); height: calc(100dvh - 2rem); }
+.request-details-dialog .detail-aside { top: 0; }
+.request-details-dialog .toolbar { margin-top: -.25rem; }

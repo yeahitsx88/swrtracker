@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { homeRequestFilters } from '@/lib/home-request-filters';
@@ -10,14 +9,15 @@ import type { TicketStatus } from '@/lib/contracts';
 const CREW_STATUSES: TicketStatus[] = ['ASSIGNED', 'IN_PROGRESS', 'DELAYED'];
 import { useTicketPage } from '@/lib/use-ticket-page';
 import { PaginationControls } from '@/components/forms';
-import { CrewWorkActions, TicketList } from '@/components/tickets';
+import { TicketList } from '@/components/tickets';
+import { crewActions } from '@/components/tickets/request-operations';
+import { useRequestDetailsDialog } from '@/components/tickets/request-details-dialog';
 import { Button, Card, ErrorBanner } from '@/components/ui';
 import { Icon } from '@/components/ui/icon';
 import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
 import { useAreaNames } from '@/lib/use-area-names';
 import {useProjectWorkspace} from '@/components/ui/project-shell-header';
 import {useTicketWorkflowReview} from '@/components/tickets/ticket-workflow-review';
-import {CrewAssignment} from '@/components/ui/crew-assignment';
 
 export default function CrewWorkPage() {
   return <Suspense fallback={<p role="status">Loading crew work…</p>}><CrewWorkContent /></Suspense>;
@@ -33,7 +33,7 @@ function CrewWorkContent() {
   const [size, setSize] = useState(25);
   const [revision, setRevision] = useState(0);
   const workflow = useTicketWorkflowReview(() => setRevision(current => current + 1));
-  const actionDisabled=workflow.active||workspace?.project.status!=='ACTIVE';
+  const details = useRequestDetailsDialog(projectId, () => setRevision(current => current + 1));
   const filters=role==='PARTY_CHIEF'?{...parsed.filters,queue:'open' as const,crewId:actorId}:role==='INSTRUMENT_MAN'?{...parsed.filters,instrumentManId:actorId}:parsed.filters;
   const work = useTicketPage(projectId, page, size, filters, !parsed.error&&!!actorId, revision);
   const total = work.data?.total ?? 0;
@@ -62,28 +62,17 @@ function CrewWorkContent() {
         {work.error ? <ErrorBanner message={work.error} /> : null}
         {work.loading ? <p className="muted" role="status">Loading crew work queue…</p> : null}
         {!work.loading && !work.error && !parsed.error ? (
-          <TicketList compactTools
+          <TicketList compactTools onOpen={details.open}
             projectId={projectId}
             tickets={work.data?.data ?? []}
             areaNames={areaNames}
             emptyTitle="No actionable crew work"
             emptyMessage="Work assigned to you will appear here, including requests awaiting your crew selection."
-            renderActions={(ticket) => role==='PARTY_CHIEF'&&ticket.assignedPartyChiefId===actorId?(<div className="row">
-              {['APPROVED','ASSIGNED','IN_PROGRESS','DELAYED'].includes(ticket.status)?<CrewAssignment disabled={actionDisabled} ticket={ticket} owner={workflow.owner} fixedChiefId={actorId} onSaved={()=>setRevision(n=>n+1)}/>:null}
-              {ticket.status==='DELAYED'?<Button disabled={actionDisabled} onClick={()=>workflow.open(ticket,'restart')}>Restart Delayed Work</Button>:null}
-              {['IN_PROGRESS','DELAYED'].includes(ticket.status)?<Button variant="danger" disabled={workflow.active||(workspace?.project.status!=='ACTIVE'&&!(workspace?.project.status==='SETUP'&&ticket.preparationCleanupAllowed))||!!ticket.surveyCancelRequestedAt} onClick={()=>workflow.open(ticket,'stop')}>Flag Stop Work</Button>:null}
-              {ticket.surveyCancelRequestedAt?<p role="status">Stop-work review is pending.</p>:null}
-              </div>):role==='INSTRUMENT_MAN'&&ticket.assignedInstrumentManId===actorId?(
-              <CrewWorkActions
-                ticket={ticket}
-                busy={workflow.active||(workspace?.project.status!=='ACTIVE'&&!(workspace?.project.status==='SETUP'&&ticket.preparationCleanupAllowed))}
-                completionOnly={workspace?.project.status!=='ACTIVE'}
-                onReview={action => workflow.open(ticket,action)}
-              />
-            ):<Link className="app-link" href={`/projects/${projectId}/tickets/${ticket.id}`}>Open request</Link>}
+            renderActions={(ticket) => crewActions({ticket,role,actorId,projectStatus:workspace?.project.status,workflow,onSaved:()=>setRevision(n=>n+1)})??<button type="button" className="app-link" onClick={()=>details.open(ticket.id)}>Open request</button>}
           />
         ) : null}
         {!work.loading && total > size ? <PaginationControls offset={(page - 1) * size} limit={size} total={total} onChange={(offset) => setPage(Math.floor(offset / size) + 1)} /> : null}
+        {details.dialog}
       </div>
     </Card>
   );

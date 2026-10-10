@@ -13,6 +13,7 @@ import type { TicketRecord } from '@/lib/contracts';
 import { useAreaNames } from '@/lib/use-area-names';
 import { PaginationControls } from '@/components/forms';
 import { TicketList } from '@/components/tickets';
+import { useRequestDetailsDialog } from '@/components/tickets/request-details-dialog';
 import { Card, ErrorBanner } from '@/components/ui';
 import { Icon } from '@/components/ui/icon';
 import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
@@ -35,6 +36,8 @@ function MyRequestsContent() {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(0);
+  const details = useRequestDetailsDialog(projectId, () => setRefresh(current => current + 1));
 
   useEffect(() => { setOffset(0); }, [query]);
   useEffect(() => {
@@ -50,6 +53,14 @@ function MyRequestsContent() {
       .finally(() => { if(active)setLoading(false); });
     return () => { active=false; };
   }, [projectId, offset, query]);
+  // After an action in Request Details, refresh the rows in place so the list and its scroll stay put.
+  useEffect(() => {
+    if (!refresh || parsed.error) return;
+    let active = true;
+    apiClient.listTickets(projectId, LIMIT, offset, parsed.filters).then(page => { if (active) { setTickets(page.data); setTotal(page.total); } })
+      .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load requester tickets.')); });
+    return () => { active = false; };
+  }, [refresh]);
 
   return (
     <Card
@@ -61,9 +72,10 @@ function MyRequestsContent() {
         <RequestFilterBar label="Filter your requests" statuses={REQUESTER_STATUSES} queues={REQUESTER_QUEUES} />
         <ScopedKpiEntry projectId={projectId} audience="requester" />
         {error ? <ErrorBanner message={error} /> : null}
+        {details.dialog}
         {loading ? <p className="muted" role="status">Loading requests…</p> : null}
         {!loading && !error ? (
-          <TicketList compactTools
+          <TicketList compactTools onOpen={details.open}
             projectId={projectId}
             tickets={tickets}
             areaNames={areaNames}

@@ -1,6 +1,5 @@
 'use client';
 import {HeadingHelp} from '@/components/ui/heading-help';
-import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
 import { StatusBadge } from '@/components/ui/status-badge';
 import {AdministrationRecords,AdministrationSection} from '@/components/ui/administration-records';
@@ -12,6 +11,7 @@ import { PRIORITY_LABELS, TICKET_TYPE_LABELS, chartColor } from '@/lib/display-l
 import type { ReviewBucket, ReviewResult } from '@/modules/ticket/application/review-tickets';
 import './project-review.css';
 import { ReviewChartLane } from './review-chart-lane';
+import { useRequestDetailsDialog } from './request-details-dialog';
 
 type Filters = Record<string, string>;
 const keys = ['query','areaId','status','ticketType','priority','crewId','dateFrom','dateTo','dateBasis','queue','order'];
@@ -31,6 +31,9 @@ export function ProjectReview({ projectId }: { projectId: string }) {
   const [page,setPage] = useState(1), [size,setSize] = useState(25);
   const [tab,setTab] = useState('overview'), [revision,setRevision] = useState(0);
   const [snapshot,setSnapshot] = useState<{key:string; data?:ReviewResult; error?:string}>();
+  // After an action in Request Details the rows refresh in place (same key), keeping page and scroll.
+  const [quietRefresh,setQuietRefresh] = useState(0);
+  const details = useRequestDetailsDialog(projectId, () => setQuietRefresh(n => n + 1));
   const [facets,setFacets] = useState<ReviewResult['facets']>();
   const key = JSON.stringify([projectId,filters,page,size,revision]);
   const data = snapshot?.key === key ? snapshot.data : undefined;
@@ -49,7 +52,7 @@ export function ProjectReview({ projectId }: { projectId: string }) {
       if (page>1 && (page-1)*size>=result.total) setPage(Math.max(1,Math.ceil(result.total/size)));
     }).catch(cause => { if(active) setSnapshot({key,error:getErrorMessage(cause,'Unable to load project review.')}); });
     return () => { active=false; };
-  },[key,ready]);
+  },[key,ready,quietRefresh]);
   useEffect(() => {
     if (!ready) return;
     const search = new URLSearchParams(filters);
@@ -68,7 +71,7 @@ export function ProjectReview({ projectId }: { projectId: string }) {
   const total=data?.total??0, pages=Math.max(1,Math.ceil(total/size));
   const completion=total ? Math.round((data?.completed??0)/total*1000)/10 : 0;
   let segmentStart=0;
-  return <section className="review-workspace stack" aria-label="Project review">
+  return <section className="review-workspace stack" aria-label="Project review">{details.dialog}
     <div className="review-heading"><div><HeadingHelp label={data?.imported ? 'Historical Closeout Review' : 'Project Review'} heading={<h2 className="panel-title">{data?.imported ? 'Historical Closeout Review' : 'Project Review'}</h2>} help={<span>Read-only requests within your access. Start with all history, then narrow your view.</span>}/></div><a className="app-link" href="#review-results">Skip to results</a></div>
     <form className="panel stack" onSubmit={e => {e.preventDefault();apply(draft);}}>
       <HeadingHelp label="Request Filters" heading={<h3>Request Filters</h3>} help="Date filters exclude records missing that date. Choices come only from requests you can access." />
@@ -101,7 +104,7 @@ export function ProjectReview({ projectId }: { projectId: string }) {
  {key:'requester',label:'Requester',text:r=>r.requester},{key:'type',label:'Type',className:'request-type-column',text:r=>label(r.type)}, {key:'area',label:'Area',text:r=>r.area},
  {key:'status',label:'Status',text:r=>label(r.status),render:r=><StatusBadge status={r.status as TicketStatus} viewerIsRequester={false}/>},{key:'date',label:'Need-By',text:r=>r.needBy??'',render:r=>date(r.needBy)},
  {key:'crew',label:'Party Chief',text:r=>r.crew??'Not assigned'}, {key:'completed',label:'Completed',text:r=>r.completedAt??'',render:r=>date(r.completedAt)}
- ]} actions={r=><Link className="button button-secondary chart-review-action" href={`/projects/${projectId}/tickets/${r.id}`}><Icon name="search" />Open request details</Link>}/></section>}
+ ]} actions={r=><button type="button" className="button button-secondary chart-review-action" onClick={()=>details.open(r.id)}><Icon name="search" />Open request details</button>}/></section>}
       </>}
     </div>
   </section>;
