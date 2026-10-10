@@ -45,6 +45,12 @@ export default function SurveyOperationsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [tab, setTab] = useState<'overview' | 'assignment' | 'open' | 'messages'>('overview');
   const [query, setQuery] = useState('');
+  // Deep links (e.g. from a request page) may open a tab with a search already applied.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search), requested = params.get('tab'), search = params.get('q');
+    if (requested === 'overview' || requested === 'assignment' || requested === 'open' || requested === 'messages') setTab(requested);
+    if (search) setQuery(search.slice(0, 200));
+  }, []);
   const [area, setArea] = useState('');
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
@@ -157,7 +163,7 @@ export default function SurveyOperationsPage() {
           <RecordCollection preserveOrder label="operation requests on this page" records={<>{ticketPage.items.map((ticket) => (
             <AssignmentRow key={`${ticket.id}:${ticket.assignedPartyChiefId}:${ticket.assignedInstrumentManId}`} ticket={ticket}
               readOnly={superintendent} projectId={projectId}
-              disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>void loadOperations()} />
+              disabled={actionDisabled} owner={workflow.owner} onDelegated={()=>{setSuccess(`${ticket.ticketNumber ?? 'The request'} is saved. The list below is refreshed.`);void loadOperations();}} />
           ))}</>}/>
         </div>
       </Card> : null}

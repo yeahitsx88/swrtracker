@@ -103,10 +103,12 @@ export function BlockedButton({ blockers, blockedTitle, baseClassName, className
       <ul className="blocked-popover-list">
         {blockers.map(blocker => <li key={blocker.reason}>
           <span>{blocker.reason}</span>
-          {blocker.target ? <button type="button" className="blocked-popover-jump" onClick={() => {
+          {blocker.target || blocker.reveal ? <button type="button" className="blocked-popover-jump" onClick={() => {
             const target = blocker.target;
             popup.current?.hidePopover();
-            if (target) highlightTarget(target);
+            blocker.reveal?.();
+            // A revealed step renders on the next frame; highlight once it exists.
+            if (target) window.setTimeout(() => highlightTarget(target), blocker.reveal ? 60 : 0);
           }}>Show me</button> : null}
         </li>)}
       </ul>

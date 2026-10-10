@@ -6,6 +6,7 @@ import {operationsStatusLabel} from '@/lib/operations-view';
 import {getErrorMessage} from '@/lib/errors';
 import type {TicketRecord} from '@/lib/contracts';
 import {Button,ErrorBanner} from '@/components/ui';
+import {blockersFrom} from './action-blockers';
 import {AdministrationDialog} from './administration-dialog';
 import {useTeamCommand} from './team-management';
 import type {AssignmentChoice} from '@/modules/ticket/application/assignment-choices';
@@ -29,15 +30,23 @@ function CrewDialog({ticket,close,saved,fixedChiefId,allowChiefOnly,restrictToSe
  <p><strong>{ticket.ticketNumber??'Request'}</strong> · {operationsStatusLabel(ticket.status)}</p>
  <p>{allowChiefOnly?'Choose a Party Chief to arrange the crew, or select an Instrument Man now.':'Choose an Instrument Man for this request.'} Selecting an Instrument Man makes the request ready for field work. Existing assignment history is retained.</p>
  {error?<ErrorBanner message={error}/>:null}{!people&&!error?<p role="status">Loading your crew choices…</p>:people?<>
- <label className="field"><span className="field-label">Party Chief</span><select className="select" aria-label="Party Chief" value={chief} disabled={command.locked||!!fixedChiefId||reloading} onChange={event=>{setChief(event.target.value);setInstrument('');setConfirmed(false);}}>{!fixedChiefId?<option value="">No Party Chief</option>:null}{chief&&!chiefValid?<option value={chief} disabled>Current Party Chief is unavailable</option>:null}{people.filter(person=>person.role==='PARTY_CHIEF').map(person=><option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
- <label className="field"><span className="field-label">Instrument Man</span><select className="select" aria-label="Instrument Man" value={instrument} disabled={command.locked||reloading} onChange={event=>{setInstrument(event.target.value);setConfirmed(false);}}><option value="">{allowChiefOnly?'Let the Party Chief choose':'Choose an Instrument Man'}</option>{instrument&&!instrumentValid?<option value={instrument} disabled>Current Instrument Man is unavailable</option>:null}{instruments?.map(person=><option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
+ <label className="field" id="crew-chief"><span className="field-label">Party Chief</span><select className="select" aria-label="Party Chief" value={chief} disabled={command.locked||!!fixedChiefId||reloading} onChange={event=>{setChief(event.target.value);setInstrument('');setConfirmed(false);}}>{!fixedChiefId?<option value="">No Party Chief</option>:null}{chief&&!chiefValid?<option value={chief} disabled>Current Party Chief is unavailable</option>:null}{people.filter(person=>person.role==='PARTY_CHIEF').map(person=><option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
+ <label className="field" id="crew-instrument"><span className="field-label">Instrument Man</span><select className="select" aria-label="Instrument Man" value={instrument} disabled={command.locked||reloading} onChange={event=>{setInstrument(event.target.value);setConfirmed(false);}}><option value="">{allowChiefOnly?'Let the Party Chief choose':'Choose an Instrument Man'}</option>{instrument&&!instrumentValid?<option value={instrument} disabled>Current Instrument Man is unavailable</option>:null}{instruments?.map(person=><option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
  {allowChiefOnly&&chief&&!instrument?<p role="status">The request will wait for the Party Chief to choose an Instrument Man.</p>:null}
  {!people.length?<p>No eligible surveyors are available for this request. Ask the Survey Manager to check the team and Area assignments.</p>:null}
  </>:null}
  {!chiefValid||instrument&&!instrumentValid?<p role="status">The current crew selection is unavailable. Choose eligible survey personnel or ask the Survey Manager to resolve it.</p>:null}
  <p>Next responsible person: {instrumentValid?instruments?.find(person=>person.id===instrument)?.name:chiefValid&&chief?people?.find(person=>person.id===chief)?.name:'Choose a Crew to see who continues the work'}.</p>
- <label className="tm-check"><input type="checkbox" checked={confirmed} disabled={command.locked||reloading} onChange={event=>setConfirmed(event.target.checked)}/><span>I confirm this crew assignment for {ticket.ticketNumber??'this request'}.</span></label>
+ <label className="tm-check" id="crew-confirm"><input type="checkbox" checked={confirmed} disabled={command.locked||reloading} onChange={event=>setConfirmed(event.target.checked)}/><span>I confirm this crew assignment for {ticket.ticketNumber??'this request'}.</span></label>
  {command.error?<ErrorBanner message={command.error}/>:null}{command.uncertain&&!command.busy?<p role="status">The result is uncertain. Retry this unchanged crew assignment to recover its recorded result.</p>:null}{command.stale?<p role="status">Reload the current request and crew choices, then review and confirm again.</p>:null}
- <div className="row"><Button type="submit" disabled={!confirmed||!canAssign||!people||!!error||command.busy||command.stale||reloading}>{command.busy?'Saving…':command.uncertain?'Retry unchanged crew':'Confirm crew assignment'}</Button>{command.stale?<Button type="button" variant="secondary" disabled={reloading} onClick={()=>void reload()}>{reloading?'Reloading…':'Reload crew choices'}</Button>:null}</div>
+ <div className="row"><Button type="submit" disabled={command.busy||command.stale||reloading} blockedTitle="Can’t assign yet" blockers={command.uncertain?[]:blockersFrom([
+  [!people&&!error,'Crew choices are still loading.'],
+  [!!error,'Crew choices could not be loaded. Close this dialog and try again.'],
+  [!!people&&!people.length,'No eligible surveyors cover this request. Check the team and Area assignments in Team Management.'],
+  [!!people&&!chiefValid,'The selected Party Chief is no longer available. Choose another.','crew-chief'],
+  [!!people&&!!instrument&&!instrumentValid,'The selected Instrument Man is no longer available. Choose another.','crew-instrument'],
+  [!!people&&!instrument&&!(allowChiefOnly&&!!chief),allowChiefOnly?'Choose a Party Chief or an Instrument Man.':'Choose an Instrument Man.',allowChiefOnly?'crew-chief':'crew-instrument'],
+  [!confirmed,'Tick the confirmation box.','crew-confirm'],
+ ])}>{command.busy?'Saving…':command.uncertain?'Retry unchanged crew':'Confirm crew assignment'}</Button>{command.stale?<Button type="button" variant="secondary" disabled={reloading} onClick={()=>void reload()}>{reloading?'Reloading…':'Reload crew choices'}</Button>:null}</div>
  </form></AdministrationDialog>;
 }

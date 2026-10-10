@@ -12,6 +12,7 @@ import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import {executeTicketWorkflow,ticketWorkflowReview,type TicketWorkflowAction,type TicketWorkflowIntent} from '@/lib/ticket-workflow-review';
 import {AdministrationDialog} from '@/components/ui/administration-dialog';
 import {Button,ErrorBanner} from '@/components/ui';
+import {blockersFrom} from '@/components/ui/action-blockers';
 
 type Selection={ticket:TicketRecord;action:TicketWorkflowAction};
 /** One page-wide owner prevents another row or action from replacing an uncertain attempt. */
@@ -57,13 +58,17 @@ function WorkflowReview({selection:{ticket,action},close,reloaded,completed}:{se
       {['validate-inability','reject-inability','approve-legacy','reject-legacy'].includes(action)&&ticket.pendingPcReason?<p><strong>Recorded Report:</strong> {ticket.pendingPcReason}</p>:null}
       {action==='approve-stop'?<div className="stack"><p><strong>Recorded Stop-Work Reason:</strong> {ticket.surveyCancelReason}</p><p>Flagged by {roleLabel(ticket.surveyCancelRequestedRole??'')} · {ticket.surveyCancelRequestedBy}</p><p>Recorded at {ticket.surveyCancelRequestedAt?new Date(ticket.surveyCancelRequestedAt).toLocaleString():'Not recorded'}</p></div>:null}
       {review.date?<p>Current Need-By: {ticket.requestedDate?formatCalendarDate(ticket.requestedDate):'Not set'}</p>:null}
-      {review.date?<label className="field"><span className="field-label">New Need-By Date</span><input className="input" type="date" required value={requestedDate} disabled={command.locked||busy} onChange={event=>{setDate(event.target.value);setConfirmed(false);}}/></label>:null}
-      {review.reason?<label className="field"><span className="field-label">{review.reason==='required'?'Reason':'Reason (Optional)'}</span><textarea className="input" required={review.reason==='required'} rows={4} value={reason} disabled={command.locked||busy} onChange={event=>{setReason(event.target.value);setConfirmed(false);}}/></label>:null}
-      <label className="tm-check"><input type="checkbox" checked={confirmed} disabled={command.locked||busy} onChange={event=>setConfirmed(event.target.checked)}/><span>I confirm this action for {ticket.ticketNumber??'this request'}.</span></label>
+      {review.date?<label className="field" id="wf-date"><span className="field-label">New Need-By Date</span><input className="input" type="date" required value={requestedDate} disabled={command.locked||busy} onChange={event=>{setDate(event.target.value);setConfirmed(false);}}/></label>:null}
+      {review.reason?<label className="field" id="wf-reason"><span className="field-label">{review.reason==='required'?'Reason':'Reason (Optional)'}</span><textarea className="input" required={review.reason==='required'} rows={4} value={reason} disabled={command.locked||busy} onChange={event=>{setReason(event.target.value);setConfirmed(false);}}/></label>:null}
+      <label className="tm-check" id="wf-confirm"><input type="checkbox" checked={confirmed} disabled={command.locked||busy} onChange={event=>setConfirmed(event.target.checked)}/><span>I confirm this action for {ticket.ticketNumber??'this request'}.</span></label>
       {error?<ErrorBanner message={error}/>:null}
       {command.command&&!command.stale&&!busy?<p role="status">The result is uncertain. Keep this review open and retry the unchanged action; its original input and retry key are retained.</p>:null}
       {command.stale?<p role="status">The request or your access has changed. Reload it, then review the current action and confirm again.</p>:null}
-      <div className="row"><Button type="submit" variant={review.danger?'danger':'primary'} disabled={busy||command.stale||!confirmed||(review.reason==='required'&&!reason.trim())||(!!review.date&&!requestedDate)}>{busy?'Working…':command.command&&!command.stale?'Retry Unchanged Action':review.title}</Button>
+      <div className="row"><Button type="submit" variant={review.danger?'danger':'primary'} disabled={busy||command.stale} blockedTitle={`Can’t ${review.title.toLowerCase()} yet`} blockers={command.command?[]:blockersFrom([
+        [!!review.date&&!requestedDate,'Choose the new Need-By date.','wf-date'],
+        [review.reason==='required'&&!reason.trim(),'Give a reason. It is kept in the request history.','wf-reason'],
+        [!confirmed,'Tick the confirmation box.','wf-confirm'],
+      ])}>{busy?'Working…':command.command&&!command.stale?'Retry Unchanged Action':review.title}</Button>
         {command.stale?<Button type="button" variant="secondary" disabled={busy} onClick={()=>void reload()}>Reload Request</Button>:<Button type="button" variant="secondary" disabled={command.locked||busy} onClick={close}>Keep Request Unchanged</Button>}
       </div>
     </form>

@@ -339,7 +339,9 @@ export default function TicketDetailPage() {
                   Cancel My Request
                 </Button>
               ) : null}
-              {noActions ? <p className="muted">{loading ? 'Loading available actions…' : 'No actions are available to you for this request right now.'}</p> : null}
+              {noActions ? (!loading && ticket?.status === 'APPROVED' && (role === 'SURVEY_MANAGER' || role === 'SURVEY_SUPERINTENDENT')
+                ? <p>This request is approved and waiting for a crew. <Link className="app-link" href={`/projects/${projectId}/survey/operations?tab=assignment&q=${encodeURIComponent(ticket.ticketNumber ?? '')}`}>Assign it in Survey Operations</Link>.</p>
+                : <p className="muted">{loading ? 'Loading available actions…' : 'No actions are available to you for this request right now.'}</p>) : null}
             </div>
           </Card>
         </aside>

@@ -26,7 +26,7 @@ import {
   SuccessBanner,
   Textarea,
 } from '@/components/ui';
-import { blockersFrom } from '@/components/ui/action-blockers';
+import { blockersFrom, type ActionBlocker } from '@/components/ui/action-blockers';
 
 const STEP_TITLES = ['Area', 'Type', 'Need-By', 'Details', 'Attachments', 'Review'];
 const TICKET_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
@@ -175,6 +175,16 @@ export default function NewRequestPage() {
     return saved;
   }
 
+  // Submission needs complete fields; each reason names the field and opens its step.
+  const missing: ActionBlocker[] = submitAttempt.current.pending ? [] : [
+    [!aorNodeId, 'Choose the Area.', 'nr-area', 0],
+    [!ticketType, 'Choose the request type.', 'nr-type', 1],
+    [!requestedDate, 'Enter the Need-By date.', 'nr-date', 2],
+    [needsUrgentReason && !urgentReason.trim(), 'This date is inside the lead time, so enter an urgent request reason.', 'nr-urgent', 2],
+    [!fieldContact.trim(), 'Enter a point of contact.', 'nr-contact', 3],
+    [!description.trim(), 'Describe the work in Request Details.', 'nr-details', 3],
+  ].filter(([blocked]) => blocked).map(([, reason, target, step]) => ({ reason: reason as string, target: target as string, reveal: () => setActiveStep(step as number) }));
+
   async function saveOrSubmit(submit: boolean) {
     if (busy.current || stale || actionIntent.current !== null && actionIntent.current !== submit) return;
     if (submit && !submitAttempt.current.pending && (
@@ -218,7 +228,7 @@ export default function NewRequestPage() {
           <div className="stack">
             {loadingAor ? <p className="muted">Loading project Areas...</p> : null}
             {aorNodes.length > 0 ? (
-              <Field label="Area">
+              <Field label="Area" id="nr-area">
                 <AorNodePicker label="Area" levels={aorLevels} nodes={aorNodes} value={aorNodeId} onChange={setAorNodeId} />
               </Field>
             ) : (
@@ -228,7 +238,7 @@ export default function NewRequestPage() {
         );
       case 1:
         return (
-          <Field label="Request Type">
+          <Field label="Request Type" id="nr-type">
             <Select value={ticketType} onChange={(event) => setTicketType(event.target.value as TicketType)}>
               <option value="">Select a request type</option>
               {TICKET_TYPES.map((value) => (
@@ -240,7 +250,7 @@ export default function NewRequestPage() {
       case 2:
         return (
           <div className="stack">
-            <Field label="Need-By Date">
+            <Field label="Need-By Date" id="nr-date">
               <Input
                 type="date"
                 value={requestedDate}
@@ -255,7 +265,7 @@ export default function NewRequestPage() {
                   : 'Lead-time policy disabled for this project.'}
             </p>
             {needsUrgentReason ? (
-              <div className="stack"><Field label="Urgent Request Reason">
+              <div className="stack"><Field label="Urgent Request Reason" id="nr-urgent">
                 <Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} required />
               </Field><p className="muted">The reason is recorded when you submit, not when you save a draft. Re-enter it if you resume later.</p></div>
             ) : null}
@@ -276,13 +286,13 @@ export default function NewRequestPage() {
                 <Input value={customCraft} onChange={(event) => setCustomCraft(event.target.value)} />
               </Field>
             ) : null}
-            <Field label="Point of Contact">
+            <Field label="Point of Contact" id="nr-contact">
               <Input value={fieldContact} onChange={(event) => setFieldContact(event.target.value)} />
             </Field>
             <Field label="Phone / Radio Channel (optional)">
               <Input value={fieldChannel} onChange={(event) => setFieldChannel(event.target.value)} />
             </Field>
-            <Field label="Request Details">
+            <Field label="Request Details" id="nr-details">
               <Textarea value={description} onChange={(event) => setDescription(event.target.value)} />
             </Field>
           </div>
@@ -358,10 +368,10 @@ export default function NewRequestPage() {
               Next
             </Button>
           ) : (
-            <Button disabled={submitting} blockedTitle="Can’t submit right now" blockers={blockersFrom([
+            <Button disabled={submitting} blockedTitle={missing.length ? 'Complete these before submitting' : 'Can’t submit right now'} blockers={[...blockersFrom([
               [stale, 'This draft conflicted with a newer change. Open the saved draft details and reload before submitting.'],
               [actionIntent.current === false, 'The last Save Draft is unconfirmed. Use Retry Save Draft first so nothing is saved twice.'],
-            ])} onClick={() => void saveOrSubmit(true)}>
+            ]), ...missing]} onClick={() => void saveOrSubmit(true)}>
               {submitting ? 'Submitting…' : actionIntent.current === true ? 'Retry Submit' : 'Submit Request'}
             </Button>
           )}
