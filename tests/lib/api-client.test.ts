@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { apiClient } from '@/lib/apiClient';
-import { ApiClientError } from '@/lib/errors';
+import { ApiClientError, NetworkError } from '@/lib/errors';
 
 const originalFetch = globalThis.fetch;
 
@@ -126,7 +126,7 @@ test('apiClient throws typed ApiClientError when backend returns api error paylo
   }
 });
 
-test('apiClient throws InternalError with trimmed plain-text message for non-json error bodies', { concurrency: false }, async () => {
+test('apiClient never shows raw proxy text for non-json error bodies; it keeps the status and uncertain type', { concurrency: false }, async () => {
   globalThis.fetch = (async () =>
     new Response('  upstream timeout  ', {
       status: 504,
@@ -139,7 +139,8 @@ test('apiClient throws InternalError with trimmed plain-text message for non-jso
       (error) => {
         assert(error instanceof ApiClientError);
         assert.equal(error.type, 'InternalError');
-        assert.equal(error.message, 'upstream timeout');
+        assert.doesNotMatch(error.message, /upstream timeout/);
+        assert.match(error.message, /^Something went wrong on our side/);
         assert.equal(error.status, 504);
         return true;
       },
@@ -149,7 +150,7 @@ test('apiClient throws InternalError with trimmed plain-text message for non-jso
   }
 });
 
-test('apiClient throws status fallback message when error response has an empty body', { concurrency: false }, async () => {
+test('apiClient gives a plain status explanation when an error response has an empty body', { concurrency: false }, async () => {
   globalThis.fetch = (async () => new Response('', { status: 500 })) as typeof fetch;
 
   try {
@@ -158,11 +159,40 @@ test('apiClient throws status fallback message when error response has an empty 
       (error) => {
         assert(error instanceof ApiClientError);
         assert.equal(error.type, 'InternalError');
-        assert.equal(error.message, 'Request failed with status 500');
+        assert.match(error.message, /^Something went wrong on our side/);
         assert.equal(error.status, 500);
         return true;
       },
     );
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient turns a dropped connection into a NetworkError that is not an ApiClientError', { concurrency: false }, async () => {
+  globalThis.fetch = (async () => { throw new TypeError('Failed to fetch'); }) as typeof fetch;
+  try {
+    await assert.rejects(() => apiClient.getTicket('ticket-1'), (error) => {
+      assert(error instanceof NetworkError);
+      assert(!(error instanceof ApiClientError));
+      assert.match(error.message, /Couldn’t reach SWRTracker/);
+      return true;
+    });
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient explains a non-json 403 without exposing the body', { concurrency: false }, async () => {
+  globalThis.fetch = (async () => new Response('<html>Forbidden</html>', { status: 403, headers: { 'content-type': 'text/html' } })) as typeof fetch;
+  try {
+    await assert.rejects(() => apiClient.getTicket('ticket-1'), (error) => {
+      assert(error instanceof ApiClientError);
+      assert.equal(error.status, 403);
+      assert.doesNotMatch(error.message, /html/i);
+      assert.match(error.message, /permission/);
+      return true;
+    });
   } finally {
     restoreFetch();
   }

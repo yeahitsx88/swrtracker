@@ -4,6 +4,8 @@ import {Icon} from '@/components/ui/icon';
 import {useProjectWorkspace} from '@/components/ui/project-shell-header';
 import {useUnsavedProgress} from '@/lib/use-unsaved-progress';
 import {useEffect,useRef,useState} from 'react';
+import {apiRequest} from '@/lib/apiClient';
+import {ApiClientError,getErrorMessage} from '@/lib/errors';
 import {Button,Card,ErrorBanner,SuccessBanner} from '@/components/ui';
 import {AdministrationSection} from '@/components/ui/administration-records';
 import {applyAppearance} from '@/components/ui/appearance-theme';
@@ -15,13 +17,13 @@ export default function AppearancePage(){
  const [data,setData]=useState<Appearance>(),[mode,setMode]=useState<DisplayMode>('SYSTEM'),[primary,setPrimary]=useState('#315f85'),[accent,setAccent]=useState('#ffa500'),[busy,setBusy]=useState(false),[error,setError]=useState<string>(),[success,setSuccess]=useState<string>(),[stale,setStale]=useState(false);
  const attempt=useRef<{key:string;body:unknown}|undefined>(undefined);
  function accept(value:Appearance){setData(value);setMode(value.mode);setPrimary(value.branding.primary);setAccent(value.branding.accent);applyAppearance(value);window.dispatchEvent(new CustomEvent('swr-appearance',{detail:value}));}
- async function load(){setError(undefined);try{const r=await fetch('/api/account/appearance',{cache:'no-store'});const value=await r.json();if(!r.ok)throw new Error(value.error?.message??'Unable to load appearance.');accept(value);attempt.current=undefined;setStale(false);}catch(e){setError(e instanceof Error?e.message:'Unable to load appearance.');}}
+ async function load(){setError(undefined);try{accept(await apiRequest<Appearance>('/api/account/appearance'));attempt.current=undefined;setStale(false);}catch(e){setError(getErrorMessage(e,'Unable to load appearance.'));}}
  useEffect(()=>{void load();},[]);
  async function save(scope:'PERSONAL'|'TENANT'){
   if(!data||busy||stale)return;setBusy(true);setError(undefined);setSuccess(undefined);
   attempt.current??={key:crypto.randomUUID(),body:scope==='PERSONAL'?{scope,mode}:{scope,primary,accent,version:data.branding.version}};
-  try{const r=await fetch('/api/account/appearance',{method:'PUT',headers:{'Content-Type':'application/json','Idempotency-Key':attempt.current.key},body:JSON.stringify(attempt.current.body)}),value=await r.json();if(!r.ok){if(r.status<500){attempt.current=undefined;setStale(true);}throw new Error(value.error?.message??'Unable to save appearance.');}accept(value);attempt.current=undefined;setSuccess(scope==='PERSONAL'?'Your display preference is saved.':'Tenant branding is saved for every account in this tenant.');}
-  catch(e){setError(e instanceof Error?e.message:'The response is uncertain. Retry the unchanged setting.');}finally{setBusy(false);}
+  try{const value=await apiRequest<Appearance>('/api/account/appearance',{method:'PUT',headers:{'Idempotency-Key':attempt.current.key},body:attempt.current.body});accept(value);attempt.current=undefined;setSuccess(scope==='PERSONAL'?'Your display preference is saved.':'Tenant branding is saved for every account in this tenant.');}
+  catch(e){if(e instanceof ApiClientError&&e.status<500){attempt.current=undefined;setStale(true);}setError(getErrorMessage(e,'The response is uncertain. Retry the unchanged setting.'));}finally{setBusy(false);}
  }
  useUnsavedProgress(busy||!!attempt.current);
  const locked=busy||!!attempt.current||stale;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ApiClientError, getErrorMessage, isApiErrorPayload } from '@/lib/errors';
+import { ApiClientError, NetworkError, NETWORK_MESSAGE, getErrorMessage, isApiErrorPayload } from '@/lib/errors';
 
 test('isApiErrorPayload accepts structured payload with status/code metadata', () => {
   const payload = {
@@ -26,7 +26,7 @@ test('getErrorMessage keeps actionable wording and preserves diagnostic metadata
 });
 
 test('getErrorMessage uses supplied recovery wording when no usable message is available', () => {
-  for (const error of [undefined, new Error(' '), new ApiClientError('InternalError', '', 500, 'INTERNAL_ERROR')]) {
+  for (const error of [undefined, new Error(' ')]) {
     assert.equal(getErrorMessage(error, 'Unable to load requests. Refresh to retry.'), 'Unable to load requests. Refresh to retry.');
   }
 });
@@ -34,4 +34,31 @@ test('getErrorMessage uses supplied recovery wording when no usable message is a
 test('getErrorMessage falls back to raw Error message for non-api errors', () => {
   const err = new Error('boom');
   assert.equal(getErrorMessage(err, 'fallback'), 'boom');
+});
+
+test('unexpected server failures lead with the caller recovery wording and a support reference, never raw text', () => {
+  const message = getErrorMessage(new ApiClientError('InternalError', 'An unexpected error occurred', 500, 'INTERNAL_ERROR', '1234abcd-ffff'), 'Unable to load requests');
+  assert.match(message, /^Unable to load requests. Something went wrong on our side/);
+  assert.match(message, /reference 1234abcd./);
+  assert.doesNotMatch(message, /unexpected error occurred/);
+  assert.match(getErrorMessage(new ApiClientError('InternalError', '', 502), 'Unable to save.'), /^Unable to save. Something went wrong/);
+});
+
+test('network failures and the browser raw fetch TypeError become one plain explanation', () => {
+  assert.equal(getErrorMessage(new NetworkError(), 'fallback'), NETWORK_MESSAGE);
+  assert.equal(getErrorMessage(new TypeError('Failed to fetch'), 'fallback'), NETWORK_MESSAGE);
+  assert.ok(!(new NetworkError() instanceof ApiClientError), 'uncertain outcomes stay outside ApiClientError so exact-retry intent is kept');
+});
+
+test('session ends are explained; wrong-password sign-in keeps its own message', () => {
+  assert.match(getErrorMessage(new ApiClientError('UnauthorizedError', 'Current active session is required', 401, 'AUTH_SESSION_REVOKED'), 'x'), /^Your sign-in has ended or changed/);
+  assert.equal(getErrorMessage(new ApiClientError('UnauthorizedError', 'Invalid email or password', 401, 'AUTH_UNAUTHORIZED'), 'x'), 'Invalid email or password');
+});
+
+test('permission and missing-record messages keep the rule and add the next step; role codes are humanized', () => {
+  assert.equal(getErrorMessage(new ApiClientError('ForbiddenError', 'Only TENANT_ADMIN can create projects', 403), 'x'),
+    'Only Tenant Admin can create projects. Contact your project administrator if you believe this is incorrect.');
+  assert.equal(getErrorMessage(new ApiClientError('NotFoundError', 'Ticket not found', 404), 'x'), 'Ticket not found. It may have been removed, or you may no longer have access.');
+  assert.equal(getErrorMessage(new ApiClientError('RateLimitError', 'Too many requests', 429), 'x'), 'Too many attempts in a short time. Wait a minute, then try again.');
+  assert.equal(getErrorMessage(new ApiClientError('ValidationError', 'Choose an active project Area', 400), 'x'), 'Choose an active project Area');
 });

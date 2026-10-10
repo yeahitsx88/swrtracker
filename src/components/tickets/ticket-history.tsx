@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { AdministrationRecords, AdministrationSection } from '@/components/ui/administration-records';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
+import { getErrorMessage } from '@/lib/errors';
 import type { TicketHistoryItem } from '@/lib/contracts';
 import { formatCalendarDate } from '@/lib/calendar-date';
 
@@ -85,7 +86,7 @@ export function TicketHistory({ ticketId, refreshRevision = 0 }: TicketHistoryPr
     setError(null);
     apiClient.getTicketHistory(ticketId)
       .then((response) => { if (active) setHistory(response.history); })
-      .catch((err: unknown) => { if (active) setError(err instanceof Error ? err.message : 'Unable to load history'); })
+      .catch((err: unknown) => { if (active) setError(getErrorMessage(err, 'Unable to load history. Refresh to try again.')); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [ticketId, refreshRevision]);

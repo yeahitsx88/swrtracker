@@ -28,11 +28,11 @@ import type {
   ProjectCompanyAccessResponse,
   ProjectListResponse,
 } from '@/lib/contracts/projects';
-import { ApiClientError, isApiErrorPayload } from '@/lib/errors';
+import { NetworkError, statusMessage, ApiClientError, isApiErrorPayload } from '@/lib/errors';
 import type { TicketQueryFilters } from '@/modules/ticket/application/query-filters';
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   formData?: FormData;
   headers?: Record<string, string>;
@@ -61,13 +61,20 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     ...(options.body && !options.formData ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers ?? {}),
   };
-  const response = await fetch(path, {
+  let response: Response;
+  try {
+    response = await fetch(path, {
     method: options.method ?? 'GET',
     credentials: 'include',
     cache: 'no-store',
     headers: Object.keys(headers).length > 0 ? headers : undefined,
     body: options.formData ?? (options.body ? JSON.stringify(options.body) : undefined),
-  });
+    });
+  } catch (cause) {
+    // No response arrived: the outcome is unknown, so callers keep their exact retry intent.
+    if (cause instanceof DOMException && cause.name === 'AbortError') throw cause;
+    throw new NetworkError();
+  }
 
   const text = await response.text();
   let payload: unknown = null;
@@ -89,10 +96,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         payload.error.correlationId,
       );
     }
-    if (typeof payload === 'string' && payload.trim()) {
-      throw new ApiClientError('InternalError', payload.trim(), response.status);
-    }
-    throw new ApiClientError('InternalError', `Request failed with status ${response.status}`, response.status);
+    // Proxy/HTML or empty error bodies are never shown verbatim.
+    throw new ApiClientError(response.status >= 500 ? 'InternalError' : 'HttpError', statusMessage(response.status), response.status);
   }
 
   return payload as T;
