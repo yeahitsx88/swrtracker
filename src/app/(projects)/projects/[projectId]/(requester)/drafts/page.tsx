@@ -25,6 +25,13 @@ export default function DraftsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  // Deletion from the request page arrives here; confirm it once, then tidy the address.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('deleted') !== '1') return;
+    setSuccess('Draft deleted. Project IT can restore it within 30 days; its files and history are retained.');
+    window.history.replaceState(null, '', window.location.pathname);
+  }, []);
   const [limit, setLimit] = useState(20);
   const [deleting, setDeleting] = useState(false);
   const busy = useRef(false);

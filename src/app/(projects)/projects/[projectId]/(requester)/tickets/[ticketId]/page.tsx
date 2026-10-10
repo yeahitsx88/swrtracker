@@ -198,7 +198,7 @@ export default function TicketDetailPage() {
     try {
       const command=deleteAttempt.current.begin({ticketId:deleteReview.id,expectedVersion:deleteReview.rowVersion??0},createIdempotencyKey());if(!command)return;
       await apiClient.deleteDraft(command.body.ticketId,command.body.expectedVersion,command.key);deleteAttempt.current.success();
-      router.push(`/projects/${projectId}/drafts`);
+      router.push(`/projects/${projectId}/drafts?deleted=1`);
     } catch (err) {
       deleteAttempt.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err,'Unable to confirm deletion. Retry the same action.'));
@@ -259,14 +259,14 @@ export default function TicketDetailPage() {
           {capabilities.canEditRequesterFields ? (
             <Card title="Requester Changes" description="Only the original requester can edit a draft or returned SWR.">
               <fieldset className="stack form-narrow" disabled={working || uncertain || stale} style={{ border:0, padding:0, margin:0, minWidth:0 }}>
-                <Field label="Area">{areaTree ? <AorNodePicker label="Area" {...areaTree} value={editArea} onChange={setEditArea} /> : <p className="muted">Areas are unavailable. Refresh to retry.</p>}</Field>
+                <Field label="Area" id="rc-area">{areaTree ? <AorNodePicker label="Area" {...areaTree} value={editArea} onChange={setEditArea} /> : <p className="muted">Areas are unavailable. Refresh to retry.</p>}</Field>
                 {areaTree && editArea && !areaTree.nodes.some(node => node.id === editArea) ? <p className="muted">The saved Area is no longer available. Choose a current Area before saving corrections.</p> : null}
-                <Field label="Request Type"><Select value={editType} onChange={event => setEditType(event.target.value as TicketType | '')}><option value="">Select a request type</option>{(['LAYOUT','CHECK_OUT','AS_BUILT','TOPO','PERMIT'] as const).map(type => <option key={type} value={type}>{ticketTypeLabel(type)}</option>)}</Select></Field>
+                <Field label="Request Type" id="rc-type"><Select value={editType} onChange={event => setEditType(event.target.value as TicketType | '')}><option value="">Select a request type</option>{(['LAYOUT','CHECK_OUT','AS_BUILT','TOPO','PERMIT'] as const).map(type => <option key={type} value={type}>{ticketTypeLabel(type)}</option>)}</Select></Field>
                 <Field label="Craft / Discipline (optional)"><Input value={editCraft} onChange={(event) => setEditCraft(event.target.value)} /></Field>
-                <Field label="Point of Contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
+                <Field label="Point of Contact" id="rc-contact"><Input value={editFieldContact} onChange={(event) => setEditFieldContact(event.target.value)} /></Field>
                 <Field label="Phone / Radio Channel (optional)"><Input value={editFieldChannel} onChange={(event) => setEditFieldChannel(event.target.value)} /></Field>
-                <Field label="Need-By Date"><Input type="date" value={editRequestedDate} onChange={(event) => setEditRequestedDate(event.target.value)} /></Field>
-                <Field label="Request Details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
+                <Field label="Need-By Date" id="rc-date"><Input type="date" value={editRequestedDate} onChange={(event) => setEditRequestedDate(event.target.value)} /></Field>
+                <Field label="Request Details" id="rc-details"><Textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} /></Field>
                 <Field label="Urgent Reason (required only when inside project lead time)"><Textarea value={urgentReason} onChange={(event) => setUrgentReason(event.target.value)} /></Field>
               </fieldset>
               <Button id="ticket-save-changes" disabled={working} blockedTitle="Can’t save right now" blockers={blockersFrom([staleReason, ...pendingReasons('save')])} onClick={() => void saveCorrection()}>{saving ? 'Saving…' : saveAttempt.current.command ? 'Retry Save' : ticket?.status === 'DRAFT' ? 'Save Draft' : 'Save Changes'}</Button>
@@ -323,7 +323,13 @@ export default function TicketDetailPage() {
             <div className="action-panel">
               {capabilities.canApproveSurveyCancel ? <Button variant="danger" disabled={working} blockers={settledBlockers} blockedTitle="Can’t approve yet" onClick={() => reviewRequesterAction('approve-stop')}>Approve Stop-Work Cancellation</Button> : null}
               {capabilities.canSubmit ? (
-                <Button disabled={working} blockedTitle="Can’t submit yet" blockers={blockersFrom([staleReason, dirtyReason, ...pendingReasons('submit')])} onClick={() => void submitDraft()}>
+                <Button disabled={working} blockedTitle="Can’t submit yet" blockers={blockersFrom([staleReason, dirtyReason, ...pendingReasons('submit'),
+                  // Saved values decide submission; unsaved edits are covered by dirtyReason above.
+                  [!dirty && !ticket?.aorNodeId, 'Choose the Area, then Save Draft.', 'rc-area'],
+                  [!dirty && !ticket?.ticketType, 'Choose the request type, then Save Draft.', 'rc-type'],
+                  [!dirty && !ticket?.requestedDate, 'Enter the Need-By date, then Save Draft.', 'rc-date'],
+                  [!dirty && !ticket?.fieldContact?.trim(), 'Enter a point of contact, then Save Draft.', 'rc-contact'],
+                  [!dirty && !ticket?.description?.trim(), 'Describe the work in Request Details, then Save Draft.', 'rc-details']])} onClick={() => void submitDraft()}>
                   {submittingDraft ? 'Submitting...' : ticket?.status === 'DRAFT' ? 'Submit Draft' : 'Resubmit for Approval'}
                 </Button>
               ) : null}
@@ -334,7 +340,7 @@ export default function TicketDetailPage() {
                 </Button>
               ) : null}
               {capabilities.canDeleteDraft ? <Button variant="secondary" disabled={working} blockedTitle="Can’t delete the draft yet" blockers={blockersFrom([staleReason, ...pendingReasons('delete')])} onClick={() => {if(ticket&&!uncertain&&workflow.owner.claim('requester-fields')){setDeleteConsent(false);setDeleteReview(ticket);}}}>Delete Draft</Button> : null}
-              {capabilities.canRequesterCancel ? (
+              {capabilities.canRequesterCancel && ticket?.status !== 'DRAFT' ? (
                 <Button variant="secondary" disabled={working} blockers={settledBlockers} blockedTitle="Can’t cancel yet" onClick={() => reviewRequesterAction('requester-cancel')}>
                   Cancel My Request
                 </Button>

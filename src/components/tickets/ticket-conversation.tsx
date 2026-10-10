@@ -5,7 +5,8 @@ import { apiRequest, createIdempotencyKey } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { initials } from '@/lib/display-labels';
 import type { TicketComment } from '@/modules/ticket/application/ticket-comments';
-import { Card } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
+import { blockersFrom } from '@/components/ui/action-blockers';
 
 /** Conversation between the requester and the survey team on one request. */
 export function TicketConversation({ ticketId, actorId, revision = 0 }: { ticketId: string; actorId?: string; revision?: number }) {
@@ -64,9 +65,9 @@ export function TicketConversation({ ticketId, actorId, revision = 0 }: { ticket
         ) : null}
         {canComment ? (
           <form className="stack form-narrow" onSubmit={post}>
-            <label className="field"><span className="field-label">Add a comment</span>
+            <label className="field" id="cv-comment"><span className="field-label">Add a comment</span>
               <textarea className="textarea" value={draft} maxLength={4000} onChange={event => setDraft(event.target.value)} placeholder="For example: control points are flagged at the north fence line" /></label>
-            <div className="row"><button type="submit" className="button" disabled={busy || !draft.trim()}>{busy ? 'Posting…' : 'Post comment'}</button>
+            <div className="row"><Button type="submit" disabled={busy} blockers={blockersFrom([[!draft.trim(), 'Write your comment first.', 'cv-comment']])} blockedTitle="Nothing to post yet">{busy ? 'Posting…' : 'Post comment'}</Button>
               <span className="muted field-help">The requester and the assigned crew are notified.</span></div>
           </form>
         ) : comments ? <p className="muted field-help">You can read this conversation. Posting is limited to the requester and survey staff on the request.</p> : null}
