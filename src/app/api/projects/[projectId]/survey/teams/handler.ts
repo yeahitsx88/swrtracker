@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import { errorResponse } from '@/lib/api-error';
 import { requireAuth, requireActiveAuth } from '@/lib/auth';
@@ -15,6 +15,10 @@ import { changeSurveyRole, type ChangeSurveyRoleInput, type ManagedSurveyRole, t
 import {authorizeSupervisedSurveyRole,changeSupervisedSurveyRole,removeSurveyRole} from '@/modules/tenancy/application/change-supervised-survey-role';
 import type {OperationalRoleChangeInput} from '@/modules/tenancy/application/change-survey-role';
 import type { ProjectRole } from '@/modules/identity/domain/types';
+import { planPromotionWork, type WorkDecision, type WorkPart } from '@/modules/tenancy/domain/promotion-work';
+import { readPromotionWork, readReplacementCandidates } from '@/modules/tenancy/infrastructure/promotion-work.reader';
+import { assignTicket } from '@/modules/ticket/application/assign-ticket';
+import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 
 type TransactionRunner = <T>(fn: (db: DbClient) => Promise<T>) => Promise<T>;
 type Context = { params: Promise<{ projectId: string }> };
@@ -67,6 +71,19 @@ export function parseSurveyRoleInput(value: Record<string, unknown>): ChangeSurv
   return { userId: uuid(value.userId, 'Person'), role: value.role as ManagedSurveyRole, expectedRole: value.expectedRole as ProjectRole,
     expectedRoleVersion: version(value.expectedRoleVersion), confirmRoleChanges: value.confirmRoleChanges };
 }
+/** Decision 57 / D8: reviewed decisions for the person's open requests. */
+export function parseWorkDecisions(value: unknown): WorkDecision[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length > 200) throw new ValidationError('Review at most 200 open requests');
+  return value.map(entry => {
+    const item = entry as Record<string, unknown>;
+    if (!item || typeof item !== 'object' || Object.keys(item).some(k => !['ticketId','part','action','replacementId','expectedRowVersion'].includes(k)) ||
+      !['CHIEF','INSTRUMENT','REVIEWER'].includes(String(item.part)) || !['KEEP','REASSIGN'].includes(String(item.action)) ||
+      !Number.isSafeInteger(item.expectedRowVersion) || (item.expectedRowVersion as number) < 0) throw new ValidationError('Choose keep or reassign for each reviewed request');
+    return { ticketId: uuid(item.ticketId, 'Request'), part: item.part as WorkPart, action: item.action as WorkDecision['action'],
+      ...(item.replacementId === undefined ? {} : { replacementId: uuid(item.replacementId, 'Replacement') }), expectedRowVersion: item.expectedRowVersion as number };
+  });
+}
 export function parseSurveyRoleRemovalInput(value:Record<string,unknown>):OperationalRoleChangeInput {
  if(value.action!=='remove-role'||!['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(String(value.expectedRole))||value.role!==undefined||typeof value.confirmRoleChanges!=='boolean')throw new ValidationError('Review the current survey role and confirm removal to Requester');
  return {userId:uuid(value.userId,'Person'),expectedRole:value.expectedRole as ProjectRole,expectedRoleVersion:version(value.expectedRoleVersion),role:'REQUESTER',confirmRoleChanges:value.confirmRoleChanges};
@@ -114,6 +131,25 @@ export async function handleGetSurveyTeams(req: NextRequest, ctx: Context, deps:
   } catch (error) { return errorResponse(error); }
 }
 
+/** Decision 57 / D8: the open work a role change would affect, with eligible replacements. Survey Manager only. */
+export async function handleGetRoleWork(req: NextRequest, ctx: Context, deps: TeamDeps = defaults) {
+  try {
+    const userId = uuid(req.nextUrl.searchParams.get('userId'), 'Person');
+    const role = req.nextUrl.searchParams.get('role');
+    if (!role || !['SURVEY_SUPERINTENDENT','PARTY_CHIEF','INSTRUMENT_MAN'].includes(role)) throw new ValidationError('Choose the new survey role');
+    const result = await transact(req, ctx, deps, async (db, actor) => {
+      if (actor.actorRole !== 'SURVEY_MANAGER') throw new ForbiddenError('Only the Survey Manager reviews work for a role change');
+      const [member] = await deps.repo.members(db, actor.tenantId, actor.projectId, [userId]);
+      if (!member?.active) throw new NotFoundError('Active eligible project member not found');
+      const obligations = await deps.repo.roleObligations(db, actor.tenantId, actor.projectId, userId);
+      return { items: planPromotionWork(await readPromotionWork(db, actor.tenantId, actor.projectId, userId), role),
+        candidates: await readReplacementCandidates(db, actor.tenantId, actor.projectId, userId),
+        blockers: { ...obligations, activeRequests: 0 } };
+    });
+    return NextResponse.json(result);
+  } catch (error) { return errorResponse(error); }
+}
+
 export async function handlePostSurveyTeam(req: NextRequest, ctx: Context, deps: TeamDeps = defaults) {
   try {
     const input = parseTeamInput(await body(req));
@@ -147,8 +183,10 @@ export async function handleDeleteSurveyTeam(req: NextRequest, ctx: Context, dep
 export async function handlePatchSurveyRole(req: NextRequest, ctx: Context, deps: TeamDeps = defaults) {
   try {
     const value=await body(req),removing=value.action==='remove-role';
-    if(Object.keys(value).some(k=>!['action','userId','expectedRole','expectedRoleVersion','role','confirmRoleChanges','reviewedTeamId','expectedTeamVersion'].includes(k)))throw new ValidationError('Review only the current person, team and role change');
-    const input=removing?parseSurveyRoleRemovalInput(value):parseSurveyRoleInput(value);
+    if(Object.keys(value).some(k=>!['action','userId','expectedRole','expectedRoleVersion','role','confirmRoleChanges','reviewedTeamId','expectedTeamVersion','work'].includes(k)))throw new ValidationError('Review only the current person, team and role change');
+    const work=parseWorkDecisions(value.work);
+    if(work&&removing)throw new ValidationError('Resolve open work before removing a survey role');
+    const input=removing?parseSurveyRoleRemovalInput(value):{...parseSurveyRoleInput(value),...(work?{work}:{})};
     const scope=value.reviewedTeamId===undefined?undefined:{reviewedTeamId:uuid(value.reviewedTeamId,'Reviewed team'),expectedTeamVersion:version(value.expectedTeamVersion)};
     if(!scope&&value.expectedTeamVersion!==undefined)throw new ValidationError('The reviewed team is required');
     const idempotencyKey = requireIdempotencyKey(req);
@@ -157,9 +195,18 @@ export async function handlePatchSurveyRole(req: NextRequest, ctx: Context, deps
         if(!scope)throw new ValidationError('Review your current named team and its version');
         await authorizeSupervisedSurveyRole(deps.repo,db,actor,scope.reviewedTeamId);
       }else {if(scope)throw new ValidationError('Scoped team-role changes use current Superintendent authority');await authorizeTeamMutation(deps.repo, db, actor);}
+      if(work&&actor.actorRole!=='SURVEY_MANAGER')throw new ForbiddenError('Only the Survey Manager reassigns work during a role change');
       return deps.executeIdempotent(db, { tenantId: actor.tenantId, actorId: actor.actorId,
         endpoint: `PATCH:/api/projects/${actor.projectId}/survey/teams`, idempotencyKey }, { action: removing?'remove-role':'set-role', ...input,...scope },
-        async () => ({ status: 200, body: actor.actorRole==='SURVEY_SUPERINTENDENT'?await changeSupervisedSurveyRole(deps.repo,db,actor,{...input,...scope!}):removing?await removeSurveyRole(deps.repo,db,actor,input):await changeSurveyRole(deps.repo, db, actor, input as ChangeSurveyRoleInput) }));
+        async () => ({ status: 200, body: actor.actorRole==='SURVEY_SUPERINTENDENT'?await changeSupervisedSurveyRole(deps.repo,db,actor,{...input,...scope!}):removing?await removeSurveyRole(deps.repo,db,actor,input):await changeSurveyRole(deps.repo, db, actor, input as ChangeSurveyRoleInput, {
+          readWork: tx => readPromotionWork(tx, actor.tenantId, actor.projectId, (input as ChangeSurveyRoleInput).userId, true),
+          reassign: async (tx, item, replacementId) => {
+            const tickets = new TicketRepository(), ticket = await tickets.findByIdInternal(tx, actor.tenantId, item.ticketId as UUID);
+            if (!ticket) throw new NotFoundError('Request not found');
+            await assignTicket(tickets, tx, { tenantId: actor.tenantId, ticketId: ticket.id, actorId: actor.actorId, actorRole: actor.actorRole as ProjectRole, surveyLeadId: actor.actorId,
+              assignedPartyChiefId: item.part === 'CHIEF' ? replacementId : ticket.assignedPartyChiefId, assignedInstrumentManId: item.part === 'INSTRUMENT' ? replacementId : ticket.assignedInstrumentManId });
+          },
+        }) }));
     });
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) { return errorResponse(error); }

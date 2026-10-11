@@ -23,6 +23,8 @@ import './team-management.css';
 import { MemberKpiEntry } from './member-kpi-entry';
 import { ProtectedSurveyObligations } from './protected-survey-obligations';
 import {SurveyRoleReview} from './survey-role-review';
+import {RoleWorkReview} from './role-work-review';
+import type {WorkDecision} from '@/modules/tenancy/domain/promotion-work';
 import { SuperintendentAreaObligations } from './superintendent-area-obligations';
 import { SuperintendentAreaGrant } from './superintendent-area-grant';
 
@@ -120,6 +122,8 @@ function RoleEditor({ projectId, person, project, cancel, saved, reload }: { pro
   const roles = supportedTeamRoles(project.crewBuild) as ManagedSurveyRole[];
   const [role,setRole] = useState<ManagedSurveyRole>(roles.includes(person.role as ManagedSurveyRole) ? person.role as ManagedSurveyRole : roles[0]!);
   const [confirmed,setConfirmed] = useState(false),command = useTeamCommand();
+  // Decision 57 / D8: one decision per open request travels with the role change.
+  const [workState,setWorkState]=useState<{decisions:WorkDecision[]|null;problems:string[];loading:boolean}>({decisions:[],problems:[],loading:false});
   const [handoverLocked,setHandoverLocked]=useState(false),[areaLocked,setAreaLocked]=useState(false),[roleLocked,setRoleLocked]=useState(false),[roleUncertain,setRoleUncertain]=useState(false);
   const [handoverRevision,setHandoverRevision]=useState(0),[areaRevision,setAreaRevision]=useState(0),[grantLocked,setGrantLocked]=useState(false);
   const roleLock=useRef(false),handoverLock=useRef(false),areaLock=useRef(false),roleRunning=useRef(false);
@@ -130,8 +134,8 @@ function RoleEditor({ projectId, person, project, cancel, saved, reload }: { pro
   const editorHeading = useEditorHeadingFocus();
   function submit(event: FormEvent) {
     event.preventDefault();
-    if(readOnly||removing||reloading||command.stale||roleRunning.current||handoverLock.current||areaLock.current||(roleLock.current&&!roleUncertain)||(!roleUncertain&&(!confirmed||role===person.role)))return;
-    const input=roleUncertain?frozenRole.current:{userId:person.userId,expectedRole:person.role,expectedRoleVersion:person.roleVersion,role,confirmRoleChanges:confirmed};
+    if(readOnly||removing||reloading||command.stale||roleRunning.current||handoverLock.current||areaLock.current||(roleLock.current&&!roleUncertain)||(!roleUncertain&&(!confirmed||role===person.role||workState.loading||!workState.decisions)))return;
+    const input=roleUncertain?frozenRole.current:{userId:person.userId,expectedRole:person.role,expectedRoleVersion:person.roleVersion,role,confirmRoleChanges:confirmed,...(workState.decisions?.length?{work:workState.decisions}:{})};
     if(!input)return;frozenRole.current=input;roleRunning.current=true;roleLock.current=true;setRoleLocked(true);
     void command.run('role',input,async key=>{
       try{return await apiClient.changeSurveyRole(projectId,input,key);}
@@ -144,7 +148,8 @@ function RoleEditor({ projectId, person, project, cancel, saved, reload }: { pro
     <div><h3 className="panel-title" tabIndex={-1} ref={editorHeading}>Change Project Role</h3><p className="muted">{person.name} · {person.email}</p></div>
     <p>Current role: <strong>{roleLabel(person.role)}</strong></p>
     <label className="field"><span className="field-label">New role</span><select id="tm-role-select" className="select" value={role} disabled={frozen||readOnly} onChange={event=>{if(roleLock.current||handoverLock.current||areaLock.current)return;setRole(event.target.value as ManagedSurveyRole);setConfirmed(false);}}>{roles.map(value=><option key={value} value={value}>{roleLabel(value)}</option>)}</select></label>
-    <p className="muted">Choose a role within the survey department. Resolve this person’s crew assignments and Area responsibilities before changing their role. Previous request history is kept.</p>
+    <p className="muted">Choose a role within the survey department. Crew links and Area responsibilities are resolved below first; open requests are reviewed here and move with the change. Previous request history is kept.</p>
+    {role!==person.role&&!readOnly?<RoleWorkReview projectId={projectId} userId={person.userId} role={role} disabled={frozen||roleLocked} onChange={setWorkState}/>:null}
     <label className="tm-check" id="tm-role-confirm"><input type="checkbox" checked={confirmed} disabled={frozen||readOnly} onChange={event=>{if(!roleLock.current&&!handoverLock.current&&!areaLock.current)setConfirmed(event.target.checked);}}/><span>I confirm this role change and understand this person must sign in again.</span></label>
     {(command.error??reloadError)?<ErrorBanner message={(command.error??reloadError)!}/>:null}{roleUncertain?<p role="status">The role-change response is uncertain. Retry this unchanged confirmation to recover its recorded result.</p>:null}
     <div className="row"><Button type="submit" disabled={command.busy||removing||reloading} blockedTitle="Can’t save the role yet" blockers={blockersFrom([
@@ -154,8 +159,9 @@ function RoleEditor({ projectId, person, project, cancel, saved, reload }: { pro
       [areaLocked,'Finish or cancel the open Area responsibility change below first.'],
       [grantLocked,'Finish or reload the open Area coverage grant below first.'],
       [!roleUncertain&&role===person.role,`${roleLabel(person.role)} is already their role. Choose a different one.`,'tm-role-select'],
+      [!roleUncertain&&role!==person.role&&workState.loading,'Checking this person’s open work…'],
       [!roleUncertain&&!confirmed,'Tick the confirmation box.','tm-role-confirm'],
-    ])}>{command.busy?'Saving…':roleUncertain?'Retry unchanged role change':'Save role'}</Button><Button type="button" variant="secondary" disabled={roleLocked||handoverLocked||areaLocked||removing||reloading||command.busy} onClick={()=>{if(command.stale)void reloadRole();else cancel();}}>{command.error?'Reload personnel':'Cancel'}</Button>{!readOnly&&<Button type="button" variant="secondary" disabled={frozen||command.busy} onClick={()=>setRemoving(true)}>Review Role Removal</Button>}</div>
+    ]).concat(!roleUncertain&&role!==person.role?workState.problems.map(reason=>({reason})):[])}>{command.busy?'Saving…':roleUncertain?'Retry unchanged role change':'Save role'}</Button><Button type="button" variant="secondary" disabled={roleLocked||handoverLocked||areaLocked||removing||reloading||command.busy} onClick={()=>{if(command.stale)void reloadRole();else cancel();}}>{command.error?'Reload personnel':'Cancel'}</Button>{!readOnly&&<Button type="button" variant="secondary" disabled={frozen||command.busy} onClick={()=>setRemoving(true)}>Review Role Removal</Button>}</div>
   </form>{removing&&<SurveyRoleReview projectId={projectId} person={person} remove reload={reload} cancel={cancel} saved={saved}/>}<ProtectedSurveyObligations projectId={projectId} userId={person.userId} disabled={roleLocked||areaLocked||grantLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||areaLock.current||removing||reloading||command.stale} invalidateVersion={handoverRevision} onLockChange={onHandoverLock} onResolved={()=>childResolved('area')}/>{person.role==='SURVEY_SUPERINTENDENT'&&!readOnly?<SuperintendentAreaGrant projectId={projectId} superintendentId={person.userId} disabled={roleLocked||handoverLocked||areaLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||handoverLock.current||areaLock.current||removing||reloading||command.stale} onLockChange={setGrantLocked} onGranted={()=>childResolved('area')}/>:null}{person.role==='SURVEY_SUPERINTENDENT'?<SuperintendentAreaObligations projectId={projectId} superintendentId={person.userId} disabled={roleLocked||handoverLocked||grantLocked||removing||reloading||command.stale} isBlocked={()=>roleLock.current||handoverLock.current||removing||reloading||command.stale} invalidateVersion={areaRevision} onLockChange={onAreaLock} onUnlinked={()=>childResolved('handover')}/>:null}</div>;
 }
 function TeamEditor({ projectId, project, initial, cancel, saved, reload }: { projectId: string; project: TeamProjectContext; initial: SurveyTeamDetail | null; cancel: () => void; saved: (outcome: 'saved' | 'deleted') => void;reload:()=>Promise<unknown> }) {

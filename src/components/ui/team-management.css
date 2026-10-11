@@ -45,3 +45,8 @@
 .tm-lead { max-width: 28rem; }
 .tm-footer-summary { margin: 0; flex: 1 1 18rem; min-width: 0; color: var(--muted); font-size: .875rem; overflow-wrap: anywhere; }
 .tm-footer-summary strong { color: var(--ink); }
+
+/* Decision 57 / D8: open work reviewed with a role change. */
+.role-work h4 { margin:0; }
+.role-work-list { list-style:none; margin:0; padding:0; display:grid; gap:.75rem; }
+.role-work-list > li { display:grid; gap:.4rem; padding:.75rem; border:1px solid var(--line); border-radius:8px; }
