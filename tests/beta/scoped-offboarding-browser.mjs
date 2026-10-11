@@ -39,7 +39,7 @@ try{
  const flow=page.getByRole('region',{name:`Remove from this project: ${browserName}`,exact:true});
  await flow.getByText('500: Synthetic preview load failure',{exact:true}).waitFor();await flow.getByRole('button',{name:'Reload evidence',exact:true}).click();checks++;await page.unroute(`**/api/projects/${f.project}/members/${f.browserSubject}/offboarding**`);
  await flow.getByText('No unresolved duty or continuity blockers in this scope.',{exact:true}).waitFor();checks++;
- await flow.getByLabel('Reason (10–1000 characters)',{exact:true}).fill('Confirmed browser project departure');
+ await (await flow.getByLabel('Reason',{exact:true}).selectOption('Other'),flow).getByLabel('Reason details',{exact:true}).fill('Confirmed browser project departure');
  await flow.getByLabel(`I confirm: remove from this project for ${browserName}.`,{exact:true}).check();
  await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.local-alpha1/browser/desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.local-alpha1/browser/mobile.png',fullPage:true});
@@ -61,7 +61,7 @@ try{
  // A fresh second subject proves every 409 requires deliberate reload and new consent.
  const stale=randomUUID(),staleName='Stale browser subject '+stale.slice(0,8);await db.query("INSERT INTO users(id,tenant_id,company_id,name,email,password_hash) VALUES($1,$2,$3,$5,$4,'fixture')",[stale,f.tenant,f.company,stale+'@example.test',staleName]);await db.query("INSERT INTO project_memberships(project_id,user_id,role) VALUES($1,$2,'REQUESTER')",[f.project,stale]);
  await page.reload();await openMembers(page);
- await page.getByLabel('Filter project members',{exact:true}).fill(staleName);await page.getByRole('row').filter({hasText:staleName}).getByRole('button',{name:'Preview access removal',exact:true}).click();const staleFlow=page.getByRole('region',{name:`Remove from this project: ${staleName}`,exact:true});await staleFlow.getByLabel('Reason (10–1000 characters)',{exact:true}).fill('Confirmed stale-state browser test');await staleFlow.getByLabel(`I confirm: remove from this project for ${staleName}.`,{exact:true}).check();
+ await page.getByLabel('Filter project members',{exact:true}).fill(staleName);await page.getByRole('row').filter({hasText:staleName}).getByRole('button',{name:'Preview access removal',exact:true}).click();const staleFlow=page.getByRole('region',{name:`Remove from this project: ${staleName}`,exact:true});await (await staleFlow.getByLabel('Reason',{exact:true}).selectOption('Other'),staleFlow).getByLabel('Reason details',{exact:true}).fill('Confirmed stale-state browser test');await staleFlow.getByLabel(`I confirm: remove from this project for ${staleName}.`,{exact:true}).check();
  await page.route(`**/api/projects/${f.project}/members/${stale}/offboarding`,async route=>{if(route.request().method()==='POST')return route.fulfill({status:409,json:{error:{type:'ConflictError',message:'Synthetic stale state',code:'ANY_STALE'}}});await route.continue();});
  await staleFlow.getByRole('button',{name:'Remove from this project',exact:true}).click();await staleFlow.getByText('The access evidence changed. Your reviewed access removal remains held. Reload evidence must successfully read current duties before a new decision or cancellation.',{exact:true}).waitFor();
  check(await staleFlow.getByRole('button',{name:'Remove from this project',exact:true}).isDisabled(),true,'Every 409 latched');
