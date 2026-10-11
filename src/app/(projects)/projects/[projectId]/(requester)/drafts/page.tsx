@@ -14,6 +14,7 @@ import { Icon } from '@/components/ui/icon';
 import type { TicketRecord } from '@/lib/contracts';
 import { PaginationControls } from '@/components/forms';
 import { Button, Card, ErrorBanner, Select, SuccessBanner } from '@/components/ui';
+import { useRequestDetailsDialog } from '@/components/tickets/request-details-dialog';
 
 export default function DraftsPage() {
   const params = useParams<{ projectId: string }>();
@@ -37,8 +38,10 @@ export default function DraftsPage() {
   const busy = useRef(false);
   const attempt = useRef(new RetryableMutation<{ ticketId:string; expectedVersion:number }>());
 
-  async function loadDrafts() {
-    setLoading(true);
+  // After a change in the popup the rows refresh in place (quiet), keeping the list and its scroll.
+  const details = useRequestDetailsDialog(projectId, message => { if (message) setSuccess(message); void loadDrafts(true); });
+  async function loadDrafts(quiet = false) {
+    if (!quiet) setLoading(true);
     setError(null);
     try {
       const page = await apiClient.listTickets(projectId, limit, offset, { status: 'DRAFT' });
@@ -73,6 +76,7 @@ export default function DraftsPage() {
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
+        {details.dialog}
         
         {loading ? <p className="muted">Loading drafts...</p> : null}
         {!loading && tickets.length === 0 && !error ? <div className="empty-state"><strong>No saved drafts</strong><span>Start a request and use Save Draft at any step.</span></div> : null}
@@ -82,7 +86,7 @@ export default function DraftsPage() {
           {key:'type',label:'Type',text:t=>ticketTypeLabel(t.ticketType)},
           {key:'date',label:'Need-By',text:t=>t.requestedDate??'Not specified'},
           {key:'saved',label:'Saved',text:t=>t.draftLastSavedAt??'',render:t=>t.draftLastSavedAt?new Date(t.draftLastSavedAt).toLocaleString():'Not recorded'}
-        ]} actions={ticket=><><Link className="button" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link><Link className="button button-secondary" href={`/projects/${projectId}/tickets/${ticket.id}`}>Saved details and files</Link><Button variant="secondary" disabled={deleting||Boolean(attempt.current.pending&&attempt.current.pending.input.ticketId!==ticket.id)} onClick={()=>void remove(ticket)}>{attempt.current.pending?.input.ticketId===ticket.id?'Retry Delete Draft':'Delete Draft'}</Button></>}/>:null}
+        ]} actions={ticket=><><Link className="button" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link><Button variant="secondary" onClick={() => details.open(ticket.id)}>Saved details and files</Button><Button variant="secondary" disabled={deleting||Boolean(attempt.current.pending&&attempt.current.pending.input.ticketId!==ticket.id)} onClick={()=>void remove(ticket)}>{attempt.current.pending?.input.ticketId===ticket.id?'Retry Delete Draft':'Delete Draft'}</Button></>}/>:null}
         {error ? (
           <Button variant="secondary" disabled={deleting || Boolean(attempt.current.pending)} onClick={() => void loadDrafts()}>
             Retry

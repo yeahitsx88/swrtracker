@@ -378,3 +378,15 @@ Decision53 bounded implementation receipt (Batch198): supported visual moves use
 - The current project Survey Manager may give a current eligible Survey Superintendent complete individual coverage of one live top-level Area on an editable FULL project (Setup or Active; not Archived, not during preparation cancellation). Complete coverage is the established pair: an individual aor_assignment plus an active SURVEY_REVIEWER grant on the same Area. An existing half is reused; complete coverage is refused.
 - The command requires a current review snapshot, a reason (10–1000 characters), explicit confirmation and a caller-owned Idempotency-Key. Order: tenant EXCLUSIVE, then current actor/session, then project/person/Area/coverage locks with re-checked authority, then the ledger. Evidence is survey.staffing_saved (action grant-superintendent-area) with reason and provenance, plus RESPONSIBILITY_GRANTED with resolution_evidence only when a review grant is created (Decision27/28 rule).
 - Not approved here: removal (stays with the Decision30/31 reviewed cleanup), Project Admin or Central IT grants after activation, sub-Area grants, automatic coverage from named teams, and any change to request records or crew links.
+
+### Decision 57 - user audit decisions D1-D8 and draft popup (2026-10-11)
+- Owner approved (in session, 2026-10-11) every recommendation in the decision register of docs/USER_AUDIT_REGISTER_20261010.md, and asked that requester drafts open in the Request Details popup.
+- D1 (UAR-009): Tenant Admin chooses per Project Admin grant "keep current role" or "Project Admin only". A role is never removed automatically while it has open obligations (the UAR-026 guards apply).
+- D2 (UAR-010): "Tenant Admin" in all UI copy. CENTRAL_IT stays in stored audit evidence for history.
+- D3 (UAR-002): rearrangeable containers only on overview pages made of two or more independent read-only cards (Home for all roles, Survey Operations Overview). Not forms, wizards, dialogs, confirmation or review panels, work queues or tables, request detail, navigation or sticky action bars. Per-browser persistence.
+- D4 (UAR-018): Project Admin and Tenant Admin may add ordinary departments after activation (name and head title only, audited). Membership, role and Area changes stay governed.
+- D5 (UAR-019): optional company on departments, displayed "Department — Company". Existing rows stay unset. Schema migration approved.
+- D6 (UAR-014): disable reasons Terminated, Resigned, Transferred, Other (comment required), stored as a prefix in the existing reason field. No schema change.
+- D7 (UAR-017): read-only company details: identity, project roster, request count by month. No outcome metrics.
+- D8 (UAR-025): a promotion may proceed with a review of open work and a per-item choice: keep (only where the new role may complete it) or reassign, applied in one audited transaction.
+- Draft popup: requester drafts open in the Request Details popup like submitted requests; the full editor page stays available.

@@ -46,7 +46,11 @@ const NO_CAPABILITIES: TicketCapabilities = {
  * Actions come from the request's capabilities, the shared operation rules and the server's own
  * review availability; every operation is the existing endpoint with its own authorization.
  */
-export function RequestDetails({ projectId, ticketId, presentation = 'page', onChanged }: { projectId: string; ticketId: string; presentation?: 'page' | 'modal'; onChanged?: () => void }) {
+export function RequestDetails({ projectId, ticketId, presentation = 'page', onChanged, onClose, onOpenRequest }: {
+  projectId: string; ticketId: string; presentation?: 'page' | 'modal';
+  /** The list behind the popup refreshes; a message is passed when the request leaves the popup (draft deleted). */
+  onChanged?: (message?: string) => void; onClose?: () => void; onOpenRequest?: (ticketId: string) => void;
+}) {
   const router = useRouter();
   const modal = presentation === 'modal';
   const workspaceContext = useProjectWorkspace();
@@ -85,7 +89,7 @@ export function RequestDetails({ projectId, ticketId, presentation = 'page', onC
   const [review, setReview] = useState<ReviewDecisionRead['decision'] | null>(null);
   const workflow=useTicketWorkflowReview(()=>void loadAll(true),(response,action)=>{
     onChanged?.();
-    if(action==='follow-up')router.push(`/projects/${projectId}/tickets/${response.ticket.id}`);
+    if(action==='follow-up'){if(modal&&onOpenRequest)onOpenRequest(response.ticket.id);else router.push(`/projects/${projectId}/tickets/${response.ticket.id}`);}
     else {void loadAll(true);setSuccess(action==='requester-cancel'?'Request cancelled. Its reference, files and history are retained.':'Saved. The request is updated.');}
   });
   const changed = (message: string) => { onChanged?.(); setSuccess(message); void loadAll(true); };
@@ -222,8 +226,9 @@ export function RequestDetails({ projectId, ticketId, presentation = 'page', onC
     busy.current = true; setDeleting(true); setError(null);
     try {
       const command=deleteAttempt.current.begin({ticketId:deleteReview.id,expectedVersion:deleteReview.rowVersion??0},createIdempotencyKey());if(!command)return;
-      await apiClient.deleteDraft(command.body.ticketId,command.body.expectedVersion,command.key);deleteAttempt.current.success();onChanged?.();
-      router.push(`/projects/${projectId}/drafts?deleted=1`);
+      await apiClient.deleteDraft(command.body.ticketId,command.body.expectedVersion,command.key);deleteAttempt.current.success();
+      if(modal&&onClose){onChanged?.('Draft deleted. Project IT can restore it within 30 days; its files and history are retained.');onClose();}
+      else{onChanged?.();router.push(`/projects/${projectId}/drafts?deleted=1`);}
     } catch (err) {
       deleteAttempt.current.fail(err instanceof ApiClientError?err.status:undefined);
       setError(getErrorMessage(err,'Unable to confirm deletion. Retry the same action.'));

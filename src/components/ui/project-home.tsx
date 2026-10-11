@@ -38,18 +38,19 @@ function LinkedCrew({projectId}:{projectId:string}) {
   return <div className="home-linked-crew-wrap" style={{'--linked-help-left':`${helpLeft}px`} as CSSProperties}><HelpHint label="Linked-Crew KPIs">Only explicitly linked crews within your authorized Areas. Area overlap does not establish a reporting relationship.</HelpHint><details className="home-linked-crew" onToggle={event=>{if(event.target===event.currentTarget)setOpen(event.currentTarget.open);}}><summary><span ref={label}>Linked-Crew KPIs</span></summary>{open&&<KpiExplorer projectId={projectId} initialMeasure="open" fixedFilters={{cohort:'linkedCrews'}}/>}</details></div>;
 }
 
-function HomeRequests({ projectId, tickets, title, requester, drafts = false }: {
-  projectId: string; tickets: TicketRecord[]; title: string; requester: boolean; drafts?: boolean;
+function HomeRequests({ projectId, tickets, title, requester, drafts = false, openRequest }: {
+  projectId: string; tickets: TicketRecord[]; title: string; requester: boolean; drafts?: boolean; openRequest?: (ticketId: string) => void;
 }) {
   return tickets.length ? <div className="home-records"><AdministrationRecords compact label={title} rows={tickets} id={row => row.id} columns={[
-    {key: 'reference', className: 'home-reference-column', label: drafts ? 'Draft' : 'Request', text: row => row.ticketNumber ?? 'Unnumbered draft', render: row => <Link className="text-link" href={drafts ? `/projects/${projectId}/request/new?draft=${row.id}` : `/projects/${projectId}/tickets/${row.id}`}>{row.ticketNumber ?? 'Resume draft'}</Link>},
+    {key: 'reference', className: 'home-reference-column', label: drafts ? 'Draft' : 'Request', text: row => row.ticketNumber ?? 'Unnumbered draft', render: row => openRequest ? <button type="button" className="text-link" onClick={() => openRequest(row.id)}>{row.ticketNumber ?? 'Open draft'}</button> : <Link className="text-link" href={drafts ? `/projects/${projectId}/request/new?draft=${row.id}` : `/projects/${projectId}/tickets/${row.id}`}>{row.ticketNumber ?? 'Resume draft'}</Link>},
     {key: 'details', label: 'Details', text: row => row.description || 'Partial draft', render: row => <span className="home-request-details">{row.description || 'Partial draft'}<small>{ticketTypeLabel(row.ticketType)}</small></span>},
     ...(!drafts ? [{key: 'status', className: 'home-status-column', label: 'Status', text: (row: TicketRecord) => operationsStatusLabel(row.status), render: (row: TicketRecord) => <StatusBadge status={row.status} viewerIsRequester={requester} />}] : []),
     {key: 'needBy', className: 'home-date-column', label: drafts ? 'Last saved' : 'Need-By', text: row => drafts ? (row.draftLastSavedAt ?? row.updatedAt).slice(0,10) : row.requestedDate?.slice(0,10) ?? 'Not set'},
   ]} /></div> : <p className="home-empty">{drafts ? 'No saved drafts. Start a new request and save your progress at any point.' : 'No requests in this view. Work will appear here as it enters your authorized scope.'}</p>;
 }
 
-export function ProjectHome() {
+/** `openRequest` opens Request Details over Home; `refresh` changes after an action there and reloads Home in place. */
+export function ProjectHome({ openRequest, refresh = 0 }: { openRequest?: (ticketId: string) => void; refresh?: number } = {}) {
   const workspace = useProjectWorkspace();
   const router = useRouter();
   const [revision, setRevision] = useState(0);
@@ -81,6 +82,13 @@ export function ProjectHome() {
       .catch(error => { if (active) setSnapshot({key, error: getErrorMessage(error, 'Unable to load your Home. Refresh to check current access and try again.')}); });
     return () => { active = false; };
   }, [key, operational]);
+  useEffect(() => {
+    if (!refresh || !operational || !caps) return;
+    let active = true;
+    loadProjectHome(projectId, caps).then(data => { if (active) setSnapshot({key, data}); })
+      .catch(error => { if (active) setSnapshot({key, error: getErrorMessage(error, 'Unable to load your Home. Refresh to check current access and try again.')}); });
+    return () => { active = false; };
+  }, [refresh]);
   if (!workspace) return null;
   const base = `/projects/${projectId}`;
   const requestHref = requester ? `${base}/my-requests` : field ? `${base}/crew/work` : `${base}/requests`;
@@ -94,7 +102,7 @@ export function ProjectHome() {
   }
   const stat = (label: string, value: number, icon: IconName, href: string, note?: string) => <div className="home-stat-cell"><Link className="home-stat" href={href}><Icon name={icon} size={24} /><span><strong>{value.toLocaleString()}</strong><span>{headingCase(label)}</span></span><Icon name="chevron" size={16} /></Link>{note&&<HelpHint label={headingCase(label)}>{note}</HelpHint>}</div>;
   const statusPanel = data && (<Card title="Request Status" description="All dates · current state" className="home-status">{chart?.statuses.length ? <KpiChart kind="donut" rows={chart.statuses.map(row => ({...row, label: operationsStatusLabel(row.key)}))} months={[]} cells={[]} cycle={false} total={data.metrics.total ?? 0} denominator={data.metrics.total ?? 0} title="Request status" select={value => drill({status: value})} selectMonth={() => {}} /> : <p className="home-empty">No submitted requests in your current scope.</p>}</Card>);
-  const upcomingPanel = data && (<Card className="home-upcoming" title="Upcoming Need-By Dates" description={`${data.dates.today} through ${data.dates.through} · open requests only. ${recordScope(data.upcoming.data.length,data.upcoming.total)}`}><HomeRequests projectId={projectId} tickets={data.upcoming.data} title="upcoming requests" requester={requester} /></Card>);
+  const upcomingPanel = data && (<Card className="home-upcoming" title="Upcoming Need-By Dates" description={`${data.dates.today} through ${data.dates.through} · open requests only. ${recordScope(data.upcoming.data.length,data.upcoming.total)}`}><HomeRequests projectId={projectId} tickets={data.upcoming.data} title="upcoming requests" requester={requester} openRequest={openRequest} /></Card>);
   const areaPanel = data && (!requester && !field && 'areas' in (chart ?? {}) && <Card className="home-area" title="Requests by Area" description="Current requests · all dates · authorized Areas. Up to eight Areas shown. Summary totals cover your complete authorized scope."><KpiChart kind="bar" rows={('areas' in chart! ? chart.areas : []).slice(0,8)} months={[]} cells={[]} cycle={false} total={data.metrics.total ?? 0} denominator={data.metrics.total ?? 0} title="Requests by Area" select={value => drill({areaId: value})} selectMonth={() => {}} /></Card>);
   return <div className="home-workspace">
     {manager&&status==='ACTIVE'?<SurveySetupTip projectId={projectId}/>:null}
@@ -112,12 +120,12 @@ export function ProjectHome() {
       </div>
       <HomeWidgets storageKey={`${projectId}:${role}`} audience={manager || superintendent ? 'survey' : 'other'}>
         {(manager || superintendent) && areaPanel}
-        <Card title={field ? 'Recent Crew Requests' : 'Recent Requests'} description={recordScope(data.recent.data.length,data.recent.total)} actions={<Link className="text-link" href={requestHref}>View all requests</Link>} className="home-recent"><HomeRequests projectId={projectId} tickets={data.recent.data} title="recent requests" requester={requester} /></Card>
+        <Card title={field ? 'Recent Crew Requests' : 'Recent Requests'} description={recordScope(data.recent.data.length,data.recent.total)} actions={<Link className="text-link" href={requestHref}>View all requests</Link>} className="home-recent"><HomeRequests projectId={projectId} tickets={data.recent.data} title="recent requests" requester={requester} openRequest={openRequest} /></Card>
 
 
         {!(manager || superintendent) && statusPanel}
         {!(manager || superintendent) && upcomingPanel}
-        {requester ? <Card title="Saved Drafts" description={recordScope(data.drafts?.data.length??0,data.drafts?.total??0,true)} actions={<Link className="text-link" href={`${base}/drafts`}>View drafts</Link>}><HomeRequests projectId={projectId} tickets={data.drafts?.data ?? []} title="saved drafts" requester drafts /></Card> : <Card className="home-health-panel" title={field ? 'Work Obligations' : 'Queue Health'}>
+        {requester ? <Card title="Saved Drafts" description={recordScope(data.drafts?.data.length??0,data.drafts?.total??0,true)} actions={<Link className="text-link" href={`${base}/drafts`}>View drafts</Link>}><HomeRequests projectId={projectId} tickets={data.drafts?.data ?? []} title="saved drafts" requester drafts openRequest={openRequest} /></Card> : <Card className="home-health-panel" title={field ? 'Work Obligations' : 'Queue Health'}>
           <dl className="home-health"><div><dt>In Progress</dt><dd>{data.inProgress.toLocaleString()}</dd></div><div><dt>Overdue Need-By</dt><dd>{data.overdue.toLocaleString()}</dd></div><div><dt>Open Requests</dt><dd>{data.open.toLocaleString()}</dd></div></dl>
           <Link className="button button-secondary" href={field ? `${base}/crew/work` : manager || superintendent && !caps?.canAdminister ? `${base}/survey/operations` : `${base}/requests`}>{field ? 'Open Crew Work' : manager || superintendent && !caps?.canAdminister ? 'Open Survey Operations' : 'Open Project Review'}</Link>
           {role === 'PARTY_CHIEF' && <Link className="text-link" href={`${base}/crew/approvals`}>Review field reports</Link>}
