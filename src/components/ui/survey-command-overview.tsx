@@ -12,6 +12,9 @@ import type { AmeliaMetrics, MetricBucket } from '@/modules/reporting/applicatio
 import type { CommandActivity } from '@/modules/reporting/application/command-activity';
 import { KpiChart, KpiComparisonTrend } from './kpi-charts';
 import { Button } from './button';
+import { Card } from './card';
+import { HomeWidgets } from './home-widgets';
+import './project-home.css';
 import './kpi-explorer.css';
 import './survey-command-overview.css';
 
@@ -96,19 +99,23 @@ export function SurveyCommandOverview({ projectId, initialMetrics, revision }: {
     {!current && !error ? <div className="ops-command-loading" role="status"><span>Loading command overview…</span><div /><div /></div> : null}
     {error ? <div className="ops-command-error"><p role="alert">{error}</p><Button variant="secondary" onClick={() => setRetry(value => value + 1)}>Retry overview</Button></div> : null}
     {current && chart ? <>
-      <div className="ops-command-grid">
-        <section className="ops-command-panel"><div className="ops-command-panel-heading"><HeadingHelp label="Current Status" heading={<h3>Current Status</h3>} help="All dates · current status, not event history" /><button type="button" className="app-link" onClick={() => drill()}>Review {total.toLocaleString()} requests</button></div>
+      {/* Decision 57 / D3: independent read-only cards on an overview page may be rearranged; filters stay fixed above. */}
+      <HomeWidgets storageKey={`${projectId}:survey-overview`} audience="survey">
+        <Card title="Current Status" description="All dates · current status, not event history" className="ops-command-panel ops-command-card"
+          actions={<button type="button" className="app-link" onClick={() => drill()}>Review {total.toLocaleString()} requests</button>}>
           {total ? <KpiChart kind="donut" rows={chart.statuses.map(row => ({ ...row, label: operationsStatusLabel(row.key) }))} months={[]} cells={[]} cycle={false} total={total} denominator={total} title="Current status" select={value => drill({ status: value as CommandFilters['status'] })} selectMonth={() => {}} /> : <p className="muted">No requests match this scope. Reset filters to inspect the project.</p>}
-        </section>
-        <section className="ops-command-panel"><HeadingHelp label="Demand and Recorded Completion" heading={<h3>Demand and Recorded Completion</h3>} help={`${current.activity.from} through ${current.activity.to} · first submissions vs. recorded completions · UTC`} />
+        </Card>
+        <Card title="Demand and Recorded Completion" description={`${current.activity.from} through ${current.activity.to} · first submissions vs. recorded completions · UTC`} className="ops-command-panel ops-command-card">
           <KpiComparisonTrend points={current.activity.days.map(day => ({ key: day.date, primary: day.submitted, secondary: day.recordedCompletions }))} title="Daily request activity" primaryLabel="Submitted" secondaryLabel="Recorded completed" />
           {current.activity.excludedSyntheticCompletions ? <p className="ops-command-note">{current.activity.excludedSyntheticCompletions.toLocaleString()} generated completion dates excluded from this window.</p> : null}
-        </section>
-      </div>
-        <div className="ops-command-distribution"><div className="ops-command-panel-heading"><div><HeadingHelp label={"Request Distribution"} heading={<h3>Request Distribution</h3>} help={<span>Current requests · all dates · select a bar to review matching requests. Unassigned requests are included in current status but are not attributed to a Party Chief. Assignment timing and employee productivity are not inferred from these counts.</span>}/></div><div className="ops-command-switch" role="group" aria-label="Distribution dimension">{(['areas', 'types', 'crews'] as const).map(value => <button key={value} type="button" aria-pressed={distribution === value} onClick={() => setDistribution(value)}>{value === 'areas' ? 'Area' : value === 'types' ? 'Type' : 'Party Chief'}</button>)}</div></div>
-        {group.length ? <KpiChart kind="bar" rows={group} months={[]} cells={[]} cycle={false} total={total} denominator={total} title={`Requests by ${groupTitle}`} select={selectGroup} selectMonth={() => {}} /> : <p className="muted">No {groupTitle.toLowerCase()} assignments in this scope. Try another dimension or reset filters.</p>}
-        {chart.limits.truncated ? <p className="ops-command-note">Breakdowns show at most {chart.limits.groups} groups. Totals remain complete; narrow the scope to inspect omitted groups.</p> : null}
-      </div>
+        </Card>
+        <Card title="Request Distribution" className="ops-command-distribution ops-command-card"
+          description={<span>Current requests · all dates · select a bar to review matching requests. Unassigned requests are included in current status but are not attributed to a Party Chief. Assignment timing and employee productivity are not inferred from these counts.</span>}
+          actions={<div className="ops-command-switch" role="group" aria-label="Distribution dimension">{(['areas', 'types', 'crews'] as const).map(value => <button key={value} type="button" aria-pressed={distribution === value} onClick={() => setDistribution(value)}>{value === 'areas' ? 'Area' : value === 'types' ? 'Type' : 'Party Chief'}</button>)}</div>}>
+          {group.length ? <KpiChart kind="bar" rows={group} months={[]} cells={[]} cycle={false} total={total} denominator={total} title={`Requests by ${groupTitle}`} select={selectGroup} selectMonth={() => {}} /> : <p className="muted">No {groupTitle.toLowerCase()} assignments in this scope. Try another dimension or reset filters.</p>}
+          {chart.limits.truncated ? <p className="ops-command-note">Breakdowns show at most {chart.limits.groups} groups. Totals remain complete; narrow the scope to inspect omitted groups.</p> : null}
+        </Card>
+      </HomeWidgets>
     </> : null}
   </section>;
 }

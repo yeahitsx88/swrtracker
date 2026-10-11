@@ -56,3 +56,6 @@
   .ops-command-panel .kpi-donut svg { margin:auto; }
   .ops-command-distribution .kpi-bars { grid-template-columns:1fr; }
 }
+/* Decision 57 / D3: the overview panels are rearrangeable cards (HomeWidgets). */
+.ops-command-panel.ops-command-card,.ops-command-distribution.ops-command-card { padding:1.25rem; border:1px solid var(--line); }
+.ops-command-card .ops-command-switch { justify-content:flex-end; }
