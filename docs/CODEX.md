@@ -5040,3 +5040,41 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
   - Regression: lifecycle (submit, approve, assign, start, delay, complete), inability report and return loop, dashboard 15/15, boundary probes 23/23.
 - Limitations: PostgreSQL acceptance suites and maintained runners not run (retained fixtures out of bounds). A requester draft opened from a list still uses its full editor page by design.
 - Production behavior changed: yes (presentation/flow).
+
+### 2026-10-11 - Batch 300: user audit decisions D1–D8 and draft popup
+- Intent: owner approved every recommendation D1–D8 of docs/USER_AUDIT_REGISTER_20261010.md and asked that requester drafts open in the Request Details popup. Recorded as Decision 57 in docs/worklogs/LEAD_DECISION_LOG.md.
+- Commits:
+  - 3d329f0: draft popup and the decision record.
+  - 11eb943: D2.
+  - fa38e49: D6.
+  - 664c160: D3.
+  - 9fa1cfc: D4 and D5.
+  - 582c853: D7.
+  - 8553a07: D1.
+  - 79f3969: D8.
+- Changed behavior:
+  - Drafts open in the popup from Drafts, Home and request lists. Deleting in the popup closes it with the list's confirmation; a follow-up opens in the same popup.
+  - D2: "Tenant Admin" in all UI copy and messages; stored CENTRAL_IT evidence unchanged.
+  - D6: access removal reason list stored as a "[Reason] details" prefix in the existing field.
+  - D3: Survey Operations Overview cards rearrange (Home unchanged).
+  - D4: departments may be added after activation.
+  - D5: optional department company (migration 049_department_company.sql), shown "Department — Company".
+  - D7: read-only company details (GET /api/projects/:projectId/companies/:companyId).
+  - D1: grant choice keep-role or Project Admin only, guarded by obligations; an admin-only member can be given Requester or Viewer again.
+  - D8: Survey Manager role changes review open requests (keep where the new role can complete it, or reassign through assignTicket) in the same transaction. Structural duties stay blockers and are named before saving.
+- Authorization: no new roles. D1 stays Tenant Admin only. D7 is for current project administrators. D8 is the Survey Manager only, and reassignment uses the existing assignment rules and events. Superintendent-scoped role changes and Project Admin role assignment keep the existing refusal.
+- Verification:
+  - Strict typecheck, 776 units (new: offboarding-reasons, promotion-work, department route cases), production build.
+  - Browser and API on the disposable database:
+    - Drafts 7/7, plus full-page draft deletion 4/4.
+    - D6 6/6, with the stored "[Resigned] …" reason confirmed.
+    - D3 4/4; D4/D5 7/7; D7 8/8; D1 14/14; D8 12/12.
+    - Role-change refusal with named blockers.
+    - Project Admin probes 24/24.
+- Data: migration 049 applied to the disposable database only. Retained databases need it before this build runs there.
+- Limitations:
+  - "Keep" for open work is offered only where the new role can see and complete it. Today that is a recorded field-report review kept by a Survey Manager, which Team Management never sets, so Team Management items are reassign-or-resolve.
+  - Crew, reporting and Area links are not moved by a role change.
+  - The disable popup presentation (UAR-014) is deferred.
+  - PostgreSQL acceptance suites and maintained runners were not run (retained fixtures); four offboarding runners were updated and syntax-checked.
+- Production behavior changed: yes (one migration).

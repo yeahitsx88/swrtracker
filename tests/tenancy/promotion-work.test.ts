@@ -30,16 +30,15 @@ test('a recorded field-report review stays only with a role that sees every requ
 
 test('every open item needs one valid decision against its reviewed version', () => {
   const planned = planPromotionWork([item({ ticketId: 'a' }), item({ ticketId: 'b', part: 'CHIEF' })], 'PARTY_CHIEF');
-  const ok = [
-    { ticketId: 'a', part: 'INSTRUMENT' as const, action: 'REASSIGN' as const, replacementId: OTHER, expectedRowVersion: 3 },
-    { ticketId: 'b', part: 'CHIEF' as const, action: 'REASSIGN' as const, replacementId: OTHER, expectedRowVersion: 3 },
-  ];
+  const first = { ticketId: 'a', part: 'INSTRUMENT' as const, action: 'REASSIGN' as const, replacementId: OTHER, expectedRowVersion: 3 };
+  const second = { ticketId: 'b', part: 'CHIEF' as const, action: 'REASSIGN' as const, replacementId: OTHER, expectedRowVersion: 3 };
+  const ok = [first, second];
   assert.doesNotThrow(() => validateWorkDecisions(planned, ok, SUBJECT));
   assert.throws(() => validateWorkDecisions(planned, ok.slice(0, 1), SUBJECT), /changed since your review/, 'a missing item');
-  assert.throws(() => validateWorkDecisions(planned, [{ ...ok[0]!, expectedRowVersion: 2 }, ok[1]!], SUBJECT), /changed since your review/, 'a stale version');
-  assert.throws(() => validateWorkDecisions(planned, [{ ...ok[0]!, action: 'KEEP' }, ok[1]!], SUBJECT), /can’t stay with the new role/);
-  assert.throws(() => validateWorkDecisions(planned, [{ ...ok[0]!, replacementId: SUBJECT }, ok[1]!], SUBJECT), /Choose who takes over/, 'the same person');
-  assert.throws(() => validateWorkDecisions(planned, [ok[0]!, ok[0]!, ok[1]!], SUBJECT), /one action per request/);
+  assert.throws(() => validateWorkDecisions(planned, [{ ...first, expectedRowVersion: 2 }, second], SUBJECT), /changed since your review/, 'a stale version');
+  assert.throws(() => validateWorkDecisions(planned, [{ ...first, action: 'KEEP' }, second], SUBJECT), /can’t stay with the new role/);
+  assert.throws(() => validateWorkDecisions(planned, [{ ...first, replacementId: SUBJECT }, second], SUBJECT), /Choose who takes over/, 'the same person');
+  assert.throws(() => validateWorkDecisions(planned, [first, first, second], SUBJECT), /one action per request/);
 });
 
 test('the role change accepts only well-formed work decisions', async () => {

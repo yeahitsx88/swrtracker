@@ -6,6 +6,8 @@ Verification ran on the disposable review database (127.0.0.1:15491) in a real b
 
 Status key: **FIXED** (changed and verified) · **VERIFIED** (already correct, proven) · **PENDING** (needs a decision) · **DEFERRED** · **SUPERSEDED**.
 
+Update 2026-10-11: the owner approved every recommendation D1–D8 (Decision 57). Each is implemented and verified; see Batch 300 in CODEX.md.
+
 ## A. Shared UI and components
 
 | ID | Source | Observed → Expected | Root cause | Disposition and evidence |
@@ -16,7 +18,7 @@ Status key: **FIXED** (changed and verified) · **VERIFIED** (already correct, p
 | UAR-004 | GN | Creation flows should follow the company popup review | Most creation flows already use a review step or dialog (company, custom role, member wizard, team editor, direct assignment) | **PARTLY VERIFIED / DEFERRED**. No flow lacks a confirmation step. Converting the remaining inline editors to popups is deferred as visual work (see UAR-015) |
 | UAR-007 | PA Companies | Disabled-button tooltips are the right concept; refine later | — | **FIXED where silent**: the custom-role wizard (Next, Deploy/Delete) now explains itself, following the earlier batch-297 sweep. Visual polish deferred as the user asked |
 | UAR-003 / UAR-027 | GN; IM | Width sliders → spreadsheet-style edge resizing on all tables | Resizing existed only on 2 of 41 shared tables; the rest had none, and sliders sat in the column panel | **FIXED** (98c6e42). Every `AdministrationRecords` table resizes by dragging the heading edge (keyboard arrows; double-click restores; widths saved per browser; natural layout until the first resize). Sliders removed. The departments, invitation-history and audit-log tables use the new shared `ResizableTable`. KPI heat-map excluded (a chart, not a data table). Browser: Crew Work (Instrument Man), Project Admin personnel, Review Requests and audit log widen, persist and restore |
-| UAR-002 | SM; GN | Draggable containers everywhere | — | **PENDING** (decision D3). Home dashboard (all roles) is the reference, re-verified (15/15) after a regression found and fixed in a9beb56 |
+| UAR-002 | SM; GN | Draggable containers everywhere | — | **FIXED** (D3, 664c160). Rule applied: overview pages of 2+ independent read-only cards only. Home (unchanged) and the Survey Manager's Survey Operations Overview cards rearrange (drag or keyboard, saved per browser); filters stay fixed |
 
 ## B. Security, administration and authorization
 
@@ -26,9 +28,9 @@ Status key: **FIXED** (changed and verified) · **VERIFIED** (already correct, p
 | UAR-011 | PA Custom Roles | Project-created roles must stay project-scoped | **VERIFIED / SUPERSEDED**. Decision 55 makes custom roles a Tenant-Admin-owned tenant catalog that Project Admins only assign; there is no project-created role to propagate. Project Admin create/list → 403 |
 | UAR-012 | PA Settings, Templates | Hide template pages and controls from Project Admin | **FIXED** (98c6e42). Template pages/APIs were already Tenant-Admin-only (403). The remaining read-only "Project Template" card in Project Settings now shows only to Tenant Admin (browser: absent for `pa@`, present for `admin@`) |
 | UAR-013 | PA Central IT Reviews | Why does Project Admin see this? | **VERIFIED**. A pure Project Admin has no Tenant IT navigation and gets 403 on reviews. The page is the Tenant Admin's queue for Project Admin-flagged offboarding (Decision 33); the reviewer saw it as Tenant Admin. Naming falls under D2 |
-| UAR-009 | PA Personnel | Should Requesters, Superintendents, Party Chiefs and Instrument Men also be Project Admins? | **PENDING** (D1). Today a grant is separate from and preserves the operational role (`operationalRolePreserved: true`, approved independent-administration model) |
-| UAR-010 | GN | Central IT / Tenant IT / Central Admin / Tenant Admin are one role | **PENDING** (D2), with finding: in code these are one authority, `tenant_memberships.role = TENANT_ADMIN`; "Central IT" is a label (35 UI uses) and an audit `branch` value. No separate platform-wide role exists |
-| UAR-014 | PA Tenant Accounts | Rename "Preview Tenant Disable"; popup; recorded reason | **PARTLY FIXED**. Renamed to "Disable account…" / "Disable selected accounts…" (runners updated). A 10–1000-character reason, current preview and confirmation are already required and audited. Popup and reason taxonomy **PENDING** (D6) |
+| UAR-009 | PA Personnel | Should Requesters, Superintendents, Party Chiefs and Instrument Men also be Project Admins? | **FIXED** (D1, 8553a07). Tenant Admin chooses Grant Project Admin (keep role) or Make Project Admin only; the role is never removed while survey obligations, team membership, Manager continuity or the person's own open requests depend on it |
+| UAR-010 | GN | Central IT / Tenant IT / Central Admin / Tenant Admin are one role | **FIXED** (D2, 11eb943). One authority (`TENANT_ADMIN`); all UI copy and messages now say Tenant Admin. Stored audit values (`CENTRAL_IT`) unchanged |
+| UAR-014 | PA Tenant Accounts | Rename "Preview Tenant Disable"; popup; recorded reason | **PARTLY FIXED**. Renamed to "Disable account…" / "Disable selected accounts…" (runners updated). A 10–1000-character reason, current preview and confirmation are already required and audited. Reason list **FIXED** (D6, fa38e49): Terminated, Resigned, Transferred, Other (details required), stored as a prefix. Popup presentation deferred with UAR-004/015 |
 | UAR-015 | PA Personnel | Popup wizard for role assignment | **DEFERRED** (user: "good for now") |
 
 ## C. Project Admin operations
@@ -36,9 +38,9 @@ Status key: **FIXED** (changed and verified) · **VERIFIED** (already correct, p
 | ID | Source | Disposition |
 |---|---|---|
 | UAR-016 | PA Companies | **FIXED** (98c6e42). The section both creates new companies and associates existing ones; titled "Create a Company", with the ID path labelled "Add an existing tenant company" so association is not misrepresented. Typing a name already finds existing tenant companies |
-| UAR-017 | PA Companies | **PENDING** (D7): company details (roster, activity) |
-| UAR-018 | PA Departments | **PENDING** (D4). Project Admin can already create departments during Setup; the approved setup lock blocks it after activation for everyone. Departments drive request tagging and department-manager/lead visibility |
-| UAR-019 | PA Departments | **PENDING** (D5): department–company classifier (schema) |
+| UAR-017 | PA Companies | **FIXED** (D7, 582c853): read-only View details — identity, project roster, requests by month; no outcome metrics |
+| UAR-018 | PA Departments | **FIXED** (D4, 9fa1cfc). Project Admin and Tenant Admin may add a department (name, head title, optional company) after activation; titles, memberships and Areas keep the setup lock |
+| UAR-019 | PA Departments | **FIXED** (D5, 9fa1cfc; migration 049): optional company, shown "Department — Company"; only project companies accepted |
 | UAR-020 | PA Departments | **FIXED** (98c6e42). Root cause: the demo seeds (`seed-amelia-beta.ts`, `seed-sabine.ts`) inserted the Construction department without its head title, unlike `createDepartment`, which adds it as a MANAGER title. Seeds corrected; disposable DB backfilled. Databases already seeded (including retained ones) still need the one-row backfill |
 | UAR-021 | PA Area | **FIXED** (98c6e42). Branches collapse; Expand all / Collapse all (browser verified) |
 | UAR-022 | PA Diagnostics | **FIXED** (98c6e42). Investigate opens in the standard administration dialog (no error rows in the fixture to click; covered by typecheck and build) |
@@ -49,12 +51,12 @@ Status key: **FIXED** (changed and verified) · **VERIFIED** (already correct, p
 
 | ID | Source | Disposition |
 |---|---|---|
-| UAR-025 | SM Team Management | **PENDING** (D8): work moving with a promoted person |
+| UAR-025 | SM Team Management | **FIXED** (D8, 79f3969): the Survey Manager reviews the person's open requests in the role change (keep where the new role can complete it, or reassign) and everything applies in one audited transaction |
 | UAR-026 | SM | **VERIFIED**. A role change is refused while the person has assigned field work, field-report reviews, delegations, team-lead duty, crew/reporting links or Area/responsibility/acting grants, with a plain next step. Browser: promoting an Instrument Man with 3 assigned requests is refused; role unchanged. Nothing can be orphaned |
 | UAR-027 | IM | **FIXED** with UAR-003 (Crew Work verified) |
 | UAR-028 | RQ | **VERIFIED**. Full lifecycle regression after these changes (submit, approve, assign, start, delay attempt, complete: 16/16) plus 23/23 role and tenant boundary probes |
 
-## Decision register (not implemented; recommendations for the owner)
+## Decision register (approved 2026-10-11 as Decision 57; implemented in Batch 300)
 
 | # | Decision | Finding | Recommendation | Trade-off |
 |---|---|---|---|---|
