@@ -10,6 +10,7 @@ import {errorResponse} from '@/lib/api-error';
 import {ForbiddenError,ValidationError} from '@/shared/errors';
 import {requireIdempotencyKey,executeIdempotentHttpMutation} from '@/lib/idempotency';
 import {setProjectAdministrator} from '@/modules/tenancy/application/project-administration';
+import type {ProjectAdminScope} from '@/modules/tenancy/application/project-administration';
 import type {UUID} from '@/shared/types';
 export const dynamic='force-dynamic';
 type Context={params:Promise<{projectId:string}>};
@@ -27,10 +28,10 @@ async function observedGET(req:NextRequest,ctx:Context){try{
 async function observedPOST(req:NextRequest,ctx:Context){try{
   const auth=await requireActiveAuth(req),{projectId}=await ctx.params;requireResourceUuid(projectId,'projectId');
   const body=await req.json() as Record<string,unknown>,key=requireIdempotencyKey(req);
-  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(field=>!['userId','enabled','confirmed'].includes(field))||typeof body.userId!=='string'||typeof body.enabled!=='boolean'||body.confirmed!==true)throw new ValidationError('Confirm a project administrator assignment');
+  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(field=>!['userId','enabled','confirmed','scope'].includes(field))||typeof body.userId!=='string'||typeof body.enabled!=='boolean'||body.confirmed!==true||body.scope!==undefined&&body.scope!=='KEEP_ROLE'&&body.scope!=='ADMIN_ONLY')throw new ValidationError('Confirm a project administrator assignment');
   requireResourceUuid(body.userId,'userId');
   const result=await withTransaction(db=>executeIdempotentHttpMutation(db,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:`POST /api/projects/${projectId}/administrators`,idempotencyKey:key},body,
-    async()=>({status:200,body:await setProjectAdministrator(db,auth,projectId as UUID,body.userId as UUID,body.enabled as boolean)})),
+    async()=>({status:200,body:await setProjectAdministrator(db,auth,projectId as UUID,body.userId as UUID,body.enabled as boolean,(body.scope as ProjectAdminScope|undefined)??'KEEP_ROLE')})),
     {req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{if(!(await assertProjectAdministrator(db,current,projectId as UUID)).centralIT)throw new ForbiddenError('Only Tenant Admin can assign or revoke Project Admin authority.');await assertPreparationNotCancelling(db,current.tenantId,projectId as UUID);}});
   return NextResponse.json(result.body,{status:result.status});
 }catch(error){return errorResponse(error);}}

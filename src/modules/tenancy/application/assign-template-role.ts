@@ -17,7 +17,8 @@ export async function assignTemplateRole(db:DbClient,auth:AuthContext,projectId:
   if(!member)throw new NotFoundError('Project member not found.');
   if(member.status==='ARCHIVED'||member.deactivated_at||member.access_disabled_at)throw new ConflictError('Only active members of an open project can receive a role.');
   if(member.session_version!==input.sessionVersion)throw new ConflictError('This member changed. Reload and review their current access.');
-  if(!['REQUESTER','VIEWER'].includes(member.role))throw new ValidationError('Survey role changes require the survey staffing workflow and obligation checks.');
+  // A Project Admin only member (Decision 57 / D1) may be given Requester or Viewer again.
+  if(!['REQUESTER','VIEWER','PROJECT_ADMIN'].includes(member.role))throw new ValidationError('Survey role changes require the survey staffing workflow and obligation checks.');
   if(userId===auth.userId&&member.role!==input.role)throw new ForbiddenError('Another authorized administrator must change your operational role');
   if(member.type==='SUBCONTRACTOR'&&input.role!=='REQUESTER')throw new ValidationError('Subcontractor accounts receive Requester access only.');
   const role=await resolveCustomRoleSelection(db,auth.tenantId,input);
