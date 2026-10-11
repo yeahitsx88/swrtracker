@@ -117,7 +117,7 @@ function makeDeps(repo: ITenancyRepository, actorRole: 'PROJECT_ADMIN' | 'TENANT
       sessionVersion: 1,
     }),
     resolveProjectSetupActorRole: async () => actorRole,
-    assertProjectSetupMutable: async () => undefined,
+    assertDepartmentsAddable: async () => undefined,
     createRepo: () => repo,
     withTransaction: async (fn) => fn(db),
   };
@@ -196,11 +196,11 @@ test('handleGetDepartments returns 403 when setup role resolution fails', async 
   assert.equal(response.status, 403);
 });
 
-test('handlePostDepartments returns 409 when setup is locked after activation', async () => {
+test('handlePostDepartments returns 409 when the project is archived', async () => {
   const deps: DepartmentsRouteDeps = {
     ...makeDeps(makeRepo(), 'PROJECT_ADMIN'),
-    assertProjectSetupMutable: async () => {
-      throw new ConflictError('Project setup is locked after activation');
+    assertDepartmentsAddable: async () => {
+      throw new ConflictError('Archived projects are read-only');
     },
   };
 
@@ -214,4 +214,26 @@ test('handlePostDepartments returns 409 when setup is locked after activation', 
   );
 
   assert.equal(response.status, 409);
+});
+
+test('handlePostDepartments passes an optional company through (D5)', async () => {
+  const savedDepartments: Department[] = [];
+  const repo = makeRepo({ saveDepartment: async (_db, department) => { savedDepartments.push(department); }, saveDepartmentTitle: async () => undefined });
+  const companyId = '30000000-0000-4000-8000-000000000001';
+  const response = await handlePostDepartments(
+    makeRequest('http://localhost/api/projects/project-1/departments', 'POST', { name: 'Civil', managerTitle: 'Civil Manager', companyId }),
+    { params: Promise.resolve({ projectId }) },
+    makeDeps(repo, 'PROJECT_ADMIN'),
+  );
+  assert.equal(response.status, 201);
+  assert.equal(savedDepartments[0]?.companyId, companyId);
+});
+
+test('handlePostDepartments rejects a malformed company ID (D5)', async () => {
+  const response = await handlePostDepartments(
+    makeRequest('http://localhost/api/projects/project-1/departments', 'POST', { name: 'Civil', managerTitle: 'Civil Manager', companyId: 'not-a-company' }),
+    { params: Promise.resolve({ projectId }) },
+    makeDeps(makeRepo(), 'PROJECT_ADMIN'),
+  );
+  assert.equal(response.status, 400);
 });

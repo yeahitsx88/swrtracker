@@ -12,16 +12,17 @@ import type { ITenancyRepository } from '@/modules/tenancy/application/ports';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { DbClient, UUID } from '@/shared/types';
 import {
-  assertProjectSetupMutable,
+  assertDepartmentsAddable,
   resolveProjectSetupActorRole,
 } from '../aor/shared';
+import { requireResourceUuid } from '@/lib/resource-uuid';
 
 type TransactionRunner = <T>(fn: (client: DbClient) => Promise<T>) => Promise<T>;
 
 export interface DepartmentsRouteDeps {
   requireAuth: typeof requireAuth | typeof requireActiveAuth;
   resolveProjectSetupActorRole: typeof resolveProjectSetupActorRole;
-  assertProjectSetupMutable: typeof assertProjectSetupMutable;
+  assertDepartmentsAddable: typeof assertDepartmentsAddable;
   createRepo: () => ITenancyRepository;
   withTransaction: TransactionRunner;
 }
@@ -29,7 +30,7 @@ export interface DepartmentsRouteDeps {
 const defaultDeps: DepartmentsRouteDeps = {
   requireAuth: requireActiveAuth,
   resolveProjectSetupActorRole,
-  assertProjectSetupMutable,
+  assertDepartmentsAddable,
   createRepo: () => new TenancyRepository(),
   withTransaction,
 };
@@ -48,6 +49,9 @@ export async function handlePostDepartments(
       throw new ValidationError('name and managerTitle are required');
     }
     const { name, managerTitle } = body as { name: string; managerTitle: string };
+    if (body.companyId !== undefined && body.companyId !== null && typeof body.companyId !== 'string') throw new ValidationError('companyId must be a company ID');
+    const companyId = typeof body.companyId === 'string' ? body.companyId : null;
+    if (companyId) requireResourceUuid(companyId, 'companyId');
 
     const repo = deps.createRepo();
 
@@ -60,12 +64,13 @@ export async function handlePostDepartments(
         auth.userId,
         auth.sessionVersion,
       );
-      await deps.assertProjectSetupMutable(client, auth.tenantId, projectId as UUID);
+      await deps.assertDepartmentsAddable(client, auth.tenantId, projectId as UUID);
       const changed = await createDepartment(repo, client, {
         tenantId: auth.tenantId,
         projectId: projectId as UUID,
         name,
         managerTitle,
+        companyId: companyId as UUID | null,
         actorId: auth.userId,
         actorRole,
       });

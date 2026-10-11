@@ -11,6 +11,8 @@ export interface CreateDepartmentParams {
   projectId: UUID;
   name: string;
   managerTitle: string;
+  /** Optional; must be a company associated with the project (enforced on save). */
+  companyId?: UUID | null;
   actorId: UUID;
   actorRole: SetupActorRole;
 }
@@ -43,6 +45,7 @@ export async function createDepartment(
     tenantId: params.tenantId,
     name,
     managerTitle,
+    companyId: params.companyId ?? null,
     createdBy: params.actorId,
     createdAt,
   };

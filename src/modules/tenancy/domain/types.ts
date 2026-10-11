@@ -102,6 +102,9 @@ export interface Department {
   tenantId: UUID;
   name: string;
   managerTitle: string;
+  /** Decision 57 / D5: the company the department belongs to, when named. */
+  companyId?: UUID | null;
+  companyName?: string | null;
   createdBy: UUID;
   createdAt: Date;
 }

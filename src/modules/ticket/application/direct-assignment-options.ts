@@ -35,7 +35,10 @@ export async function readDirectAssignmentOptions(db: DbClient, actor: { tenantI
     [actor.tenantId, actor.projectId],
   );
   const { rows: departments } = await db.query<{ id: string; name: string }>(
-    `SELECT id, name FROM departments WHERE tenant_id = $1 AND project_id = $2 ORDER BY name, id`,
+    // Decision 57 / D5: a department that names its company reads "Department — Company".
+    `SELECT d.id, CASE WHEN c.name IS NULL THEN d.name ELSE d.name || ' — ' || c.name END AS name
+     FROM departments d LEFT JOIN companies c ON c.tenant_id = d.tenant_id AND c.id = d.company_id
+     WHERE d.tenant_id = $1 AND d.project_id = $2 ORDER BY d.name, d.id`,
     [actor.tenantId, actor.projectId],
   );
   const pick = (role: ProjectRole) => people.filter(person => person.role === role).map(({ id, name, email }) => ({ id, name, email }));

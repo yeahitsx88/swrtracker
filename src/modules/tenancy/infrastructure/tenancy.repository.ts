@@ -25,7 +25,7 @@ import type {
   ProjectActivationReadinessSnapshot,
   ProjectTemplateListItem,
 } from '../application/ports';
-import { ConflictError, ForbiddenError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, ValidationError } from '@/shared/errors';
 
 export class TenancyRepository implements ITenancyRepository {
   async isActiveProjectMember(db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID): Promise<boolean> {
@@ -726,10 +726,11 @@ export class TenancyRepository implements ITenancyRepository {
       tenant_id: string;
       name: string;
       manager_title: string;
+      company_id: string | null;
       created_by: string;
       created_at: Date;
     }>(
-      `SELECT id, project_id, tenant_id, name, manager_title, created_by, created_at
+      `SELECT id, project_id, tenant_id, name, manager_title, company_id, created_by, created_at
        FROM departments
        WHERE id = $1 AND tenant_id = $2
        LIMIT 1`,
@@ -742,6 +743,7 @@ export class TenancyRepository implements ITenancyRepository {
       tenantId: rows[0].tenant_id as UUID,
       name: rows[0].name,
       managerTitle: rows[0].manager_title,
+      companyId: rows[0].company_id as UUID | null,
       createdBy: rows[0].created_by as UUID,
       createdAt: rows[0].created_at,
     };
@@ -749,19 +751,25 @@ export class TenancyRepository implements ITenancyRepository {
 
   async saveDepartment(db: DbClient, department: Department): Promise<void> {
     await this.assertProjectNotArchived(db, department.tenantId, department.projectId);
-    await db.query(
-      `INSERT INTO departments (id, project_id, tenant_id, name, manager_title, created_by, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    // A named company must be associated with this project (Decision 57 / D5).
+    const { rows: inserted } = await db.query(
+      `INSERT INTO departments (id, project_id, tenant_id, name, manager_title, company_id, created_by, created_at)
+       SELECT $1, $2, $3, $4, $5, $6::uuid, $7, $8
+       WHERE $6::uuid IS NULL OR EXISTS (
+         SELECT 1 FROM project_companies pc WHERE pc.tenant_id = $3 AND pc.project_id = $2 AND pc.company_id = $6::uuid)
+       RETURNING id`,
       [
         department.id,
         department.projectId,
         department.tenantId,
         department.name,
         department.managerTitle,
+        department.companyId ?? null,
         department.createdBy,
         department.createdAt,
       ],
     );
+    if (!inserted.length) throw new ValidationError('Choose a company associated with this project');
   }
 
   async listDepartments(db: DbClient, tenantId: UUID, projectId: UUID): Promise<Department[]> {
@@ -771,14 +779,17 @@ export class TenancyRepository implements ITenancyRepository {
       tenant_id: string;
       name: string;
       manager_title: string;
+      company_id: string | null;
+      company_name: string | null;
       created_by: string;
       created_at: Date;
     }>(
-      `SELECT id, project_id, tenant_id, name, manager_title, created_by, created_at
-       FROM departments
-       WHERE tenant_id = $1
-         AND project_id = $2
-       ORDER BY name ASC`,
+      `SELECT d.id, d.project_id, d.tenant_id, d.name, d.manager_title, d.company_id, c.name AS company_name, d.created_by, d.created_at
+       FROM departments d
+       LEFT JOIN companies c ON c.tenant_id = d.tenant_id AND c.id = d.company_id
+       WHERE d.tenant_id = $1
+         AND d.project_id = $2
+       ORDER BY d.name ASC`,
       [tenantId, projectId],
     );
     return rows.map((row) => ({
@@ -787,6 +798,8 @@ export class TenancyRepository implements ITenancyRepository {
       tenantId: row.tenant_id as UUID,
       name: row.name,
       managerTitle: row.manager_title,
+      companyId: row.company_id as UUID | null,
+      companyName: row.company_name,
       createdBy: row.created_by as UUID,
       createdAt: row.created_at,
     }));
