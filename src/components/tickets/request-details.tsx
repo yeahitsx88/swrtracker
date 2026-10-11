@@ -227,7 +227,7 @@ export function RequestDetails({ projectId, ticketId, presentation = 'page', onC
     try {
       const command=deleteAttempt.current.begin({ticketId:deleteReview.id,expectedVersion:deleteReview.rowVersion??0},createIdempotencyKey());if(!command)return;
       await apiClient.deleteDraft(command.body.ticketId,command.body.expectedVersion,command.key);deleteAttempt.current.success();
-      if(modal&&onClose){onChanged?.('Draft deleted. Project IT can restore it within 30 days; its files and history are retained.');onClose();}
+      if(modal&&onClose){onChanged?.('Draft deleted. Project Admin can restore it within 30 days; its files and history are retained.');onClose();}
       else{onChanged?.();router.push(`/projects/${projectId}/drafts?deleted=1`);}
     } catch (err) {
       deleteAttempt.current.fail(err instanceof ApiClientError?err.status:undefined);

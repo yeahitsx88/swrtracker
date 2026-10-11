@@ -82,7 +82,7 @@ export async function handlePostProjectTemplates(
     const template = await (deps.withTransaction ?? withTransaction)(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
       const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
-      if(actorRole!=='TENANT_ADMIN')throw new ForbiddenError('Only Central IT can manage shared project templates');
+      if(actorRole!=='TENANT_ADMIN')throw new ForbiddenError('Only a Tenant Admin can manage shared project templates');
       const repo = deps.createRepo();
       const create = async()=>{
       const template = await createProjectTemplate(repo, client, {

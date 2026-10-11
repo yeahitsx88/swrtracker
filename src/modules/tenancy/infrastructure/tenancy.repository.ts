@@ -499,7 +499,7 @@ export class TenancyRepository implements ITenancyRepository {
 
     if (userRows[0]?.deactivated_at) throw new ConflictError('Disabled accounts cannot receive tenant authority', 'SUBJECT_ACCOUNT_DISABLED');
     if (membership.role === 'TENANT_ADMIN' && userRows[0]?.company_type === 'SUBCONTRACTOR') {
-      throw new ForbiddenError('Central IT authority requires an eligible company');
+      throw new ForbiddenError('Tenant Admin authority requires an eligible company');
     }
     await db.query(
       `INSERT INTO tenant_memberships (id, tenant_id, user_id, role, created_at)

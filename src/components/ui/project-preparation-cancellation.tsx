@@ -25,16 +25,16 @@ export function ProjectPreparationCancellation({projectId,owner,onFinished}:{pro
   if(!preview||busy||owner.blocked(token)||gate.stale||!consent||reason.trim().length<10||reason.trim().length>1000||preview.status!=='SETUP'||preview.cancellationId&&preview.blockers.length&&!gate.command||!owner.claim(token))return;
   const attempt=gate.begin({action:preview.cancellationId?'FINISH':'START',snapshot:preview.snapshot,reason:reason.trim(),confirmed:true},crypto.randomUUID());
   if(!attempt){if(!gate.locked)owner.release(token);return;}setBusy(true);setError(undefined);setRevision(n=>n+1);
-  try{await apiRequest(url,{method:'POST',body:attempt.body,headers:{'Idempotency-Key':attempt.key}});gate.success();owner.release(token);setSuccess(attempt.body.action==='START'?'Preparation cancellation started. Authorized operational users must resolve the existing work before Central IT finishes cancellation.':'Preparation cancelled. The project is Archived; its identity, Setup changes, files and history are retained.');if(attempt.body.action==='FINISH')onFinished();else{setBusy(false);await load();}}
+  try{await apiRequest(url,{method:'POST',body:attempt.body,headers:{'Idempotency-Key':attempt.key}});gate.success();owner.release(token);setSuccess(attempt.body.action==='START'?'Preparation cancellation started. Authorized operational users must resolve the existing work before Tenant Admin finishes cancellation.':'Preparation cancelled. The project is Archived; its identity, Setup changes, files and history are retained.');if(attempt.body.action==='FINISH')onFinished();else{setBusy(false);await load();}}
   catch(cause){gate.fail(cause instanceof ApiClientError?cause.status:undefined);setError(getErrorMessage(cause,'The outcome is uncertain. Retry the unchanged cancellation command.'));}
   finally{setBusy(false);if(!gate.locked)owner.release(token);setRevision(n=>n+1);}
  }
  void revision;
  const locked=busy||owner.blocked(token)||gate.locked,finishing=!!preview?.cancellationId;
- return <Card title="Cancel Project Preparation" description="Central IT reviews the existing work, starts cancellation, then archives the project after required cleanup."><div className="stack">
+ return <Card title="Cancel Project Preparation" description="Tenant Admin reviews the existing work, starts cancellation, then archives the project after required cleanup."><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>} {busy&&<p role="status">Loading or saving preparation cancellation…</p>}
  {readFailed&&<p role="alert">Current evidence could not be loaded. Your reviewed reason, consent and command remain held until Reload current evidence succeeds.</p>}
- {preview&&<><p>{finishing?'Cancellation is in progress. New work and reopening are blocked.':'Starting cancellation blocks new ordinary work, reassignment, activation and reopening.'} Authorized operational users may complete or cancel only the existing reviewed requests. Central IT resolves outstanding invitations and finishes cancellation.</p>
+ {preview&&<><p>{finishing?'Cancellation is in progress. New work and reopening are blocked.':'Starting cancellation blocks new ordinary work, reassignment, activation and reopening.'} Authorized operational users may complete or cancel only the existing reviewed requests. Tenant Admin resolves outstanding invitations and finishes cancellation.</p>
  <p>Finishing changes the project to Archived. Project identity, current Setup changes, files and history are retained.</p>
  {finishing&&<p>Recorded start reason: {preview.reason}</p>}
  <section><h3 className="panel-title">Unfinished Requests</h3>{preview.work.length?<ul>{preview.work.map(record=><li key={record.id}><span className="administration-company-id">{record.name}</span><span> — {operationsStatusLabel(record.detail)}</span></li>)}</ul>:<p>No unfinished requests remain.</p>}</section>

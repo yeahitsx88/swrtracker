@@ -107,7 +107,7 @@ export async function listLocalNotificationPreviews(
 }
 
 function assertPreviewOperator(role: ProjectInsightRole): void {
-  if (!FULL_PREVIEW_ROLES.includes(role)) throw new ForbiddenError('Only IT administrators or the Survey Lead may operate local message capture');
+  if (!FULL_PREVIEW_ROLES.includes(role)) throw new ForbiddenError('Only a Tenant Admin or the Survey Lead may operate local message capture');
 }
 
 export async function captureQueuedNotifications(

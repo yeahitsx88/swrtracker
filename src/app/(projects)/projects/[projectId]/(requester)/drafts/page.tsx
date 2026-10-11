@@ -30,7 +30,7 @@ export default function DraftsPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('deleted') !== '1') return;
-    setSuccess('Draft deleted. Project IT can restore it within 30 days; its files and history are retained.');
+    setSuccess('Draft deleted. Project Admin can restore it within 30 days; its files and history are retained.');
     window.history.replaceState(null, '', window.location.pathname);
   }, []);
   const [limit, setLimit] = useState(20);
@@ -65,14 +65,14 @@ export default function DraftsPage() {
       await attempt.current.run({ ticketId:ticket.id, expectedVersion:ticket.rowVersion ?? 0 },
         (input,key) => apiClient.deleteDraft(input.ticketId,input.expectedVersion,key));
       setTickets(items => items.filter(item => item.id !== ticket.id)); setTotal(count => count-1);
-      setSuccess('Draft deleted. Project IT can restore it within 30 days; its files and history are retained.');
+      setSuccess('Draft deleted. Project Admin can restore it within 30 days; its files and history are retained.');
       if (tickets.length === 1 && offset > 0) setOffset(value => Math.max(0,value-limit));
     } catch (err) { setError(getErrorMessage(err,'Unable to confirm deletion. Retry the same draft; no permanent purge occurs.')); }
     finally { busy.current = false; setDeleting(false); }
   }
 
   return (
-    <Card actions={<Link className="button" href={`/projects/${projectId}/request/new`}><Icon name="plus" />Start a new request</Link>} title="Drafts" description="Saved progress, not submitted work. Resume a draft when you’re ready; deleted drafts can be recovered by Project IT within 30 days.">
+    <Card actions={<Link className="button" href={`/projects/${projectId}/request/new`}><Icon name="plus" />Start a new request</Link>} title="Drafts" description="Saved progress, not submitted work. Resume a draft when you’re ready; deleted drafts can be recovered by Project Admin within 30 days.">
       <div className="stack">
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}

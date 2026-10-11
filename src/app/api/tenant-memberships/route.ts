@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       return result;
     },{req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
       if(await getTenantRole(db,current.tenantId,current.userId,current.sessionVersion)!=='TENANT_ADMIN'){
-        throw new ForbiddenError('Current Central IT authority is required');
+        throw new ForbiddenError('Current Tenant Admin authority is required');
       }
     }});
     return NextResponse.json({ membership }, { status: 201 });
@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest) {
         eventType:'tenant.membership_removed',authorityEvidence:{branch:'CENTRAL_IT'},changes:{priorRole:prior}});
     },{req,auth,mode:'EXCLUSIVE',authorize:async(db,current)=>{
       if(await getTenantRole(db,current.tenantId,current.userId,current.sessionVersion)!=='TENANT_ADMIN'){
-        throw new ForbiddenError('Current Central IT authority is required');
+        throw new ForbiddenError('Current Tenant Admin authority is required');
       }
     }});
     return NextResponse.json({ success: true });

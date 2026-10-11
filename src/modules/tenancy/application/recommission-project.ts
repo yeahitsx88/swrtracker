@@ -17,7 +17,7 @@ export interface RecommissionRepository {
  open(db:DbClient,auth:AuthContext,projectId:UUID,command:Extract<RecommissionCommand,{action:'OPEN'}>,preview:RecommissionPreview):Promise<{periodId:string}>;
 }
 export async function requireRecommissionAuthority(db:DbClient,auth:AuthContext){
- if(await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Central IT is required to manage project preparation.');
+ if(await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('A Tenant Admin is required to manage project preparation.');
 }
 export function parseRecommissionCommand(value:unknown):RecommissionCommand{
  if(!value||typeof value!=='object'||Array.isArray(value))throw new ValidationError('Review and confirm recommissioning.');

@@ -28,7 +28,7 @@ function History({projectId,owner,revision,onInvitesChanged}:{projectId:string;o
   finally{if(epoch===generation.current)setBusy(false);}
  }
  useEffect(()=>{void load();return()=>{generation.current++;};},[projectId,view,revision]);
- return <Card title="Invitation History" description="Central IT can review this project's retained invitations across fixed roles and companies. Acceptance does not describe a person's current access."><div className="stack">
+ return <Card title="Invitation History" description="Tenant Admin can review this project's retained invitations across fixed roles and companies. Acceptance does not describe a person's current access."><div className="stack">
  {error&&<ErrorBanner message={error}/>} {success&&<SuccessBanner message={success}/>}
  <p>Invitations record registration decisions, not current account or project access.</p>
  <form className="stack" onSubmit={event=>{event.preventDefault();if(!locked)setView({...view,search:search.trim(),offset:0});}}>

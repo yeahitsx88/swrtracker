@@ -42,7 +42,7 @@ async function observedGET(
     const capabilities=await resolveProjectCapabilities(pool,auth,projectUuid);
     if (tenantRole !== 'TENANT_ADMIN') {
       if (!capabilities.canAdminister && capabilities.operationalRole !== 'SURVEY_MANAGER') {
-        throw new ForbiddenError('Only IT administrators or the Survey Lead may list project members');
+        throw new ForbiddenError('Only a Tenant Admin or the Survey Lead may list project members');
       }
     }
     const includeDisabled=req.nextUrl.searchParams.get('includeDisabled')==='true';

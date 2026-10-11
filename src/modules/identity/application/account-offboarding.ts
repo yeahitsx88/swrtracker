@@ -26,7 +26,7 @@ export async function authorizeOffboarding(db: DbClient, auth: AuthContext, scop
   await assertActiveSession(db, auth);
   if (scope.kind === 'TENANT_ACCOUNT') {
     if (await getTenantRole(db, auth.tenantId, auth.userId, auth.sessionVersion) !== 'TENANT_ADMIN') {
-      throw new ForbiddenError('Current Central IT authority is required');
+      throw new ForbiddenError('Current Tenant Admin authority is required');
     }
   } else await assertProjectAdministrator(db, auth, scope.projectId);
   if (subject === auth.userId) throw new ForbiddenError('You cannot disable your own access');

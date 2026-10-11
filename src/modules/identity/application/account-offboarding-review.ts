@@ -13,7 +13,7 @@ export interface OffboardingReview {
 }
 export async function authorizeOffboardingReview(db:DbClient,auth:AuthContext):Promise<void>{
   await assertActiveSession(db,auth);
-  if(await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Current Central IT authority is required');
+  if(await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Current Tenant Admin authority is required');
 }
 export function reviewSnapshot(review:OffboardingReview):string{return createHash('sha256').update(JSON.stringify(review)).digest('hex');}
 export async function readOffboardingReview(db:DbClient,auth:AuthContext,reviewId:UUID):Promise<{review:OffboardingReview;snapshot:string}>{

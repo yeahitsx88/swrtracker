@@ -26,7 +26,7 @@ export function parseAppearanceCommand(value:unknown):{scope:'PERSONAL';mode:Dis
  throw new ValidationError('Use a display mode or two six-digit hexadecimal branding colors and the current version.');
 }
 export async function authorizeAppearance(db:DbClient,auth:AuthContext,command:ReturnType<typeof parseAppearanceCommand>) {
- if(command.scope==='TENANT'&&await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Only Central IT can change tenant branding.');
+ if(command.scope==='TENANT'&&await getTenantRole(db,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Only a Tenant Admin can change tenant branding.');
 }
 export async function changeAppearance(store:AppearanceStore,db:DbClient,auth:AuthContext,command:ReturnType<typeof parseAppearanceCommand>):Promise<Appearance> {
  await authorizeAppearance(db,auth,command);

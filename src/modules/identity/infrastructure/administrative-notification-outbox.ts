@@ -30,7 +30,7 @@ export async function dispatchAdministrativeNotifications(db:DbClient,transactio
           if(!recipient)return false;
           if(!recipient.eligible)throw Error('Administrative recipient is no longer eligible');
           await transport.send({to:[recipient.email],subject:'Project access removal requires review',
-            text:'A project access removal is ready for Central IT review. Open the authenticated account administration review queue. Tenant account disablement requires a separate confirmed action.',
+            text:'A project access removal is ready for Tenant Admin review. Open the authenticated account administration review queue. Tenant account disablement requires a separate confirmed action.',
             metadata:{kind:'account.offboarding.review',tenantId:delivery.tenant_id,reviewId:delivery.review_id,idempotencyKey:delivery.id}});
           await held.query(`UPDATE administrative_notification_outbox SET delivered_at=NOW(),lease_token=NULL,lease_until=NULL,last_error=NULL
             WHERE tenant_id=$1 AND id=$2 AND lease_token=$3`,[delivery.tenant_id,delivery.id,delivery.lease_token]);

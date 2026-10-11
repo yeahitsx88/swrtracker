@@ -11,6 +11,6 @@ export async function assertCentralITRemovalSafe(db:DbClient,tenantId:UUID,subje
    WHERE tm.tenant_id=$1 AND tm.role='TENANT_ADMIN' AND u.deactivated_at IS NULL
      AND c.type IN ('GC','OWNER_REP')`,[tenantId]);
  if(rows.some(row=>row.user_id===subjectUserId)&&rows.length===1){
-  throw new ConflictError('At least one active eligible Central IT administrator must remain','LAST_TENANT_ADMIN');
+  throw new ConflictError('At least one active eligible Tenant Admin must remain','LAST_TENANT_ADMIN');
  }
 }

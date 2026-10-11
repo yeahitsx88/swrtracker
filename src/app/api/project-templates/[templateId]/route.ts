@@ -77,7 +77,7 @@ export async function PATCH(
     const template = await withTransaction(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
       const actorRole = await getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
-      if (actorRole !== 'TENANT_ADMIN') throw new ForbiddenError('Only Central IT can manage shared project templates');
+      if (actorRole !== 'TENANT_ADMIN') throw new ForbiddenError('Only a Tenant Admin can manage shared project templates');
       const repo = new TenancyRepository();
       const update = async () => {
       if (body.expectedSnapshot !== undefined) {
@@ -134,7 +134,7 @@ export async function DELETE(
     await withTransaction(async (client) => {
       await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
       const actorRole = await getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
-      if (actorRole !== 'TENANT_ADMIN') throw new ForbiddenError('Only Central IT can manage shared project templates');
+      if (actorRole !== 'TENANT_ADMIN') throw new ForbiddenError('Only a Tenant Admin can manage shared project templates');
       const repo = new TenancyRepository();
       const remove = async () => {
       if (body?.expectedSnapshot !== undefined) {

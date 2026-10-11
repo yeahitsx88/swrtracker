@@ -21,6 +21,6 @@ export async function resolveProjectInsightRole(auth: AuthContext, projectId: UU
 
 export function assertOperationsViewer(role: ProjectInsightRole): void {
   if (!['TENANT_ADMIN', 'PROJECT_ADMIN', 'SURVEY_MANAGER'].includes(role)) {
-    throw new ForbiddenError('Only IT administrators or the Survey Lead may view project operations');
+    throw new ForbiddenError('Only a Tenant Admin or the Survey Lead may view project operations');
   }
 }

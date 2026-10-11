@@ -35,7 +35,7 @@ export function ProjectTemplates({owner}:{owner:CommandOwner}){
  }
  useEffect(()=>{if(!open&&!deleting&&!loading&&restoreFocus.current){restoreFocus.current=false;if(success)createButton.current?.focus();else if(reviewTrigger.current?.isConnected)reviewTrigger.current.focus({preventScroll:true});}},[success,loading,open,deleting]);
  const message=<>{readFailed&&<p role="alert">Current project templates could not be loaded. Your reviewed template remains held. Reload Templates must successfully read the current catalog before fresh review and consent.</p>}{error&&<ErrorBanner message={error}/>}</>;
- return <Card title="Project Templates" description="Central IT manages reusable crew builds, Area levels and discipline groups for future project establishment. Existing projects retain their saved configuration."><div className="stack">
+ return <Card title="Project Templates" description="Tenant Admin manages reusable crew builds, Area levels and discipline groups for future project establishment. Existing projects retain their saved configuration."><div className="stack">
  {!deleting&&message}{success&&<SuccessBanner message={success}/>}
  {!open?<Button ref={createButton} disabled={blocked||loading||!ready||deleting} onClick={()=>{setSelected(undefined);setName('');setCrew('FULL');setLabels('Area');setGroups('Survey');setStep(0);setConsent(false);setOpen(true);setSuccess(undefined);}}>Create Project Template</Button>:<section className="administration-wizard stack" aria-label={selected?'Edit Project Template Wizard':'Create Project Template Wizard'}>
  <ol className="administration-wizard-steps">{['Template Details','Structure','Review'].map((label,i)=><li key={label} aria-current={step===i?'step':undefined}>{label}</li>)}</ol>

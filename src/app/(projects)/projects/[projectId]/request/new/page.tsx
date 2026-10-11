@@ -232,7 +232,7 @@ export default function NewRequestPage() {
                 <AorNodePicker label="Area" levels={aorLevels} nodes={aorNodes} value={aorNodeId} onChange={setAorNodeId} />
               </Field>
             ) : (
-              <p className="muted">No Areas are available. You can save a partial draft; ask Project IT to configure Areas before submission.</p>
+              <p className="muted">No Areas are available. You can save a partial draft; ask Project Admin to configure Areas before submission.</p>
             )}
           </div>
         );

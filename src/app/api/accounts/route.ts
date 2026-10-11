@@ -7,7 +7,7 @@ import { ForbiddenError,ValidationError } from '@/shared/errors';
 export const dynamic='force-dynamic';
 export async function GET(req:NextRequest){try{
   const auth=await requireActiveAuth(req);
-  if(await getTenantRole(pool,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Current Central IT authority is required');
+  if(await getTenantRole(pool,auth.tenantId,auth.userId,auth.sessionVersion)!=='TENANT_ADMIN')throw new ForbiddenError('Current Tenant Admin authority is required');
   const query=req.nextUrl.searchParams;
   if([...query.keys()].some(key=>!['search','offset','limit'].includes(key)||query.getAll(key).length!==1))throw new ValidationError('Invalid account search');
   const search=query.get('search')??'',limit=Number(query.get('limit')??25),offset=Number(query.get('offset')??0);
