@@ -28,7 +28,7 @@ try {
  check(a.status()===201&&b.status()===201&&JSON.stringify(await a.json())===JSON.stringify(await b.json()),'Exact HTTP retry returns the same Area');
  await page.screenshot({path:'.local-survey-areas-desktop.png',fullPage:true});
  check(await page.evaluate(()=>window.pageFades.some(a=>a.duration===180)),'Page entry uses 180ms opacity animation');
- await page.getByRole('link',{name:'Home',exact:true}).first().click();await page.getByRole('button',{name:'Arrange dashboard',exact:true}).waitFor();
+ await page.getByRole('link',{name:'Home',exact:true}).first().click();await page.getByRole('region',{name:'Dashboard cards',exact:true}).waitFor();
  check(await page.evaluate(()=>window.pageFades.length>=2),'Client navigation starts another fade');
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Project navigation',exact:true}).click();
  const dialog=page.getByRole('dialog');check(await dialog.evaluate(n=>getComputedStyle(n).animationDuration)==='0.6s','Circular reveal uses the reference 600ms timing');check(await dialog.evaluate(n=>getComputedStyle(n).animationName)==='popup-enter','Popup has the requested entrance transition');

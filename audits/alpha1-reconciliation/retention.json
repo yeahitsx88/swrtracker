@@ -15,5 +15,5 @@
     "Retention index reapplication is repeatable"
   ],
   "fixtureKind": "new owned schema; current clean install through045",
-  "retainedWitness": "5162639b3bde2ecf48ee24d4397a38cdd94e93bbe5f187ae0170d27d5ee8b04a"
+  "retainedWitness": "9d6e21c482fbbd20c39e700086ecf81dff734aed75418c39de2984d43e8bdc2b"
 }

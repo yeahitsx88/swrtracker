@@ -3172,7 +3172,7 @@ Track Codex-authored remediation batches with a compact, append-only record.
 - Ticket actions:24 transition/update callbacks now use withTicketMutation, which holds SHARED tenant authority, rejects stale/logout/disabled sessions and rereads current operational role and bounded visibility before domain locks or idempotency replay. Ticket creation uses one held transaction for current company/department/project authority; draft deletion/recovery takes SHARED before actor/domain locks.
 - TDD/evidence: actual default handler races initially failed because setup/invite/create/action paths bypassed the tenant wait; GREEN155 race checks across31 actual entrypoints plus5 department atomic-audit checks. The unique fully migrated owned schema, observed pg_blocking_pids waits and full row snapshots preserve original fixtures; an induced audit failure rolls back department creation, then success records one actual actor event.
 - Fresh verification:478/478 normal tests; nonincremental TypeScript and production build exit0. No HTTP/browser, final Linux-image or complete release proof claimed.
-- Boundary: this is a development checkpoint, not a deployable offboarding feature. Task3 still needs attachment/download and worker coordination, subject eligibility/complete indirect inventory and remaining per-family proof. Tasks4�7, scoped parity, UI and final independent review remain open. No production/Sabine migration or deployment.
+- Boundary: this is a development checkpoint, not a deployable offboarding feature. Task3 still needs attachment/download and worker coordination, subject eligibility/complete indirect inventory and remaining per-family proof. Tasks4�7, scoped parity, UI and final independent review remain open. No production/Sabine migration or deployment.
 - Next owner priority: inspect the two named review-branch UI commits after this checkpoint is pushed; integrate the approved visual changes while preserving newer lifecycle/authority behavior. Resume remaining offboarding work afterward.
 
 
@@ -4875,7 +4875,7 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 ### 2026-10-09 - Batch 289: after-response telemetry and seven-day retention
 - Intent: close M2 through the shared observation wrapper and existing workers; preserve pre-handler scope/status, diagnostic shape/window and bounded recorder pool.
 - Files touched: observe-project-route.ts, Support observation-retention.ts, both notification workers, additive045 retention index, lifecycle-writer inventory, deployment guidance, PostgreSQL runner, direct-route test request-scope bootstrap/adapters, focused retention/telemetry/performance runners and receipts.
-- Behavior changed: correlation header set before response; Next after() owns persistence with generic failure-class logging, existing max2/300ms pool and100ms/250ms recorder limits, lifecycle lock and fresh authorization. Both worker entry points delete only expired observations in tenant-scoped1000-row batches with SKIP LOCKED, bounded locks/statements and explicit next-cycle failure retry. Migration001�044 preserved.
+- Behavior changed: correlation header set before response; Next after() owns persistence with generic failure-class logging, existing max2/300ms pool and100ms/250ms recorder limits, lifecycle lock and fresh authorization. Both worker entry points delete only expired observations in tenant-scoped1000-row batches with SKIP LOCKED, bounded locks/statements and explicit next-cycle failure retry. Migration001�044 preserved.
 - Verification: strict types and707units pass. All33 existing PostgreSQL suites plus new13-case retention suite pass (34 suites). Populated034-to045 upgrade/bookkeeping passes22checks, preserving original identities/history/metadata. Actual shipping Docker HTTP telemetry passes11checks: completed body while INSERT blocked, eventual specific correlation, pool/lock timeout independence, fresh-authority refusal and pre-handler status/history preservation.
 - Performance: actual pg_stat_statements at26/126/1026 requests gives fixed9 list,51 detail including telemetry,16 diagnostic statements before/after;25/50/50 list rows.137 sanitized actual analyzed plans retained. Controlled blocked persistence response147.1ms before versus38.5ms after; local samples are not SLOs. Pre-handler authentication sharing remains deferred.
 - Test boundary deviation: direct-handler units and13 PostgreSQL route harnesses now supply Next request scheduling context rather than invoke after() outside a server. They intentionally omit recorder callbacks against business mocks; real after() is independently verified through the shipping HTTP runtime. Existing assertions and domain behavior preserved. Initial harness context failures were corrected and full gates rerun.
@@ -4885,7 +4885,7 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
 ### 2026-10-09 - Batch 290: portable maintained acceptance and indexed archive
 - Intent: close E2/H.3 while preserving receipt reproduction, current criteria and all historical references.
 - Files touched: browser MJS runners and shared Playwright preflight, syntax checker/CI, conservative archive/index/README, retained original prototype instructions, current verification guide and fresh HTTP/browser/attachment/visual receipts/runners.
-- Classification: retain current A1�A7 named checkpoints and executable dependency closure;20 superseded unreferenced batches/prototype harnesses move to tests/archive/alpha1. INDEX maps former paths, immutable source checkpoints/blob hashes, receipts, private fixture prerequisites and root-relative reproduction commands. Literal import relocation checked with no missing targets. Historical CODEX and original receipts remain untouched.
+- Classification: retain current A1�A7 named checkpoints and executable dependency closure;20 superseded unreferenced batches/prototype harnesses move to tests/archive/alpha1. INDEX maps former paths, immutable source checkpoints/blob hashes, receipts, private fixture prerequisites and root-relative reproduction commands. Literal import relocation checked with no missing targets. Historical CODEX and original receipts remain untouched.
 - Portability: required absolute SWR_PLAYWRIGHT_MODULE/file URL preflight imports the module before runner fixture mutation. All executable machine-specific Playwright module defaults removed; Edge uses its installed channel. Maintained and archived runners refuse missing/unavailable module inputs clearly before fixture reads/mutation. Existing owned-runtime guards remain.
 - Verification: full maintained/archived node --check gate added to existing CI; actual browser correctness stays separate. Shipping-image fresh HTTP211 cases include current role/scoped metadata/revoked/foreign authority, connected lifecycle, exact retry and actual audit-fault rollback. Authenticated attachment10 cases cover exact30MiB, refusal above boundary, actual retained/downloaded SHA256, foreign scope and atomic download evidence.
 - Current browser proof:48 cases cover credential/navigation and actual Team Management proposal/cancel/commit/exact lost-response retry, stale review, read-only and keyboard states.12 loaded desktop/mobile Light/Dark alignment cases have a separate visual receipt. Initial screenshot inspection found premature loading-state captures; network-idle readiness corrected and loaded capture set visually inspected, not counted as a product defect.
@@ -5078,3 +5078,152 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
   - The disable popup presentation (UAR-014) is deferred.
   - PostgreSQL acceptance suites and maintained runners were not run (retained fixtures); four offboarding runners were updated and syntax-checked.
 - Production behavior changed: yes (one migration).
+
+### 2026-10-12 - Batch 301: fresh-fixture acceptance run for alpha1-audit-hardening
+- Intent: the deep verification Batches 297–300 could not run because retained fixtures were off limits. Execute the PostgreSQL gate and the maintained HTTP/browser runners against a newly owned fixture on the pinned toolchain, triage every failure as regression, stale expectation or fixture problem, and prepare the PR.
+- Toolchain actually used: Node 22.23.3 / pnpm 11.19.0 inside Docker images built from this worktree's Dockerfile (`swr-acceptance301-builder`, `swr-acceptance301-runtime`); PostgreSQL 15 (`postgres:15`) in a new container `swr-alpha-acceptance197-db-12b990a7` (volume `swr-acceptance301-pg-12b990a7`, listening on 15489 inside its namespace, published on loopback 15500 plus 15492/15493/15495/15497/15498 for the historical fixture guards). Host Node 24.13.1 drove the host-side fixture scripts and the Playwright/Edge browser runners only; no Node 22 exists on the host and the maintained browser runners need the installed Edge channel. Playwright 1.63.0 was imported read-only from another project's node_modules through SWR_PLAYWRIGHT_MODULE. Sabine (3106/15488), the 15489 container and swr-redesign-review (15491) were not touched.
+- Fixture: migrations 001–049 applied with db/migrate.ts to `swr_team_isolated`; extra databases `swr_finalization_184`, `swr_survey_workflow`, `swr_smoke_test_301`, `swr_b1_test`, `swr_b2_test`, `swr_b3_test`, `swr_history_compat_test`, `swr_obligations_migration` in the same container for the families that name their database. Runner families received their own schemas or fixture scripts; nothing retained was read or reset.
+- Gates: pinned strict typecheck, 777 units and production build (Docker builder stage) pass; host strict typecheck and 777 units pass; `scripts/check-acceptance-syntax.mjs` passes 291 modules. `pnpm test:postgres` passes: 23 matrix suites, 7 additional suites, 3 metrics suites and the 13-check observation-retention suite (fresh receipt in audits/alpha1-reconciliation/retention.json; the first attempt failed only because the Docker build context omits audits/, fixed by mounting that directory).
+- Scoped offboarding: PostgreSQL mode, HTTP 52 checks and browser pass; `scoped-offboarding-case-matrix.mjs report` passes 55/55 named cases at implementation digest f5572185a6954384705c958e68c9ca873d198cb9068b13796db2fb796d11d3b4.
+- Finalization family (swr_finalization_184 via 15498, runtime 3185–3208): ticket-workflow-review, protected-administration 102, protected-creation 128, protected-membership-support 120, protected-recovery 86, protected-survey-review 89, administrative-survey-roles browser 26 and postgres, survey-delegation-lifecycle postgres pass. protected-staffing (crew reassignment without an explicitly chosen destination team, superseded by Decision 54 D1 before this branch), protected-ticket-controls (Survey Operations row actions moved into the Request Details popup by Batch 299; passes 92 checks on the pre-branch image) and survey-delegation-lifecycle browser (fails identically on the pre-branch image) remain open.
+- Survey workflow family (swr_survey_workflow via 15495, runtime 3150, hand-authored manifests): survey-team-areas-postgres, survey-roles fixture, survey-setup, survey-widgets, survey-area-motion and survey-review pass after updates. survey-table (expects exactly three requests of the original owned database), survey-roles, survey-chief-work, survey-delegation and survey-transfer target labels that were already absent at the branch base ("Save reassignment", "Choose a crew", "Delegate to a team", "Preview manpower move") and fail identically on the pre-branch image.
+- Decisions and acceptance197 (public schema via 15500, runtime 3211–3230): D4 explicit-destination 32, D5 supervised-team-role 28, superintendent-destination 36, team-management-parity 46, administration-home 41, finalization-responsive 121, visual-team-editor scope pass. D7 project-template-lock passes (31) after the runner stopped expecting the template card for a Project Admin (hidden by Batch 298); D8 system-audit passes when launched with `node --import tsx` (its runner imports the `@/modules` alias). D6 preparation-cancellation, visual-team-editor browser/responsive and finalization-role browser fail identically on the pre-branch image.
+- Alpha closure checkpoints (own schemas, own runtime ports): 234 (before 9, browser 53, boundaries 14), 236 browser 56, 247 browser 243, 252 browser and witnesses, 262, 271, 275 (D6 reason list), 278 authority pass. Checkpoints whose `-before` scripts witness the previous build's behavior (229, 232, 235, 237, 248, 251 and their dependants) cannot execute from a single fresh build; they remain historical receipts. After the orchestrated rerun 234, 247 (browser 243, boundaries 66, evidence 72), 252 (browser 173, boundaries 23, witnesses 7), 261 (before 9, browser 53, boundaries 20), 262, 271, 275 and 278 (before, browser 60, authority 4, regressions 10) pass completely. 249/281/282 fixtures read a prior checkpoint's runtime env, 279/280 browsers need a phase their documented sequence sets, and 238–246 target Survey Operations controls or two-build witnesses; these remain open in the table.
+- Runner updates for intended behavior (all category b, none weakens an authorization assertion): plain-language errors (Batch 297) in scoped-offboarding-browser, protected-staffing-browser, scoped-survey-roles browser/runtime, alpha-upload243/244, alpha-intake251-before, alpha-administration-home-browser, protected-membership-support-browser (403 injected as ForbiddenError, the server's real type); D6 reason list in scoped-offboarding-browser (two remaining field references and the tenant-account flow); blocked submit explanation in alpha-intake251-refusal; dashboard drag-and-drop (Batch 297) in survey-widgets-browser and survey-area-motion-browser; Request Details popup (Batch 299) in survey-review-browser, which also moves to the shared project inbox; failed invitation reload in protected-administration-browser; network wording in survey-delegation-lifecycle-browser.
+- Regressions: none found. Every failure traced to an intended change in Batches 297–300, to a runner already stale at the branch base (verified by running the same suite against a pinned image of 7907895, the commit before Batch 297), or to a fixture prerequisite.
+- Pre-existing failures confirmed on the pre-branch image: superintendent-area-session and protected-obligations-session (500 with PostgreSQL 57014 instead of 401 during lock-wait revalidation), workforce-repair, survey-staffing-unlink (open-work refusal precedes the grant refusal since 33642d5), standalone superintendent-kpi-postgres, company-access and amelia-workflow smokes, survey-table/roles/chief-work/delegation/transfer browsers, protected-staffing and survey-delegation-lifecycle browsers. These are candidates for the archive index or a rewrite; none is caused by this branch.
+- Not run: Sabine-bound runners (sabine-*, assessment-authorization-postgres), role-access and admin-restoration families (require the retained-demo manifest), reconciliation family (requires 15489 on the host and TLS ingress), linux-http-smoke (orchestrates its own Docker images), historical-compatibility smoke (asserts migrations 001–023 only), identity284 (TLS), alpha1-browser and the other runners whose guards accept only host port 15489.
+- Production behavior changed: no. Only maintained runner expectations, one fresh receipt and this entry.
+- Results table (gate: typecheck/777 units/build pinned pass; pnpm test:postgres 23+7+3+retention pass; host typecheck/777 units pass) (latest attempt per runner; logs retained in the session scratchpad, not committed):
+
+| Family | Runner | Result | Note |
+|---|---|---|---|
+| offboarding | offboarding-cleanup | pass | Owned acceptance schema removed. |
+| offboarding | offboarding-matrix-external | pass | PASS P13_local_admin_not_central_replacement / PASS P14_direct_http_en |
+| offboarding | offboarding-matrix-report | pass | PASS P13_local_admin_not_central_replacement / PASS P14_direct_http_en |
+| offboarding | offboarding-setup | pass | Synthetic two-tenant fixture ready in an owned schema. |
+| finalization | fin-administrative-survey-roles-browser | pass | {"checks":26,"captures":4,"errors":[]} |
+| finalization | fin-administrative-survey-roles-postgres | pass | {"level":"INFO","message":"Idempotent response replayed","timestamp":" |
+| finalization | fin-fixture-protected-administration | pass | {"checks":2,"cases":["Current Manager creates Source multi-Area team", |
+| finalization | fin-fixture-protected-creation | pass | {"checks":2,"cases":["Current Manager creates Source multi-Area team", |
+| finalization | fin-fixture-protected-membership-support | pass | {"checks":2,"cases":["Current Manager creates Source multi-Area team", |
+| finalization | fin-fixture-protected-recovery | pass | {"checks":2,"cases":["Current Manager creates Source multi-Area team", |
+| finalization | fin-fixture-protected-staffing | pass | {"checks":2,"cases":["Current Manager creates Source multi-Area team", |
+| finalization | fin-fixture-protected-survey-review | pass | {"checks":2,"cases":["Current Manager creates Source multi-Area team", |
+| finalization | fin-protected-administration-browser | pass | {"checks":102} |
+| finalization | fin-protected-creation-browser | pass | {"checks":128} |
+| finalization | fin-protected-membership-support-browser | pass | {"checks":120} |
+| finalization | fin-protected-recovery-browser | pass | {"checks":86} |
+| finalization | fin-protected-staffing-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| finalization | fin-protected-survey-review-browser | pass | {"checks":89} |
+| finalization | fin-protected-ticket-controls-browser | fail | TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Last checks: Delegation retry r |
+| finalization | fin-survey-delegation-lifecycle-browser | fail | TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Last checks: Browser blocked de |
+| finalization | fin-survey-delegation-lifecycle-postgres | pass | {"level":"INFO","message":"Idempotent response replayed","timestamp":" |
+| finalization | fin-ticket-workflow-review-browser | pass |  ".local/finalization/chief-dark-mobile.png" / ], / "errors": [] / } |
+| survey-workflow | survey-area-motion-browser | pass |  "Reduced motion removes popup animation", / "Reduced motion removes p |
+| survey-workflow | survey-chief-work-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| survey-workflow | survey-delegation-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| survey-workflow | survey-review-browser | pass |  "Proposing Chief sees the outcome and opens its request from Notifica |
+| survey-workflow | survey-roles-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| survey-workflow | survey-roles-browser-fixture | pass | Created owned role fixture; retained demos untouched. |
+| survey-workflow | survey-setup-browser | pass |  "Reminder disappears after a real team exists", / "Superintendent is  |
+| survey-workflow | survey-table-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| survey-workflow | survey-team-areas-postgres | pass | {"level":"INFO","message":"Workflow transition committed","timestamp": |
+| survey-workflow | survey-transfer-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| survey-workflow | survey-widgets-browser | pass |  "Mobile dashboard has no page overflow", / "Mobile dashboard uses one |
+| decisions | d-administration-home-browser | pass | Administration-only Home: 41 checks, 4 captures |
+| decisions | d-finalization-responsive-browser | pass | {"checks":121,"captures":24,"pageErrors":[]} |
+| decisions | d-finalization-role-browser | fail | Recent checks: manager ACTIVE operational/admin authority stays separate; manager ACTIVE a |
+| decisions | d-role-fixture | pass | Fresh owned Alpha role/state/population fixture created; no retained d |
+| decisions | d-superintendent-destination-browser | pass | Superintendent browser 36 checks, 8 captures |
+| decisions | d-team-management-parity-browser | pass | Paired Team Management browser 46 checks, 8 captures |
+| decisions | d-visual-team-editor-browser | fail |  ], / name: 'TimeoutError' / } / Recent checks: Accepted Chief collapse; Accepted Chief ex |
+| decisions | d-visual-team-editor-fixture | pass | Fresh owned Visual198 identities and governed teams created; private m |
+| decisions | d-visual-team-editor-responsive | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| decisions | d-visual-team-editor-scope | pass | 2 actual scoped HTTP checks passed; all owned synthetic identities ret |
+| decisions | d4-explicit-destination-browser | pass | D4 browser 32 checks, 8 captures |
+| decisions | d5-supervised-team-role-browser | pass | D5 browser 28 checks, 4 captures |
+| decisions | d6-preparation-cancellation-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| decisions | d7-project-template-lock-browser | pass | D7 current browser checks: 31; captures: 4 |
+| decisions | d8-system-audit-browser | pass | {"level":"INFO","message":"Notification worker cycle started","timesta |
+| alpha-closure | 228-alpha-legacy228-browser | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 228-alpha-legacy228-seed | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 229-alpha-preparation229-before | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 229-alpha-preparation229-browser | pass | {"checks":53,"captures":4,"pageErrors":[]} |
+| alpha-closure | 230-alpha-legacy230-boundaries | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 230-alpha-legacy230-browser | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 230-alpha-legacy230-seed | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 231-alpha-invitations231-before | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 231-alpha-invitations231-boundaries | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 231-alpha-invitations231-browser | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 231-alpha-invitations231-timing | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 232-alpha-invitations232-before | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 232-alpha-invitations232-browser | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 232-alpha-invitations232-d6 | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 233-alpha-invitations233-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 234-alpha-reopening234-before | pass | {"checks":9,"phase":"archived"} |
+| alpha-closure | 234-alpha-reopening234-boundaries | pass | {"checks":14} |
+| alpha-closure | 234-alpha-reopening234-browser | pass | {"checks":53,"captures":4,"pageErrors":[]} |
+| alpha-closure | 235-alpha-preparation235-before | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 235-alpha-preparation235-browser | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 236-alpha-superintendent236-boundaries | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 236-alpha-superintendent236-browser | pass | {"checks":56,"captures":8,"pageErrors":[]} |
+| alpha-closure | 236-alpha-superintendent236-resume | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 237-alpha-errors237-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 237-alpha-errors237-resume | pass | {"checks":7,"captures":0,"pageErrors":[]} |
+| alpha-closure | 238-alpha-queue238-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 238-alpha-queue238-captures | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 239-alpha-queue239-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 239-alpha-queue239-captures | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 240-alpha-navigation240-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 241-alpha-attachments241-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 241-alpha-attachments241-resume | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 242-alpha-reads242-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 243-alpha-upload243-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 243-alpha-upload243-bytes | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 243-alpha-upload243-staging | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 244-alpha-upload244-browser | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 244-alpha-upload244-bytes | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 245-alpha-upload245-boundaries | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 245-alpha-upload245-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 246-alpha-actions246-boundaries | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 246-alpha-actions246-browser | fail |  operator: '==', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 246-alpha-actions246-terminal | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 247-alpha-recovery247-boundaries | pass | {"passed":66,"temporarySyntheticAuthorityChangesRestored":true} |
+| alpha-closure | 247-alpha-recovery247-browser | pass | {"passed":243,"captures":4,"pageErrors":[]} |
+| alpha-closure | 247-alpha-recovery247-evidence | pass | {"passed":72,"readOnly":true} |
+| alpha-closure | 248-alpha-stop248-before | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v24.13.1 |
+| alpha-closure | 248-alpha-stop248-boundaries | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 248-alpha-stop248-browser | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 251-alpha-intake251-before | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 251-alpha-intake251-browser | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 251-alpha-intake251-refusal | fail |  ], / name: 'TimeoutError' / } / Node.js v24.13.1 |
+| alpha-closure | 251-alpha-intake251-witnesses | fail |  syscall: 'open', / path: 'C:\\Users\\xwall\\SWRTracker\\.claude\\worktrees\\dxf-file-read |
+| alpha-closure | 252-alpha-cycle252-boundaries | pass | {"checks":23} |
+| alpha-closure | 252-alpha-cycle252-browser | pass | {"checks":173,"captures":16,"pageErrors":[],"run":".local/alpha-closur |
+| alpha-closure | 252-alpha-cycle252-witnesses | pass | {"checks":7} |
+| alpha-closure | 261-alpha-lifecycle261-before | pass | {"checks":9,"phase":"archived"} |
+| alpha-closure | 261-alpha-lifecycle261-boundaries | pass | {"checks":20} |
+| alpha-closure | 261-alpha-lifecycle261-browser | pass | {"checks":53,"captures":4,"pageErrors":[]} |
+| alpha-closure | 262-alpha-preparation262-browser | pass | {"passed":64,"captures":4,"pageErrors":[]} |
+| alpha-closure | 271-alpha-catalog271-browser | pass | {"checks":111} |
+| alpha-closure | 275-alpha-administration275-browser | pass | {"checks":102} |
+| alpha-closure | 278-alpha-catalog278-authority | pass | {"checks":4} |
+| alpha-closure | 278-alpha-catalog278-before | pass | Original actual draft/file/history saved before administration tasks. |
+| alpha-closure | 278-alpha-catalog278-browser | pass | {"checks":60,"captures":7} |
+| alpha-closure | 278-alpha-catalog278-regressions | pass | {"checks":10} |
+| alpha-closure | 279-alpha-invitations279-before | pass | Original actual draft/file/history saved before invitation tasks. |
+| alpha-closure | 279-alpha-invitations279-browser | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:///C:/User |
+| alpha-closure | 279-alpha-invitations279-negative | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at |
+| alpha-closure | 279-alpha-invitations279-race | fail |  ^ / TypeError: Cannot read properties of undef |
+| alpha-closure | 279-alpha-invitations279-records | pass | {"actualCreated":4,"actualAccepted":1,"actualCancelled":1,"controlledE |
+| alpha-closure | 280-alpha-human280-before | pass | Original actual draft/file/history saved before human acceptance tasks |
+| alpha-closure | 280-alpha-human280-browser | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') /  |
+| alpha-closure | 280-alpha-human280-cancellation | fail |  ^ / TypeError: Cannot read properties of undefined (reading 'phase') / at file:// |
+| alpha-closure | 280-alpha-human280-records | fail |  at ModuleJob.syncLink (node:internal/modules/esm/module_job:160:33) { / code: 'ERR_MODULE |
+| http-3107 | http-3107-linux-http-smoke | fail |  at ModuleJob.run (node:internal/modules/esm/module_job:343:25) / at async onImport.traceP |
+| http-3107 | http-3107-protected-obligations-http | pass | PASS 54 actual production HTTP reviewer handover checks; fixture proje |
+| http-3107 | http-3107-superintendent-area-http | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v22.23.3 |
+| http-3107 | http-3107-superintendent-kpi-http | fail |  operator: 'strictEqual', / diff: 'simple' / } / Node.js v22.23.3 |
+| http-3107 | http-3107-survey-staffing-http | pass | Actual production staffing HTTP scenarios passed: 10 / [{"status":200, |
+| http-3107 | http-3107-survey-staffing-safety-http | pass | Actual production staffing safety HTTP checks passed: 11 |

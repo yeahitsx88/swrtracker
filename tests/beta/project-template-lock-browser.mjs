@@ -33,7 +33,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce'});await context.addCookies([{name:'swr_session',value:tokens[who],url:origin,httpOnly:true,sameSite:'Lax'}]);
   assert.equal((await context.request.put(origin+'/api/account/appearance',{data:{scope:'PERSONAL',mode},headers:{'Idempotency-Key':randomUUID()}})).status(),200);
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+'/projects/'+projects.SETUP+'/admin/settings');
-  const heading=page.getByRole('heading',{name:'Project Template',exact:true});await heading.waitFor();await heading.scrollIntoViewIfNeeded();
+  const heading=page.getByRole('heading',{name:'Project Template',exact:true});if(who==='admin'){await page.waitForLoadState('networkidle');check(await heading.count()===0,'Project Admin does not see the governing template card (Batch 298) '+mode+' '+width);check(await page.getByRole('combobox',{name:'Applicable template (Setup only)'}).count()===0,'No template switch form '+who+' '+mode+' '+width);await context.close();continue;}await heading.waitFor();await heading.scrollIntoViewIfNeeded();
   await page.getByText('Governing template selection is locked.',{exact:false}).waitFor();check(await page.getByRole('button',{name:'Review template selection',exact:true}).count()===0,who+' no rejected selection '+mode+' '+width);
   check(await page.getByRole('combobox',{name:'Applicable template (Setup only)'}).count()===0,'No template switch form '+who+' '+mode+' '+width);
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No page overflow '+who+' '+mode+' '+width);

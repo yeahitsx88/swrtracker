@@ -37,7 +37,7 @@ try{
  let initialFailed=false;await page.route(`**/api/projects/${f.project}/members/${f.browserSubject}/offboarding**`,async route=>{if(route.request().method()==='GET'&&!initialFailed){initialFailed=true;return route.fulfill({status:500,json:{error:{type:'InternalError',message:'Synthetic preview load failure'}}});}await route.continue();});
  await page.getByRole('row').filter({hasText:browserName}).getByRole('button',{name:'Preview access removal',exact:true}).click();
  const flow=page.getByRole('region',{name:`Remove from this project: ${browserName}`,exact:true});
- await flow.getByText('500: Synthetic preview load failure',{exact:true}).waitFor();await flow.getByRole('button',{name:'Reload evidence',exact:true}).click();checks++;await page.unroute(`**/api/projects/${f.project}/members/${f.browserSubject}/offboarding**`);
+ await flow.getByText('Unable to load offboarding evidence. Something went wrong on our side, so the result isn’t confirmed. Try again in a moment.',{exact:true}).waitFor();await flow.getByRole('button',{name:'Reload evidence',exact:true}).click();checks++;await page.unroute(`**/api/projects/${f.project}/members/${f.browserSubject}/offboarding**`);
  await flow.getByText('No unresolved duty or continuity blockers in this scope.',{exact:true}).waitFor();checks++;
  await (await flow.getByLabel('Reason',{exact:true}).selectOption('Other'),flow).getByLabel('Reason details',{exact:true}).fill('Confirmed browser project departure');
  await flow.getByLabel(`I confirm: remove from this project for ${browserName}.`,{exact:true}).check();
@@ -52,7 +52,7 @@ try{
   if(lost){lost=false;await route.fetch();await route.abort('failed');}else await route.continue();
  });
  await flow.getByRole('button',{name:'Remove from this project',exact:true}).click();await flow.getByRole('button',{name:'Retry same confirmed action',exact:true}).waitFor();
- check(await flow.getByLabel('Reason (10–1000 characters)',{exact:true}).isDisabled(),true,'Lost response freezes reason');check(await page.getByLabel('Filter project members',{exact:true}).isDisabled(),true,'Lost response freezes parent selection');
+ check(await flow.getByLabel('Reason details',{exact:true}).isDisabled(),true,'Lost response freezes reason');check(await page.getByLabel('Filter project members',{exact:true}).isDisabled(),true,'Lost response freezes parent selection');
  check(await flow.getByRole('button',{name:'Reload evidence',exact:true}).isDisabled(),true,'Cannot replace uncertain intent');
  await flow.getByRole('button',{name:'Retry same confirmed action',exact:true}).click();await flow.getByText('Original confirmed operation replayed: Access disabled. History was retained.',{exact:true}).waitFor();check(await flow.locator('h3').evaluate(el=>document.activeElement===el),true,'Success restores focus to named scope');
  check(captures.length,2,'Only exact retry');check(captures[0],captures[1],'Stable key and immutable displayed body');check(captures[0].body.scope,{kind:'PROJECT_ACCESS',projectId:f.project},'No scope widening');
@@ -65,7 +65,7 @@ try{
  await page.route(`**/api/projects/${f.project}/members/${stale}/offboarding`,async route=>{if(route.request().method()==='POST')return route.fulfill({status:409,json:{error:{type:'ConflictError',message:'Synthetic stale state',code:'ANY_STALE'}}});await route.continue();});
  await staleFlow.getByRole('button',{name:'Remove from this project',exact:true}).click();await staleFlow.getByText('The access evidence changed. Your reviewed access removal remains held. Reload evidence must successfully read current duties before a new decision or cancellation.',{exact:true}).waitFor();
  check(await staleFlow.getByRole('button',{name:'Remove from this project',exact:true}).isDisabled(),true,'Every 409 latched');
- await page.unroute(`**/api/projects/${f.project}/members/${stale}/offboarding`);await staleFlow.getByRole('button',{name:'Reload evidence',exact:true}).click();await page.waitForFunction(el=>!el.disabled,await staleFlow.getByLabel('Reason (10–1000 characters)',{exact:true}).elementHandle());check(await staleFlow.getByLabel(`I confirm: remove from this project for ${staleName}.`,{exact:true}).isChecked(),false,'Reload clears consent');
+ await page.unroute(`**/api/projects/${f.project}/members/${stale}/offboarding`);await staleFlow.getByRole('button',{name:'Reload evidence',exact:true}).click();await page.waitForFunction(el=>!el.disabled,await staleFlow.getByLabel('Reason details',{exact:true}).elementHandle());check(await staleFlow.getByLabel(`I confirm: remove from this project for ${staleName}.`,{exact:true}).isChecked(),false,'Reload clears consent');
  await page.goto(origin+'/accounts');await page.getByLabel('Find a person',{exact:true}).fill(browserName);await page.getByRole('row').filter({hasText:browserName}).getByRole('button',{name:'Disable account…',exact:true}).click();const tenant=page.getByRole('region',{name:`Disable tenant account: ${browserName}`,exact:true});await tenant.getByText('No unresolved duty or continuity blockers in this scope.',{exact:true}).waitFor();check(await tenant.getByText('This disables access across this tenant.',{exact:false}).count(),1,'Tenant scope explicit');
  const accountNav=page.getByRole('navigation',{name:'Tenant Accounts sections'});
  await accountNav.getByRole('link',{name:'Tenant Admin Reviews',exact:true}).click();await page.waitForURL('**/accounts/reviews');
@@ -74,7 +74,7 @@ try{
  const reviewsEditor=page.locator('#tenant-reviews').getByRole('region',{name:`Disable tenant account: ${browserName}`,exact:true});await reviewsEditor.getByLabel(/^Reason /).waitFor();
  // Sibling route navigation preserves both editors and the shared command owner.
  await page.getByRole('navigation',{name:'Tenant Admin Reviews sections'}).getByRole('link',{name:'Tenant Accounts',exact:true}).click();await page.waitForURL('**/accounts');
- await accountsEditor.getByLabel(/^Reason /).fill('Confirmed shared ownership acceptance');await accountsEditor.getByLabel(`I confirm: disable tenant account for ${browserName}.`,{exact:true}).check();
+ await accountsEditor.getByLabel('Reason',{exact:true}).selectOption('Other');await accountsEditor.getByLabel('Reason details',{exact:true}).fill('Confirmed shared ownership acceptance');await accountsEditor.getByLabel(`I confirm: disable tenant account for ${browserName}.`,{exact:true}).check();
  let tenantAttempt=0;await page.route(`**/api/accounts/${f.browserSubject}/offboarding`,async route=>{if(route.request().method()!=='POST')return route.continue();tenantAttempt++;if(tenantAttempt===1)return route.abort('failed');return route.fulfill({status:409,json:{error:{type:'ConflictError',message:'Synthetic ownership stale result',code:'STALE'}}});});
  await accountsEditor.getByRole('button',{name:'Disable tenant account',exact:true}).click();await accountsEditor.getByRole('button',{name:'Retry same confirmed action',exact:true}).waitFor();
  await accountNav.getByRole('link',{name:'Tenant Admin Reviews',exact:true}).click();await page.waitForURL('**/accounts/reviews');
