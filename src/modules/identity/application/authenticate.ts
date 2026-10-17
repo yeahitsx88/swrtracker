@@ -44,8 +44,15 @@ export async function authenticateUser(
   if (!userWithCreds || !userWithCreds.passwordHash || !passwordMatch) {
     throw new UnauthorizedError(INVALID_CREDENTIALS);
   }
+  if (userWithCreds.deactivatedAt) {
+    throw new UnauthorizedError('Account is deactivated', 'AUTH_USER_DEACTIVATED');
+  }
 
-  const token = signToken(userWithCreds.id, userWithCreds.tenantId);
+  const token = signToken(
+    userWithCreds.id,
+    userWithCreds.tenantId,
+    userWithCreds.sessionVersion ?? 1,
+  );
   const { passwordHash: _, ...user } = userWithCreds;
 
   return { user, token };

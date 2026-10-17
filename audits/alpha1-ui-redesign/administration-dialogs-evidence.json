@@ -1,0 +1,185 @@
+{
+  "recordedAt": "2026-10-04T20:12:47.914619+00:00",
+  "scope": "Six annotated administration pop-up, disclosure and roster refinements",
+  "parentCheckpoint": "78c44df",
+  "branch": "alpha1-ui-redesign",
+  "sourceMigrationDigest": "24ba91249c44298e9dddbf7c8f02d7b8e4f38260f8b5c2da7bcb71d4ca96b248",
+  "digestAlgorithm": "SHA256 of sorted repository paths under src and db/migrations, NUL, raw file bytes, NUL",
+  "runtime": "Pinned Node22.23.3 / pnpm11.19.0 production image swr-admin-dialogs-ff2f",
+  "strictTypecheck": "passed, including unused checks",
+  "unitTests": {
+    "passed": 584,
+    "failed": 0
+  },
+  "productionBuild": "passed",
+  "postgresql": {
+    "suitesPassed": 30,
+    "cases": [
+      "Project Admin assignment roster GET denied",
+      "Tenant Admin assignment roster GET allowed",
+      "Existing company atomicity, lifecycle, audit, replay and history contracts retained"
+    ]
+  },
+  "httpBrowser": {
+    "companyRemoval": {
+      "passed": 46,
+      "cases": [
+        "Register owned synthetic company",
+        "Register owned synthetic company",
+        "Read scoped companies and dependency counts",
+        "Ordinary member cannot remove companies",
+        "Project Admin cannot remove another project companies",
+        "Foreign company selection reveals no record and changes no association",
+        "Atomic selected removal succeeds",
+        "Each removed association has one event",
+        "Tenant company records preserved",
+        "Exact replay adds no removal event",
+        "Changed replay body rejected",
+        "Tenant Admin can reassociate retained company ID",
+        "Old association consent cannot remove a newly reassociated company",
+        "Register owned synthetic company",
+        "Register owned synthetic company",
+        "Read scoped companies and dependency counts",
+        "Owned pending invitation established",
+        "A new invitation blocks the whole selection with no partial removal",
+        "Register owned synthetic company",
+        "Read scoped companies and dependency counts",
+        "Concurrent removals serialize to one effect and one conflict",
+        "Register owned synthetic company",
+        "Read scoped companies and dependency counts",
+        "Invitation/removal race cannot leave a live invitation for a removed company",
+        "Remove Selected disabled without selection",
+        "Removal opens native modal",
+        "Escape dismisses unsubmitted review",
+        "Escape restores initiating focus",
+        "Review lists both duplicate-name companies separately",
+        "Removal requires deliberate confirmation",
+        "Reviewed unblocked removal enabled",
+        "admin-dialog-removal-user-1107 has no page overflow",
+        "admin-dialog-removal-desktop has no page overflow",
+        "admin-dialog-removal-mobile has no page overflow",
+        "Lost browser response committed removal",
+        "Uncertain removal cannot be discarded",
+        "Uncertain company removal blocks sibling settings",
+        "Uncertain removal disables popup close",
+        "Escape cannot discard uncertain removal",
+        "Lost-response retry uses exact original body and key",
+        "Lost response/replay persist one event per duplicate-name ID",
+        "Successful removal refreshes company list",
+        "Register owned synthetic company",
+        "Definitive dependency conflict requires deliberate reload",
+        "Reloaded review shows invitation blocker and disables removal",
+        "admin-dialog-blocked-user-1107 has no page overflow"
+      ],
+      "mode": "Separate explicitly owned synthetic schema; production HTTP plus installed Edge/Playwright",
+      "captureHashes": {
+        ".impeccable/review/admin-dialog-removal-user-1107.png": "872bfa47392124bca34a7dd5dc9470a3fbb3d877eb70abf0d3409a13cd466252",
+        ".impeccable/review/admin-dialog-removal-desktop.png": "c20c22cc920ded5ff0a177bb5feba69f778417bcc8526e866c2c14153db38a7c",
+        ".impeccable/review/admin-dialog-removal-mobile.png": "84f01e6999195efd3d9c7e3cfc827bdc3aac22e3b2c60d79accb5ea3b43fa207",
+        ".impeccable/review/admin-dialog-blocked-user-1107.png": "58feb4d57705cc7482420f06349afb2786d80384af7db37e7e94d4d05abcc229"
+      }
+    },
+    "administrationRefinements": {
+      "passed": 30,
+      "cases": [
+        "Project Admin cannot read assignment roster API",
+        "Tenant Admin retains assignment roster API",
+        "Project Admin retains full member roster API",
+        "Project Admin has no assignment panels",
+        "Duplicate admin Help Desk tab removed",
+        "Sidebar Help Desk retained",
+        "admin-refinement-personnel-user-1107 has no page overflow",
+        "Registration opens native popup",
+        "Popup shows reviewed company name",
+        "Popup confirmation requires consent",
+        "Keyboard focus stays within registration popup",
+        "admin-dialog-registration-user-1107 has no page overflow",
+        "admin-dialog-registration-desktop has no page overflow",
+        "admin-dialog-registration-mobile has no page overflow",
+        "Close preserves registration input",
+        "Close restores registration trigger focus",
+        "Registration popup saves owned company",
+        "Pending Invitations initially collapsed",
+        "Pending Invitations expands full inventory",
+        "Pending Invitations collapses inventory",
+        "Existing association uses same popup",
+        "Restore Removed Members initially collapsed",
+        "Restore Removed Members expands retained inventory",
+        "admin-refinement-recovery-user-1107 has no page overflow",
+        "Restore Removed Members collapses controls",
+        "Legacy Help Desk route redirects to sidebar page",
+        "Legacy administrator tab route redirects to sidebar Help Desk",
+        "Sidebar Help Desk retains Project Admin ticket management",
+        "Tenant Admin retains assignment panel",
+        "Tenant Admin retains creation wizard"
+      ],
+      "mode": "Separate explicitly owned synthetic schema; production HTTP plus installed Edge/Playwright",
+      "captureHashes": {
+        ".impeccable/review/admin-refinement-personnel-user-1107.png": "f705d39ee98fdf45f5c6c184caa13a41e8ee1149f02205d5b5dd483871750812",
+        ".impeccable/review/admin-dialog-registration-user-1107.png": "449b36e1642978f7555ba312e414252749a6d106ca18d1acd55f4e918dd223ab",
+        ".impeccable/review/admin-dialog-registration-desktop.png": "d26ff49ddf1e02e43c21ac400e4bfff7387bf49c0904986715764422d8001a28",
+        ".impeccable/review/admin-dialog-registration-mobile.png": "2213d0b60bb148c804fa2943b01e58a7c441ed7ef704e0044d7603e3a143c94c",
+        ".impeccable/review/admin-refinement-recovery-user-1107.png": "18d2b7239572215e43791058bcdfee0b9ed3ec3f52ae1e598143b358efb64d6b"
+      }
+    },
+    "roleArchivedConditions": {
+      "passed": 19,
+      "cases": [
+        "itOnly ordinary company permits Viewer",
+        "itOnly person change invalidates Viewer",
+        "itOnly subcontractor excludes Viewer and survey roles",
+        "itOnly eligibility explained before review",
+        "itOnly permitted subcontractor membership reaches review",
+        "admin-refinement-eligibility-user-1864 has no page overflow",
+        "localAdmin ordinary company permits Viewer",
+        "localAdmin person change invalidates Viewer",
+        "localAdmin subcontractor excludes Viewer and survey roles",
+        "localAdmin eligibility explained before review",
+        "localAdmin permitted subcontractor membership reaches review",
+        "Archived restoration disabled",
+        "Archived read-only reason visible",
+        "Archived removed member history inspectable",
+        "admin-refinement-archived-user-1864 has no page overflow",
+        "admin-refinement-archived-mobile has no page overflow",
+        "Direct Archived restoration rejected",
+        "Archived membership unchanged",
+        "Archived restoration adds no administrative event"
+      ],
+      "mode": "Separate explicitly owned synthetic schema; production HTTP plus installed Edge/Playwright",
+      "captureHashes": {
+        ".impeccable/review/admin-refinement-eligibility-user-1864.png": "f0afdb9d9ef8b981108ac784e2d7bd98a75989d35c245f92ef0f59b619f48496",
+        ".impeccable/review/admin-refinement-archived-user-1864.png": "2f6c76bc34292e569dbb0897738583b6d229d1fe021c80af9391136f54e3f07a",
+        ".impeccable/review/admin-refinement-archived-mobile.png": "b519bea31cc1a3e61f845e4fb40a817561648c63b64167a0600a78110d8b79f4"
+      }
+    }
+  },
+  "limitations": [
+    "No company mutation, migration or role/crew authority redesign in this refinement",
+    "No automatic historical duplicate consolidation",
+    "Operator SQL remains outside application guards",
+    "Fixture/runtime provisioning remains local and explicitly owned",
+    "Unchanged administration areas not covered by narrow finish review",
+    "No retained reset, push, merge or Alpha2 initialization"
+  ],
+  "design": {
+    "disposition": "ship",
+    "scope": "Narrow six-refinement Operate change; source/design sampled and all twelve supplied captures verified",
+    "materialFixes": [],
+    "detectorOnce": [
+      {
+        "severity": "advisory",
+        "finding": "Literal14px dialog radius outside incumbent scale",
+        "resolved": "Final source uses var(--radius-panel); final image/captures rebuilt; detector not rerun"
+      }
+    ],
+    "assets": "Existing SVG icon system and Axiom/Roboto identity; no new raster assets",
+    "documenter": "Append-only current surface contract; all twelve captures opened; PRODUCT/DESIGN/sidecar and historical content preserved, existing drift reported without repair"
+  },
+  "retainedDemo": {
+    "port": 3124,
+    "imageRefreshed": true,
+    "existingEnvironmentAndFileVolumePreserved": true,
+    "beforeAfterProtectedRowDigests": "matched current full rows, including custom-role IDs; companies/project associations, users/preferences, tickets/events/files, projects/memberships/teams, grants/invitations/custom roles and administrative/lifecycle history",
+    "actualBrowser": "Existing Alex Rivera session shows ordinary Project Members roster, five task links and sidebar Help Desk; no separate assignment panel. No retained command submitted by agent."
+  }
+}

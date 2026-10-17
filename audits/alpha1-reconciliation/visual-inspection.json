@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "home LIGHT 1440 loaded and contained",
+    "operations LIGHT 1440 loaded and contained",
+    "review LIGHT 1440 loaded and contained",
+    "home LIGHT 390 loaded and contained",
+    "operations LIGHT 390 loaded and contained",
+    "review LIGHT 390 loaded and contained",
+    "home DARK 1440 loaded and contained",
+    "operations DARK 1440 loaded and contained",
+    "review DARK 1440 loaded and contained",
+    "home DARK 390 loaded and contained",
+    "operations DARK 390 loaded and contained",
+    "review DARK 390 loaded and contained"
+  ],
+  "pageErrors": [],
+  "renderedFrom": "shipping Docker runtime, owned project fixture",
+  "limits": [
+    "Desktop/mobile Edge viewports in both themes; visual contact-sheet inspection is separately recorded in final receipt."
+  ]
+}

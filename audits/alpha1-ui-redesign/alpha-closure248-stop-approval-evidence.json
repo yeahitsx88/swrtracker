@@ -1,0 +1,261 @@
+{
+  "batch": 248,
+  "baseline": "496d55067c86dcd3dfe0bafb0635f6d8ae14a290",
+  "authority": [
+    "Owner approved Alpha integration/action usability, wording, role information and exact-retry finalization.",
+    "Existing Survey Manager stop-work approval chain/endpoint and D6 witnessed-cleanup rules; no new authority/outcome.",
+    "Standing checkpoint/push directive."
+  ],
+  "classification": "Verified fix for ALPHA-STOP-APPROVAL-UI-248; whole Alpha open.",
+  "defect": {
+    "id": "ALPHA-STOP-APPROVAL-UI-248",
+    "before": {
+      "checks": [
+        "chief pending flag has no existing Manager approval control",
+        "chief current saved detail omits recorded pending stop reason",
+        "instrument pending flag has no existing Manager approval control",
+        "instrument current saved detail omits recorded pending stop reason"
+      ],
+      "noProductionChange": true
+    },
+    "confirmed": "Actual Chief and IM flags remain IN_PROGRESS; current Manager detail has no approval control and omits recorded flag reason. Existing server approval is authorized and retry-protected but has no API-client or frontend caller.",
+    "fix": "Wire the existing approval endpoint through caller-owned key, protected workflow review, additive current-role/state/chain/writer availability and saved detail provenance. Preserve recorded reason and show consequences/next recipients. Existing cleanup projection appears in current authorized detail under its read barrier and private/no-store."
+  },
+  "production": {
+    "files": 576,
+    "sha256": "e225123e88c397fcfcf26a572d200a6f75c8b8ded324557ff11e93bab0237188",
+    "mismatches": [],
+    "ordering": "Established Windows Path ordering; forward-slash UTF8 path/NUL/raw bytes/NUL.",
+    "changedFiles": [
+      "src/modules/ticket/application/get-ticket-capabilities.ts",
+      "src/app/api/tickets/[ticketId]/route.ts",
+      "src/lib/contracts/tickets.ts",
+      "src/lib/apiClient.ts",
+      "src/lib/ticket-workflow-review.ts",
+      "src/components/tickets/ticket-workflow-review.tsx",
+      "src/components/tickets/ticket-details.tsx",
+      "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+    ]
+  },
+  "verification": {
+    "hostBaselineStrictUnusedTypes": "pass",
+    "baselineUnits": 692,
+    "hostFinalStrictUnusedTypes": "pass",
+    "units": 693,
+    "pinnedStrictUnusedTypes": "pass",
+    "pinnedIntegratedInvocations": 694,
+    "pinnedCountNote": "693 unit cases plus runner invocation.",
+    "focusedTests": 17,
+    "build": "Node22.23.3 Next15.5.27 pass, fresh final-source artifact",
+    "postgresSuites": 33,
+    "beforeChecks": 4,
+    "finalActualChecks": 82,
+    "browserCore": {
+      "checks": [
+        "requester sees pending detail without approval control",
+        "requester current server approval capability false",
+        "viewer sees pending detail without approval control",
+        "viewer current server approval capability false",
+        "chief sees pending detail without approval control",
+        "chief current server approval capability false",
+        "instrument sees pending detail without approval control",
+        "instrument current server approval capability false",
+        "superintendent sees pending detail without approval control",
+        "superintendent current server approval capability false",
+        "requester cannot approve flag or create evidence/ledger",
+        "viewer cannot approve flag or create evidence/ledger",
+        "chief cannot approve flag or create evidence/ledger",
+        "instrument cannot approve flag or create evidence/ledger",
+        "superintendent cannot approve flag or create evidence/ledger",
+        "projectAdmin cannot approve flag or create evidence/ledger",
+        "tenantOnly cannot approve flag or create evidence/ledger",
+        "combinedAdmin cannot approve flag or create evidence/ledger",
+        "unlinkedChief cannot approve flag or create evidence/ledger",
+        "chief saved pending reason/actor visible",
+        "chief review retains recorded reason/actor",
+        "chief approval needs fresh consent",
+        "chief approval uses recorded reason without overwriting it",
+        "approve-chief LIGHT viewport contained",
+        "approve-chief DARK viewport contained",
+        "chief uncertain approval freezes consent and sibling refresh",
+        "chief Escape cannot discard uncertain approval",
+        "chief exact retry preserves empty existing payload and original key",
+        "chief replay adds no effects",
+        "chief governed approval retains reason and clears live flag/staffing",
+        "chief one cancellation records original flagger/reason and Manager",
+        "chief requester and captured crew notified once",
+        "chief confirmed terminal removes approval action",
+        "instrument saved pending reason/actor visible",
+        "instrument review retains recorded reason/actor",
+        "instrument approval needs fresh consent",
+        "instrument approval uses recorded reason without overwriting it",
+        "approve-instrument LIGHT viewport contained",
+        "approve-instrument DARK viewport contained",
+        "instrument uncertain approval freezes consent and sibling refresh",
+        "instrument Escape cannot discard uncertain approval",
+        "instrument exact retry preserves empty existing payload and original key",
+        "instrument replay adds no effects",
+        "instrument governed approval retains reason and clears live flag/staffing",
+        "instrument one cancellation records original flagger/reason and Manager",
+        "instrument requester and captured crew notified once",
+        "instrument confirmed terminal removes approval action",
+        "stale saved pending reason/actor visible",
+        "stale review retains recorded reason/actor",
+        "stale approval needs fresh consent",
+        "stale approval uses recorded reason without overwriting it",
+        "Concurrent terminal rejects held approval without effects",
+        "Deliberate reload reflects terminal and requires no guessed new action",
+        "stale governed approval retains reason and clears live flag/staffing",
+        "stale one cancellation records original flagger/reason and Manager",
+        "stale requester and captured crew notified once",
+        "Actual approval event failure rolls back request/history/notices/ledger",
+        "Archived current pending flag read-only",
+        "archived-pending LIGHT viewport contained",
+        "archived-pending DARK viewport contained",
+        "Archived saved pending reason remains visible without approval control",
+        "Existing reopening cancellation approval remains available",
+        "Witnessed D6 approval available while ordinary file writes absent",
+        "preparation saved pending reason/actor visible",
+        "preparation review retains recorded reason/actor",
+        "preparation approval needs fresh consent",
+        "preparation approval uses recorded reason without overwriting it",
+        "D6 approval keeps permanent outcome and cleanup restriction clear",
+        "preparation governed approval retains reason and clears live flag/staffing",
+        "preparation one cancellation records original flagger/reason and Manager",
+        "preparation requester and captured crew notified once",
+        "No browser page errors"
+      ],
+      "captures": [
+        ".local/alpha-closure248/approve-chief-light-1440.png",
+        ".local/alpha-closure248/approve-chief-dark-390.png",
+        ".local/alpha-closure248/approve-instrument-light-1440.png",
+        ".local/alpha-closure248/approve-instrument-dark-390.png",
+        ".local/alpha-closure248/archived-pending-light-1440.png",
+        ".local/alpha-closure248/archived-pending-dark-390.png"
+      ],
+      "pageErrors": []
+    },
+    "boundaries": {
+      "checks": [
+        "Foreign tenant cannot read current approval capability preserves domain/evidence/ledger",
+        "Foreign tenant cannot approve known UUID preserves domain/evidence/ledger",
+        "Subcontractor cannot read another-company pending flag/capability preserves domain/evidence/ledger",
+        "Subcontractor cannot approve another-company pending flag preserves domain/evidence/ledger",
+        "projectAdmin independent administration grants no ordinary pending-flag visibility preserves domain/evidence/ledger",
+        "tenantOnly independent administration grants no ordinary pending-flag visibility preserves domain/evidence/ledger",
+        "combinedAdmin independent administration grants no ordinary pending-flag visibility preserves domain/evidence/ledger",
+        "Actual Manager detail/capability read waits at tenant barrier",
+        "Session revoked during read wait returns401without approval data/effects",
+        "Revoked Manager session cannot approve witnessed flag preserves domain/evidence/ledger"
+      ],
+      "managerSessionRevocationRetained": true
+    }
+  },
+  "captures": [
+    {
+      "path": ".local/alpha-closure248/approve-chief-light-1440.png",
+      "sha256": "45f90d36bc4857919300c18443e8de1d4047b0cc8545d3bbf3ec604f0427e1b8",
+      "opened": true
+    },
+    {
+      "path": ".local/alpha-closure248/approve-chief-dark-390.png",
+      "sha256": "c9c3c4852ebaf2fe1a291e1fc3cbd8e4c8ef9a421ac953085351e88ec4da0381",
+      "opened": true
+    },
+    {
+      "path": ".local/alpha-closure248/approve-instrument-light-1440.png",
+      "sha256": "336ccabf09dccfad7363b74c67cac270f5044d68f27c0357fffc294bbbf8afef",
+      "opened": true
+    },
+    {
+      "path": ".local/alpha-closure248/approve-instrument-dark-390.png",
+      "sha256": "475ae6e743939e8c688d4d06b8f7b83d80061c18d1c85809fce9c746cf6afe3c",
+      "opened": true
+    },
+    {
+      "path": ".local/alpha-closure248/archived-pending-light-1440.png",
+      "sha256": "4ccc5d5d8a9b895a5150b706b3699f047d369cdf1d259b92ec45d214fcc4291e",
+      "opened": true
+    },
+    {
+      "path": ".local/alpha-closure248/archived-pending-dark-390.png",
+      "sha256": "a3e0c7ff2ef0ac332b32730c00300b37369f05c2125a48ee2e3d7bdc522e1d77",
+      "opened": true
+    }
+  ],
+  "logWitnesses": [
+    {
+      "path": ".local/alpha-closure248/typecheck-baseline.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".local/alpha-closure248/test-baseline.log",
+      "sha256": "46243f07246bc2056aed60365dd12e929d4c28aca9706766b6c84a02091548d6"
+    },
+    {
+      "path": ".local/alpha-closure248/typecheck-current.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".local/alpha-closure248/test-final.log",
+      "sha256": "f2dc6f58c2296719047e2822f6f8c27f47d265585b58a2044594dcded8df9458"
+    },
+    {
+      "path": ".local/alpha-closure248/focused-final.log",
+      "sha256": "cab595733f2b8ee12c591011badd50d896df40a23b2f2b3fa530f1dea72e7a1b"
+    },
+    {
+      "path": ".local/alpha-closure248/pinned-final.log",
+      "sha256": "3c61daaf31fb5aa3307861965f4ef95b3b832228c29f3df00cf714c715fdf552"
+    },
+    {
+      "path": ".local/alpha-closure248/postgres-final.log",
+      "sha256": "56c7703852e82b92fa9debd73cc525c2bea327ec6f266778a7f2907a33875748"
+    },
+    {
+      "path": ".local/alpha-closure248/before.log",
+      "sha256": "bdc4bf954d9814db3f01b1b0ec6e3df9d8a4decdc45fb9dab451a64e57d561cb"
+    },
+    {
+      "path": ".local/alpha-closure248/browser.log",
+      "sha256": "b59cb7cd90e05d2e8bc3fdc9818d6c429dfe097b909cf75685566207d70d7757"
+    },
+    {
+      "path": ".local/alpha-closure248/boundaries.log",
+      "sha256": "1e4886486c34a07c4108f3abfff2d7783a803e5f4afb93414c9fe99000c30f2a"
+    }
+  ],
+  "invariants": [
+    "No mutation endpoint, request body, server approval chain, state transition, event name, schema or persistence behavior changed. Existing approval sends no body and caller-owned retry key.",
+    "Only current Survey Manager receives approval capability with pending recognized chain/cancellable state and existing writer lifecycle availability. Independent admin alone cannot read others ordinary work or approve.",
+    "Actual Chief/IM browser approvals retain recorded reason/flagger, clear live flag/staffing, record one Manager event and notify requester/captured crew once; lost committed replies retry same empty body/key and add no effects.",
+    "Concurrent terminal409forces deliberate reload; actual event failure rolls back request/history/notices/ledger.",
+    "Archived flag remains visible read-only. Existing reopening approval retained. D6 witnessed cleanup approval shows explicit restriction and ordinary uploads stay unavailable.",
+    "Foreign tenant and subcontractor other-company current GET/approval refusals and observed tenant-lock wait followed by session401 preserve evidence. Manager session revocation retained in fixture."
+  ],
+  "reconciliation": [
+    "Strict typecheck caught accidental duplicate presentation branch in dispatcher before final runtime; corrected, failed log retained and all gates pass.",
+    "Initial final artifact preceded necessary existing cleanup projection; runtime-final independently rebuilt/full694integrated/full33SQL/focused rerun, actual browser acceptance uses runtime-final.",
+    "Only newly owned before-server was replaced; fixture/history retained. Organization seeded; requests/submission/approval/assignment/start/flags/archive/reopening/D6START and approved cancellations actual HTTP/browser."
+  ],
+  "limitations": [
+    "Signed owned synthetic accounts,not interactive login. Fully44migratedfreshUUIDPostgreSQLfixture.",
+    "Six opened Light1440/Dark390captures verify named new reviews/provenance and Archived state; not whole-role/table/long-history visual acceptance.",
+    "No new decline outcome, Superintendent stop-work authority, automatic reviewer takeover, or rule blocking work merely because a flag exists is inferred. Existing approved behavior retained.",
+    "E224/E247 recovery and E226/E228/E229 field-review receipts retain source limits; missing old E209 history witness not fabricated.",
+    "Full Alpha/current integrated role/task/state/visual/requirement closure remains open. Team Management/Org regression preserved, Org follow-ons deferred.",
+    "Inherited source-map-js release blocker unchanged; no deploy/main integration/Alpha2."
+  ],
+  "git": {
+    "developmentPreCheckpoint": [
+      0,
+      0
+    ],
+    "mainDivergence": [
+      204,
+      7
+    ],
+    "push": "Authorized verified checkpoint;confirm after commit."
+  },
+  "next": "Remaining integrated role/task/state and visual/requirement reconciliation; do not requeue verified named approval/recovery/cleanup paths as wholly missing."
+}

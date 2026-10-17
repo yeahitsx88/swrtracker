@@ -1,0 +1,165 @@
+{
+  "batch": 208,
+  "date": "2026-10-08",
+  "sourceCheckpoint": "fa3d0d4",
+  "productionChanged": false,
+  "implementation": "4a84139c41764e55404f16efbeefe64f227e2044bad0fbb5191421ace6b18509",
+  "namedAcceptance": {
+    "passed": 55,
+    "total": 55,
+    "suites": {
+      "account-offboarding-commands-postgres.ts": {
+        "at": "2026-10-08T06:21:30.768Z",
+        "exitCode": 0
+      },
+      "offboarding-policy-postgres.ts": {
+        "at": "2026-10-08T06:21:32.081Z",
+        "exitCode": 0
+      },
+      "project-administration-postgres.ts": {
+        "at": "2026-10-08T06:21:43.634Z",
+        "exitCode": 0
+      },
+      "project-capabilities-postgres.ts": {
+        "at": "2026-10-08T06:21:44.784Z",
+        "exitCode": 0
+      },
+      "account-offboarding-concurrency-postgres.ts": {
+        "at": "2026-10-08T06:21:45.311Z",
+        "exitCode": 0
+      },
+      "lifecycle-writer-handlers-postgres.ts": {
+        "at": "2026-10-08T06:21:57.910Z",
+        "exitCode": 0
+      },
+      "project-member-atomic-postgres.ts": {
+        "at": "2026-10-08T06:22:09.073Z",
+        "exitCode": 0
+      },
+      "offboarding-blockers-postgres.ts": {
+        "at": "2026-10-08T06:22:10.193Z",
+        "exitCode": 0
+      },
+      "active-duty-subject-postgres.ts": {
+        "at": "2026-10-08T06:22:11.687Z",
+        "exitCode": 0
+      },
+      "ticket-assignee-eligibility-postgres.ts": {
+        "at": "2026-10-08T06:22:12.885Z",
+        "exitCode": 0
+      },
+      "ticket-replay-visibility-postgres.ts": {
+        "at": "2026-10-08T06:22:24.086Z",
+        "exitCode": 0
+      },
+      "ticket-replay-authority-postgres.ts": {
+        "at": "2026-10-08T06:22:35.381Z",
+        "exitCode": 0
+      },
+      "identity-lifecycle-atomic-postgres.ts": {
+        "at": "2026-10-08T06:22:37.272Z",
+        "exitCode": 0
+      },
+      "notification-worker-lifecycle-postgres.ts": {
+        "at": "2026-10-08T06:22:38.787Z",
+        "exitCode": 0
+      },
+      "survey-teams-postgres.ts": {
+        "at": "2026-10-08T06:22:40.413Z",
+        "exitCode": 0
+      },
+      "survey-staffing-postgres.ts": {
+        "at": "2026-10-08T06:22:41.315Z",
+        "exitCode": 0
+      },
+      "survey-staffing-safety-postgres.ts": {
+        "at": "2026-10-08T06:22:41.859Z",
+        "exitCode": 0
+      },
+      "protected-obligations-postgres.ts": {
+        "at": "2026-10-08T06:22:42.514Z",
+        "exitCode": 0
+      },
+      "protected-obligations-concurrency-postgres.ts": {
+        "at": "2026-10-08T06:22:43.831Z",
+        "exitCode": 0
+      },
+      "superintendent-area-postgres.ts": {
+        "at": "2026-10-08T06:22:44.328Z",
+        "exitCode": 0
+      },
+      "superintendent-area-concurrency-postgres.ts": {
+        "at": "2026-10-08T06:22:45.249Z",
+        "exitCode": 0
+      },
+      "team-workforce-postgres.ts": {
+        "at": "2026-10-08T06:22:57.148Z",
+        "exitCode": 0
+      },
+      "draft-recovery-postgres.ts": {
+        "at": "2026-10-08T06:23:07.651Z",
+        "exitCode": 0
+      },
+      "http": {
+        "at": "2026-10-08T06:32:21.801447+00:00",
+        "exitCode": 0,
+        "evidenceLog": ".local\\alpha-closure208\\offboarding\\runtime\\.local-case-scoped-offboarding-acceptance_mjs.log",
+        "sha256": "5a37efeeb58f6988eea5e42b9411e52d4fa6cad4225ee9de1b0a3356eec05576",
+        "resumedExternalVerification": true
+      },
+      "browser": {
+        "at": "2026-10-08T06:36:50.667056+00:00",
+        "exitCode": 0,
+        "evidenceLog": ".local\\alpha-closure208\\offboarding\\browser5.log",
+        "sha256": "1af6fc9659be4a59b3bb31a4d2d6ce7b89ad4fbdbb3c61e56aa69bbbbdc0500d",
+        "resumedExternalVerification": true
+      }
+    },
+    "externalResumed": true,
+    "httpChecks": 52,
+    "browserChecks": 24
+  },
+  "pairedTeamManagement": {
+    "checks": 46,
+    "captures": [
+      ".impeccable/review/alpha-closure208-superintendent-conventional-light-1440.png",
+      ".impeccable/review/alpha-closure208-superintendent-visual-light-1440.png",
+      ".impeccable/review/alpha-closure208-superintendent-conventional-light-390.png",
+      ".impeccable/review/alpha-closure208-superintendent-visual-light-390.png",
+      ".impeccable/review/alpha-closure208-superintendent-conventional-dark-1440.png",
+      ".impeccable/review/alpha-closure208-superintendent-visual-dark-1440.png",
+      ".impeccable/review/alpha-closure208-superintendent-conventional-dark-390.png",
+      ".impeccable/review/alpha-closure208-superintendent-visual-dark-390.png"
+    ],
+    "errors": [],
+    "actualConventionalAndVisualCommits": true,
+    "exactUncertainRetry": true
+  },
+  "verification": {
+    "strictUnusedTypes": "pass",
+    "hostUnitTests": 642,
+    "pinnedProductionCompile": "Node22.23.3, matching lock, pass",
+    "productionAndMigrationByteMatches": 568,
+    "postgresSuites": "30 current Batch207 suites, unchanged production",
+    "httpBrowserRuntime": "owned loopback3224; Edge/hostNode24.13.1",
+    "pairedRuntime": "owned loopback3223"
+  },
+  "manualCapturesOpened": 12,
+  "logHashes": {
+    "offboarding/runtime/.local-case-scoped-offboarding-acceptance_mjs.log": "5a37efeeb58f6988eea5e42b9411e52d4fa6cad4225ee9de1b0a3356eec05576",
+    "offboarding/browser5.log": "1af6fc9659be4a59b3bb31a4d2d6ce7b89ad4fbdbb3c61e56aa69bbbbdc0500d",
+    "offboarding/report.log": "7fbd070844fdd492973a68bf8df9e5801420cb522a4f86ab922ecb327a8cab55",
+    "units.log": "beb7233c88e12f0f924b3fc6082f2e0c3ea238e351393c08c3cafa1598044121",
+    "types.log": "1527d0a42f65e0fe64c0eb22be705b592918945cb37aae5fb2b95b242c9822e3",
+    "offboarding/web.log": "1899cbd0420252bfe315ffa4b578a3dd9697a0f88d1cf3797be510cc50700967",
+    "browser.log": "d89c3774f1fee649406eac0c5155e23523ed7ac38f7505a26cc981d6d4efeb9b"
+  },
+  "limits": [
+    "Older browser attempts failed stale disclosure/copy/selection/reload assumptions; excluded and retained. Each later attempt owns new subjects; earlier state/history preserved.",
+    "Successful HTTP log explicitly recovered after original matrix runner failed browser before persisting external progress; resumed browser5 success matched current production digest.",
+    "Four offboarding captures include intermediate loading/retained-editor states; they do not establish complete theme/keyboard visual acceptance.",
+    "Paired commits cover supported Superintendent Instrument Man transfer; no Manager whole-crew parity claim.",
+    "Connected ordinary workflow journeys, remaining role visual review and complete requirement-by-requirement Alpha acceptance remain open.",
+    "Inherited release source-map-js/GHSA-68fv-2mgg-jv7q remains separate."
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "at": "2026-10-03T00:42:57.276Z",
+  "operator": {
+    "id": "42dfce2d-fa0a-48b7-88bc-70104aaf872f",
+    "name": "Casey Brooks",
+    "email": "casey.brooks@rehearsal.example.test",
+    "role": "PROJECT_ADMIN",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 180
+  },
+  "subject": {
+    "id": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+    "name": "Sam Rivera",
+    "email": "person001@rehearsal.example.test",
+    "role": "SURVEY_MANAGER",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 0
+  },
+  "candidate": {
+    "id": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+    "name": "Taylor Rivera",
+    "email": "person002@rehearsal.example.test",
+    "role": "SURVEY_SUPERINTENDENT",
+    "companyId": "5d736244-7994-4340-9737-eef1ec298bba",
+    "index": 1
+  },
+  "checks": [
+    {
+      "name": "Existing membership cannot silently change role",
+      "status": 409,
+      "response": {
+        "error": {
+          "type": "ConflictError",
+          "code": "CONFLICT",
+          "message": "Membership already exists; use the guarded role-change flow",
+          "correlationId": "94dba564-db3b-4760-9cf6-43cd3df0cc4b",
+          "status": 409
+        }
+      }
+    },
+    {
+      "name": "Guarded Survey role API does not support promotion to manager",
+      "status": 400,
+      "response": {
+        "error": {
+          "type": "ValidationError",
+          "code": "VALIDATION_ERROR",
+          "message": "Select a supported survey role, its current role and an explicit role-change confirmation",
+          "correlationId": "bc43bc1a-f7a7-4e21-944d-3bfec584c51a",
+          "status": 400
+        }
+      }
+    }
+  ],
+  "mapping": "Project Manager acts using the existing Project Admin capability; no new operational role invented.",
+  "offboardingPreview": {
+    "scope": {
+      "kind": "PROJECT_ACCESS",
+      "projectId": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b"
+    },
+    "subjectUserId": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+    "snapshot": "9162c0f75cb408f5ba58f97093b5ae0419bcf9ae429fc70494c269b6301d2fd6",
+    "blockerTotal": 1,
+    "blockerOffset": 0,
+    "blockerLimit": 25,
+    "alreadyDisabled": false,
+    "blockers": [
+      {
+        "code": "LAST_SURVEY_MANAGER",
+        "count": 1,
+        "projectId": "7e2d1a43-e80a-4f69-9a54-7900bbeba06b",
+        "resolutionPath": "/projects/7e2d1a43-e80a-4f69-9a54-7900bbeba06b/admin"
+      }
+    ],
+    "centralITRecipientCount": 1,
+    "retainsCentralIT": false
+  },
+  "retainedMemberships": [
+    {
+      "user_id": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "role": "SURVEY_MANAGER",
+      "access_disabled_at": null
+    },
+    {
+      "user_id": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "role": "SURVEY_SUPERINTENDENT",
+      "access_disabled_at": null
+    }
+  ],
+  "outcome": "BLOCKED: promotion requires a guarded Survey Manager handover capability. No authority was changed and no personnel were removed."
+}

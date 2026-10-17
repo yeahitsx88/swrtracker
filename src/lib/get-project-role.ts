@@ -5,6 +5,7 @@
 import { ForbiddenError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
+import { assertActiveSession } from './auth';
 
 interface MembershipRow {
   role: string;
@@ -15,14 +16,28 @@ export async function getProjectRole(
   tenantId: UUID,
   projectId: UUID,
   userId: UUID,
+  sessionVersion?: number,
 ): Promise<ProjectRole> {
+  if (sessionVersion !== undefined) {
+    await assertActiveSession(db, { tenantId, userId, sessionVersion });
+  }
+
   const { rows } = await db.query<MembershipRow>(
     `SELECT role
      FROM project_memberships pm
      JOIN projects p ON p.id = pm.project_id
+     JOIN users u ON u.id = pm.user_id AND u.tenant_id = p.tenant_id
+     JOIN companies c ON c.id = u.company_id AND c.tenant_id = u.tenant_id
      WHERE pm.project_id = $1
        AND pm.user_id    = $2
        AND p.tenant_id   = $3
+       AND u.deactivated_at IS NULL AND pm.access_disabled_at IS NULL
+       AND (pm.role <> 'PROJECT_ADMIN' OR EXISTS (
+         SELECT 1 FROM project_admin_grants g
+         WHERE g.tenant_id = p.tenant_id AND g.project_id = pm.project_id
+           AND g.user_id = pm.user_id AND g.revoked_at IS NULL
+       ))
+       AND (c.type <> 'SUBCONTRACTOR' OR pm.role = 'REQUESTER')
      LIMIT 1`,
     [projectId, userId, tenantId],
   );

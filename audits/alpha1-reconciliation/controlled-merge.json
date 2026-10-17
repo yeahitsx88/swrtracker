@@ -1,0 +1,36 @@
+{
+  "commit": "7c039ecafe8b84cfbe7271ad930028d24b5fa061",
+  "parents": [
+    "b8ff81494c6701bb7f84550b40c247f4588b28cb",
+    "68ce7a48bc4a70450ab36b05c4257ab3dafbc83f"
+  ],
+  "sourceSha256": "02ed5d3353127058642cf6225683f1cbc1b04d8b452ded8ce477524da3d073f9",
+  "migrationSha256": "5a7346f2ea229c93a9943bd15a58c6af26df9bdba1ea67a975fa830affa37860",
+  "digestFormat": "sorted path + NUL + canonical LF bytes, src/migrations/build configurations",
+  "hardeningOwnedCheckout": "D:/Programming/SWRTracker",
+  "reviewedRedesignHead": "68ce7a4",
+  "initialHardening": "b8ff814",
+  "initialRedesign": "45af79a",
+  "remoteRefresh": "origin fetched before comparison; 0 hardening-only/120 redesign-only commits",
+  "inspectedLocations": [
+    "D:/Programming/SWRTracker",
+    "C:/Users/xwall/.codex/worktrees/010a/SWRTracker",
+    "C:/Users/xwall/SWRTracker",
+    "C:/Users/xwall/ProjectPrograms/SWRTracker",
+    "current managed worktree and linked worktree inventory"
+  ],
+  "ownerConfirmation": "No additional unpushed hardening commits known; preserve010a uncommitted corrections separately and integrate through clean D checkout",
+  "gates": {
+    "strictTypes": "pass",
+    "units": 707,
+    "postgresSuites": 33,
+    "pinnedProductionBuild": "pass"
+  },
+  "dependencyGate": "known source-map-js advisory explicitly not passing at this merge stage",
+  "notPerformed": [
+    "main integration",
+    "push/publication",
+    "deployment",
+    "Alpha2"
+  ]
+}

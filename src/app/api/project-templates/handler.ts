@@ -1,0 +1,125 @@
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { withTransaction } from '@/lib/with-transaction';
+/**
+ * GET  /api/project-templates
+ * POST /api/project-templates
+ * Both require TENANT_ADMIN.
+ */
+import { NextResponse, type NextRequest } from 'next/server';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
+import { errorResponse } from '@/lib/api-error';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
+import { pool } from '@/lib/db';
+import { getTenantRole } from '@/lib/get-tenant-role';
+import { listProjectTemplates } from '@/modules/tenancy/application/list-project-templates';
+import { createProjectTemplate } from '@/modules/tenancy/application/project-templates';
+import type { ITenancyRepository } from '@/modules/tenancy/application/ports';
+import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
+import type { CrewBuild } from '@/modules/tenancy/domain/types';
+
+export const dynamic = 'force-dynamic';
+
+const VALID_CREW_BUILDS: CrewBuild[] = ['FULL', 'MEDIUM', 'SLIM'];
+
+export interface ProjectTemplatesRouteDeps {
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
+  getTenantRole: typeof getTenantRole;
+  createRepo: () => ITenancyRepository;
+  withTransaction?: typeof withTransaction;
+}
+
+const defaultDeps: ProjectTemplatesRouteDeps = {
+  requireAuth: requireActiveAuth,
+  getTenantRole,
+  createRepo: () => new TenancyRepository(),
+};
+
+export async function handleGetProjectTemplates(
+  req: NextRequest,
+  deps: ProjectTemplatesRouteDeps = defaultDeps,
+) {
+  try {
+    const auth = await deps.requireAuth(req);
+    const actorRole = await deps.getTenantRole(pool, auth.tenantId, auth.userId, auth.sessionVersion);
+    const repo = deps.createRepo();
+    const templates = await listProjectTemplates(repo, pool, {
+      tenantId: auth.tenantId,
+      actorRole,
+    });
+
+    return NextResponse.json({ templates });
+  } catch (err) {
+    return errorResponse(err);
+  }
+}
+
+export async function handlePostProjectTemplates(
+  req: NextRequest,
+  deps: ProjectTemplatesRouteDeps = defaultDeps,
+) {
+  try {
+    const auth = await deps.requireAuth(req);
+    const body = await req.json() as Record<string, unknown>;
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      typeof body.name !== 'string' ||
+      typeof body.crewBuild !== 'string' ||
+      !VALID_CREW_BUILDS.includes(body.crewBuild as CrewBuild) ||
+      typeof body.aorDepth !== 'number' ||
+      !Array.isArray(body.aorLevelLabels) ||
+      !body.aorLevelLabels.every((label) => typeof label === 'string') ||
+      !Array.isArray(body.disciplineGroups) ||
+      !body.disciplineGroups.every((group) => typeof group === 'string')
+    ) {
+      throw new ValidationError(
+        'name, crewBuild, aorDepth, aorLevelLabels[], and disciplineGroups[] are required',
+      );
+    }
+
+    const template = await (deps.withTransaction ?? withTransaction)(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', deps.requireAuth);
+      const actorRole = await deps.getTenantRole(client, auth.tenantId, auth.userId, auth.sessionVersion);
+      if(actorRole!=='TENANT_ADMIN')throw new ForbiddenError('Only a Tenant Admin can manage shared project templates');
+      const repo = deps.createRepo();
+      const create = async()=>{
+      const template = await createProjectTemplate(repo, client, {
+      tenantId: auth.tenantId,
+      actorId: auth.userId,
+      actorRole,
+      name: body.name as string,
+      crewBuild: body.crewBuild as CrewBuild,
+      aorDepth: body.aorDepth as number,
+      aorLevelLabels: body.aorLevelLabels as string[],
+      disciplineGroups: body.disciplineGroups as string[],
+    });
+
+      await appendAdministrativeEvent(client, {
+        auth, projectId: null, subjectUserId: null,
+        eventType: 'tenant.template_created', authorityEvidence: { actorRole },
+        changes: { result: template },
+      });
+      return template;
+      };
+      if(req.headers.has('Idempotency-Key')) {
+        const result=await executeIdempotentHttpMutation(client,{tenantId:auth.tenantId,actorId:auth.userId,endpoint:'POST /api/project-templates',idempotencyKey:requireIdempotencyKey(req)},body,
+          async()=>({status:201,body:{template:await create()}}));
+        return result.body.template;
+      }
+      return create();
+    });
+    return NextResponse.json({ template }, { status: 201 });
+  } catch (err) {
+    return errorResponse(err);
+  }
+}
+
+export async function GET(req: NextRequest) {
+  return handleGetProjectTemplates(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handlePostProjectTemplates(req);
+}

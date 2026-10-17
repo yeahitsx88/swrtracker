@@ -1,0 +1,39 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
+import { NextResponse, type NextRequest } from 'next/server';
+import { ValidationError } from '@/shared/errors';
+import { errorResponse } from '@/lib/api-error';
+import { withRequestCorrelation } from '@/lib/correlation';
+import { requireIdempotencyKey } from '@/lib/idempotency';
+import { executeAuthorizedTicketMutation } from '@/lib/ticket-mutation-idempotency';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
+import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { reportFieldInability } from '@/modules/ticket/application/field-inability';
+
+export const dynamic = 'force-dynamic';
+
+async function observedPOST(req: NextRequest, { params }: { params: Promise<{ ticketId: string }> }) {
+  return withRequestCorrelation(req, async () => {
+    try {
+      const { ticketId } = await params;
+      const ctx = await getTicketRouteContext(req, ticketId);
+      const idempotencyKey = requireIdempotencyKey(req);
+      const body = await req.json() as Record<string, unknown>;
+      if (typeof body.reason !== 'string' || !body.reason.trim()) throw new ValidationError('reason is required');
+      const repo = new TicketRepository();
+      const result = await withTicketMutation(req, ctx, (db, ctx) => executeAuthorizedTicketMutation(
+        db,
+        { tenantId: ctx.tenantId, actorId: ctx.actorId, endpoint: `POST:/api/tickets/${ticketId}/field-inability`, idempotencyKey },
+        { ticketId, reason: body.reason },
+        async () => ({
+          status: 200,
+          body: { ticket: await reportFieldInability(repo, db, { ...ctx, reason: body.reason as string }) },
+        }),
+      ));
+      return NextResponse.json(result.body, { status: result.status });
+    } catch (error) {
+      return errorResponse(error);
+    }
+  });
+}
+
+export const POST=observeProjectRoute(observedPOST);

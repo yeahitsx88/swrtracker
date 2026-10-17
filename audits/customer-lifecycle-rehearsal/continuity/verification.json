@@ -1,0 +1,44 @@
+{
+  "scope": "Disposable synthetic PostgreSQL fixtures; no production or retained rehearsal mutations",
+  "suites": [
+    {
+      "suite": "offboarding-policy-postgres",
+      "checks": 44,
+      "passed": true,
+      "schemaAssertions": 28
+    },
+    {
+      "suite": "account-offboarding-commands-postgres",
+      "checks": 76,
+      "passed": true,
+      "schemaAssertions": 28
+    },
+    {
+      "suite": "project-administration-postgres",
+      "checks": 56,
+      "passed": true,
+      "schemaAssertions": 28
+    },
+    {
+      "suite": "account-offboarding-concurrency-postgres",
+      "checks": 33,
+      "passed": true,
+      "schemaAssertions": null
+    },
+    {
+      "suite": "continuity-recovery-postgres",
+      "checks": 30,
+      "passed": true,
+      "schemaAssertions": 28
+    }
+  ],
+  "normalTests": 554,
+  "baselineNormalTests": 549,
+  "strictTypeScript": "passed",
+  "linuxProductionBuild": "passed; swrtracker:continuity-review-final-20261002",
+  "browserChecks": 28,
+  "attachmentChecks": 160,
+  "retainedTablesUnchanged": 10,
+  "originalTicketEventsUnchanged": true,
+  "downloadAuditEventsAppended": 160
+}

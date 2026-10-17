@@ -1,0 +1,35 @@
+{
+  "scope": "Decision54 D7 established-template authority and read-only reference only",
+  "baseline": "5866772",
+  "branch": "alpha1-ui-redesign",
+  "strictUnusedTypecheck": "pass",
+  "unitTests": 632,
+  "pinnedRuntime": "Node22.23.3 matching lock",
+  "productionCompilation": "pass",
+  "postgresAdministrationChecks": 122,
+  "postgresLifecycleSchemaChecks": 28,
+  "postgresTeamRegressionSuites": 9,
+  "browserChecks": 39,
+  "captures": [
+    ".impeccable/review/d7-admin-light-1440.png",
+    ".impeccable/review/d7-admin-light-390.png",
+    ".impeccable/review/d7-admin-dark-1440.png",
+    ".impeccable/review/d7-admin-dark-390.png",
+    ".impeccable/review/d7-central-light-1440.png",
+    ".impeccable/review/d7-central-light-390.png",
+    ".impeccable/review/d7-central-dark-1440.png",
+    ".impeccable/review/d7-central-dark-390.png"
+  ],
+  "rawProductionMigrationFilesMatched": 562,
+  "reviewer": "fresh full disposition ship; no fixes",
+  "documenter": "fresh read-only No changes",
+  "detector": [],
+  "limits": [
+    "D1,D4,D5,D6,D8 approved incomplete",
+    "D2,D3 specific current verification pending",
+    "old submitted-recovery harness refused guard before writes; excluded",
+    "whole Alpha acceptance open",
+    "no push/deploy/main merge/Alpha2",
+    "inherited separate release blocker unchanged"
+  ]
+}

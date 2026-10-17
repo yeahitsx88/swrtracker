@@ -1,27 +1,24 @@
 /**
  * Shared helpers for ticket use cases.
- * performTransition is the single chokepoint for all state changes —
- * it calls assertValidTransition, patches the DB, and logs the audit event
- * atomically within the caller's transaction.
+ * performTransition delegates to the workflow kernel so transition rules,
+ * role gating, and audit emission remain centralized.
  */
-import { ForbiddenError, NotFoundError } from '@/shared/errors';
-import { assertValidTransition } from '@/modules/workflow/domain/transitions';
-import { appendAuditEvent } from '@/modules/audit/application/index';
+import {
+  executeWorkflowTransition,
+  assertWorkflowActorHasRole,
+} from '@/modules/workflow/application';
 import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { AuditEventType } from '@/modules/audit/domain/types';
 import type { Ticket, TicketStatus } from '../domain/types';
-import type { ITicketRepository, TicketStatusPatch } from './ports';
+import type { ITicketRepository, TicketStatusPatch, VisibilityScope } from './ports';
+import {resolveRejectionProposal} from './rejection-proposal';
 
 export function assertActorHasRole(
   actorRole: ProjectRole,
   permittedRoles: readonly ProjectRole[],
 ): void {
-  if (!permittedRoles.includes(actorRole)) {
-    throw new ForbiddenError(
-      `This action requires one of: ${permittedRoles.join(', ')}`,
-    );
-  }
+  assertWorkflowActorHasRole(actorRole, permittedRoles);
 }
 
 export async function performTransition(
@@ -37,25 +34,56 @@ export async function performTransition(
     patch:          Omit<TicketStatusPatch, 'status'>;
     eventType:      AuditEventType;
     eventPayload?:  Record<string, unknown>;
+    visibility?:    VisibilityScope;
+    assertTicket?: (ticket: Ticket) => void;
+    authorizeTicket?: (ticket: Ticket) => Promise<Record<string, unknown>>;
   },
 ): Promise<Ticket> {
   const { tenantId, ticketId, actorId, actorRole, permittedRoles, to, patch, eventType } = options;
-
-  const ticket = await repo.findByIdInternal(db, tenantId, ticketId);
-  if (!ticket) throw new NotFoundError(`Ticket ${ticketId} not found`);
-
-  assertActorHasRole(actorRole, permittedRoles);
-  assertValidTransition(ticket.workflowVariant, ticket.status, to);
-
-  await repo.patchTicket(db, tenantId, ticketId, { ...patch, status: to });
-  await appendAuditEvent(db, {
-    ticketId,
+  const eventPayload = { ...options.eventPayload };
+  const result=await executeWorkflowTransition(db, {
     tenantId,
+    ticketId,
     actorId,
+    actorRole,
+    permittedRoles,
+    to,
+    patch,
     eventType,
-    payload: options.eventPayload ?? {},
+    eventPayload,
+    readTicket: async () => {
+      const ticket = await (options.visibility
+        ? repo.findById(db, tenantId, ticketId, options.visibility)
+        : repo.findByIdInternal(db, tenantId, ticketId)
+      );
+      if (ticket && options.assertTicket) options.assertTicket(ticket);
+      if (ticket && options.authorizeTicket) {
+        eventPayload.reviewAuthority = await options.authorizeTicket(ticket);
+      }
+      return ticket;
+    },
+    patchTicket: (nextPatch, expected) =>
+      repo.patchTicket(
+        db,
+        tenantId,
+        ticketId,
+        nextPatch as TicketStatusPatch,
+        {
+          expectedStatus: expected.status,
+          expectedRowVersion: expected.rowVersion,
+        },
+      ),
+    buildResult: (ticket) => ({
+      ...ticket,
+      ...patch,
+      status: to,
+      rowVersion: (ticket.rowVersion ?? 0) + 1,
+      updatedAt: new Date(),
+    }),
   });
-
-  // Return ticket with updated status applied
-  return { ...ticket, ...patch, status: to, updatedAt: new Date() };
+  if(to==='RETURNED_FOR_CORRECTION'||to==='REQUESTER_CANCELED'||to==='SURVEY_CANCELED'){
+    await resolveRejectionProposal(db,{tenantId,ticketId,actorId,actorRole},'SUPERSEDED');
+    await db.query('UPDATE survey_work_delegations SET ended_at=now(),end_reason=$3 WHERE tenant_id=$1 AND ticket_id=$2 AND ended_at IS NULL',[tenantId,ticketId,to]);
+  }
+  return result;
 }

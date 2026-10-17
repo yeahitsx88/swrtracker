@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-03T00:31:16.328Z",
+  "secondaryProject": {
+    "id": "70152a3b-3c5e-4536-8d5f-e1d42730a3d5",
+    "tenantId": "da772b3e-fc32-4e10-a80d-3c563d9fc1d4",
+    "name": "SYNTHETIC Southbank Access Road",
+    "status": "SETUP",
+    "crewBuild": "FULL",
+    "templateId": null,
+    "createdAt": "2026-10-03T00:29:21.551Z"
+  },
+  "secondaryDraft": "8125426d-9faf-4710-841f-6a6f9b12b0e0",
+  "results": [
+    {
+      "actor": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+      "role": "PROJECT_ADMIN",
+      "path": "/api/projects/70152a3b-3c5e-4536-8d5f-e1d42730a3d5/members",
+      "status": 403,
+      "denied": true
+    },
+    {
+      "actor": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "role": "SURVEY_MANAGER",
+      "path": "/api/tickets/8125426d-9faf-4710-841f-6a6f9b12b0e0",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "actor": "659d373a-9f44-4b21-8267-736732a67324",
+      "role": "TENANT_ADMIN",
+      "path": "/api/projects/7e2d1a43-e80a-4f69-9a54-7900bbeba06b/members",
+      "status": 404,
+      "denied": true
+    },
+    {
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "check": "Northbank query excludes owned Southbank draft",
+      "pass": true
+    },
+    {
+      "actor": "57420cb2-1131-4eda-9872-563353b1f6e1",
+      "check": "Explicit Southbank membership grants own draft read",
+      "pass": true
+    },
+    {
+      "actor": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+      "check": "Jordan administration discovery excludes Southbank",
+      "pass": true
+    }
+  ]
+}

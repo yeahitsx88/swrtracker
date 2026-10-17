@@ -1,0 +1,13 @@
+{
+  "override": "postcss>source-map-js",
+  "resolved": "1.2.2",
+  "next": "15.5.27",
+  "lockRegeneration": "pnpm11.19.0 --lockfile-only followed by frozen install",
+  "productionAudit": "No known vulnerabilities found",
+  "shippingImage": "swr-reconcile-final-7431",
+  "shippedSourceMapVersions": [
+    "1.2.2"
+  ],
+  "applicationGates": "strict types /707 units /PostgreSQL /production build /Docker build pass",
+  "advisory": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q"
+}

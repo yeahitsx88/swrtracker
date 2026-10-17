@@ -10,7 +10,7 @@
  */
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { ConflictError } from '@/shared/errors';
+import { ConflictError, ValidationError } from '@/shared/errors';
 import type { DbClient, UUID } from '@/shared/types';
 import type { User, UserWithCredentials } from '../domain/types';
 import type { IUserRepository } from './ports';
@@ -30,9 +30,19 @@ export async function createUser(
   db: DbClient,
   params: CreateUserParams,
 ): Promise<User> {
-  const existing = await repo.findByEmail(db, params.tenantId, params.email);
+  const normalizedEmail = params.email.trim().toLowerCase();
+  const normalizedName = params.name.trim();
+
+  if (!normalizedEmail) {
+    throw new ValidationError('email is required');
+  }
+  if (!normalizedName) {
+    throw new ValidationError('name is required');
+  }
+
+  const existing = await repo.findByEmail(db, params.tenantId, normalizedEmail);
   if (existing) {
-    throw new ConflictError(`Email ${params.email} is already registered in this tenant`);
+    throw new ConflictError(`Email ${normalizedEmail} is already registered in this tenant`);
   }
 
   const passwordHash = await bcrypt.hash(params.password, BCRYPT_ROUNDS);
@@ -41,8 +51,8 @@ export async function createUser(
     id:           randomUUID() as UUID,
     tenantId:     params.tenantId,
     companyId:    params.companyId,
-    email:        params.email,
-    name:         params.name,
+    email:        normalizedEmail,
+    name:         normalizedName,
     authMethod:   'LOCAL',
     passwordHash,
     createdAt:    new Date(),

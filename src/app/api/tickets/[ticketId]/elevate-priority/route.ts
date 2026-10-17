@@ -1,13 +1,14 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { getTicketRouteContext, withTransaction } from '@/lib/ticket-route-helpers';
+import { getTicketRouteContext, withTicketMutation } from '@/lib/ticket-route-helpers';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
 import { elevateToPrority } from '@/modules/ticket/application/elevate-priority';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ ticketId: string }> },
 ) {
@@ -23,7 +24,7 @@ export async function POST(
     const { reason } = body as { reason: string };
 
     const repo = new TicketRepository();
-    const ticket = await withTransaction((client) =>
+    const ticket = await withTicketMutation(req, ctx, (client, ctx) =>
       elevateToPrority(repo, client, { ...ctx, reason }),
     );
     return NextResponse.json({ ticket });
@@ -31,3 +32,5 @@ export async function POST(
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);

@@ -17,15 +17,26 @@ export async function addProjectMember(
   db: DbClient,
   params: AddProjectMemberParams,
 ): Promise<void> {
-  if (params.actorRole !== 'TENANT_ADMIN') {
-    throw new ForbiddenError('Only TENANT_ADMIN can add project members');
+  if (params.actorRole !== 'TENANT_ADMIN' && params.actorRole !== 'PROJECT_ADMIN') {
+    throw new ForbiddenError('Project administration is required to add members');
+  }
+
+  const project = await repo.findProjectById(db, params.tenantId, params.projectId);
+  if (!project) {
+    throw new ForbiddenError(
+      'Project membership mutation violates tenant boundary',
+      'SEC_TENANT_BOUNDARY_VIOLATION',
+    );
   }
 
   await repo.saveMembership(db, {
     id:        randomUUID() as UUID,
+    tenantId:  params.tenantId,
     projectId: params.projectId,
     userId:    params.userId,
     role:      params.role,
     createdAt: new Date(),
   });
+
+  await repo.bumpUserSessionVersion?.(db, params.tenantId, params.userId);
 }

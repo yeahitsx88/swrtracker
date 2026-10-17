@@ -1,0 +1,4465 @@
+{
+  "origin": "actual auto_explain session-local analyzed plans; owned PostgreSQL15",
+  "plans": [
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.024,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 25,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.038,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.036,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.013
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.022,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.022,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.008
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 25,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.007,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Seq Scan",
+        "Relation Name": "tickets",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.01,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.01,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.1,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.012
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.031,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.011,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.009
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.01,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.009
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.066,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 228,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.025
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.037,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.037,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.029,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.017
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.008,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.005,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.001
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.023,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.021,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.016
+              },
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.011,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 25,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.032,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.031,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.01
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.02,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.02,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.008
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 25,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Seq Scan",
+        "Relation Name": "tickets",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.01,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.003
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.14,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.017
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.024,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.008,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.065,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 229,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.025
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.033,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.032,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.026,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.016
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.007,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.004,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.001
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.014,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.012,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              },
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.012,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.01
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 25,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.026,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.025,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.011
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.021,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.02,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 25,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Seq Scan",
+        "Relation Name": "tickets",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.009,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.003
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.05,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.017
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.023,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.008,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.06,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 230,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.026
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.039,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.038,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.032,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.02
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.008,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.005,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.002
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.016,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.013,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              },
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.011,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 25,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.028,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.026,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.012
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.02,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.02,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 25,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Seq Scan",
+        "Relation Name": "tickets",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.006
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.01,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.003
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.058,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.02
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.024,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.008,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.06,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 231,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.026
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.034,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.033,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.028,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.016
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.008,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.005,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.002
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.015,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.013,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              },
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.034,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 125,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.03
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 50,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.088,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 50,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.086,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 125,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.034
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.043,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.043,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 50,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.019
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 50,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Seq Scan",
+        "Relation Name": "tickets",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.013
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.015,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.015,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.011
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.003
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.064,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.023
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.059,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.021,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.02
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.025,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.024
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.061,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 232,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.027
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.037,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.036,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.031,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.017
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.009,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.005,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.002
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.015,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.013,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              },
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.039,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 125,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.035
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 50,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.095,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 50,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.092,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 125,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.037
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.047,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.046,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 50,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.021
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 50,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.004,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Seq Scan",
+        "Relation Name": "tickets",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.013
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.002,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.003,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.003
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "tickets",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.004
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.016,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.015,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.012
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.003
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.065,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.025
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.049,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.022,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.022
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.013,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.013
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.069,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 233,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.028
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.035,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.034,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.029,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.017
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.008,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.005,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.002
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.014,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.012,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              },
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "tickets",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.004
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.21,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1025,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.186
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 50,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.577,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 50,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.575,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_created",
+                "Plan Rows": 1,
+                "Actual Rows": 1025,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.252
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.103,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.102,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 50,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.08
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 50,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.007,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_tenant_id_id_key",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.007
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.006,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "tickets",
+        "Index Name": "idx_tickets_tenant_project_priority",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.258
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.008,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_pkey",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.008
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.008,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.007
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_tenant_id_id_key",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.007,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.007,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_tenant_id_id_key",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.007
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.071,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.07,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.068
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.002
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.067,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.026
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.267,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.147,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.146
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.107,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.106
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.063,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 234,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.028
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.036,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.035,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.03,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.017
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.009,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.006,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.002
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.015,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.013,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "7fa55430b2e715db5b0be54a9b085a38cdb0fd1059183babf3d737be7c7d4772",
+      "shape": "SELECT COUNT(*) AS total FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $3)",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.205,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1025,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.181
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1bbcc273cf586b9f82dba7ed623217fc11edede326cf9f9cf926f2e7b03008fa",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.tenant_id = $1 AND t.project_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.reques",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 50,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.592,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 1,
+            "Actual Rows": 50,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.59,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_created",
+                "Plan Rows": 1,
+                "Actual Rows": 1025,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.271
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.114,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.113,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 50,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.09
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 50,
+                "Actual Total Time": 0.0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.009,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_tenant_id_id_key",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.009
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.007,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.007
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "e19d7c9a256ea356d32080e4a0a93752ee6a83d1ebb6d484d9dbc4c239a92483",
+      "shape": "SELECT status FROM tickets WHERE tenant_id=$1 AND project_id=$2 AND id=$3",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "tickets",
+        "Index Name": "idx_tickets_tenant_project_priority",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.062
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.006,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_pkey",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.006,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "35598ba244d5fee66c2a0c75482b84c27a12762df90e92472508f4e59afda72e",
+      "shape": "SELECT project_id FROM tickets WHERE id = $1 AND tenant_id = $2 LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.005,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_tenant_id_id_key",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "6f9704e4b7301c0f8ce01385680ff76200a481a07b120f18e633e805b5d40646",
+      "shape": "SELECT t.id FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.project_id = $3 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id = $4) LIMIT 1",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.006,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "idx_tickets_tenant_project_priority",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.005
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "dbabf5b4a7f906537ecad4b2c05251ece1b7e574a8ebf463a23193216ad46df1",
+      "shape": "SELECT t.*, t.requested_date::text AS requested_date, t.original_requested_date::text AS original_requested_date FROM tickets t WHERE t.id = $1 AND t.tenant_id = $2 AND t.draft_deleted_at IS NULL AND (t.status <> 'DRAFT' OR t.requester_id =",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.006,
+        "Plans": [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "tickets",
+            "Index Name": "tickets_tenant_id_id_key",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8ca50d667dbd7234ac97087ee945460d88d6eba2124cb896592034aa25d36a16",
+      "shape": "SELECT t.id FROM tickets t JOIN projects p ON p.tenant_id=t.tenant_id AND p.id=t.project_id AND p.status='SETUP' JOIN project_preparation_cancellations c ON c.tenant_id=p.tenant_id AND c.project_id=p.id AND c.completed_at IS NULL WHERE t.te",
+      "plan": {
+        "Node Type": "Nested Loop",
+        "Plan Rows": 1,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.072,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.072,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.07
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "projects",
+                "Index Name": "projects_tenant_id_id_key",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.002
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "project_preparation_cancellations",
+            "Index Name": "preparation_cancellation_pending",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          },
+          {
+            "Node Type": "Function Scan",
+            "Plan Rows": 1,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Actual Total Time": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.13,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.019
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "22d68241bc4e9e9a433425a2b8fbd91e5903ee19adeb2093006aa1c48c98353d",
+      "shape": "SELECT p.id AS \"projectId\",p.status, (SELECT count(*)::int FROM project_memberships pm WHERE pm.project_id=p.id AND pm.access_disabled_at IS NOT NULL) AS \"disabledMemberships\", (SELECT count(*)::int FROM tickets t WHERE t.tenant_id=p.tenant",
+      "plan": {
+        "Node Type": "Index Scan",
+        "Relation Name": "projects",
+        "Index Name": "projects_tenant_id_id_key",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.284,
+        "Plans": [
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.006,
+            "Plans": [
+              {
+                "Node Type": "Seq Scan",
+                "Relation Name": "project_memberships",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.005
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.162,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.161
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.109,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 3,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.108
+              }
+            ]
+          },
+          {
+            "Node Type": "Aggregate",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.001,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "account_offboarding_reviews",
+                "Index Name": "account_offboarding_reviews_pending",
+                "Plan Rows": 1,
+                "Actual Rows": 0,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.001
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "4766295575dc9945c1cbfb66146a28d2847d87f6b76ae33031534f9d2d975817",
+      "shape": "SELECT count(*)::int AS \"requestCount\",count(*) FILTER(WHERE status>=400)::int AS \"errorCount\", avg(duration_ms) FILTER(WHERE observed_at>=now()-interval '1 hour') AS \"currentAvgMs\", count(*) FILTER(WHERE observed_at>=now()-interval '1 hour",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.063,
+        "Plans": [
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "project_request_observations",
+            "Plan Rows": 227,
+            "Actual Rows": 235,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.028
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "1ce34596b896c01953beefeb121fb5b8df762143716a16ea3534bfe6c03aaee3",
+      "shape": "SELECT o.id,o.route,o.method,o.status,o.duration_ms AS \"durationMs\",o.correlation_id AS \"correlationId\",o.error_code AS \"errorCode\",o.ticket_id AS \"ticketId\",o.prior_status AS \"priorStatus\",o.observed_at AS \"observedAt\",u.name AS \"actorName",
+      "plan": {
+        "Node Type": "Limit",
+        "Plan Rows": 17,
+        "Actual Rows": 14,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.038,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Plan Rows": 17,
+            "Actual Rows": 14,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.037,
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Plan Rows": 17,
+                "Actual Rows": 14,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.031,
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Relation Name": "project_request_observations",
+                    "Plan Rows": 13,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.017
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Plan Rows": 2,
+                    "Actual Rows": 28,
+                    "Actual Loops": 1,
+                    "Actual Total Time": 0.009,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Relation Name": "users",
+                        "Plan Rows": 2,
+                        "Actual Rows": 28,
+                        "Actual Loops": 1,
+                        "Actual Total Time": 0.006,
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Index Name": "users_tenant_id_id_company_id_key",
+                            "Plan Rows": 2,
+                            "Actual Rows": 28,
+                            "Actual Loops": 1,
+                            "Actual Total Time": 0.003
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "8d37d07217c1eb248adb773de3e68ea83e7be696028a313e7c9beb83e2523dd9",
+      "shape": "SELECT count(*)::int AS \"queuedCount\",count(*) FILTER(WHERE n.delivery_state IN ('SENT','CAPTURED'))::int AS \"deliveredCount\", avg(extract(epoch FROM n.delivered_at-n.created_at)*1000) FILTER(WHERE n.delivered_at IS NOT NULL) AS \"averageDel",
+      "plan": {
+        "Node Type": "Aggregate",
+        "Plan Rows": 1,
+        "Actual Rows": 1,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.017,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.015,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "notification_outbox",
+                "Index Name": "notification_outbox_tenant_id_idempotency_key_key",
+                "Plan Rows": 1,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.007
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "tickets",
+                "Index Name": "idx_tickets_tenant_project_priority",
+                "Plan Rows": 1,
+                "Actual Rows": 26,
+                "Actual Loops": 1,
+                "Actual Total Time": 0.006
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "querySha256": "9e0cf98a7660dc834f9283e945f5ab114722c67fdd17ab5f336a9cbf2d1ceb89",
+      "shape": "INSERT INTO project_request_observations(tenant_id,project_id,actor_id,route,method,status,duration_ms,correlation_id,error_code,ticket_id,prior_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      "plan": {
+        "Node Type": "ModifyTable",
+        "Relation Name": "project_request_observations",
+        "Plan Rows": 0,
+        "Actual Rows": 0,
+        "Actual Loops": 1,
+        "Actual Total Time": 0.057,
+        "Plans": [
+          {
+            "Node Type": "Result",
+            "Plan Rows": 1,
+            "Actual Rows": 1,
+            "Actual Loops": 1,
+            "Actual Total Time": 0.02
+          }
+        ]
+      }
+    }
+  ],
+  "limits": "Only node types, indexes and row/timing witnesses retained; identifiers, conditions and parameter values excluded."
+}

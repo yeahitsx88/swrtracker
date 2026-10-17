@@ -1,4 +1,7 @@
+import {assertCompanyNameAvailable} from '../infrastructure/company-name-availability';
 import { randomUUID } from 'crypto';
+import { ForbiddenError, ValidationError } from '@/shared/errors';
+import type { TenantRole } from '@/modules/identity/domain/types';
 import type { DbClient, UUID } from '@/shared/types';
 import type { Company, CompanyType } from '../domain/types';
 import type { ITenancyRepository } from './ports';
@@ -7,6 +10,7 @@ export interface CreateCompanyParams {
   tenantId: UUID;
   name: string;
   type: CompanyType;
+  actorRole: TenantRole | null;
 }
 
 export async function createCompany(
@@ -14,10 +18,21 @@ export async function createCompany(
   db: DbClient,
   params: CreateCompanyParams,
 ): Promise<Company> {
+  if (params.actorRole !== 'TENANT_ADMIN') {
+    throw new ForbiddenError('Only TENANT_ADMIN can create companies');
+  }
+
+  const name = params.name.trim();
+  if (!name) {
+    throw new ValidationError('name is required');
+  }
+
+  await assertCompanyNameAvailable(db,params.tenantId,name);
+
   const company: Company = {
     id:        randomUUID() as UUID,
     tenantId:  params.tenantId,
-    name:      params.name,
+    name,
     type:      params.type,
     createdAt: new Date(),
   };

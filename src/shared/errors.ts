@@ -6,49 +6,71 @@
 
 export class ValidationError extends Error {
   readonly type = 'ValidationError' as const;
-  constructor(message: string) {
+  readonly code?: string;
+  constructor(message: string, code?: string) {
     super(message);
     this.name = 'ValidationError';
+    this.code = code;
   }
 }
 
 export class UnauthorizedError extends Error {
   readonly type = 'UnauthorizedError' as const;
-  constructor(message = 'Not authenticated') {
+  readonly code?: string;
+  constructor(message = 'Not authenticated', code?: string) {
     super(message);
     this.name = 'UnauthorizedError';
+    this.code = code;
   }
 }
 
 export class ForbiddenError extends Error {
   readonly type = 'ForbiddenError' as const;
-  constructor(message = 'Insufficient permissions') {
+  readonly code?: string;
+  constructor(message = 'Insufficient permissions', code?: string) {
     super(message);
     this.name = 'ForbiddenError';
+    this.code = code;
   }
 }
 
 export class NotFoundError extends Error {
   readonly type = 'NotFoundError' as const;
-  constructor(message: string) {
+  readonly code?: string;
+  constructor(message: string, code?: string) {
     super(message);
     this.name = 'NotFoundError';
+    this.code = code;
   }
 }
 
 export class ConflictError extends Error {
   readonly type = 'ConflictError' as const;
-  constructor(message: string) {
+  readonly code?: string;
+  constructor(message: string, code?: string) {
     super(message);
     this.name = 'ConflictError';
+    this.code = code;
+  }
+}
+
+export class RateLimitError extends Error {
+  readonly type = 'RateLimitError' as const;
+  readonly code?: string;
+  constructor(message = 'Too many requests', code?: string) {
+    super(message);
+    this.name = 'RateLimitError';
+    this.code = code;
   }
 }
 
 export class InternalError extends Error {
   readonly type = 'InternalError' as const;
-  constructor(message = 'An unexpected error occurred') {
+  readonly code?: string;
+  constructor(message = 'An unexpected error occurred', code?: string) {
     super(message);
     this.name = 'InternalError';
+    this.code = code;
   }
 }
 
@@ -58,4 +80,5 @@ export type AppError =
   | ForbiddenError
   | NotFoundError
   | ConflictError
+  | RateLimitError
   | InternalError;

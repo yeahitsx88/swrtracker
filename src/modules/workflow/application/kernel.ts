@@ -1,0 +1,115 @@
+import { ForbiddenError, NotFoundError } from '@/shared/errors';
+import { appendAuditEvent } from '@/modules/audit/application';
+import type { AuditEventType } from '@/modules/audit/domain/types';
+import type { ProjectRole } from '@/modules/identity/domain/types';
+import { logError, logInfo } from '@/lib/observability';
+import { assertValidTransition, type TicketStatus, type WorkflowVariant } from '../domain/transitions';
+import type { DbClient, UUID } from '@/shared/types';
+import {assertSubmittedRecoveryTransition} from '../domain/submitted-recovery';
+
+export interface WorkflowKernelTicket {
+  id: UUID;
+  tenantId: UUID;
+  workflowVariant: WorkflowVariant;
+  status: TicketStatus;
+  rowVersion?: number;
+}
+
+export interface WorkflowKernelTransitionPatch {
+  status: TicketStatus;
+  [key: string]: unknown;
+}
+
+export interface WorkflowKernelCommand<TTicket extends WorkflowKernelTicket> {
+  tenantId: UUID;
+  ticketId: UUID;
+  actorId: UUID;
+  actorRole: ProjectRole;
+  permittedRoles: readonly ProjectRole[];
+  to: TicketStatus;
+  patch: Omit<WorkflowKernelTransitionPatch, 'status'>;
+  eventType: AuditEventType;
+  eventPayload?: Record<string, unknown>;
+  readTicket: () => Promise<TTicket | null>;
+  patchTicket: (
+    patch: WorkflowKernelTransitionPatch,
+    expected: { status: TicketStatus; rowVersion?: number },
+  ) => Promise<void>;
+  buildResult: (ticket: TTicket) => TTicket;
+}
+
+export function assertWorkflowActorHasRole(
+  actorRole: ProjectRole,
+  permittedRoles: readonly ProjectRole[],
+): void {
+  if (!permittedRoles.includes(actorRole)) {
+    throw new ForbiddenError(`This action requires one of: ${permittedRoles.join(', ')}`);
+  }
+}
+
+export async function executeWorkflowTransition<TTicket extends WorkflowKernelTicket>(
+  db: DbClient, command: WorkflowKernelCommand<TTicket>,
+): Promise<TTicket> {
+  return executeTransition(db,command,ticket=>{
+    assertWorkflowActorHasRole(command.actorRole,command.permittedRoles);
+    assertValidTransition(ticket.workflowVariant,ticket.status,command.to);
+  });
+}
+
+/** Purpose-specific recovery; current authority is established by the recovery use case.
+ * No caller-supplied generic transition override or fabricated operational role. */
+export async function executeSubmittedRecoveryTransition<TTicket extends WorkflowKernelTicket & {ticketNumber:string|null;firstSubmittedAt?:Date|null}>(
+ db:DbClient, command:Omit<WorkflowKernelCommand<TTicket>,'actorRole'|'permittedRoles'|'to'|'eventType'>,
+):Promise<TTicket>{
+ return executeTransition(db,{...command,to:'RETURNED_FOR_CORRECTION',eventType:'ticket.returned_for_correction'},ticket=>assertSubmittedRecoveryTransition(ticket,'RETURNED_FOR_CORRECTION'));
+}
+
+async function executeTransition<TTicket extends WorkflowKernelTicket>(db:DbClient,command:Omit<WorkflowKernelCommand<TTicket>,'actorRole'|'permittedRoles'>,assertTransition:(ticket:TTicket)=>void):Promise<TTicket>{
+  try {
+    const ticket = await command.readTicket();
+    if (!ticket) {
+      throw new NotFoundError(`Ticket ${command.ticketId} not found`);
+    }
+
+    assertTransition(ticket);
+
+    await command.patchTicket(
+      { ...command.patch, status: command.to },
+      {
+        status: ticket.status,
+        rowVersion: (ticket as unknown as { rowVersion?: number }).rowVersion,
+      },
+    );
+    await appendAuditEvent(db, {
+      ticketId: command.ticketId,
+      tenantId: command.tenantId,
+      actorId: command.actorId,
+      eventType: command.eventType,
+      payload: command.eventPayload ?? {},
+    });
+
+    logInfo('Workflow transition committed', {
+      eventType: command.eventType,
+      tenantId: command.tenantId,
+      ticketId: command.ticketId,
+      actorId: command.actorId,
+      from_status: ticket.status,
+      to_status: command.to,
+      workflow_variant: ticket.workflowVariant,
+    });
+    return command.buildResult(ticket);
+  } catch (err) {
+    logError(
+      'Workflow transition failed',
+      {
+        eventType: 'workflow.transition_failed',
+        tenantId: command.tenantId,
+        ticketId: command.ticketId,
+        actorId: command.actorId,
+        to_status: command.to,
+      },
+      err,
+    );
+    throw err;
+  }
+}

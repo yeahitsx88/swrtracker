@@ -11,6 +11,9 @@ import type { DbClient, UUID } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
 import type { VisibilityScope } from '@/modules/ticket/application/ports';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { ForbiddenError } from '@/shared/errors';
+import { readSuperintendentCrews } from '@/modules/tenancy/application/read-superintendent-crews';
+import { SuperintendentCrewsPgRepository } from '@/modules/tenancy/infrastructure/superintendent-crews.repository';
 
 const repo = new TicketRepository();
 
@@ -19,7 +22,7 @@ const repo = new TicketRepository();
  *
  * @param db       - pg pool or client (outside a transaction is fine for reads)
  * @param tenantId - tenant scoping
- * @param projectId - the project in question (used for AREA_VIEWER and INSTRUMENT_MAN lookups)
+ * @param projectId - the project in question (used for AOR-scoped and INSTRUMENT_MAN lookups)
  * @param actorId  - authenticated user
  * @param actorRole - resolved project role for actorId
  */
@@ -29,11 +32,19 @@ export async function resolveVisibility(
   projectId: UUID,
   actorId: UUID,
   actorRole: ProjectRole,
+  cohort?: 'areaWorkload' | 'linkedCrews',
 ): Promise<VisibilityScope> {
+  if (cohort && actorRole !== 'SURVEY_SUPERINTENDENT') throw new ForbiddenError('Separate Area and linked-crew views require Superintendent authority');
   const companyInfo = await repo.findUserCompanyInfo(db, tenantId, actorId);
   const companyId = (companyInfo?.companyId ?? '') as UUID;
 
-  const scope: VisibilityScope = { actorId, actorRole, companyId };
+  const scope: VisibilityScope = {
+    actorId,
+    actorRole,
+    projectId,
+    companyId,
+    companyType: companyInfo?.companyType,
+  };
 
   if (actorRole === 'INSTRUMENT_MAN') {
     const partyChiefId = await repo.findPartyChiefForInstrumentMan(
@@ -42,9 +53,30 @@ export async function resolveVisibility(
     scope.partyChiefId = partyChiefId ?? undefined;
   }
 
-  if (actorRole === 'AREA_VIEWER') {
-    const areaIds = await repo.findAreaIdsForUser(db, projectId, actorId);
-    scope.areaIds = areaIds;
+  if (actorRole === 'DEPARTMENT_MANAGER' || actorRole === 'DEPARTMENT_LEAD') {
+    const membership = await repo.findRequesterDepartmentMembership(
+      db,
+      tenantId,
+      projectId,
+      actorId,
+    );
+    scope.departmentId = membership?.departmentId;
+  }
+
+  if (actorRole === 'AREA_VIEWER' || actorRole === 'SURVEY_SUPERINTENDENT') {
+    const aorNodeIds = await repo.findAorNodeIdsForUser(db, projectId, actorId);
+    scope.aorNodeIds = aorNodeIds;
+  }
+
+  if (actorRole === 'DEPARTMENT_LEAD') {
+    const aorNodeIds = await repo.findAorNodeIdsForUser(db, projectId, actorId);
+    scope.aorNodeIds = aorNodeIds;
+  }
+
+  if (cohort === 'linkedCrews') {
+    scope.linkedCrewAssignments = await readSuperintendentCrews(new SuperintendentCrewsPgRepository(), db, {
+      tenantId, projectId, actorId, actorRole, authorizedAreaIds: scope.aorNodeIds ?? [],
+    });
   }
 
   return scope;

@@ -1,0 +1,99 @@
+import { NextResponse, type NextRequest } from 'next/server';
+import { errorResponse } from '@/lib/api-error';
+import { requireAuth, requireActiveAuth } from '@/lib/auth';
+import { pool } from '@/lib/db';
+import { getProjectRole } from '@/lib/get-project-role';
+import type { UUID } from '@/shared/types';
+import { ForbiddenError } from '@/shared/errors';
+import { resolveProjectCapabilities } from '@/lib/project-capabilities';
+import type { AuthContext } from '@/lib/auth';
+
+interface AorLevelRow {
+  id: string;
+  depth: number;
+  label: string;
+}
+
+interface AorNodeRow {
+  id: string;
+  level_id: string;
+  parent_id: string | null;
+  name: string;
+  code: string;
+}
+
+export interface AorReadRouteDeps {
+  requireAuth: typeof requireAuth | typeof requireActiveAuth;
+  getProjectRole: typeof getProjectRole;
+  queryLevels: (tenantId: UUID, projectId: UUID) => Promise<AorLevelRow[]>;
+  queryNodes: (tenantId: UUID, projectId: UUID) => Promise<AorNodeRow[]>;
+  /** Current project administrators (project or central IT) may read the Area tree they configure. */
+  isProjectAdministrator?: (auth: AuthContext, projectId: UUID) => Promise<boolean>;
+}
+
+const defaultAorReadDeps: AorReadRouteDeps = {
+  requireAuth: requireActiveAuth,
+  getProjectRole,
+  isProjectAdministrator: async (auth, projectId) => (await resolveProjectCapabilities(pool, auth, projectId)).canAdminister,
+  queryLevels: async (tenantId, projectId) => {
+    const levelsResult = await pool.query<AorLevelRow>(
+      `SELECT id, depth, label
+       FROM aor_levels
+       WHERE tenant_id = $1
+         AND project_id = $2
+       ORDER BY depth ASC`,
+      [tenantId, projectId],
+    );
+    return levelsResult.rows;
+  },
+  queryNodes: async (tenantId, projectId) => {
+    const nodesResult = await pool.query<AorNodeRow>(
+      `SELECT id, level_id, parent_id, name, code
+       FROM aor_nodes
+       WHERE tenant_id = $1
+         AND project_id = $2
+         AND retired_at IS NULL
+       ORDER BY name ASC`,
+      [tenantId, projectId],
+    );
+    return nodesResult.rows;
+  },
+};
+
+export async function handleGetAor(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> },
+  deps: AorReadRouteDeps = defaultAorReadDeps,
+) {
+  try {
+    const auth = await deps.requireAuth(req);
+    const { projectId } = await params;
+    const projectUuid = projectId as UUID;
+
+    try {
+      await deps.getProjectRole(pool, auth.tenantId, projectUuid, auth.userId, auth.sessionVersion);
+    } catch (error) {
+      if (!(error instanceof ForbiddenError) || !deps.isProjectAdministrator || !await deps.isProjectAdministrator(auth, projectUuid)) throw error;
+    }
+
+    const levels = await deps.queryLevels(auth.tenantId, projectUuid);
+    const nodes = await deps.queryNodes(auth.tenantId, projectUuid);
+
+    return NextResponse.json({
+      levels: levels.map((level) => ({
+        id: level.id,
+        depth: level.depth,
+        label: level.label,
+      })),
+      nodes: nodes.map((node) => ({
+        id: node.id,
+        levelId: node.level_id,
+        parentId: node.parent_id,
+        name: node.name,
+        code: node.code,
+      })),
+    });
+  } catch (err) {
+    return errorResponse(err);
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "checkpoint": "Survey Organization Chart live read-only hierarchy, Batch 182",
+  "baseAlpha": "fd30b8c22d3a13852e8e2b41eed2bee58c55fe49",
+  "preservedFixtureFeature": "988988a3a95fa6f2cff976da9dded8ccd24d15b3",
+  "verifiedSourceArchiveSha256": "a6989cdb4fd8643ad57022cdbbaf624f09fbd46fd6cd5a5886acb0210120e495",
+  "runtime": {
+    "node": "22.23.3",
+    "pnpm": "11.19.0",
+    "browser": "installed headless Microsoft Edge"
+  },
+  "automated": {
+    "strictUnusedTypecheck": "pass",
+    "fullTests": 602,
+    "focusedTests": 54,
+    "failures": 0,
+    "skips": 0,
+    "productionCompilation": "pass"
+  },
+  "http": {
+    "checks": [
+      "GET organization: 200",
+      "Live explicit reporting, complete crew links, distinct team leadership and multiple individual/team Areas; retained changed-role/inactive links",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 403",
+      "GET organization: 200",
+      "GET organization: 200",
+      "Actual multi-page collection, cross-project and cross-tenant nondisclosure",
+      "POST organization: 405",
+      "PATCH organization: 405",
+      "PUT organization: 405",
+      "DELETE organization: 405",
+      "GET organization: 401",
+      "GET organization: 403",
+      "GET organization: 200",
+      "GET organization: 200",
+      "GET organization: 200",
+      "Actual separate-connection concurrent team change: entire aggregate retains one coherent read snapshot",
+      "No hierarchy mutation; exact retained domain-table witness unchanged after authorization/archive probes"
+    ],
+    "protectedDomainTables": 17,
+    "domainWitnessUnchanged": true,
+    "mode": "Actual authenticated HTTP against newly owned current PostgreSQL fixture and production runtime"
+  },
+  "browser": {
+    "checks": [
+      "Live Chief preserves distinct reporting, named team and multiple Area evidence",
+      "Explicit current crew stays with its Chief",
+      "Retained inactive reporting link is explained without an invented active edge",
+      "Changed-role retained roster link remains separate evidence",
+      "Unlinked and ineligible reporting Chiefs remain visible",
+      "Unlinked Instrument Man is not assigned through named-team membership",
+      "Chief collapse hides its explicit crew",
+      "Chief expansion restores current live roster",
+      "Live zoom retains fixed outer workspace and viewport dimensions",
+      "Zoom controls stay pinned while the live canvas scrolls",
+      "Live hierarchy exposes no dragging, movement review or demo-reset controls",
+      "Named teams retain independent leadership, members and Area coverage",
+      "Closing the live workspace restores launch focus",
+      "Existing live staffing editor retains exclusive ownership",
+      "Existing team editor disables hierarchy launch",
+      "Live Areas and existing Area creation entry remain accessible",
+      "Existing KPI modal and Team Management remain usable after closing chart",
+      "Read failure clears live content and never falls back to fixture people",
+      "Reload revalidates revoked project access and removes prior hierarchy",
+      "Mobile live hierarchy overflow remains within its workspace",
+      "Archived projects retain the live read-only chart",
+      "Archived Team Management mutation controls remain disabled",
+      "MEDIUM builds preserve crews without inventing Superintendent tiers",
+      "SLIM builds show Instrument Men without inventing Chief or Superintendent tiers",
+      "No browser API mutations/page errors; exact domain-table witness unchanged"
+    ],
+    "protectedDomainTables": 13,
+    "domainWitnessUnchanged": true,
+    "apiWrites": 0,
+    "pageErrors": 0,
+    "mode": "Actual authenticated production UI on newly owned current PostgreSQL fixture"
+  },
+  "compatibility": {
+    "standaloneFixtureGroups": 22,
+    "overlayFixtureGroups": 23,
+    "launcherContextAndEditorExclusion": "pass",
+    "activeArchivedTeamManagementChecks": 37
+  },
+  "releaseGate": "blocked by inherited source-map-js / GHSA-68fv-2mgg-jv7q; dependencies unchanged; audit not suppressed",
+  "limitations": [
+    "Only current Survey Managers may read this aggregate.",
+    "No stored Manager-to-Superintendent edges are inferred.",
+    "Shared-department Area evidence remains a count; no department coverage expansion.",
+    "Existing active-Chief reads do not expand links to Chiefs outside the eligible population.",
+    "Non-account supporting headcount is not invented.",
+    "Explicit display ceilings fail with an error rather than silent truncation.",
+    "Other browser engines and large-project performance are unverified."
+  ],
+  "scope": "GET only; no live Org Chart mutations, migrations, new authorization model, ticket/history semantics, dependencies or deployment"
+}

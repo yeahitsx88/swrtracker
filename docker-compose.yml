@@ -1,0 +1,30 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: pnpm start
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      SWR_ATTACHMENT_ROOT: /var/lib/swr/attachments
+    volumes:
+      - swr-attachments:/var/lib/swr/attachments
+    ports:
+      - '127.0.0.1:3000:3000'
+    restart: unless-stopped
+
+  notification-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: pnpm worker:notifications
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+
+volumes:
+  swr-attachments:

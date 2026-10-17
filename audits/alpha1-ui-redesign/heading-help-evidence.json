@@ -1,0 +1,348 @@
+{
+  "batch": "Heading capitalization and explanatory help",
+  "implementation": "d61df200c35a865ea6942b31ac107a234b33d745e2c97dcf6035ab9b39c7c8f9",
+  "at": "2026-10-04T01:50:01.377Z",
+  "baseline": {
+    "strictTypes": true,
+    "unit": 566
+  },
+  "final": {
+    "strictTypes": true,
+    "unit": 566,
+    "pinnedBuild": "Node22.23.3/pnpm11.19/PostgreSQL15",
+    "productionDependencyAudit": true,
+    "postgresSuites": 27,
+    "httpChecks": 52,
+    "lifecycleBrowserChecks": 24,
+    "lostResponseBrowserChecks": 26,
+    "namedAcceptanceCases": 55,
+    "headingHelpChecks": 206
+  },
+  "suites": {
+    "account-offboarding-commands-postgres.ts": {
+      "at": "2026-10-04T01:48:29.501Z",
+      "exitCode": 0
+    },
+    "offboarding-policy-postgres.ts": {
+      "at": "2026-10-04T01:48:30.217Z",
+      "exitCode": 0
+    },
+    "project-administration-postgres.ts": {
+      "at": "2026-10-04T01:48:30.921Z",
+      "exitCode": 0
+    },
+    "project-capabilities-postgres.ts": {
+      "at": "2026-10-04T01:48:31.482Z",
+      "exitCode": 0
+    },
+    "account-offboarding-concurrency-postgres.ts": {
+      "at": "2026-10-04T01:48:31.900Z",
+      "exitCode": 0
+    },
+    "lifecycle-writer-handlers-postgres.ts": {
+      "at": "2026-10-04T01:48:33.800Z",
+      "exitCode": 0
+    },
+    "project-member-atomic-postgres.ts": {
+      "at": "2026-10-04T01:48:34.356Z",
+      "exitCode": 0
+    },
+    "offboarding-blockers-postgres.ts": {
+      "at": "2026-10-04T01:48:34.900Z",
+      "exitCode": 0
+    },
+    "active-duty-subject-postgres.ts": {
+      "at": "2026-10-04T01:48:35.685Z",
+      "exitCode": 0
+    },
+    "ticket-assignee-eligibility-postgres.ts": {
+      "at": "2026-10-04T01:48:36.172Z",
+      "exitCode": 0
+    },
+    "ticket-replay-visibility-postgres.ts": {
+      "at": "2026-10-04T01:48:36.779Z",
+      "exitCode": 0
+    },
+    "ticket-replay-authority-postgres.ts": {
+      "at": "2026-10-04T01:48:37.434Z",
+      "exitCode": 0
+    },
+    "identity-lifecycle-atomic-postgres.ts": {
+      "at": "2026-10-04T01:48:38.570Z",
+      "exitCode": 0
+    },
+    "notification-worker-lifecycle-postgres.ts": {
+      "at": "2026-10-04T01:48:39.231Z",
+      "exitCode": 0
+    },
+    "survey-teams-postgres.ts": {
+      "at": "2026-10-04T01:48:40.027Z",
+      "exitCode": 0
+    },
+    "survey-staffing-postgres.ts": {
+      "at": "2026-10-04T01:48:40.523Z",
+      "exitCode": 0
+    },
+    "survey-staffing-safety-postgres.ts": {
+      "at": "2026-10-04T01:48:40.999Z",
+      "exitCode": 0
+    },
+    "protected-obligations-postgres.ts": {
+      "at": "2026-10-04T01:48:41.627Z",
+      "exitCode": 0
+    },
+    "protected-obligations-concurrency-postgres.ts": {
+      "at": "2026-10-04T01:48:42.497Z",
+      "exitCode": 0
+    },
+    "superintendent-area-postgres.ts": {
+      "at": "2026-10-04T01:48:43.001Z",
+      "exitCode": 0
+    },
+    "superintendent-area-concurrency-postgres.ts": {
+      "at": "2026-10-04T01:48:43.812Z",
+      "exitCode": 0
+    },
+    "team-workforce-postgres.ts": {
+      "at": "2026-10-04T01:48:44.403Z",
+      "exitCode": 0
+    },
+    "draft-recovery-postgres.ts": {
+      "at": "2026-10-04T01:48:44.878Z",
+      "exitCode": 0
+    },
+    "http": {
+      "at": "2026-10-04T01:47:38.015Z",
+      "exitCode": 0
+    },
+    "browser": {
+      "at": "2026-10-04T01:47:41.413Z",
+      "exitCode": 0
+    }
+  },
+  "captureMatrix": {
+    "requester": {
+      "themes": [
+        "LIGHT",
+        "DARK"
+      ],
+      "widths": [
+        1864,
+        390
+      ],
+      "routes": [
+        "Home",
+        "Home help",
+        "Requests help",
+        "Chart dialog",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Projects"
+      ]
+    },
+    "additionalDesktopRoles": [
+      "Survey Manager",
+      "Survey Superintendent",
+      "Party Chief",
+      "Project Admin"
+    ],
+    "linkedCrewCorrection": {
+      "themes": [
+        "LIGHT",
+        "DARK"
+      ],
+      "widths": [
+        1864,
+        390
+      ],
+      "type": "Actual scrolled viewport capture, independent help and native disclosure activation asserted."
+    }
+  },
+  "captures": [
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-home.png",
+      "sha256": "ba488e77983172d36444661b2b1886df02ffe9709677b6162a1a75a6ff6178e0"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-home-help.png",
+      "sha256": "d351079bbeb43313560abed124c0a08f44d604def6dcc22c8db50ef01baf9961"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-requests-help.png",
+      "sha256": "169ef31538472e23eed3f6b85073504a0a5ba955874396ed9435a37426dbe4a1"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-chart-dialog.png",
+      "sha256": "ae0ac3247e03197a4c1d5138b963e374c40821b4b45b7990292c85e6918c4ef8"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-appearance.png",
+      "sha256": "d3cdbc979fa00433c61963e1a60c34c0ad1cc1244ceafdd90b3c5ca6d04dcdb9"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-profile.png",
+      "sha256": "24c99c26a09dae2412fe69bda62af664efba5459da84a5d9f500e4b88365f259"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-assignment-details.png",
+      "sha256": "6cbae9884f2a00a01a7f32758f586638062195b898894316914a10eef85d0013"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-projects.png",
+      "sha256": "baa4075a04db6a19670dd99d9766e3542da1a70ba5a6dc4fcf78f816393e0b45"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-home.png",
+      "sha256": "4282da0269638c319bf4aa4967b3839d361c96276cdd72f57b4c2d9cbdfa599b"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-home-help.png",
+      "sha256": "c6cfcd52792b4cca72afc8c2b6d15f0fbec062a2b5b24404c88ec25114bd56e7"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-requests-help.png",
+      "sha256": "85a7e1f8adaa412b159354f5c0bd90a1a3f2cedd29f036f65b0d96c8b4d3f704"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-chart-dialog.png",
+      "sha256": "91bc1b45205fdcd6998b775c336d335e0d8238681543d48e5418c7e221bad6ad"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-appearance.png",
+      "sha256": "50f2c9138e67f41a747d62d3d38ca5469320c9f8341d286e9cd87c2dcc6c6340"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-profile.png",
+      "sha256": "98671b77f671038838c02fe5b402e2c7991972e0ee5e7063ecb2812831e7440b"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-assignment-details.png",
+      "sha256": "5e41190ab0241d34740da7db5d14db92c07fa46675c933f976db43d265b77734"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-projects.png",
+      "sha256": "61d9d828a39a859f8cbc7083be1a32c7501a59c9da3ddff174e4bc482c2d45bf"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-home.png",
+      "sha256": "f68db90c9de494eb42e4a63445ec28888c4e90c2468834de0383e673b987fa0b"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-home-help.png",
+      "sha256": "524833b73f53ea49bcc8dd35fc90f3b1ea67443729b511e390c113fd1c1cc1db"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-requests-help.png",
+      "sha256": "35dd339d78624994d26d7a4102dfdfe3ccd35601afc1369d9cdbfa83ec70807d"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-chart-dialog.png",
+      "sha256": "0474d7912f3b264120ba7aa80a6862d169a0b014e0a5b0d7ba64d6205c808192"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-appearance.png",
+      "sha256": "22e8b9569f1e8f588aff84a0878c48ed3d30f099ee4b6c7be90e362d43a79b1a"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-profile.png",
+      "sha256": "2e7c86654b29379ce815582c60c1f90ad5a34d3f74ce6a3050398c4781f35d29"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-assignment-details.png",
+      "sha256": "00c8c705bd9df69929c51874e0e46aa3a5f442f2ebca4f4cff3eb7ddbca656bc"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-projects.png",
+      "sha256": "3f88a9106fccc02ada24e00641a9b139ff0ec7b0284c2e853b01ac7c47711712"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-home.png",
+      "sha256": "0bfc4a288eb825df823620693177b27e40d3022c96ee1508b7e890b898530543"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-home-help.png",
+      "sha256": "be59113b0d60305b1ce8bbfc99ffd21cf10d5149780a4c5504720ad64dd8272a"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-requests-help.png",
+      "sha256": "4fd9d468ae2d60e4e026c103508179f8a569ccc985488a81a8cfa69ff8d45e8a"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-chart-dialog.png",
+      "sha256": "e330cdca93189898b430bae72aa29d50385b4104a51bf7426dcca91b7c040807"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-appearance.png",
+      "sha256": "6a7e9ff66f12376459057ea0dcb491d6877c45338ca29bc6f8de42b96af0e042"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-profile.png",
+      "sha256": "44a6b3b23ee61b23b58794f42f0e10dc182d8d23845872fde5bd9a856a72cf73"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-assignment-details.png",
+      "sha256": "7646d94a12996b9e5249cdfb9284bef70567c809a2e2676c7ac77d534bd78339"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-projects.png",
+      "sha256": "772190f38f171d4e91524a6658f10252359d40cf52892f6d61effc4b3eaf1768"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/manager-home.png",
+      "sha256": "ddfc7c317419b84b010839fa053dfc66c4d2f4e21eef1f5ded3b48b31bf23c03"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/superintendent-home.png",
+      "sha256": "dbc76d67e7234ea74b1b7dacfbbc753caeaab9f27028bce72efef5398b5c3550"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/chief-home.png",
+      "sha256": "bf634e2a2ecbb9d0a9233d9dba52f28fdb848e6c2954d86ccb556bae6ed50209"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/admin-home.png",
+      "sha256": "bc483035085c5de05925779cce459302f7625afde328bc3160a8e89e14e47bd2"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-1864-linked-crew-help-viewport.png",
+      "sha256": "03462ef01b16511ed772ac916613685c11ad6d9c3d06466310a7e1d6381e37a1"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/LIGHT-390-linked-crew-help-viewport.png",
+      "sha256": "57cf94cff72560981d37a24a6c4c0d3f64af4e76fda60779c4bbb7c007787a65"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-1864-linked-crew-help-viewport.png",
+      "sha256": "b3e7c559ab93ecf65cf5956bdc401ab48e664f7eac69952fcb3bafa6c8c9d3de"
+    },
+    {
+      "path": ".impeccable/review/alpha1-ui/heading-help/DARK-390-linked-crew-help-viewport.png",
+      "sha256": "5b341167e07983e8e877318c0ec134efc831a938c9339baec8286b94b15aa76e"
+    }
+  ],
+  "retainedState": "Existing demo schema, settings and files preserved; new verification uses separately owned schemas and attachment volumes.",
+  "review": {
+    "fullReview": {
+      "captures": 36,
+      "disposition": "fix",
+      "findings": [
+        "Compact Home tables must preserve original scroll guidance in heading help.",
+        "Linked-Crew help must be adjacent to its native summary label."
+      ]
+    },
+    "correctionVerdict": {
+      "disposition": "ship",
+      "scope": "Both listed P2 corrections scored resolved; not a new full review or deployment approval.",
+      "checks": 206,
+      "captures": 40,
+      "implementation": "d61df200c35a865ea6942b31ac107a234b33d745e2c97dcf6035ab9b39c7c8f9"
+    },
+    "documentation": "Approved shared geometry/typography/interaction contract synchronized across DESIGN.md, .impeccable/design.json, PRODUCT.md, surface brief and handoff."
+  },
+  "limits": "UI refinement evidence; no remote CI, deployment, security-release or beta approval inferred.",
+  "demo": {
+    "url": "http://127.0.0.1:3124/projects/e88c1dcf-e031-447b-9f23-417ff8f11129/home",
+    "verification": "Existing account, project and personal light mode preserved; updated Recent Requests/CTA headings and adjacent help verified in the in-app browser."
+  }
+}

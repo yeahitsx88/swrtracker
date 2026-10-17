@@ -1,0 +1,114 @@
+{
+  "scope": "Decision54 D6 separately governed preparation cancellation",
+  "baseline": "9c48ddc",
+  "migration": "044_preparation_cancellation.sql",
+  "strictUnusedTypes": "pass",
+  "pinnedUnitTests": 639,
+  "pinnedProductionCompilation": "pass; matching-lock Node22.23.3",
+  "postgresCancellationChecks": 43,
+  "postgresTeamRegressionSuites": 9,
+  "productionHttpBrowserChecks": 44,
+  "productionRuntime": "local3217, swr-d6-label-web",
+  "rawProductionMigrationFilesMatched": 568,
+  "browserChecks": [
+    "Current Team/Org role boundary manager teams",
+    "Current Team/Org role boundary manager organization",
+    "Current Team/Org role boundary superintendent teams",
+    "Current Team/Org role boundary superintendent organization",
+    "Current Team/Org role boundary admin teams",
+    "Current Team/Org role boundary admin organization",
+    "Current Team/Org role boundary central teams",
+    "Current Team/Org role boundary central organization",
+    "Foreign current Central cannot inspect this project",
+    "Project Admin cannot inspect Central lifecycle evidence",
+    "Project Admin cannot cancel preparation",
+    "Reason and consent required LIGHT 1440",
+    "No page overflow LIGHT 1440",
+    "Keyboard reason/consent enables start LIGHT 1440",
+    "Reason and consent required LIGHT 390",
+    "No page overflow LIGHT 390",
+    "Keyboard reason/consent enables start LIGHT 390",
+    "Reason and consent required DARK 1440",
+    "No page overflow DARK 1440",
+    "Keyboard reason/consent enables start DARK 1440",
+    "Reason and consent required DARK 390",
+    "No page overflow DARK 390",
+    "Keyboard reason/consent enables start DARK 390",
+    "Request evidence uses shared Draft display label",
+    "Actual cancellation start committed before simulated lost response",
+    "Uncertain review frozen",
+    "Unchanged body/key retry",
+    "Unfinished draft blocks archival",
+    "Activation cannot bypass cancelling preparation",
+    "Reopening refused before replay",
+    "New draft refused during cancellation",
+    "Current membership can find cancelling Setup project",
+    "Actual authorized draft soft deletion during cancellation",
+    "Failed stale reload retains review/owner",
+    "Successful current read renews reason and consent",
+    "Finish no overflow LIGHT 1440",
+    "Finish no overflow LIGHT 390",
+    "Finish no overflow DARK 1440",
+    "Finish no overflow DARK 390",
+    "Fresh archived context makes sibling request configuration read-only",
+    "Archived project exposes no new cancellation form",
+    "Actual archive committed",
+    "Exactly two atomic lifecycle events",
+    "Revoked session refused after cancellation"
+  ],
+  "captures": [
+    {
+      "path": ".impeccable/review/d6-start-light-1440.png",
+      "sha256": "75c63f1c9054d9b080c37411c50160fb45e181e496ea18f131fdca0ce278672c"
+    },
+    {
+      "path": ".impeccable/review/d6-start-light-390.png",
+      "sha256": "5c0ee5972ce4d8f5b36c4df61d5ac85f0ed8f9bb466e65ed462d88e2f24adc3e"
+    },
+    {
+      "path": ".impeccable/review/d6-start-dark-1440.png",
+      "sha256": "aa56adbd7246ac9396278951660d24e8269f7bbe6f2e7a62634cb7e1e71d9099"
+    },
+    {
+      "path": ".impeccable/review/d6-start-dark-390.png",
+      "sha256": "c29fc10190751fe3cb5cc4e29212355c38d9abc2503860cd2f7d12f7fc09cd18"
+    },
+    {
+      "path": ".impeccable/review/d6-held-light-1440.png",
+      "sha256": "a262e9620b05d9493d454f1f4607fb61e15689554a7fde84726b6ca1b3590e8a"
+    },
+    {
+      "path": ".impeccable/review/d6-finish-light-1440.png",
+      "sha256": "a7149e241c2a73b1e7fc3fd6e8d85948f3dbec8e050f8b1c65deffcbae4879d2"
+    },
+    {
+      "path": ".impeccable/review/d6-finish-light-390.png",
+      "sha256": "008b671aebc7888057e3cb88ae6846be424e36f3545a52cc6db6010d3c5f7b12"
+    },
+    {
+      "path": ".impeccable/review/d6-finish-dark-1440.png",
+      "sha256": "88b55f1532eb07de6ee049289f11fbbf1356f8a37ca80f7432bacb9455ee225a"
+    },
+    {
+      "path": ".impeccable/review/d6-finish-dark-390.png",
+      "sha256": "e5368622d5c85eaa42ee0d7a7e85e8ae5c851d12b6c4a09486513a9e1185f47e"
+    },
+    {
+      "path": ".impeccable/review/d6-archived-dark-390.png",
+      "sha256": "381827716ae0a0e854275d310f2c28affd4f8b81ae7c4415db9f6b705bdb7254"
+    }
+  ],
+  "captureFilenameOverride": "d6-held-light-1440.png is DARK held-read state",
+  "review": "Full five-section review: one material status-label fix; final bounded verdict ship/remaining clear after all ten recaptures; no whole-Alpha acceptance",
+  "designDocumentation": "fresh documenter No changes; incumbent system retained",
+  "detector": "single empty pass before final evidence-list/context-refresh/label edits; not current certificate; no additional detector pass",
+  "limits": [
+    "Nine PostgreSQL regressions in fresh owned schema; migration044 also applied only to owned197 synthetic public fixture database",
+    "No retained184/customer state accessed",
+    "Eight Team/Org HTTP checks use empty current Survey structure; not full Team mutation journeys",
+    "Completion-only paths independently guarded and PostgreSQL-tested; actual browser cleanup uses authorized draft soft deletion, not every operational field journey",
+    "Initial construction/harness/capture failures excluded; final label runner initially lacked Playwright env and refused before browser execution, then corrected with fresh UUIDs",
+    "Whole Alpha acceptance open: D1/D4/D5 approved incomplete; D2/D3 specific current proof pending",
+    "Release blocker unchanged; no push/deploy/main merge/Alpha2"
+  ]
+}

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFile,writeFile} from 'node:fs/promises';
+import {randomUUID,createHash} from 'node:crypto';
+import {Pool} from 'pg';
+assert.equal(process.env.SWR_RECONCILIATION,'1');
+const f=JSON.parse(await readFile('.local-reconciliation-fixture.json','utf8')),url=new URL(process.env.DATABASE_URL??'');assert.match(f.schema,/^reconcile_http_[a-f0-9]{32}$/);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.port,'15489');assert.equal(url.pathname,'/swr_team_isolated');assert.equal(f.origin,'http://127.0.0.1:3320');url.searchParams.set('options','-c search_path='+f.schema+',public');
+const pool=new Pool({connectionString:url.href}),checks=[],endpoint=f.origin+'/api/tickets/'+f.partial+'/attachments';
+const check=(value,label)=>{assert(value,label);checks.push(label);};
+async function upload(bytes,key,who='requester'){const body=new FormData();body.set('file',new Blob([bytes],{type:'text/plain'}),'owned-boundary.txt');body.set('purpose','REQUEST_INSTRUCTION');const response=await fetch(endpoint,{method:'POST',headers:{cookie:'swr_session='+f.tokens[who],'Idempotency-Key':key},body,signal:AbortSignal.timeout(20000)});const data=await response.json();return {status:response.status,data};}
+try{
+ const bytes=Buffer.alloc(30*1024*1024,65),hash=createHash('sha256').update(bytes).digest('hex'),key=randomUUID(),first=await upload(bytes,key);check(first.status===201,'Authenticated exact30MiB file passes experimental32MiB middleware and bounded multipart parser; got '+first.status+' '+JSON.stringify(first.data));const attachment=first.data.attachment;
+ check(attachment.contentSha256===hash&&attachment.sizeBytes===bytes.length,'Persisted file metadata matches original bytes');const retry=await upload(bytes,key);check(retry.status===201&&retry.data.attachment.id===attachment.id,'Exact upload retry retains one attachment identity');
+ const downloaded=await fetch(f.origin+attachment.downloadUrl,{headers:{cookie:'swr_session='+f.tokens.requester},signal:AbortSignal.timeout(20000)});check(downloaded.status===200,'Authenticated attachment read succeeds');check(createHash('sha256').update(Buffer.from(await downloaded.arrayBuffer())).digest('hex')===hash,'Downloaded storage bytes match original hash');
+ const count=async()=>(await pool.query('SELECT count(*)::int n FROM attachments WHERE tenant_id=$1 AND ticket_id=$2',[f.tenant,f.partial])).rows[0].n,before=await count();check(before===1,'Successful exact retry inserts exactly once');
+ check((await upload(Buffer.alloc(30*1024*1024+1,65),randomUUID())).status===400,'Above30MiB file is rejected through authenticated runtime');check((await upload(Buffer.from('foreign refusal'),randomUUID(),'foreignManager')).status===404,'Foreign tenant cannot attach to owned request');check(await count()===before,'Rejected size/foreign uploads preserve attachment records');
+ const event=(await pool.query("SELECT count(*)::int n FROM ticket_events WHERE tenant_id=$1 AND ticket_id=$2 AND event_type='attachment.downloaded'",[f.tenant,f.partial])).rows[0].n;check(event===1,'Authorized byte read has atomic download evidence');
+ await writeFile('audits/alpha1-reconciliation/attachments.json',JSON.stringify({checks,contentSha256:hash,fileBytes:bytes.length,middlewareClientMaxBodySize:32*1024*1024,limits:['Authenticated multipart boundary and actual storage/download hashes tested on owned runtime; arbitrary disconnected clients and upstream hosting proxies are outside local acceptance.']},null,2)+'\n');console.log('Authenticated attachment acceptance: '+checks.length+' checks');
+}finally{await pool.end();}

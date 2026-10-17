@@ -1,0 +1,605 @@
+{
+  "at": "2026-10-03T04:56:01.890Z",
+  "checks": [
+    {
+      "name": "central-it: appearance available",
+      "pass": true
+    },
+    {
+      "name": "central-it: branding authority",
+      "pass": true
+    },
+    {
+      "name": "central-it: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "central-it: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "central-it: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "project-admin: appearance available",
+      "pass": true
+    },
+    {
+      "name": "project-admin: branding authority",
+      "pass": true
+    },
+    {
+      "name": "project-admin: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "project-admin: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "project-admin: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: appearance available",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: branding authority",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "survey-manager: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "superintendent: appearance available",
+      "pass": true
+    },
+    {
+      "name": "superintendent: branding authority",
+      "pass": true
+    },
+    {
+      "name": "superintendent: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "superintendent: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "superintendent: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "party-chief: appearance available",
+      "pass": true
+    },
+    {
+      "name": "party-chief: branding authority",
+      "pass": true
+    },
+    {
+      "name": "party-chief: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "party-chief: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "party-chief: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "party-chief: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "party-chief: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "party-chief: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "party-chief: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "party-chief: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "party-chief: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: appearance available",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: branding authority",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "instrument-man: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "requester: appearance available",
+      "pass": true
+    },
+    {
+      "name": "requester: branding authority",
+      "pass": true
+    },
+    {
+      "name": "requester: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "requester: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "requester: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: appearance available",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: branding authority",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: tenant branding authorization",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT persists",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT record table available",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT desktop contained",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: LIGHT mobile contained",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK persists",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK record table available",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK useful bulk export",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK CSV export emitted",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK semantic sorting",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK desktop contained",
+      "pass": true
+    },
+    {
+      "name": "subcontractor: DARK mobile contained",
+      "pass": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "timings": [
+    {
+      "role": "central-it",
+      "mode": "LIGHT",
+      "elapsedMs": 569,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "central-it",
+      "mode": "DARK",
+      "elapsedMs": 568,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "project-admin",
+      "mode": "LIGHT",
+      "elapsedMs": 738,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "project-admin",
+      "mode": "DARK",
+      "elapsedMs": 710,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "survey-manager",
+      "mode": "LIGHT",
+      "elapsedMs": 646,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "survey-manager",
+      "mode": "DARK",
+      "elapsedMs": 617,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "superintendent",
+      "mode": "LIGHT",
+      "elapsedMs": 615,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "superintendent",
+      "mode": "DARK",
+      "elapsedMs": 601,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "party-chief",
+      "mode": "LIGHT",
+      "elapsedMs": 599,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "party-chief",
+      "mode": "DARK",
+      "elapsedMs": 569,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "instrument-man",
+      "mode": "LIGHT",
+      "elapsedMs": 568,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "instrument-man",
+      "mode": "DARK",
+      "elapsedMs": 586,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "requester",
+      "mode": "LIGHT",
+      "elapsedMs": 618,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "requester",
+      "mode": "DARK",
+      "elapsedMs": 585,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "subcontractor",
+      "mode": "LIGHT",
+      "elapsedMs": 616,
+      "includesNetworkIdle": true
+    },
+    {
+      "role": "subcontractor",
+      "mode": "DARK",
+      "elapsedMs": 598,
+      "includesNetworkIdle": true
+    }
+  ],
+  "scope": "Disposable copy on3117, real synthetic password logins. Appearance changes and tenant-branding authorization; record sorting, bulk export, desktop/mobile light/dark."
+}

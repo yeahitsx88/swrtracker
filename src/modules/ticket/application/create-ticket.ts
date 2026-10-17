@@ -1,17 +1,15 @@
 /**
- * CreateTicket use case — both Variant 1 (STANDARD_APPROVAL) and Variant 2 (DIRECT_ASSIGNMENT).
+ * CreateTicket use case — requester draft creation for Variant 1 (STANDARD_APPROVAL).
  *
- * - Atomically claims the next ticket sequence within the transaction.
- * - Checks the priority whitelist and sets is_priority if the requester's email matches.
  * - Creates the cad_work row with cad_status = NOT_REQUIRED.
- * - Logs ticket.created (and ticket.priority_set_by_whitelist if applicable).
+ * - Logs ticket.created.
  * - Variant 1 initial status: DRAFT
- * - Variant 2 initial status: CREATED
+ * - Direct-assignment creation is intentionally rejected here; it must enter at ASSIGNED
  *
  * The caller (route handler) must wrap this in withTransaction.
  */
 import { randomUUID } from 'crypto';
-import { NotFoundError, ValidationError } from '@/shared/errors';
+import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
 import { appendAuditEvent } from '@/modules/audit/application/index';
 import type { DbClient, UUID } from '@/shared/types';
 import type { WorkflowVariant } from '@/modules/workflow/domain/transitions';
@@ -21,19 +19,19 @@ import type { ITicketRepository } from './ports';
 export interface CreateTicketParams {
   tenantId:        UUID;
   projectId:       UUID;
-  areaId:          UUID;
-  subareaId:       UUID;
+  aorNodeId:       UUID | null;
+  departmentId?:   UUID | null;
   companyId:       UUID;
   requesterId:     UUID;
-  requesterEmail:  string;
-  ticketType:      TicketType;
+  ticketType:      TicketType | null;
   workflowVariant: WorkflowVariant;
   craft:           string;
+  fieldContact?:   string | null;
+  fieldChannel?:   string | null;
   description:     string;
-  requestedDate:   Date;
+  requestedDate:   Date | null;
+  explicitDraftSave?: boolean;
   parentTicketId?: UUID;
-  /** If true, requester email was already confirmed in the priority whitelist by the route handler. */
-  isWhitelisted?:  boolean;
 }
 
 export async function createTicket(
@@ -41,51 +39,69 @@ export async function createTicket(
   db: DbClient,
   params: CreateTicketParams,
 ): Promise<Ticket> {
-  // Area code is required for ticket numbering
-  const areaCode = await repo.findAreaCode(db, params.tenantId, params.areaId);
-  if (!areaCode) throw new NotFoundError('Area not found');
+  if (params.workflowVariant !== 'STANDARD_APPROVAL') {
+    throw new ValidationError(
+      'Direct-assignment ticket creation requires an assignment-aware entry point',
+    );
+  }
 
   // Requested date must be a valid date (checked here; 48h rule enforced at submit)
-  if (isNaN(params.requestedDate.getTime())) {
+  if (params.requestedDate && isNaN(params.requestedDate.getTime())) {
     throw new ValidationError('requestedDate is not a valid date');
   }
 
-  // Claim the next sequence number atomically
-  const seq = await repo.nextSequence(db, params.projectId);
-  const ticketNumber = `FSS-${areaCode}-${String(seq).padStart(5, '0')}`;
+  const projectStatus = await repo.findProjectStatus(db, params.tenantId, params.projectId);
+  if (!projectStatus) {
+    throw new NotFoundError('Project not found');
+  }
+  if (projectStatus === 'ARCHIVED') {
+    throw new ConflictError('Archived projects are read-only');
+  }
 
-  const isPriority = params.isWhitelisted === true;
+  if (params.aorNodeId && !await repo.findAorNodeCode(db, params.tenantId, params.projectId, params.aorNodeId)) {
+    throw new NotFoundError('AOR node not found in this project');
+  }
+
   const now = new Date();
 
   const ticket: Ticket = {
     id:                     randomUUID() as UUID,
     tenantId:               params.tenantId,
     projectId:              params.projectId,
-    areaId:                 params.areaId,
-    subareaId:              params.subareaId,
+    aorNodeId:              params.aorNodeId,
+    departmentId:           params.departmentId ?? null,
     companyId:              params.companyId,
-    ticketNumber,
+    ticketNumber:           null,
     ticketType:             params.ticketType,
     requesterId:            params.requesterId,
     assignedPartyChiefId:   null,
     assignedInstrumentManId: null,
     surveyLeadId:           null,
     workflowVariant:        params.workflowVariant,
-    status:                 params.workflowVariant === 'STANDARD_APPROVAL' ? 'DRAFT' : 'CREATED',
+    status:                 'DRAFT',
     craft:                  params.craft,
+    fieldContact:           params.fieldContact ?? null,
+    fieldChannel:           params.fieldChannel ?? null,
     description:            params.description,
     requestedDate:          params.requestedDate,
     submittedAt:            null,
     approvedAt:             null,
     assignedAt:             null,
     startedAt:              null,
+    pendingPcOutcome:       null,
+    pendingPcReason:        null,
+    surveyCancelRequestedBy: null,
+    surveyCancelRequestedRole: null,
+    surveyCancelReason:     null,
+    surveyCancelRequestedAt: null,
     completedAt:            null,
     closedAt:               null,
     rejectionReason:        null,
     parentTicketId:         params.parentTicketId ?? null,
-    isPriority,
-    priorityElevatedBy:     null,
-    priorityElevatedReason: null,
+    priority:               'NORMAL',
+    prioritySetBy:          null,
+    prioritySetReason:      null,
+    rowVersion:             0,
     createdAt:              now,
     updatedAt:              now,
   };
@@ -98,18 +114,18 @@ export async function createTicket(
     tenantId:  ticket.tenantId,
     actorId:   params.requesterId,
     eventType: 'ticket.created',
-    payload:   { ticketNumber, workflowVariant: params.workflowVariant },
+    payload:   {
+      workflowVariant: params.workflowVariant,
+      ...(params.parentTicketId ? { parentTicketId: params.parentTicketId } : {}),
+    },
   });
 
-  if (isPriority) {
-    await appendAuditEvent(db, {
-      ticketId:  ticket.id,
-      tenantId:  ticket.tenantId,
-      actorId:   params.requesterId,
-      eventType: 'ticket.priority_set_by_whitelist',
-      payload:   { requesterEmail: params.requesterEmail },
-    });
+  if (params.explicitDraftSave) {
+    await db.query('UPDATE tickets SET draft_last_saved_at = $3 WHERE id = $1 AND tenant_id = $2',
+      [ticket.id, ticket.tenantId, now]);
+    ticket.draftLastSavedAt = now;
+    await appendAuditEvent(db, { ticketId: ticket.id, tenantId: ticket.tenantId,
+      actorId: params.requesterId, eventType: 'ticket.draft_saved', payload: { initial: true } });
   }
-
   return ticket;
 }

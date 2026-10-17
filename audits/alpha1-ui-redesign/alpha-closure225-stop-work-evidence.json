@@ -1,0 +1,146 @@
+{
+  "batch": 225,
+  "baseline": "c2175b4",
+  "state": "verified fixed for terminal stop-work flags and current-authorized cancellation approval replay",
+  "authority": "R10/current workflow transitions; approved finalization leadership controls and established exact-retry contract; no new product decision",
+  "production": {
+    "files": 568,
+    "sha256": "09425214672ae03bf03274ef81782a11d62e87eea71d7c8ae041c1bbdb211158",
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "runtimeBytesMatch": true,
+    "changedFiles": [
+      "src/modules/ticket/application/request-survey-cancel.ts",
+      "src/lib/ticket-mutation-idempotency.ts",
+      "src/app/api/tickets/[ticketId]/survey-cancel/approve/route.ts"
+    ]
+  },
+  "defects": [
+    {
+      "id": "ALPHA-STOP-WORK-TERMINAL-225",
+      "before": [
+        "chief actual completed request accepts new stop-work flag/event: confirmed defect",
+        "instrument actual completed request accepts new stop-work flag/event: confirmed defect"
+      ],
+      "confirmed": "Actual completed DIRECT requests retained captured assignment identities; assigned Chief/IM each created a new pending flag and ticket.survey_cancel_requested event with200. Focused regression failed before fix.",
+      "fix": "Existing assertValidTransition(workflowVariant,currentStatus,SURVEY_CANCELED) before field flag persistence. Current actor/assignment checks retain ordering. Manager direct path and active flag/approval behavior unchanged."
+    },
+    {
+      "id": "ALPHA-STOP-WORK-APPROVAL-REPLAY-225",
+      "confirmed": "Actual Manager approval committed, then identical-key retry409because the approval endpoint had no retry ledger. First partial browser evidence and committed request are preserved.",
+      "fix": "Existing required caller-owned Idempotency-Key and executeAuthorizedTicketMutation wrapper; current visible actual Survey Manager required before ledger. Fresh callback checks pending request/chain; recorded approved result works after live flag clears. Existing request payload, response shape, transition/events/notices remain."
+    }
+  ],
+  "verification": {
+    "strictUnusedTypes": "pass host and pinned Node22.23.3",
+    "baselineUnits": 665,
+    "finalUnits": 671,
+    "focusedFinalTests": 65,
+    "pinnedProductionCompilation": "pass Next15.5.27 Node22.23.3 final reviewed artifact",
+    "postgresSuites": 33,
+    "actualCurrentChecks": 72,
+    "browserConnectedChecks": 56,
+    "approvalReplayAndRollbackHttp": 14,
+    "terminalHttp": 2,
+    "browserCases": [
+      "requester cannot create chief assigned stop-work flag",
+      "otherRequester cannot create chief assigned stop-work flag",
+      "viewer cannot create chief assigned stop-work flag",
+      "superintendent cannot create chief assigned stop-work flag",
+      "projectAdmin cannot create chief assigned stop-work flag",
+      "tenantOnly cannot create chief assigned stop-work flag",
+      "instrument2 cannot create chief assigned stop-work flag",
+      "unlinkedChief cannot create chief assigned stop-work flag",
+      "chief wrong-role/scope refusals create no effects",
+      "chief requires reviewed reason and consent",
+      "stop-work-chief LIGHT viewport contained",
+      "stop-work-chief DARK viewport contained",
+      "chief uncertain stop-work reason/action remains owned and frozen",
+      "chief Escape cannot discard uncertain flag",
+      "chief browser retries exact reviewed reason/key",
+      "chief exact flag retry adds no effect",
+      "chief flag retains work state pending Manager approval",
+      "chief has no stop-work approval takeover",
+      "instrument has no stop-work approval takeover",
+      "superintendent has no stop-work approval takeover",
+      "viewer has no stop-work approval takeover",
+      "projectAdmin has no stop-work approval takeover",
+      "tenantOnly has no stop-work approval takeover",
+      "Manager exact cancellation approval retry has one effect for chief",
+      "chief reviewed cancellation clears live flag/staffing",
+      "chief cancellation notifies requester and captured field crew",
+      "chief running work records one immutable stop notification",
+      "requester cannot create instrument assigned stop-work flag",
+      "otherRequester cannot create instrument assigned stop-work flag",
+      "viewer cannot create instrument assigned stop-work flag",
+      "superintendent cannot create instrument assigned stop-work flag",
+      "projectAdmin cannot create instrument assigned stop-work flag",
+      "tenantOnly cannot create instrument assigned stop-work flag",
+      "instrument2 cannot create instrument assigned stop-work flag",
+      "unlinkedChief cannot create instrument assigned stop-work flag",
+      "instrument wrong-role/scope refusals create no effects",
+      "instrument requires reviewed reason and consent",
+      "stop-work-instrument LIGHT viewport contained",
+      "stop-work-instrument DARK viewport contained",
+      "instrument uncertain stop-work reason/action remains owned and frozen",
+      "instrument Escape cannot discard uncertain flag",
+      "instrument browser retries exact reviewed reason/key",
+      "instrument exact flag retry adds no effect",
+      "instrument flag retains work state pending Manager approval",
+      "chief has no stop-work approval takeover",
+      "instrument has no stop-work approval takeover",
+      "superintendent has no stop-work approval takeover",
+      "viewer has no stop-work approval takeover",
+      "projectAdmin has no stop-work approval takeover",
+      "tenantOnly has no stop-work approval takeover",
+      "Manager exact cancellation approval retry has one effect for instrument",
+      "instrument reviewed cancellation clears live flag/staffing",
+      "instrument cancellation notifies requester and captured field crew",
+      "instrument running work records one immutable stop notification",
+      "Actual stop-work audit fault rolls back flag/event/notice/ledger",
+      "No stop-work production browser errors"
+    ],
+    "approvalCases": [
+      "Current Manager retrieves original cancellation approval after the live flag clears",
+      "Fresh approval after cancellation remains invalid and adds no ledger",
+      "Cancellation approval requires caller-owned retry key",
+      "chief cannot retrieve Manager approval with known retry key",
+      "instrument cannot retrieve Manager approval with known retry key",
+      "superintendent cannot retrieve Manager approval with known retry key",
+      "requester cannot retrieve Manager approval with known retry key",
+      "projectAdmin cannot retrieve Manager approval with known retry key",
+      "tenantOnly cannot retrieve Manager approval with known retry key",
+      "Former Manager cannot use cached approval after current role loss",
+      "Stale Manager session cannot retrieve approval",
+      "Archived project refuses cached cancellation approval",
+      "Actual approval notification failure rolls back cancellation/flag/assignment/history/events/ledger",
+      "Same caller-owned key succeeds after rolled-back approval and then replays without another effect"
+    ],
+    "terminalCases": [
+      "chief completed stop-work refuses409without request/event/notice/ledger effects",
+      "instrument completed stop-work refuses409without request/event/notice/ledger effects"
+    ],
+    "captures": [
+      ".local/alpha-closure225/stop-work-chief-light-1440.png",
+      ".local/alpha-closure225/stop-work-chief-dark-390.png",
+      ".local/alpha-closure225/stop-work-instrument-light-1440.png",
+      ".local/alpha-closure225/stop-work-instrument-dark-390.png"
+    ],
+    "capturesOpened": 4,
+    "pageErrors": [],
+    "sourceRuntimeBytes": "568files identical to final compiled artifact"
+  },
+  "checkpoint": {
+    "developmentBaseline": "c2175b4 synchronized0/0 after fetch",
+    "baseDivergence": "181development-only/7main-only at baseline; no integration"
+  },
+  "limits": [
+    "Current real terminal tests cover completed DIRECT records; units additionally cover both variants and all four completed/cancelled states plus active-state and personal authority preservation. Other full cancellation/role/state journeys remain open.",
+    "Manager approval retry is actual authenticated HTTP, not a new UI action. Existing field browser dialogs and caller-owned exact key behavior are retained. No decline command, Superintendent power or reviewer takeover introduced.",
+    "First browser run exposed approval retry gap after its Chief approval committed. It is preserved in priorStopRuns; final production run uses explicitly new request records in the owned schema, no reset/deletion/rewrite.",
+    "First artifact668units/33SQL verified only terminal guard; final artifact671units/33SQL reran after approval wrapper. Only final-source gates establish current acceptance.",
+    "Four Light1440/Dark390 final flag review captures opened; controls/facts visible. Full keyboard/role/table/visual clearance remains open.",
+    "Synthetic current-role/session/Archived replay mutations restored; these are server refusal checks, not human administrative workflow evidence.",
+    "Earlier E224 recovery receipts remain at previous production source; final current recovery/field/cancellation/D6 role-state integration remains to reconcile.",
+    "No schema/event/architecture/dependency/reporting/staffing/assignment history semantics change. source-map-js/GHSA-68fv-2mgg-jv7q separate release blocker unchanged. No deployment/main/Alpha2."
+  ]
+}

@@ -1,0 +1,158 @@
+# Superintendent individual Area cleanup execution evidence
+
+Approved basis: Decision30 written spec and Decision31 native implementation plan at deb74eff6652327bdea5ddea748b9b3d765e86b3. Phase5 API checkpoint; Task2 Manager UI remains outstanding. Original dirty D: checkout and retained Sabine data/attachments/containers/backups untouched. New QA is synthetic, disposable and ownership-labelled.
+
+## Current state
+- Current head before API commit: deb74ef; fetch at execution start matched origin0/0.
+- Baseline:424 tests, nonincremental TypeScript, Windows build; completed reviewer handover not repeated.
+- Approved/unblocked: Task1 exact Manager Area API implemented and verified; Task2 UI next.
+- Approved but gated/deferred: broader acting/FIELD_COORDINATOR/department resolution, complete remaining departure/account lifecycle; no fabricated Sabine assignment or automatic retention/expiry/purge. Hosted deployment/recovery/proxy/ACL/soak/device/assistive acceptance is not certified by loopback.
+
+## Task1 behavior
+Actual current project Survey Manager, including Manager+IT, may inspect three bounded Area/replacement/reporting modes and explicitly soft-unlink one scoped active individual top-level Area assignment. IT-only denied. Exact current active replacement review-grant and individual-assignment witnesses must already cover that same Area; no creation. Active descendant reporting (including retired/inactive/wrong-role cases), relevant/project-wide responsibilities and any subject acting authority block. Department evidence is diagnostic and retained without invented Superintendent visibility. Current actor/session/editable FULL project/historical ownership precede ledger; exact historical success survives later subject/replacement role or coverage loss without recreating it. Existing Chief body/status/checksum remains unchanged. Version1 survey.staffing_saved evidence, conditional exact row update and result ledger are atomic. No schema change.
+
+## Fresh root verification
+- Observed expected missing-feature RED before new read and command production code; focused tests GREEN. Full433 tests,0 failures/cancelled/skipped; pnpm tsc --noEmit --incremental false exit0.
+- Native Windows pnpm build exit0; Linux Docker runtime build swr-area-unlink-api:phase5 exit0, config sha256:01c543b385cd48f5d6f3c7ab5cdf297c9a310618653ec19e35ad2d698bd64874, includes Linux TS/test/build. Initial command's nonexistent runner target corrected to actual runtime, no Dockerfile change.
+- New actual PostgreSQL read23, command86 (real per-call rollback/fault comparisons from another connection, coverage/visibility/history/replay), two-session race81 (observed waits, both orders, actual reporting/handover/SETUP writers, separately labelled raw-row compatibility, shared accounts/FK), postwait auth32 (expiry/logout/revoked version/account/Manager/company).
+- New production HTTP79 through real cookies at3107: full existing handover/additional TEMPORARY Area, explicit Chief reporting transfer, exact duplicate cleanup, scoped negative auth/UUID/validation, unchanged-key replay, dropped complete response body after commit then exact recovery, retained witness/history and guarded role denial. This proves dropped body after commit, not every network outage timing.
+- Incumbent team63; Chief safety42/unlink35; workforce74/repair30; protected handover read190 + command151, concurrency128, session15, HTTP54; staffing safety HTTP11. Existing browser staffing89 at1440/390/810, unlink57, workforce96 and repair27 at1440/390, reviewer75.
+- Separate fresh, migrated, ownership-labelled and preserved disposable profiles each run team63; KPI SQL20/HTTP15/browser1440+390 (7 Area/3 linked, one initial aggregate, scoped drilldown, no overflow/errors); Chief bounded read SQL23/HTTP10. No weakened freshness gate. Primary owned synthetic QA restored afterward; all containers preserved.
+- Browser harness wording that calls this a production image is inherited; these browser runs actually used freshly built native Windows Next production server, not Docker-served Linux. Docker is build evidence only.
+
+## Independent API review
+Read-only fresh-context review inspected all new untracked modules/tests, incumbent writers/auth/ledger/schema; independently9 focused tests pass. No Critical/Important/Minor code findings. Initially pending completion gates fulfilled by root. Reviewer response-loss evidence caveat accepted and explicit discarded-body acceptance added/run. Six declined-to-judge boundaries are retained as rulings below. Task2 remains required, and final whole-range review remains pending.
+
+## Execution ledger and rulings retained at API checkpoint
+# SDD ledger - plan: docs/superpowers/plans/2026-10-01-superintendent-area-unlink.md
+Approval: owner "Approved" after deb74eff6652327bdea5ddea748b9b3d765e86b3 plan; preserve Native execution. Decision31 to be retained at API checkpoint.
+Pre-flight: Task1 produces SuperintendentAreaReadQuery/ReadResult and UnlinkSuperintendentAreaInput/Result; Task2 consumes identical names/fields in client/reducer/component - consistent.
+Pre-flight: Task1 canonical subject token across modes/link/page; Task2 first token and stale latch - consistent; sibling success invalidates, never rebases.
+Ruling: retain independent API and UI checkpoint reviews under explicit user/approved plan policy, plus final whole-range review - overrides executing-plans default single review - cost if wrong: extra review cost, no parallel implementation.
+Ruling: continue existing isolated phase5 worktree with installed locked dependencies and successful fresh baseline, no redundant install/new checkout - proven isolation and no dependency changes - cost if wrong: stale dependency issue exposed by full builds/tests.
+Task1: in progress; BASE deb74eff6652327bdea5ddea748b9b3d765e86b3; baseline424 tests and nonincremental TypeScript green.
+Task1: read parser/transport3 expected missing-feature assertions RED; baseline Windows build green.
+Ruling: move actual scoped SQL read acceptance before read repository production changes - otherwise parser/dispatch tests would not prove new SQL behavior - cost if wrong: extra fixture preparation, stronger evidence.
+Owned disposable swr-area-unlink-b41050fb created on15489; old owned reviewer QA stopped/preserved, migration runner and incumbent team63 green, Sabine untouched.
+Task1 Steps1-4: parser/dispatch3 GREEN, actual scoped SQL read23 GREEN after observed missing-feature RED. Systematic debugging identified generated SQL literal quote syntax; template literal correction resolved original3-test run, no architecture change. Removed temporary missing-export loaders after feature existed, preserving assertions via static imports.
+Task1: command5 and dispatcher PATCH expected missing-feature RED observed; focused command/transport7 GREEN and TypeScript green. Actual held-SQL-command RED observed only after fixing incomplete test append/JSON quoting; those syntax failures are not behavior RED.
+Ruling: malformed-JSON/unexpected transport failures use incumbent errorResponse at dispatcher boundary rather than escaping Next - current repository error contract controls; malformed JSON still delegates incumbent validation, no authorization fallback - cost if wrong: status500 on unexpected transport instead of framework failure.
+Ruling: negative wrong-subject SQL fixture uses distinct id14, not replacement id12 which rightly triggers self400 before ownership lookup - preserves separate self400 unit case and exercises intended ownership404 - cost if wrong: wrong-subject case misses an identity class, later negatives cover it.
+Debugging: persistence comparator combined UUID domain tenant with TEXT idempotency tenant; explicit ledger cast fixes harness only, no production/schema change.
+Task1: actual scoped read23 and real per-call rollback/dependency/provenance/historical replay80 GREEN after new command SQL RED; no outer-transaction rollback substituted. Concurrent winner-order acceptance now being added.
+Ruling: distinguish real reporting save/unlink, review handover and SETUP assignment application writers from raw-row compatibility probes for Area move/level/account/role/revoke - no new Area edit/lifecycle permission inferred - cost if wrong: future writer policy still needs independent acceptance, not certified here.
+
+Task 1: Ruling: foreign-tenant project HTTP expects scoped404 rather than invented403 — actual read query intentionally sees no project in that tenant; match documented scoped403/404 refusal — cost: no project existence disclosed. Linux command corrected from nonexistent runner to repository runtime stage, no Dockerfile change.
+
+Task 1: review API no Critical/Important/Minor findings; completion gates pending. Ruling: add explicit successful HTTP response-body discard followed by unchanged-key recovery — reviewer correctly distinguished normal replay from lost-response evidence — cost: proves lost body after server commit, not arbitrary network outage timing.
+
+Task1 Steps9-13: actual root SQL23 read+86 commands,81 writer/raw-row races,32 postwait auth checks; production HTTP79 including discarded body/exact recovery; full433 tests/nonincremental TS; Windows/Linux runtime build; incumbent regressions green.
+Task 1: Ruling: Task2 UI/reducer/three-way uncertainty is intentionally outstanding — API is a coherent independently verified checkpoint — cost: no Manager control yet.
+Task 1: Ruling: IT-only cleanup/broader lifecycle/full departure stays excluded — Decisions30/31 only actual project Manager exact assignment cleanup — cost: other blockers require separate authority.
+Task 1: Ruling: future writers not certified by raw-row compatibility probes — only actual current application writers and enumerated DB updates tested — cost: later writer needs its own acceptance.
+Task 1: Ruling: incumbent auth/checksum refactors excluded — original contract intentionally preserved and actual regressions green — cost: unrelated debt retained.
+Task 1: Ruling: hosted deployment/physical devices/assistive tech/soak deferred — loopback is the actual evidence boundary — cost: operational acceptance remains open.
+Task 1: Ruling: reviewer pending Linux/HTTP/regression/doc gates fulfilled by root fresh runs and exact evidence below — independent review is code evidence, not substituted execution proof — cost: final integration still needs whole-range review.
+Debugging: HTTP harness used nonexistent pm.role_version and omitted existing action:set-role; corrected from actual teams repository/parser, no production authority or role-contract change. UTF-8 read explicit prevents Windows cp1252 decode error; failed docs command made no writes.
+
+
+## Task2 verified Manager controls
+API checkpoint e03f9d2c71b575ce94ac2dfc3d748bc08d3d8d21 pushed and re-fetched equal origin0/0/clean. Selected Superintendent section consumes Task1 without new endpoint authority. Bounded exact assignments/covered witnesses/reporting guidance, original tokens, deliberate reload, generation-safe read conflicts, immutable mutation retry, local uncertain role wrapper and synchronous three-way guards are implemented. Separate reporting and role commands retained; no automatic move/demotion.
+
+Fresh root441 tests/nonincremental TS, Windows production build and Docker runtime UI build pass after the bounded review repair; final image sha256:a49b33e764f2830d474aea19bdcd149d5a0718e620cf3ac5e44ce47c08d9c8d3. Actual production browser98 at1440/390 andHTTP79 pass after that repair, incumbent reviewer75 repeated. Before repair, unchanged API SQL23read/86command/81race/32sessions and full incumbent SQL/HTTP/browser plus valid fresh KPI/Chief profiles repeated against this Task2 execution; counts/runtime/limits are CODEX Batch78. Transport faults are synthetic, sessions/auth/API/writes/audit real. Loopback/browser width evidence does not certify hosted, physical-device, assistive tech or soak acceptance.
+
+Independent consequential Task2 and integrated API/UI review ran25focused tests and inspected real harness assertions. Two Minor-labelled recovery findings regraded Important by root under explicit spec: current GET409 must stale-latch through cancel; filtered/legacy empty coverage must not claim nobody covers an Area or suggest unavailable handover. One bounded RED/GREEN repair proves generation-safe conflicts and applicable/authorized-admin guidance, no security change. Independent visual finish ship with no material fixes, detector[] once; valid document-topfinalcaptures rechecked. Documenter ordinary-extension comparison preserves DESIGN/sidecar; final committed whole-range review pending.
+
+Remaining authoritative queue: no more implementation tasks in Decision31 plan. Broader protected/inactive/former/full departure and central IT lifecycle/investigation need bounded owner-approved contracts; real Sabine mappings require authoritative personnel data; scoped report exports remain lower priority pending output contract; hosted recovery/ACL/proxy/device/assistive/soak acceptance requires its controlled environment. Automatic expiry, permanent deletion, attachment purge, inferred titles/teams/RBAC and invented staffing stay deferred. Recommended next owner direction: bounded central IT lifecycle and permission investigation design; it will not resolve unsupported staffing obligations meanwhile. Read-only investigation/acceptance preparation is independent; no mutation across these gates.
+
+
+Task2 documenter comparison: ship at ordinary-extension scope, final desktop1440x2531/mobile390x3679 captures checked; existing Axiom/classes/tokens preserved, no shipping raster/new system. Pre-existing sidecar preview button10px/nav6px versus normative DESIGN square0px is a deferred minor, not repaired unasked. Historical API-only/pending wording now explicitly superseded.
+
+## Task2 ledger/rulings retained before UI checkpoint
+# SDD ledger - plan: docs/superpowers/plans/2026-10-01-superintendent-area-unlink.md
+Approval: owner "Approved" after deb74eff6652327bdea5ddea748b9b3d765e86b3 plan; preserve Native execution. Decision31 to be retained at API checkpoint.
+Pre-flight: Task1 produces SuperintendentAreaReadQuery/ReadResult and UnlinkSuperintendentAreaInput/Result; Task2 consumes identical names/fields in client/reducer/component - consistent.
+Pre-flight: Task1 canonical subject token across modes/link/page; Task2 first token and stale latch - consistent; sibling success invalidates, never rebases.
+Ruling: retain independent API and UI checkpoint reviews under explicit user/approved plan policy, plus final whole-range review - overrides executing-plans default single review - cost if wrong: extra review cost, no parallel implementation.
+Ruling: continue existing isolated phase5 worktree with installed locked dependencies and successful fresh baseline, no redundant install/new checkout - proven isolation and no dependency changes - cost if wrong: stale dependency issue exposed by full builds/tests.
+Task1: in progress; BASE deb74eff6652327bdea5ddea748b9b3d765e86b3; baseline424 tests and nonincremental TypeScript green.
+Task1: read parser/transport3 expected missing-feature assertions RED; baseline Windows build green.
+Ruling: move actual scoped SQL read acceptance before read repository production changes - otherwise parser/dispatch tests would not prove new SQL behavior - cost if wrong: extra fixture preparation, stronger evidence.
+Owned disposable swr-area-unlink-b41050fb created on15489; old owned reviewer QA stopped/preserved, migration runner and incumbent team63 green, Sabine untouched.
+Task1 Steps1-4: parser/dispatch3 GREEN, actual scoped SQL read23 GREEN after observed missing-feature RED. Systematic debugging identified generated SQL literal quote syntax; template literal correction resolved original3-test run, no architecture change. Removed temporary missing-export loaders after feature existed, preserving assertions via static imports.
+Task1: command5 and dispatcher PATCH expected missing-feature RED observed; focused command/transport7 GREEN and TypeScript green. Actual held-SQL-command RED observed only after fixing incomplete test append/JSON quoting; those syntax failures are not behavior RED.
+Ruling: malformed-JSON/unexpected transport failures use incumbent errorResponse at dispatcher boundary rather than escaping Next - current repository error contract controls; malformed JSON still delegates incumbent validation, no authorization fallback - cost if wrong: status500 on unexpected transport instead of framework failure.
+Ruling: negative wrong-subject SQL fixture uses distinct id14, not replacement id12 which rightly triggers self400 before ownership lookup - preserves separate self400 unit case and exercises intended ownership404 - cost if wrong: wrong-subject case misses an identity class, later negatives cover it.
+Debugging: persistence comparator combined UUID domain tenant with TEXT idempotency tenant; explicit ledger cast fixes harness only, no production/schema change.
+Task1: actual scoped read23 and real per-call rollback/dependency/provenance/historical replay80 GREEN after new command SQL RED; no outer-transaction rollback substituted. Concurrent winner-order acceptance now being added.
+Ruling: distinguish real reporting save/unlink, review handover and SETUP assignment application writers from raw-row compatibility probes for Area move/level/account/role/revoke - no new Area edit/lifecycle permission inferred - cost if wrong: future writer policy still needs independent acceptance, not certified here.
+
+Task 1: Ruling: foreign-tenant project HTTP expects scoped404 rather than invented403 — actual read query intentionally sees no project in that tenant; match documented scoped403/404 refusal — cost: no project existence disclosed. Linux command corrected from nonexistent runner to repository runtime stage, no Dockerfile change.
+
+Task 1: review API no Critical/Important/Minor findings; completion gates pending. Ruling: add explicit successful HTTP response-body discard followed by unchanged-key recovery — reviewer correctly distinguished normal replay from lost-response evidence — cost: proves lost body after server commit, not arbitrary network outage timing.
+
+Task1 Steps9-13: actual root SQL23 read+86 commands,81 writer/raw-row races,32 postwait auth checks; production HTTP79 including discarded body/exact recovery; full433 tests/nonincremental TS; Windows/Linux runtime build; incumbent regressions green.
+Task 1: Ruling: Task2 UI/reducer/three-way uncertainty is intentionally outstanding — API is a coherent independently verified checkpoint — cost: no Manager control yet.
+Task 1: Ruling: IT-only cleanup/broader lifecycle/full departure stays excluded — Decisions30/31 only actual project Manager exact assignment cleanup — cost: other blockers require separate authority.
+Task 1: Ruling: future writers not certified by raw-row compatibility probes — only actual current application writers and enumerated DB updates tested — cost: later writer needs its own acceptance.
+Task 1: Ruling: incumbent auth/checksum refactors excluded — original contract intentionally preserved and actual regressions green — cost: unrelated debt retained.
+Task 1: Ruling: hosted deployment/physical devices/assistive tech/soak deferred — loopback is the actual evidence boundary — cost: operational acceptance remains open.
+Task 1: Ruling: reviewer pending Linux/HTTP/regression/doc gates fulfilled by root fresh runs and exact evidence below — independent review is code evidence, not substituted execution proof — cost: final integration still needs whole-range review.
+Debugging: HTTP harness used nonexistent pm.role_version and omitted existing action:set-role; corrected from actual teams repository/parser, no production authority or role-contract change. UTF-8 read explicit prevents Windows cp1252 decode error; failed docs command made no writes.
+Task 1: complete (commits deb74ef..e03f9d2, tests: pnpm test → ℹ duration_ms 3612.7701)
+
+Task2: reducer7 missing-feature RED then GREEN; actual production browser exact missing-region0!=1 RED before UI implementation. Impeccable context loaded incumbent PRODUCT/DESIGN, resolved actual Team Management surface brief after nonexistent target, craft floor read. Owner approved precise UI task and code-led Operate/Axiom layout; no repeated design interview/concept or new brand. Component/client/parent guards implemented for forthcoming full browser acceptance.
+
+Task2 browser93 GREEN: all6 directed pending and uncertain guards, duplicate requestSubmit, stable input/key retries, real reporting transfer/temporary coverage and cleanup one-audit loss recovery, pages, real read/mutation token mismatch, stale cancellation/reload, late reads, inactive/retired/unsupported/archived evidence, focus/overflow. Harness debugging resolved premature unroute before retry reply, ambiguous banner selector and UUID page order; production unchanged. Valid document-top1440/390 captures inspected once after correcting initial sticky-position capture; detector[] once.
+
+Task2 review: fresh independent25 focused tests green and whole API/UI inspection. Ruling: regrade GET409 stale-latch omission and filtered/legacy recovery advice from reviewer Minor to Important for the explicit approved recovery contract — reasonable Manager must not lose conflict warnings through cancel or follow unavailable handover guidance — cost: one bounded functional fix pass; no security authority change. Browser wrong no-source advice0!=1 RED and read409 helper expected missing RED observed before fixes. Generation-safe GET409 now uses stale while other read failures stay retryable; filtered no-match and legacy handover/authorized-admin advice separated.
+
+Task2 one functional review fix pass GREEN: reducer8, full441 tests(0 failures/skips), nonincremental TypeScript, fresh Windows/Linux runtime builds; actual browser98 and HTTP79/lost response rerun; incumbent reviewer75 rerun. Earlier fresh Task2 SQL23/86/81/32 and all incumbent SQL/HTTP/browser/fresh KPI/Chief-read checks remained on unchanged server code. Visual finish independent disposition ship/no material fixes, detector[] once, final valid captures rechecked after bounded recovery fixes; no new raster/system/navigation.
+Ruling: branch finishing menu/worktree cleanup not applicable — user requires durable origin/phase5 checkpoints, not integration/main/PR or removing existing managed checkout — cost: Phase5 branch remains available for later work.
+
+Task2 documenter: independent read-only ordinary-extension comparison ship; incumbent Axiom/classes/tokens/mobile composition preserved. Final captures1440x2531/390x3679 ignored QA, no shipping raster. Historical API-only/pending statements now explicitly superseded by actual Task2 evidence.
+Task2: minor (deferred): pre-existing design sidecar preview radii10px button/6px nav differ from normative DESIGN square0px; do not repair system drift unasked.
+Task2: Ruling: broader lifecycle/IT-only/full-departure declined review scope remains excluded — approved contract is actual Manager exact individual assignment only — cost: unsupported personnel/other protected blockers stay gated.
+Task2: Ruling: future writer compatibility remains outside current evidence — tests prove only named current application writers and labelled raw DB updates — cost: future lifecycle writer needs its own authority/concurrency acceptance.
+Task2: Ruling: hosted/physical-device/assistive/soak outcomes remain unverified — actual runtime evidence is local loopback/native Windows plus Linux build — cost: deployment acceptance remains separate.
+
+
+## Pushed Task2 and current-state queue (2026-10-01)
+
+CURRENT HEAD: 0c1e1b81b715c81a010ebf2c362cdc279f61c952, phase5; root ordinary push and fetch verified exact origin/phase5 equality, 0/0 divergence and clean checkout. Task1 is e03f9d2c71b575ce94ac2dfc3d748bc08d3d8d21. Task2 task-done freshly reran pnpm test with441 passing, no failed/cancelled/skipped; fresh nonincremental TypeScript also exits0.
+
+KNOWN-GOOD BASELINE: actual root Windows/Linux builds, SQL/HTTP/browser and incumbent acceptance counts are the preceding Task2 record; builds/SQL were not repeated for documentation-only completion.
+
+COMPLETED / DO NOT REPEAT: approved reviewer handover with explicit temporary additional Area coverage; exact Manager Superintendent individual Area unlink API and UI; separate Chief reporting save/unlink and fixed-role guards; bounded reporting/KPI populations, workforce/repair and prior requester/attachment/account-shell increments. Retained historical evidence is not fresh certification of every subsystem.
+
+APPROVED + UNBLOCKED: finish the required final committed-range review and durable completion record. No additional sufficiently specified implementation remains in Decision31's completed two-task plan.
+
+APPROVED BUT GATED: acting/FIELD_COORDINATOR/department and inactive/former-person cleanup require concrete replacement/target/audit/lifecycle rules; central IT account/company/member/invitation lifecycle and consolidated permission investigation require a bounded approved design; individual Sabine reporting needs authoritative mappings; scoped print/export direction requires an output contract; hosted recovery/ACL/proxy/soak/device/assistive acceptance needs a controlled environment and actual evidence. Existing broad authority boundaries are not approval of unspecified commands.
+
+DEFERRED: automatic draft/temporary-coverage expiry, permanent draft deletion, attachment purge/orphan cleanup without retention approval, fabricated personnel/reporting, display-title/team-derived authority, broad Manager grants/invitations, generalized roles/RBAC, unapproved tiers/infrastructure/indexes/refactors.
+
+NEXT RECOMMENDED INCREMENT: owner-selected bounded central IT lifecycle/permission investigation written design. WHY THIS IS NEXT: it addresses a remaining documented Phase5 objective without reopening the completed staffing slice or inventing unsupported resolution rules. Primary downside: unsupported staffing blockers remain gated. Viable alternatives are a separately scoped protected-blocker design or controlled deployment acceptance preparation. Exact decision is the next design direction, not approval of an unseen specification or implementation. Read-only investigation and acceptance preparation can proceed independently; mutation may not cross these gates. Sabine data, attachments, backups, original dirty checkout and running retained preview remain unchanged.
+
+
+## Final committed-range review (2026-10-01)
+
+Fresh read-only most-capable reviewer inspected deb74eff6652327bdea5ddea748b9b3d765e86b3..0c1e1b81b715c81a010ebf2c362cdc279f61c952: no Critical, Important or Minor findings; ready for checkpoint completion. This authorizes no merge or deployment. Independently17 focused pure tests pass, no failures/cancellations/skips; committed diff-check passes. Mutation harness/build evidence remains root execution, not reviewer claims.
+
+All five review-focus conditions were deliberately checked: canonical subject checksum and persistent original-token/stale latch; inactive/wrong-role Chiefs and retired descendants; legacy no-event eligibility with explicit duplicate/overlap evidence; held exact reused witnesses and atomic conditional assignment/audit/ledger; current Manager/session gates before historical replay and six-direction synchronous UI guards with exact uncertain retry. No second review or speculative code repair is needed after this clean final review.
+
+Declined to judge (every item ruled below): complete departure/inactive-former/other protected/automatic role removal; IT-only cleanup/generalized lifecycle administration; future writers/arbitrary DB mutation; generic authentication/per-token logout/Chief redesign; retention/hard deletion/ticket reassignment/Sabine changes; hosted/device/assistive/soak/production-scale performance; pre-existing sidecar radius drift; completion-document edits after the immutable reviewed head.
+
+### Final ledger additions retained before scratch cleanup
+
+Task 2: complete (commits e03f9d2..0c1e1b8, tests: pnpm test → ℹ duration_ms 3577.8774)
+Final review: fresh-context whole committed range deb74eff6652327bdea5ddea748b9b3d765e86b3..0c1e1b81b715c81a010ebf2c362cdc279f61c952; no Critical/Important/Minor findings, all five focus conditions checked; reviewer independently17 pure tests and diff-check. Root evidence remains separate.
+Final: Ruling: complete departure/inactive-former/other protected/automatic role removal excluded — exact Manager assignment cleanup and separate role guard satisfy Decision31 — cost if wrong: unsupported obligations remain blocked.
+Final: Ruling: IT-only cleanup/generalized lifecycle-permissions administration excluded — no authority granted by this contract; existing IT handover retained — cost if wrong: separate design still required.
+Final: Ruling: future writers/arbitrary DB mutation not certified — actual acceptance covers named application writers and labelled raw compatibility cases only — cost if wrong: future writers require their own concurrency acceptance.
+Final: Ruling: generic auth/per-token logout/incumbent Chief redesign preserved — current-session postwait gates and integration tested without unrelated redesign — cost if wrong: no stronger global serialization guarantee.
+Final: Ruling: retention/hard deletion/ticket reassignment/Sabine mutation excluded — preserved historical and retained state matches approved scope — cost if wrong: retention and real-data acceptance remain gated.
+Final: Ruling: hosted/device/assistive/soak/production-scale performance unclaimed — loopback and Linux build cannot establish these — cost if wrong: operational acceptance remains unfinished.
+Final: Ruling: pre-existing design-sidecar radius drift stays deferred — normative DESIGN and rendered existing controls preserved; no unrelated system repair — cost if wrong: preview/documentation inconsistency remains.
+Final: Ruling: post-0c1e1b8 completion docs reviewed by root separately — immutable code review excludes later documentation; only exact status/evidence/rulings/queue edited — cost if wrong: documentation wording relies on executor review, not independent code verdict.
+
+Final documentation precommit verification: root pnpm test441/441, no failures/cancellations/skips; pnpm tsc --noEmit --incremental false exit0; current and committed-range diff-check exit0. No production/test changes since verified0c1e1b8, no build/SQL/browser rerun claim for documentation-only changes.

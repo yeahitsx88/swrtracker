@@ -1,0 +1,29 @@
+{
+  "receipts": [
+    "fixture scale and available personnel",
+    "actual IM drag projects placement, cancel restores source",
+    "IM confirmation commits local move",
+    "invalid IM-to-Superintendent drop rejected",
+    "whole crew moves with current descendants",
+    "available assignment and preserved review facts",
+    "keyboard move, Escape cancellation and focus return",
+    "collapse and expand retain hierarchy",
+    "IM drag at 50%: native painted target, highlight, review and placement",
+    "collapsed whole-crew move and invalid target at 50%",
+    "IM drag at 100%: native painted target, highlight, review and placement",
+    "IM drag at 150%: native painted target, highlight, review and placement",
+    "collapsed whole-crew move and invalid target at 150%",
+    "collapsed Chief stays closed; proposed/canceled/confirmed and available roster counts are accurate",
+    "native drop after canvas scrolling at 50%",
+    "native drop after canvas scrolling at 100%",
+    "native drop after canvas scrolling at 150%",
+    "zoom bounds/reset and overview captures",
+    "fixed viewport and toolbar; zoom never shifts surrounding page; canvas and page scroll independently",
+    "130% chart at reported window size exposes the complete available tray",
+    "narrow chart scroll contained to chart",
+    "workspace close and Escape restore focus; reopening resets local fixture state",
+    "refresh resets fixtures; zero API requests; zero browser errors"
+  ],
+  "apiCalls": [],
+  "failures": []
+}

@@ -1,0 +1,62 @@
+{
+  "batch": 220,
+  "baseline": "44c2459",
+  "item": "ALPHA-LIFECYCLE-REPLAY-218",
+  "state": "reconciled and verified fixed under current project eligibility",
+  "authority": [
+    "Decision45 editable FULL project appointment; current authority before replay",
+    "D6/Decision54 completion-only cancellation; no new ordinary organizational command",
+    "docs/AGENTS current server authorization precedes recorded replay"
+  ],
+  "change": "Reuse current scoped editable FULL project check plus existing preparation-cancellation guard in preview and route authorization after EXCLUSIVE barrier before idempotency. Preserve ordinary Setup and skip promoted-subject/snapshot checks on exact replay.",
+  "production": {
+    "files": 568,
+    "sha256": "0d387338d1d2e16511cda6bd0f1a72d56a77488bd430d59ef0f734ab635ecbb7",
+    "method": "globally sorted forward-slash relative path + NUL + raw bytes + NUL over src/db/migrations",
+    "runtimeBytesMatch": true
+  },
+  "verification": {
+    "baselineUnits": 656,
+    "currentHostUnits": 659,
+    "pinnedUnits": 659,
+    "strictUnusedTypes": "pass host and Node22.23.3",
+    "productionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "continuityCases": 36,
+    "authenticatedProductionChecks": 15,
+    "cases": [
+      "Recorded original production browser retry has identical body/key",
+      "Current authorized exact HTTP retry returns original appointment",
+      "Recorded retry creates no additional state or audit evidence",
+      "Archived recorded retry refuses before ledger retrieval",
+      "Archived preview/retry create no effects",
+      "Operational Manager alone does not bypass current administration",
+      "Editable ordinary Setup retains exact recorded retry",
+      "Actual cancelling preparation blocks Manager preview",
+      "Actual cancelling preparation blocks Manager retry",
+      "Actual cancelling preparation blocks Manager fresh",
+      "Cancellation-denied commands leave all organization/request/evidence bytes unchanged",
+      "Governed preparation cancellation finishes Archived",
+      "Completed preparation cancellation keeps Manager retry unavailable",
+      "One retained Manager appointment event",
+      "No browser page errors"
+    ],
+    "pageErrors": [],
+    "actualBrowserLostReply": "Original appointment committed, lost response aborted, unchanged browser body/key retry completed; original two attempts persisted. Follow-on JSON string-order assertion interrupted observer; final structural comparison resumed same recorded command."
+  },
+  "preserved": [
+    "No role, Area, reporting, staffing, ticket/history or schema semantics changed",
+    "Existing ordinary Setup configuration remains allowed",
+    "Exact original result remains available to current administrator on editable eligible project after incoming role promotion",
+    "Current administrative authority precedes project guard",
+    "Atomic appointment effects and event/ledger remain unchanged",
+    "Conventional/Visual interfaces and E219 decision UI unchanged"
+  ],
+  "limitations": [
+    "Lifecycle probes include bounded synthetic Archived and ordinary Setup state changes on newly owned project. Cancellation start and completion exercised actual governed Central APIs.",
+    "Production browser observer corrected JSON key-order comparison without resetting fixture or repeating promotion. Final 15-case receipt is resumed current evidence, not an uninterrupted fresh end-to-end run.",
+    "No new visual UI change/captures in this increment; E219 opened captures remain scoped visual evidence at previous source.",
+    "Whole Alpha acceptance remains open; current notices/delivery, wider cancellation/role/keyboard/table visuals and final requirement reconciliation remain.",
+    "No release readiness claim, advisory fix, push, deployment or Alpha2."
+  ]
+}

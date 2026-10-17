@@ -1,0 +1,927 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-04T00:02:34.797Z",
+  "branch": "alpha1-ui-redesign",
+  "base": "b8ff81494c6701bb7f84550b40c247f4588b28cb",
+  "implementation": "c39437b039b49a24ae35bd2c4febbdb2ab259fa1fbd52df5fd0ac2c6b6335011",
+  "checkpoints": [
+    "285b6ce",
+    "dc77039"
+  ],
+  "verification": {
+    "baseline": {
+      "unitTests": 559,
+      "strictTypes": "passed",
+      "pinnedBuild": "passed"
+    },
+    "final": {
+      "unitTests": 566,
+      "strictUnusedTypes": "passed",
+      "pinnedNode": "22.23.3",
+      "postgresVersion": 15,
+      "productionBuild": "passed",
+      "productionDependencyAudit": "passed",
+      "postgresSuites": 27,
+      "productionHttpChecks": 52,
+      "lifecycleBrowserChecks": 24,
+      "lostResponseBrowserChecks": 26,
+      "namedAcceptanceCases": {
+        "passed": 55,
+        "total": 55
+      },
+      "uiBrowserHttpChecks": 688,
+      "roleThemeViewportCombinations": 36
+    }
+  },
+  "matrixSuites": {
+    "account-offboarding-commands-postgres.ts": {
+      "at": "2026-10-03T23:57:15.649Z",
+      "exitCode": 0
+    },
+    "offboarding-policy-postgres.ts": {
+      "at": "2026-10-03T23:57:16.331Z",
+      "exitCode": 0
+    },
+    "project-administration-postgres.ts": {
+      "at": "2026-10-03T23:57:16.99Z",
+      "exitCode": 0
+    },
+    "project-capabilities-postgres.ts": {
+      "at": "2026-10-03T23:57:17.519Z",
+      "exitCode": 0
+    },
+    "account-offboarding-concurrency-postgres.ts": {
+      "at": "2026-10-03T23:57:17.926Z",
+      "exitCode": 0
+    },
+    "lifecycle-writer-handlers-postgres.ts": {
+      "at": "2026-10-03T23:57:19.811Z",
+      "exitCode": 0
+    },
+    "project-member-atomic-postgres.ts": {
+      "at": "2026-10-03T23:57:20.338Z",
+      "exitCode": 0
+    },
+    "offboarding-blockers-postgres.ts": {
+      "at": "2026-10-03T23:57:20.83Z",
+      "exitCode": 0
+    },
+    "active-duty-subject-postgres.ts": {
+      "at": "2026-10-03T23:57:21.573Z",
+      "exitCode": 0
+    },
+    "ticket-assignee-eligibility-postgres.ts": {
+      "at": "2026-10-03T23:57:22.038Z",
+      "exitCode": 0
+    },
+    "ticket-replay-visibility-postgres.ts": {
+      "at": "2026-10-03T23:57:22.605Z",
+      "exitCode": 0
+    },
+    "ticket-replay-authority-postgres.ts": {
+      "at": "2026-10-03T23:57:23.634Z",
+      "exitCode": 0
+    },
+    "identity-lifecycle-atomic-postgres.ts": {
+      "at": "2026-10-03T23:57:25.632Z",
+      "exitCode": 0
+    },
+    "notification-worker-lifecycle-postgres.ts": {
+      "at": "2026-10-03T23:57:27.291Z",
+      "exitCode": 0
+    },
+    "survey-teams-postgres.ts": {
+      "at": "2026-10-03T23:57:29.112Z",
+      "exitCode": 0
+    },
+    "survey-staffing-postgres.ts": {
+      "at": "2026-10-03T23:57:30.305Z",
+      "exitCode": 0
+    },
+    "survey-staffing-safety-postgres.ts": {
+      "at": "2026-10-03T23:57:30.849Z",
+      "exitCode": 0
+    },
+    "protected-obligations-postgres.ts": {
+      "at": "2026-10-03T23:57:31.515Z",
+      "exitCode": 0
+    },
+    "protected-obligations-concurrency-postgres.ts": {
+      "at": "2026-10-03T23:57:32.896Z",
+      "exitCode": 0
+    },
+    "superintendent-area-postgres.ts": {
+      "at": "2026-10-03T23:57:33.399Z",
+      "exitCode": 0
+    },
+    "superintendent-area-concurrency-postgres.ts": {
+      "at": "2026-10-03T23:57:34.343Z",
+      "exitCode": 0
+    },
+    "team-workforce-postgres.ts": {
+      "at": "2026-10-03T23:57:35.009Z",
+      "exitCode": 0
+    },
+    "draft-recovery-postgres.ts": {
+      "at": "2026-10-03T23:57:35.443Z",
+      "exitCode": 0
+    },
+    "http": {
+      "at": "2026-10-03T23:59:08.748Z",
+      "exitCode": 0
+    },
+    "browser": {
+      "at": "2026-10-03T23:59:12.035Z",
+      "exitCode": 0
+    }
+  },
+  "roles": [
+    {
+      "label": "requester",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "requester",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "requester",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "requester",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "manager",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "manager",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "manager",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "manager",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "superintendent",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Survey Operations",
+        "Crew Work",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "superintendent",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Survey Operations",
+        "Crew Work",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "superintendent",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Survey Operations",
+        "Crew Work",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "superintendent",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Survey Operations",
+        "Crew Work",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "chief",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "PC Approvals",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "chief",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "PC Approvals",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "chief",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "PC Approvals",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "chief",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "PC Approvals",
+        "Team Management",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "instrument",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "instrument",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "instrument",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "instrument",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Crew Work",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "admin",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "admin",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "admin",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "admin",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-manager",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-manager",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-manager",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-manager",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "Survey Operations",
+        "All Requests",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-requester",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-requester",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-requester",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-requester",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "New Request",
+        "Requests",
+        "Drafts",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-superintendent",
+      "theme": "LIGHT",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Crew Work",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-superintendent",
+      "theme": "LIGHT",
+      "width": 390,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Crew Work",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-superintendent",
+      "theme": "DARK",
+      "width": 1440,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Crew Work",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    },
+    {
+      "label": "combined-superintendent",
+      "theme": "DARK",
+      "width": 390,
+      "labels": [
+        "Home",
+        "All Requests",
+        "Crew Work",
+        "Team Management",
+        "Project Administration",
+        "Appearance",
+        "Profile",
+        "Assignment Details",
+        "Switch project"
+      ]
+    }
+  ],
+  "review": {
+    "disposition": "ship",
+    "scope": "captured shell/Home and account-navigation consolidation",
+    "validCaptures": 43,
+    "materialUiFixesRemaining": 0,
+    "securityReleaseApproval": false,
+    "documenter": "DESIGN.md and token-bearing .impeccable/design.json updated; PRODUCT/surface exception reconciled"
+  },
+  "isolation": {
+    "ownedDisposableDatabase": true,
+    "ownedUniqueSchemas": true,
+    "ownedAttachmentVolumes": true,
+    "retainedCustomerStateUntouched": true,
+    "hostPortAdapter": "Ignored copies alter only 15489 guard to dedicated 15492 and external suite dispatch; actual test assertions unchanged. In-container runner retains15489.",
+    "cleanup": "All named redesign-owned acceptance containers and volumes removed after evidence retention."
+  },
+  "localEvidence": {
+    "capturesRoot": ".impeccable/review/alpha1-ui",
+    "capturesCommitted": false,
+    "privateManifestsAndCredentialsCommitted": false,
+    "captures": [
+      {
+        "file": "requester-light-1440.png",
+        "sha256": "140df76cd3ac183088d0b146cd4cb49e5d6544e0a10187d84b08da003c5d6ad3",
+        "bytes": 232219
+      },
+      {
+        "file": "requester-light-390.png",
+        "sha256": "be8a6f408fec7543f613ae85a749d91dc62dd320ddbf603c2e1c15dd9ef53472",
+        "bytes": 197181
+      },
+      {
+        "file": "requester-dark-1440.png",
+        "sha256": "294348db62328a3ba8d9d6ab70a7ad5ccf6da10a89176c857c32b14d905a9604",
+        "bytes": 235521
+      },
+      {
+        "file": "requester-dark-390.png",
+        "sha256": "89d3d32e95e5b94ecfbc60793534fe2d173359771ad70d480b1d0a18cacbecd5",
+        "bytes": 200899
+      },
+      {
+        "file": "manager-light-1440.png",
+        "sha256": "5db1ada4ef551ac0fac8b6c9d75852eab7ff493735fd181d91851b76a0c4d660",
+        "bytes": 248078
+      },
+      {
+        "file": "manager-light-390.png",
+        "sha256": "bfa05d4e20d27b0787924df3a47c23c453abe6a2c245920a46e915546667423c",
+        "bytes": 210288
+      },
+      {
+        "file": "manager-dark-1440.png",
+        "sha256": "a20c7a79fa7d9a19246945dab6078343d02b0dc86e390b1e7684db9d38f357bf",
+        "bytes": 252477
+      },
+      {
+        "file": "manager-dark-390.png",
+        "sha256": "669709dec3fd0918123f9f9539accf01d6e44582e4472b9b85eeff025290fdbc",
+        "bytes": 215136
+      },
+      {
+        "file": "superintendent-light-1440.png",
+        "sha256": "03bdde8d706ca615655f94bf17c80eceaa9d3afa0966967f1e443b4fbb467527",
+        "bytes": 238302
+      },
+      {
+        "file": "superintendent-light-390.png",
+        "sha256": "59a4a460fa440c05231d82a46ad799e52bbe845b330918188cd0e67dba2c9c89",
+        "bytes": 194899
+      },
+      {
+        "file": "superintendent-dark-1440.png",
+        "sha256": "c1852ff2ba113bb3274ad465078b135c1ecf7a66e3d800452a5f3b7a2b842de6",
+        "bytes": 243405
+      },
+      {
+        "file": "superintendent-dark-390.png",
+        "sha256": "654d864c19f2b726476cd21743a9707d3a368d8738f92a8eb415d875cd955f7f",
+        "bytes": 199457
+      },
+      {
+        "file": "chief-light-1440.png",
+        "sha256": "cd3ee43aa4894d1f03558b7e1dd5217e05b854964a74f5a8d82095fa19f48ca5",
+        "bytes": 215743
+      },
+      {
+        "file": "chief-light-390.png",
+        "sha256": "52881c7da3fc988d706f4e839a16c32c193abb04a7828a14f24f9e2bc5242f4d",
+        "bytes": 173747
+      },
+      {
+        "file": "chief-dark-1440.png",
+        "sha256": "77bc28c3fa7651c98d3221a89743bc08444d6fc6239c1fdfb5aac4543f7e8341",
+        "bytes": 219785
+      },
+      {
+        "file": "chief-dark-390.png",
+        "sha256": "31a3aa8823c46298376946979a972f4a3e022e349055e93237708af079dfe29c",
+        "bytes": 177251
+      },
+      {
+        "file": "instrument-light-1440.png",
+        "sha256": "1d53421a6b4e901a58a8e4ec301b7aa6be53a8ba474d8e81aacf4223d9711905",
+        "bytes": 211051
+      },
+      {
+        "file": "instrument-light-390.png",
+        "sha256": "8d3421fd79cc0685d49151689792c705b11585ae869c6606a8b891959defdaa6",
+        "bytes": 172626
+      },
+      {
+        "file": "instrument-dark-1440.png",
+        "sha256": "e0a18c0832892cb5d7cf02b7be01df5cc0ef6b3c3ee7e07c0434ae66dfbbc35a",
+        "bytes": 215024
+      },
+      {
+        "file": "instrument-dark-390.png",
+        "sha256": "43a6024aae6f9906621d2652992256586699c5def72b57be875f59321c3b7d24",
+        "bytes": 176351
+      },
+      {
+        "file": "admin-light-1440.png",
+        "sha256": "30e943a7175ea07a20dec26e5aaad91c2ef169965505e4308b66adf6cb537c6d",
+        "bytes": 60231
+      },
+      {
+        "file": "admin-light-390.png",
+        "sha256": "ac6d8384cdd7b4948b0bcd728707a815cc0f3798a328d523c27a0bfbeb03fd71",
+        "bytes": 39559
+      },
+      {
+        "file": "admin-dark-1440.png",
+        "sha256": "71ebb9f574ee5be11cf6d47ffbb7ed453d8039c467cc3ec19c8a3a2da65e0626",
+        "bytes": 61188
+      },
+      {
+        "file": "admin-dark-390.png",
+        "sha256": "ac79750c1965e1227dece99387ee78456dfb5eaf2029d7456f01580c6be5a4f2",
+        "bytes": 40157
+      },
+      {
+        "file": "combined-manager-light-1440.png",
+        "sha256": "0f1229c15055176a4dde66ef8ddab08edd7eceb12212d7f18ff3f3276f158266",
+        "bytes": 266901
+      },
+      {
+        "file": "combined-manager-light-390.png",
+        "sha256": "31391e4e45c73fa1c0322fd091ac03478c86b0180df1f67331a7e6f668e379be",
+        "bytes": 224726
+      },
+      {
+        "file": "combined-manager-dark-1440.png",
+        "sha256": "034a09808b3cdef20d946c22ae395dcf2384b3518c29eeedd1d22ee50a9d8e37",
+        "bytes": 271820
+      },
+      {
+        "file": "combined-manager-dark-390.png",
+        "sha256": "654531aaefee04c8af4c473990137ddb51965c714efb8901bed3d95dab15fa5b",
+        "bytes": 230106
+      },
+      {
+        "file": "combined-requester-light-1440.png",
+        "sha256": "80aa95dc9d1c866ebb008970cde3c9cacea54ec9eeb2be96b4fa9e9e323a8f30",
+        "bytes": 229768
+      },
+      {
+        "file": "combined-requester-light-390.png",
+        "sha256": "4bf2f885210c9f4c82ac60703c7f63eeb1f42794da8de744b8308dd0de756b7b",
+        "bytes": 191487
+      },
+      {
+        "file": "combined-requester-dark-1440.png",
+        "sha256": "c39248bf6d150ed732863afa2a705e97d7a77c342b6a626ae230f940bb593617",
+        "bytes": 233611
+      },
+      {
+        "file": "combined-requester-dark-390.png",
+        "sha256": "66bb599c359ec04b43d29f02026551c0dabe2ffee0a24fd947c2a45137041ab6",
+        "bytes": 195797
+      },
+      {
+        "file": "combined-superintendent-light-1440.png",
+        "sha256": "87ed7aedea28ad4d205d0a48d748b2ee8321ddb0d20f0be9a2bcecb43164e682",
+        "bytes": 224866
+      },
+      {
+        "file": "combined-superintendent-light-390.png",
+        "sha256": "6268052be1d62d4ea1645ba2e10b8fcf0bfdb27aafbef14f710ba29a549a2b3d",
+        "bytes": 187079
+      },
+      {
+        "file": "combined-superintendent-dark-1440.png",
+        "sha256": "43134c04e9c39c566a0b0329a4577b627669f151b027f0d6e74770130883b21f",
+        "bytes": 228959
+      },
+      {
+        "file": "combined-superintendent-dark-390.png",
+        "sha256": "af9aa987f4a2b9ec32923692a6699afb25ee331a8f553054b5f8a9a337a82af2",
+        "bytes": 191581
+      },
+      {
+        "file": "setup-admin.png",
+        "sha256": "70ef0124f2268f8a8f05989fe78fdf84f64f368ddf60bb41505606759b6838d0",
+        "bytes": 201388
+      },
+      {
+        "file": "requester-system-light-834.png",
+        "sha256": "e00ba190a91a91acbf8a5fd6055511f72c1f0c77fb6c49060b68e4cf12910da5",
+        "bytes": 218256
+      },
+      {
+        "file": "requester-system-dark-834.png",
+        "sha256": "719a13cdcb8c94347f637a27f58fea363f11e7943d7849826b3339f1dac14871",
+        "bytes": 221923
+      },
+      {
+        "file": "requester-tenant-colors.png",
+        "sha256": "140df76cd3ac183088d0b146cd4cb49e5d6544e0a10187d84b08da003c5d6ad3",
+        "bytes": 232219
+      },
+      {
+        "file": "mobile-account-drawer-top.png",
+        "sha256": "cc2ba4a7c6785863a11684a2408b402309b09968d3704777b0889780dbe13fe6",
+        "bytes": 163853
+      },
+      {
+        "file": "mobile-account-drawer-account.png",
+        "sha256": "cc2ba4a7c6785863a11684a2408b402309b09968d3704777b0889780dbe13fe6",
+        "bytes": 163853
+      },
+      {
+        "file": "account-only-profile-menu.png",
+        "sha256": "39024eb4fcdfb7431e931fbe5249c0343949aaeeb4c0aa19f1c72184b1603cb9",
+        "bytes": 22486
+      }
+    ]
+  },
+  "deferred": [
+    "SurveyRelay rebrand",
+    "new permissions/backend analytics",
+    "custom dashboard builders",
+    "speculative workflows",
+    "unrelated refactoring",
+    "existing Alpha1 risks/open decisions",
+    "remote CI/deployment/operational beta approval"
+  ]
+}

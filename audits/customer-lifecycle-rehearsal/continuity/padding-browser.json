@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-03T03:05:00.503Z",
+  "checks": [
+    {
+      "viewport": "desktop",
+      "expanded": false,
+      "movementPadding": "24px",
+      "teamPadding": "24px",
+      "movementBorder": "1px",
+      "documentWidth": 1625
+    },
+    {
+      "viewport": "desktop",
+      "expanded": true,
+      "movementPadding": "24px",
+      "teamPadding": "24px",
+      "movementBorder": "1px",
+      "documentWidth": 1625
+    },
+    {
+      "viewport": "mobile",
+      "expanded": false,
+      "movementPadding": "16px",
+      "teamPadding": "16px",
+      "movementBorder": "1px",
+      "documentWidth": 390
+    },
+    {
+      "viewport": "mobile",
+      "expanded": true,
+      "movementPadding": "16px",
+      "teamPadding": "16px",
+      "movementBorder": "1px",
+      "documentWidth": 390
+    }
+  ],
+  "scope": "Real Taylor session, archived read-only movement, no mutations"
+}

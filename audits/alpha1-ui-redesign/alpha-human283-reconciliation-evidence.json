@@ -1,0 +1,235 @@
+{
+  "status": "A6-named-finite-criteria-verified-current-and-explicit-preserved-source;A7-open",
+  "baseline": "985cd665d8488f0dd06ac2983411abd1f505e93c",
+  "role": "AUDITOR/TEST_WRITER, authorized sequential project-wide acceptance",
+  "productionBehaviorChanged": false,
+  "source": {
+    "files": 576,
+    "sha256": "391c65e57aa5e1f271c5107299618fb4641fe8ece21d904a605529877088cb13",
+    "allCurrentRawBytesMatchPinned282": true,
+    "buildConfigurationMatches": [
+      "package.json",
+      "pnpm-lock.yaml",
+      "tsconfig.json",
+      "next.config.ts"
+    ],
+    "unchangedFrom252": [
+      "src/components/tickets/crew-work-actions.tsx",
+      "src/components/tickets/ticket-workflow-review.tsx",
+      "src/components/tickets/project-review.tsx",
+      "src/components/ui/project-navigation.ts",
+      "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+    ],
+    "changedSince252": [
+      "src/app/api/project-templates/[templateId]/route.ts",
+      "src/components/tickets/ticket-history.tsx",
+      "src/components/ui/invitation-cancellation-review.tsx",
+      "src/components/ui/kpi-charts.tsx",
+      "src/components/ui/kpi-explorer.tsx",
+      "src/components/ui/member-access-recovery.tsx",
+      "src/components/ui/page-transition.tsx",
+      "src/components/ui/project-shell-header.tsx",
+      "src/components/ui/project-templates.tsx",
+      "src/components/ui/superintendent-teams.tsx",
+      "src/components/ui/survey-org-chart/survey-org-chart-launcher.tsx",
+      "src/components/ui/team-management-entry.tsx",
+      "src/modules/attachment/infrastructure/index.ts",
+      "src/modules/tenancy/application/project-templates.ts"
+    ],
+    "impact": "Field action/review/request detail and fixed navigation contracts byte-identical to252; shell refresh retention verified264, history timeout labels/Archived launcher/invitation/access/template display280, template catalog authority278, chart labels282 separately supersede affected old presentation. No migration or existing request authority changes since252.",
+    "preservedComparison": "Immutable Git blobs at252baseline and current985cd66 match for each named preserved path. Raw current working bytes independently match pinned282runtime. Initial attempted blob-to-Windows-checkout comparison stopped on line-ending difference before writing any receipt/document; corrected to blob-to-blob, no content normalization."
+  },
+  "retainedReceipts": {
+    "E237": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure237-error-wording-evidence.json",
+      "sha256": "74105b86ed22e4993188f07fca89ff15e0b569e7208845fc9e2b2a4262a1f8d0",
+      "receiptCommit": "1bc9978455691e160a1ae68334ab14233f19955b"
+    },
+    "E239": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure239-queue-mobile-evidence.json",
+      "sha256": "80fafd208547091b65a639cc166de19a0ee37624d5270e4b40a058f0116f8f83",
+      "receiptCommit": "2fba9c203547c6ec297f6d0bad74eacaa746143b"
+    },
+    "E240": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure240-request-context-evidence.json",
+      "sha256": "615425ee2c4595001806d33c55c4dff35363bd14ebbdaee21a2b394e8052ead7",
+      "receiptCommit": "bd2645c6d48cd26c86bf2b1fa4032196bf6f69e1"
+    },
+    "E249": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure249-role-matrix-evidence.json",
+      "sha256": "4ed2852506eeb3c0344a1694d5596ef561f85441dd0f26f4da4addccc84a6606",
+      "receiptCommit": "2b91fb8d59baef6733f977fe27748f8283fca2f9"
+    },
+    "E250": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure250-remembered-access-evidence.json",
+      "sha256": "b58eab120ff7797f54c0ad02c43d31c595674921982689d8857c6a03d7df5b48",
+      "receiptCommit": "b61285892071a967b8f546addf3f97e68936123c"
+    },
+    "E251": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure251-intake-evidence.json",
+      "sha256": "9684688b8dc97dee47995a05de1e6a6c76378fb161901e60c89339d4d328d671",
+      "receiptCommit": "d55bfad508eb270ce2d7648cd186469492b8aa5a"
+    },
+    "E252": {
+      "path": "audits/alpha1-ui-redesign/alpha-closure252-connected-cycle-evidence.json",
+      "sha256": "6d7b13259535389445ae5dcc7af086e57203ce6c2a90eaa539200e241a304b4f",
+      "receiptCommit": "0b5f7d5b384c3fc8669ed7250f892893eaa9b304"
+    },
+    "E255": {
+      "path": "audits/alpha1-ui-redesign/alpha-copy255-runtime-evidence.json",
+      "sha256": "babda6e819271fd6c8a0eea635929aefb05e44fd284aa58055125ccf77489492",
+      "receiptCommit": "ea09e30080c99373f65f09d21e92b1baad6592d0"
+    },
+    "E256": {
+      "path": "audits/alpha1-ui-redesign/alpha-team256-acceptance-evidence.json",
+      "sha256": "5a3f29d91baf7a4f4d26169309dd636c43497f0225a5d65fd535bf64e9636cb8",
+      "receiptCommit": "a5a0215847cf0ab8326ac90e500e600fa83af4e6"
+    },
+    "E264": {
+      "path": "audits/alpha1-ui-redesign/alpha-administration264-acceptance-evidence.json",
+      "sha256": "9e5daf0c83d761680f3a34ffd74421f642d80bd9581b91a5723807e55257c83b",
+      "receiptCommit": "5c4c529ad94b15e3b354a6f89e37088cfe575881"
+    },
+    "E278": {
+      "path": "audits/alpha1-ui-redesign/alpha-catalog278-acceptance-evidence.json",
+      "sha256": "2891cd91b9c480397361362bebf406a09b21c3bebccaa5a3eba71b0f5eafb57a",
+      "receiptCommit": "6c505726102e59bc67be7a4d09df4f6ce1efbe23"
+    },
+    "E279": {
+      "path": "audits/alpha1-ui-redesign/alpha-invitations279-acceptance-evidence.json",
+      "sha256": "976c5b0da3744b1587394270a0135d63e9185bfaf36eb8b41778854b7e687422",
+      "receiptCommit": "9b3ec870a9b5b5cd451a13129dc6eb631c9b7a1d"
+    },
+    "E280": {
+      "path": "audits/alpha1-ui-redesign/alpha-human280-acceptance-evidence.json",
+      "sha256": "6292ecf2b8847508faa8ddae02ab79deda3965db491360675775e317ca658fb9",
+      "receiptCommit": "9df341a94a0d09f76323a37159c3c0646b3ae4ff"
+    },
+    "E281": {
+      "path": "audits/alpha1-ui-redesign/alpha-kpi281-acceptance-evidence.json",
+      "sha256": "b0f344a2ab8fef17d4d3ef44275165e23e654f78a056e9215010fdc39771f10f",
+      "receiptCommit": "e57889ddb9c502ab022e41b34a37141bca56e9fa"
+    },
+    "E282": {
+      "path": "audits/alpha1-ui-redesign/alpha-tables282-acceptance-evidence.json",
+      "sha256": "257fb49da00fc48854c58c0dd0d7e4165bf5ce2aca23b06bc305a62a45e3c06e",
+      "receiptCommit": "985cd665d8488f0dd06ac2983411abd1f505e93c"
+    },
+    "E275": {
+      "path": "audits/alpha1-ui-redesign/alpha-administration275-acceptance-evidence.json",
+      "sha256": "36346ef1984838826aaf2bfd440e9cfb27a7be2b574438f429b0a6c2701abd14",
+      "receiptCommit": "b1e6218a7d1b446a11b33a9b8485d6118c7f9167"
+    }
+  },
+  "verification": {
+    "baseline": "Fresh strict typecheck and698units before edits; .local/alpha-closure282/reconcile-baseline-types and reconcile-baseline-units exits0.",
+    "currentBrowser": {
+      "checks": 17,
+      "cases": [
+        "manager reduce actual browser preference",
+        "manager reduce shared page transition honors actual preference across keyboard SPA navigation",
+        "manager reduce authorized content remains visible after navigation",
+        "manager reduce navigation preserves contained document overflow",
+        "manager no-preference actual browser preference",
+        "manager no-preference shared page transition honors actual preference across keyboard SPA navigation",
+        "manager no-preference authorized content remains visible after navigation",
+        "manager no-preference navigation preserves contained document overflow",
+        "viewer reduce actual browser preference",
+        "viewer reduce shared page transition honors actual preference across keyboard SPA navigation",
+        "viewer reduce authorized content remains visible after navigation",
+        "viewer reduce navigation preserves contained document overflow",
+        "viewer no-preference actual browser preference",
+        "viewer no-preference shared page transition honors actual preference across keyboard SPA navigation",
+        "viewer no-preference authorized content remains visible after navigation",
+        "viewer no-preference navigation preserves contained document overflow",
+        "No motion/navigation browser errors"
+      ],
+      "errors": [],
+      "limits": [
+        "Read-only observations on retained owned282 current production runtime; no authority reset or appearance mutation.",
+        "Manager desktop and Viewer mobile exercise shared transition and keyboard sidebar/drawer, not interactive login or every role permutation.",
+        "No new visual capture claim."
+      ]
+    },
+    "productionGate": "E282 fresh pinned strict698units/production compilation/full33SQL and24focused retained explicitly at identical576source/build config; not rerun for documentation/observer-only changes.",
+    "additionalCaptureReview": {
+      "openedNow": [
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/chief-captured-review-dark-390.png",
+          "sha256": "4499f5c1f840d5c07331f73aa7b60554bcb365386699daff0d695ba8fbd30abd"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/direct-completed-history-dark-390.png",
+          "sha256": "e1f705c64566b694f4c8956cd28d433775493c70682bab70d951f0272ba5d26b"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/direct-completion-review-dark-390.png",
+          "sha256": "60f20bc11e13bb663d7ca2a04c3c93ba8f28488b834b3ce503f7977db3cc9580"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/direct-completion-review-light-1440.png",
+          "sha256": "a2711c358e3fd42031bd4bd4124e30432b67ac2c33763d1849e97edc60e1e212"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/instrument-inability-review-dark-390.png",
+          "sha256": "d46a3842d6fd9fb7700d579fff1a449a87082a2b2dc7c371721acd3ace69a184"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/instrument-inability-review-light-1440.png",
+          "sha256": "63451ee5370265771a683b9ac631ad506181a9c604864293c7395469de7a4ebb"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/manager-captured-messages-dark-390.png",
+          "sha256": "826591995a50e2ffa1a63b50c366b9677e135e70016d7fdba21931441ec892ed"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/manager-captured-messages-light-1440.png",
+          "sha256": "1ec716e46cc1769b5947df01a48c2dcd28f05e7077a1a31bade5cc8757db1574"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/requester-corrected-standard-field-dark-390.png",
+          "sha256": "978117ea958b4c56e0231620c1819f15f364efeba57758e7c9fc5ca1d5bd2473"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/requester-corrected-standard-field-light-1440.png",
+          "sha256": "9666b58f2ede6fcafc6b38423ab99bde66c3db766d83686d16d64b6e9dedb987"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/standard-completed-history-dark-390.png",
+          "sha256": "326947a5771d685503cccb01ec8aec01804ce7926d3634ec1894f49247eb22e1"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/standard-completed-history-light-1440.png",
+          "sha256": "3117b721856509ffd408de05e0ee830164af1d153e5ee35132dd29a4e3bb7239"
+        },
+        {
+          "path": ".local/alpha-closure252/run-ef013c16-c011-4f79-a958-991ed1e6293a/standard-completion-review-light-1440.png",
+          "sha256": "aca68ed70f4159bb4438aa3a0cf94efbeb833990d1be9fdcf2c98cfcc45bbe3d"
+        }
+      ],
+      "previouslyOpenedAt252": [
+        "chief-captured-review-light-1440",
+        "standard-completion-review-dark-390",
+        "direct-completed-history-light-1440"
+      ],
+      "findings": "Readable identified-request consequences/reason/consent/next owner in completion/inability/return dialogs; correction fields and completed read-only metadata/files; mobile wrapping and desktop hierarchy. No material defect in these bounded viewports.",
+      "limits": "Retained screenshots newly inspected, not newly rendered. Completed mobile images show top metadata, not below-fold history; Manager mobile messages show header/queue only. No blanket whole-page certification."
+    },
+    "stoppedObserver": "First read-only run waited for table rows after All Requests, whose default is overview. Corrected wait to existing Project Review heading; stopped log retained/excluded. No production change or fixture reset.",
+    "final": "Fresh host strict-unused typecheck and698units pass after helper/doc changes, final-types/final-units exits0; pinned E282 build/full33SQL explicitly retained at identical576production/config bytes."
+  },
+  "acceptanceCriteria": {
+    "labelsAndPurpose": "E237/239/251/252/255/264/278/279/280/282, named outcomes and next owner; unsupported actions remain unavailable.",
+    "roleInformationAndStates": "E24928authorities/84states; current subsequent affected command/read states264/278/279/280/281/282. Distinct empty/loading/denied/error/Archived/stale/uncertain/success retained with source bounds.",
+    "navigation": "E240 direct/context/role-return; E250 remembered SPA; E264 grant-loss frozen owner; current283 keyboard shared navigation. Existing role return does not promise new origin-filter restoration.",
+    "tables": "E239 operations, E264/275 administrative tasks, E279 invitation/history, E281 reviewed task sort/filter/export/keyboard, E282 server/local paging/columns/preferences/CSV/overflow.",
+    "metrics": "E249 definitions plus E281/282 exact Area/linked/member populations, activity versus current counts, focused suppression and permitted ordinary matching drilldown.",
+    "themeAndMotion": "Bounded Light/Dark1440/390 captures251/252/256/264/278/279/280/281/282; current283 actual reduced/preferred-motion keyboard navigation.",
+    "completion": "A6 finite named criteria verified using current proof plus explicit unchanged-contract/preserved impact evidence. A7 whole approved requirement/D1-D8 closure remains open."
+  },
+  "limits": [
+    "Fixture cookie authentication is not interactive login/password-reset UI acceptance. Assess any applicable existing identity criterion in A7 rather than infer it from these sessions.",
+    "Historical E209 missing original history hash remains missing; old E206 unreviewed captures do not establish acceptance.",
+    "No deferred Org scope, pilot infrastructure, main integration, deployment, Alpha2 or release readiness. source-map-js/GHSA-68fv-2mgg-jv7q remains separate."
+  ]
+}

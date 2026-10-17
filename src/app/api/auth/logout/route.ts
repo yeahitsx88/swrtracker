@@ -1,16 +1,8 @@
-import { NextResponse } from 'next/server';
-import { COOKIE_NAME } from '@/lib/auth';
+import { type NextRequest } from 'next/server';
+import { handlePostLogout } from './handler';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST() {
-  const res = NextResponse.json({ success: true });
-  res.cookies.set(COOKIE_NAME, '', {
-    httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path:     '/',
-    maxAge:   0,
-  });
-  return res;
+export async function POST(req: NextRequest) {
+  return handlePostLogout(req);
 }

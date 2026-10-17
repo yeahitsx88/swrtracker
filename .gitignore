@@ -9,9 +9,12 @@ out/
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
 
 # Build
 dist/
+.data/
 
 # Logs
 *.log
@@ -24,3 +27,16 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Local acceptance logs and captures
+.local/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+.local-*
+.next-*/
+.pnpm-store/
+coverage/
+tmp/
+.superpowers/
+.impeccable/review/alpha1-ui/

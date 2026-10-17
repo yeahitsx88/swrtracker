@@ -1,0 +1,182 @@
+{
+  "status": "verified-named-A4-criteria-with-explicit-preserved-readiness-evidence",
+  "baseline": "2a6ea7c",
+  "productionBehaviorChanged": false,
+  "source": {
+    "files": 576,
+    "sha256": "d00147c204fbdeb7d38e7175b482f4d48b120b62fef430ede0bdb8889ae502e4",
+    "artifact": "E255 pinned production unchanged; current strict types and focused tests pass"
+  },
+  "checks": {
+    "preparationCancellation": 64,
+    "templateGovernance": 19,
+    "actualSystemWorkerHistory": 14,
+    "thisIncrement": 97,
+    "withE261": 179
+  },
+  "cases": {
+    "cancellation": [
+      "Nine actual requests/files and immutable original history saved before any lifecycle action",
+      "Actual current Central archives existing project",
+      "Actual Central begins a recorded recommissioning period",
+      "Independent replacement administration preserves Viewer operational role",
+      "Stale actual start review conflicts without cancellation/event/ledger effects",
+      "Failed stale evidence reload keeps reviewed start owned",
+      "Successful current reload clears old reason and consent",
+      "start-review LIGHT viewport contained",
+      "start-review DARK viewport contained",
+      "Uncertain committed start freezes reason/evidence ownership",
+      "Start exact body/key recovers one recorded effect",
+      "Existing unfinished duties block browser finish",
+      "Start evidence witnesses six existing unfinished duties and excludes terminal rejection",
+      "Replacement administration renews Viewer session without granting Central power",
+      "manager has no independent Central lifecycle power",
+      "superintendent has no independent Central lifecycle power",
+      "chief has no independent Central lifecycle power",
+      "instrument has no independent Central lifecycle power",
+      "requester has no independent Central lifecycle power",
+      "projectAdmin has no independent Central lifecycle power",
+      "viewer has no independent Central lifecycle power",
+      "Completion-only mode refuses drafts",
+      "Completion-only mode refuses delay",
+      "Completion-only mode refuses reject",
+      "Completion-only mode refuses approve",
+      "Completion-only mode refuses assign",
+      "Completion-only mode refuses activate",
+      "Completion-only mode refuses recommission",
+      "All completion-only refusals preserve requests/history/lifecycle/ledger",
+      "Witnessed personally assigned work completes during cancellation",
+      "Both captured Chief and Manager field reports validate during cancellation",
+      "Witnessed pending Manager cancellation approval completes during cancellation",
+      "Witnessed requester draft is soft-deleted through actual current owner command",
+      "Current cancellation allows authorized file read",
+      "Actual original instruction bytes remain available to authorized owner after cleanup",
+      "finish-review LIGHT viewport contained",
+      "finish-review DARK viewport contained",
+      "Actual final audit failure rolls back project/period/cancellation/evidence/ledger",
+      "Lost committed finish remains frozen after real archival",
+      "Fault and lost response recover exact terminal finish body/key with one effect",
+      "Actual governed finish returns the same project to Archived",
+      "Cancelled actual preparation never fabricates an opened period",
+      "Every original pre-lifecycle request event remains byte-equivalent JSON",
+      "D6 preserves original attachments rows",
+      "D6 preserves original survey_teams rows",
+      "D6 preserves original survey_team_members rows",
+      "D6 preserves original survey_team_areas rows",
+      "D6 preserves original survey_reporting_links rows",
+      "D6 preserves original crew_rosters rows",
+      "D6 preserves original aor_assignments rows",
+      "D6 preserves original project_memberships rows",
+      "Retains request identity/reference/scope D6 witnessed262 completed",
+      "Retains request identity/reference/scope D6 witnessed262 managerReport",
+      "Retains request identity/reference/scope D6 witnessed262 stale",
+      "Retains request identity/reference/scope D6 witnessed262 chiefReport",
+      "Retains request identity/reference/scope D6 witnessed262 draft",
+      "Retains request identity/reference/scope D6 witnessed262 rejected",
+      "Retains request identity/reference/scope D6 witnessed262 stop",
+      "Retains request identity/reference/scope D6 witnessed262 submitted",
+      "Retains request identity/reference/scope D6 witnessed262 running",
+      "Exactly one start and finish administrative event",
+      "Actual terminal Archived refuses recorded ordinary completion",
+      "No unfinished request is stranded",
+      "No production preparation browser errors"
+    ],
+    "templates": [
+      "Current tenantOnly reads retained governing reference in ACTIVE",
+      "Current tenantOnly cannot replace established template in ACTIVE",
+      "Current projectAdmin reads retained governing reference in ACTIVE",
+      "Current projectAdmin cannot replace established template in ACTIVE",
+      "Current requester cannot replace established template in ACTIVE",
+      "All ACTIVE template refusals preserve project fields and retry ledger",
+      "Current tenantOnly reads retained governing reference in ARCHIVED",
+      "Current tenantOnly cannot replace established template in ARCHIVED",
+      "Current projectAdmin reads retained governing reference in ARCHIVED",
+      "Current projectAdmin cannot replace established template in ARCHIVED",
+      "Current requester cannot replace established template in ARCHIVED",
+      "All ARCHIVED template refusals preserve project fields and retry ledger",
+      "Current tenantOnly reads retained governing reference in SETUP",
+      "Current tenantOnly cannot replace established template in SETUP",
+      "Current projectAdmin reads retained governing reference in SETUP",
+      "Current projectAdmin cannot replace established template in SETUP",
+      "Current requester cannot replace established template in SETUP",
+      "All SETUP template refusals preserve project fields and retry ledger",
+      "Controlled catalog revision does not propagate governing reference or persisted project crew build"
+    ],
+    "system": [
+      "Actual bounded background dispatch emits one system escalation",
+      "Configured employee is ignored; human submission retained",
+      "Authenticated history canonical system identity LIGHT 1440",
+      "Human attribution preserved LIGHT 1440",
+      "Contained history table LIGHT 1440",
+      "Authenticated history canonical system identity LIGHT 390",
+      "Human attribution preserved LIGHT 390",
+      "Contained history table LIGHT 390",
+      "Authenticated history canonical system identity DARK 1440",
+      "Human attribution preserved DARK 1440",
+      "Contained history table DARK 1440",
+      "Authenticated history canonical system identity DARK 390",
+      "Human attribution preserved DARK 390",
+      "Contained history table DARK 390"
+    ]
+  },
+  "runs": {
+    "directory": ".local/alpha-closure262",
+    "origin": "http://127.0.0.1:3303",
+    "fixture": "New UUID-owned schema/all44 migrations; actual requests created through current endpoints before lifecycle; initial role/organization fixture synthetic",
+    "receipts": [
+      "results.json",
+      "original-history.json",
+      "template263.json",
+      "system263.json"
+    ]
+  },
+  "captures": {
+    "paths": [
+      ".local/alpha-closure262/start-review-light-1440.png",
+      ".local/alpha-closure262/start-review-dark-390.png",
+      ".local/alpha-closure262/finish-review-light-1440.png",
+      ".local/alpha-closure262/finish-review-dark-390.png",
+      ".local/alpha-closure262/system263-history-light-1440.png",
+      ".local/alpha-closure262/system263-history-light-390.png",
+      ".local/alpha-closure262/system263-history-dark-1440.png",
+      ".local/alpha-closure262/system263-history-dark-390.png"
+    ],
+    "opened": 8,
+    "pageErrors": [],
+    "limitations": "Long D6 mobile review is a bounded scrolling viewport; history horizontally scrolls to system attribution. Neither screenshot alone certifies whole-page/table acceptance. A6 reviews raw event wording and narrow-table positioning."
+  },
+  "originalHistorySha256": "8b6abd8d06693ae16cf776d9c6c67d953136300c9e6f648d0acbed0b6a7514f5",
+  "retained": {
+    "cancellation": "Same project archived after witnessed personal completion, captured Chief/Manager validation, approved stop and requester cancellation/soft deletion; original event bytes, files, staffing and membership retained; exactly one start/finish, no fabricated opened period",
+    "template": "Current Central/independent Project Admin/Requester refusals on Active/Archived and a synthetic established Setup preserve project fields/ledger. Controlled catalog fixture revision leaves persisted reference/crew build unchanged; actual establishment/catalog task UI remains A5",
+    "system": "Actual bounded worker uses captured test transport. Even configured employee SYSTEM_ACTOR_ID cannot replace canonical SYSTEM null-id event; original human submission retains identity. Four authenticated Light/Dark desktop/mobile history checks; no external delivery claim"
+  },
+  "preservedDistinctCriteria": {
+    "readinessRepairs": {
+      "receipt": "alpha-closure235-preparation-setup-evidence.json",
+      "checkpoint": "e502c65",
+      "unchangedPaths": [
+        "src/modules/tenancy/application/project-administration.ts",
+        "src/app/api/projects/[projectId]/aor/shared.ts",
+        "src/app/api/projects/[projectId]/administrators/route.ts"
+      ],
+      "basis": "Empty current Git diff against E235 core files plus current E255 full33SQL/compilation and strict693units. Named missing Area/Manager/Superintendent readiness repair and D6 setup-write/replay refusals preserved explicitly, not claimed new browser run."
+    },
+    "systemHistoryIsolationRollback": {
+      "receipt": "d8-system-audit-evidence.json",
+      "checkpoint": "9c48ddc",
+      "basis": "Audit migration/domain/repository, notification application/worker, history repository and worker entry points have empty diff. Ticket contract additions are only cleanup/action availability, unrelated to history identity. Current14 actual worker/browser checks plus current fullSQL and units preserve distinct historical migration/isolation/rollback proof."
+    },
+    "superintendentCapturedCleanup": "E229 distinct captured Superintendent cleanup remains preserved under current authority/lifecycle regression gates; fresh D6 here executes captured Chief and Manager."
+  },
+  "observerFailure": "New server was initially unexposed to host; connection refused before first application request. Unexposed container and original private log retained. Guarded resume-initial allows only empty setup journey/no team, then correct loopback server executes. No retained data reset. Private request logs remain private.",
+  "gates": {
+    "strictUnused": "pass after increment",
+    "unitTests": 693,
+    "unitBasis": "Current E261 baseline/post pass; no production/test.ts change afterward, not needlessly rerun",
+    "focused": 15,
+    "helpers": "All four syntax checks pass",
+    "pinnedCompilationAndFullSql": "E255 Node22.23.3/Next15.5.27 build/full33SQL retained for identical production/configuration; explicitly not freshly rerun for evidence-only increment"
+  },
+  "remaining": "A1-A4 named criteria verified. A5 administration tasks, A6 human views/tables/KPI/labels, A7 final requirement closure/gates remain. FullAlpha open; no new owner business decision; inherited release advisory and deferred Org/main/deploy/Alpha2 unchanged."
+}

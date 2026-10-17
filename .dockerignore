@@ -1,0 +1,27 @@
+.git
+.next
+node_modules
+.data
+.codex
+.agents
+.impeccable
+tsconfig.tsbuildinfo
+.pnpm-store
+coverage
+tmp
+dist
+*.log
+.env*
+PHASE*_STATUS.md
+CODEX.md
+audits
+
+.local
+
+# Local Superpowers execution ledger and verification logs
+.superpowers
+
+.local-*
+!audits/
+audits/*
+!audits/phase5-lifecycle-writers.json

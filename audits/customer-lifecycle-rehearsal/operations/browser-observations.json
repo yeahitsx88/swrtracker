@@ -1,0 +1,458 @@
+{
+  "at": "2026-10-03T00:26:25.934Z",
+  "syntheticAutomation": true,
+  "measurement": "Navigation through network idle includes a fixed quiet interval; not a Core Web Vitals or human usability measurement.",
+  "results": [
+    {
+      "actor": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+      "name": "Jordan Lee",
+      "role": "PROJECT_ADMIN",
+      "route": "admin",
+      "run": 0,
+      "loadToNetworkIdleMs": 662,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Project members and access",
+        "Independent Project Admin assignments",
+        "Add a project member",
+        "Project companies",
+        "Project configuration and diagnostics",
+        "Project Request Configuration",
+        "Survey Reviewer handover",
+        "Protected Survey Reviewer obligations",
+        "Subcontractor Access",
+        "Subcontractor Requesters",
+        "Pending Invitations",
+        "Deleted Draft Recovery",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+      "name": "Jordan Lee",
+      "role": "PROJECT_ADMIN",
+      "route": "admin",
+      "run": 1,
+      "loadToNetworkIdleMs": 603,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Project members and access",
+        "Independent Project Admin assignments",
+        "Add a project member",
+        "Project companies",
+        "Project configuration and diagnostics",
+        "Project Request Configuration",
+        "Survey Reviewer handover",
+        "Protected Survey Reviewer obligations",
+        "Subcontractor Access",
+        "Subcontractor Requesters",
+        "Pending Invitations",
+        "Deleted Draft Recovery",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+      "name": "Jordan Lee",
+      "role": "PROJECT_ADMIN",
+      "route": "admin",
+      "run": 2,
+      "loadToNetworkIdleMs": 591,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Project members and access",
+        "Independent Project Admin assignments",
+        "Add a project member",
+        "Project companies",
+        "Project configuration and diagnostics",
+        "Project Request Configuration",
+        "Survey Reviewer handover",
+        "Protected Survey Reviewer obligations",
+        "Subcontractor Access",
+        "Subcontractor Requesters",
+        "Pending Invitations",
+        "Deleted Draft Recovery",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "ead78ca5-8c08-4d82-9f05-f9040c3c7475",
+      "role": "PROJECT_ADMIN",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "actor": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "name": "Sam Rivera",
+      "role": "SURVEY_MANAGER",
+      "route": "survey/operations",
+      "run": 0,
+      "loadToNetworkIdleMs": 639,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Survey Operations",
+        "Queue health",
+        "Explore queue health",
+        "Survey command",
+        "Current status",
+        "Demand and recorded completion",
+        "Request distribution",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "name": "Sam Rivera",
+      "role": "SURVEY_MANAGER",
+      "route": "survey/operations",
+      "run": 1,
+      "loadToNetworkIdleMs": 594,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Survey Operations",
+        "Queue health",
+        "Explore queue health",
+        "Survey command",
+        "Current status",
+        "Demand and recorded completion",
+        "Request distribution",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "name": "Sam Rivera",
+      "role": "SURVEY_MANAGER",
+      "route": "survey/operations",
+      "run": 2,
+      "loadToNetworkIdleMs": 578,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Survey Operations",
+        "Queue health",
+        "Explore queue health",
+        "Survey command",
+        "Current status",
+        "Demand and recorded completion",
+        "Request distribution",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "role": "SURVEY_MANAGER",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "actor": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "name": "Taylor Rivera",
+      "role": "SURVEY_SUPERINTENDENT",
+      "route": "survey/operations",
+      "run": 0,
+      "loadToNetworkIdleMs": 584,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Survey Operations",
+        "Area-wide workload",
+        "Explore queue health",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "name": "Taylor Rivera",
+      "role": "SURVEY_SUPERINTENDENT",
+      "route": "survey/operations",
+      "run": 1,
+      "loadToNetworkIdleMs": 576,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Survey Operations",
+        "Area-wide workload",
+        "Explore queue health",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "name": "Taylor Rivera",
+      "role": "SURVEY_SUPERINTENDENT",
+      "route": "survey/operations",
+      "run": 2,
+      "loadToNetworkIdleMs": 563,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Survey Operations",
+        "Area-wide workload",
+        "Explore queue health",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "role": "SURVEY_SUPERINTENDENT",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "actor": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "name": "Drew Rivera",
+      "role": "PARTY_CHIEF",
+      "route": "crew/work",
+      "run": 0,
+      "loadToNetworkIdleMs": 623,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Crew Work",
+        "Explore crew work trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "name": "Drew Rivera",
+      "role": "PARTY_CHIEF",
+      "route": "crew/work",
+      "run": 1,
+      "loadToNetworkIdleMs": 609,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Crew Work",
+        "Explore crew work trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "name": "Drew Rivera",
+      "role": "PARTY_CHIEF",
+      "route": "crew/work",
+      "run": 2,
+      "loadToNetworkIdleMs": 606,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Crew Work",
+        "Explore crew work trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "19e4da44-eb81-4e71-98fb-35eb5a627b0f",
+      "role": "PARTY_CHIEF",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "actor": "2672171a-e810-4ad3-b70b-111f7760d559",
+      "name": "Skyler Rivera",
+      "role": "INSTRUMENT_MAN",
+      "route": "crew/work",
+      "run": 0,
+      "loadToNetworkIdleMs": 660,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Crew Work",
+        "Explore crew work trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "2672171a-e810-4ad3-b70b-111f7760d559",
+      "name": "Skyler Rivera",
+      "role": "INSTRUMENT_MAN",
+      "route": "crew/work",
+      "run": 1,
+      "loadToNetworkIdleMs": 591,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Crew Work",
+        "Explore crew work trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "2672171a-e810-4ad3-b70b-111f7760d559",
+      "name": "Skyler Rivera",
+      "role": "INSTRUMENT_MAN",
+      "route": "crew/work",
+      "run": 2,
+      "loadToNetworkIdleMs": 595,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Crew Work",
+        "Explore crew work trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "2672171a-e810-4ad3-b70b-111f7760d559",
+      "role": "INSTRUMENT_MAN",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "name": "Drew Quinn",
+      "role": "REQUESTER",
+      "route": "my-requests",
+      "run": 0,
+      "loadToNetworkIdleMs": 618,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Requests",
+        "Explore request trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "name": "Drew Quinn",
+      "role": "REQUESTER",
+      "route": "my-requests",
+      "run": 1,
+      "loadToNetworkIdleMs": 578,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Requests",
+        "Explore request trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "name": "Drew Quinn",
+      "role": "REQUESTER",
+      "route": "my-requests",
+      "run": 2,
+      "loadToNetworkIdleMs": 579,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "headings": [
+        "Northbank Pump Station",
+        "Requests",
+        "Explore request trends",
+        "Your account"
+      ],
+      "alerts": [
+        ""
+      ]
+    },
+    {
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "role": "REQUESTER",
+      "mobile": true,
+      "scrollWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "actor": "91d3d5ca-f23f-4c46-b95b-ab313726c9b7",
+      "role": "REQUESTER",
+      "detail": true,
+      "ticketId": "fce61f4f-1920-4b80-9748-504c4aa13bac",
+      "alerts": [
+        ""
+      ],
+      "headings": [
+        "Northbank Pump Station",
+        "Request Details",
+        "FSS-UTIL-00043",
+        "Attachments",
+        "SWR History",
+        "Actions",
+        "Your account"
+      ]
+    }
+  ],
+  "errors": []
+}

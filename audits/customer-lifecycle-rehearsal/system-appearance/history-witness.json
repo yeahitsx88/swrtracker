@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-03T04:56:07.448Z",
+  "checks": [
+    {
+      "table": "tickets",
+      "rows": 1599,
+      "identical": true
+    },
+    {
+      "table": "ticket_events",
+      "rows": 13042,
+      "identical": true
+    },
+    {
+      "table": "attachments",
+      "rows": 318,
+      "identical": true
+    },
+    {
+      "table": "ticket_assignment_history",
+      "rows": 3272,
+      "identical": true
+    },
+    {
+      "table": "users",
+      "rows": 718,
+      "identical": true
+    },
+    {
+      "table": "project_memberships",
+      "rows": 717,
+      "identical": true
+    },
+    {
+      "table": "survey_teams",
+      "rows": 15,
+      "identical": true
+    },
+    {
+      "table": "survey_team_members",
+      "rows": 60,
+      "identical": true
+    },
+    {
+      "table": "crew_rosters",
+      "rows": 45,
+      "identical": true
+    },
+    {
+      "table": "survey_reporting_links",
+      "rows": 23,
+      "identical": true
+    },
+    {
+      "table": "aor_assignments",
+      "rows": 22,
+      "identical": true
+    }
+  ],
+  "originalProjectStatus": "ARCHIVED",
+  "copyProjectStatus": "ACTIVE",
+  "completePriorProjectStateRetained": true
+}

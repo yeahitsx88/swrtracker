@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-03T00:56:25.294Z",
+  "checks": [
+    {
+      "name": "Explicit confirmation required",
+      "pass": true
+    },
+    {
+      "name": "Requester cannot inspect or appoint manager",
+      "pass": true
+    },
+    {
+      "name": "Foreign tenant cannot inspect manager handover",
+      "pass": true
+    },
+    {
+      "name": "Stale preview refuses without writes",
+      "pass": true
+    },
+    {
+      "name": "Audit failure rolls back role, coverage, sessions, evidence and ledger",
+      "pass": true
+    },
+    {
+      "name": "Appointment waits behind active lifecycle writer barrier",
+      "pass": true
+    }
+  ],
+  "preview": {
+    "snapshot": "16f78a6a380cd6b63564ec19b2b8421ae2851f5a2a617b7b67698a7e8542261e",
+    "outgoing": {
+      "userId": "7fa49e0e-31b5-4fe8-baa8-a95a606f97ae",
+      "name": "Sam Rivera"
+    },
+    "incoming": {
+      "userId": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+      "name": "Taylor Rivera"
+    },
+    "coverage": {
+      "userId": "71b4c537-2b2f-4c99-a7d7-f55d1da34048",
+      "name": "Morgan Rivera"
+    },
+    "areaIds": [
+      "bee5e1a8-e192-466a-bf56-a24d64bb4218"
+    ],
+    "reportingLinkIds": [
+      "06598617-cdfe-415f-8874-703514ce89a9",
+      "0f482804-302f-482c-bd72-77be6368395d",
+      "3e1a2497-4ad6-4782-8db4-73ed678532d3",
+      "5c9bd9a1-8b1f-4fae-9f08-a844e697f6a5",
+      "c2a5592d-9ed6-4f38-b7a7-7274d0912bac"
+    ],
+    "blockers": []
+  },
+  "requestHistoryHashes": {
+    "tickets": "dd14dc150a9e4c4c6bd8f3b377521c32eada99116e3a2604d16e8e1983d7a6b2",
+    "ticket_events": "01596a83ba1b224a483e507fba390c9cc97a2019a08cd051f7b2637dbed84027",
+    "attachments": "df12d2310ddf24bb7220b356ac1a37b5fb1c683da484fcc59f77c69a2b57f866",
+    "crew_rosters": "e4cf5a58bdbcb82b4ae7ef72e8fb84984d9397ca902b6cad417658274d5cd090",
+    "survey_teams": "562ccd33416e6f36e17b681018654880f1b98e44ccd1cef0bc7beb334d151991",
+    "survey_team_members": "733f83f6e625c1f7fae44862dffb79f6ad65901e453b6b9e6f222f53d2ec59c5",
+    "ticket_assignment_history": "0598647fd22de4f5df89d4a30bd9fd1316a7f2803711f999ff5eb7ef8bf3f56c"
+  }
+}

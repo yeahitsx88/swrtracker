@@ -17,14 +17,16 @@ export type TicketStatus =
   | 'SUBMITTED'          // Variant 1 — awaiting approver action
   | 'APPROVED'           // Variant 1 — approved, awaiting crew assignment
   | 'REJECTED'           // Variant 1 — rejected; rejection_reason required
-  | 'CREATED'            // Variant 2 only — equivalent of submitted
   | 'ASSIGNED'           // Both variants — crew assigned
   | 'IN_PROGRESS'        // Both variants — work underway
-  | 'COMPLETED'          // Both variants — work done; awaiting Survey Lead close-out
-  | 'CLOSED'             // Both variants — terminal state; performed by SURVEY_LEAD
-  | 'CANCEL_REQUESTED'   // Both variants — cancellation initiated
-  | 'CANCEL_APPROVED'    // Both variants — cancellation confirmed
-  | 'CANCEL_REJECTED';   // Both variants — cancellation denied
+  | 'PENDING_FIELD_VALIDATION' // IM reported inability; assigned PC or Survey Lead reviews
+  | 'RETURNED_FOR_CORRECTION'  // Requester revises the same SWR and resubmits
+  | 'PENDING_PC_APPROVAL' // Both variants — IM submitted field status; pending approval
+  | 'DELAYED'            // Both variants — blocked in field
+  | 'COMPLETED'          // Both variants — terminal success state
+  | 'REQUESTER_CANCELED' // Terminal cancellation — requester self-cancel
+  | 'FIELD_CANCELED'     // Terminal cancellation — field cancel approved
+  | 'SURVEY_CANCELED';   // Terminal cancellation — survey-side cancel
 
 // ---------------------------------------------------------------------------
 // Permitted transitions per variant
@@ -32,39 +34,73 @@ export type TicketStatus =
 
 /**
  * Variant 1 — Standard Approval
- * DRAFT → SUBMITTED → APPROVED → ASSIGNED → IN_PROGRESS → COMPLETED → CLOSED
+ * DRAFT → SUBMITTED → APPROVED → ASSIGNED → IN_PROGRESS → PENDING_PC_APPROVAL → COMPLETED
  *                   ↘ REJECTED
- * ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
- *                                         → CANCEL_REJECTED
- * REJECTED → APPROVED  (APPROVER only — rejection_overridden; handled at application layer)
- * COMPLETED → CLOSED   (SURVEY_LEAD only — enforced at application layer)
+ * PENDING_PC_APPROVAL → IN_PROGRESS | DELAYED | FIELD_CANCELED | COMPLETED
+ * DELAYED → IN_PROGRESS | PENDING_PC_APPROVAL
+ * Active statuses → REQUESTER_CANCELED | SURVEY_CANCELED
+ * REJECTED → APPROVED  (SURVEY_MANAGER only — rejection_overridden; handled at application layer)
  */
 const STANDARD_APPROVAL_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
-    ['DRAFT',            new Set<TicketStatus>(['SUBMITTED'])],
-    ['SUBMITTED',        new Set<TicketStatus>(['APPROVED', 'REJECTED'])],
-    ['APPROVED',         new Set<TicketStatus>(['ASSIGNED'])],
-    ['REJECTED',         new Set<TicketStatus>(['APPROVED'])],  // rejection_overridden path
-    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'CANCEL_REQUESTED'])],
-    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'CANCEL_REQUESTED'])],
-    ['COMPLETED',        new Set<TicketStatus>(['CLOSED'])],
-    ['CANCEL_REQUESTED', new Set<TicketStatus>(['CANCEL_APPROVED', 'CANCEL_REJECTED'])],
+    ['DRAFT',            new Set<TicketStatus>(['SUBMITTED', 'REQUESTER_CANCELED'])],
+    ['SUBMITTED',        new Set<TicketStatus>(['APPROVED', 'REJECTED', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['APPROVED',         new Set<TicketStatus>(['ASSIGNED', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['REJECTED',         new Set<TicketStatus>(['APPROVED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['PENDING_FIELD_VALIDATION', new Set<TicketStatus>(['RETURNED_FOR_CORRECTION', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['RETURNED_FOR_CORRECTION', new Set<TicketStatus>(['SUBMITTED', 'REQUESTER_CANCELED'])],
+    ['PENDING_PC_APPROVAL', new Set<TicketStatus>([
+      'COMPLETED',
+      'IN_PROGRESS',
+      'DELAYED',
+      'FIELD_CANCELED',
+      'REQUESTER_CANCELED',
+      'SURVEY_CANCELED',
+    ])],
+    ['DELAYED',          new Set<TicketStatus>([
+      'IN_PROGRESS',
+      'PENDING_FIELD_VALIDATION',
+      'RETURNED_FOR_CORRECTION',
+      'PENDING_PC_APPROVAL',
+      'REQUESTER_CANCELED',
+      'SURVEY_CANCELED',
+    ])],
   ]);
 
 /**
  * Variant 2 — Direct Assignment
- * CREATED → ASSIGNED → IN_PROGRESS → COMPLETED → CLOSED
- * ASSIGNED/IN_PROGRESS → CANCEL_REQUESTED → CANCEL_APPROVED
- *                                         → CANCEL_REJECTED
- * COMPLETED → CLOSED   (SURVEY_LEAD only — enforced at application layer)
+ * ASSIGNED → IN_PROGRESS → PENDING_PC_APPROVAL → COMPLETED
+ * PENDING_PC_APPROVAL → IN_PROGRESS | DELAYED | FIELD_CANCELED | COMPLETED
+ * DELAYED → IN_PROGRESS | PENDING_PC_APPROVAL
+ * Active statuses → REQUESTER_CANCELED | SURVEY_CANCELED
  */
 const DIRECT_ASSIGNMENT_TRANSITIONS: ReadonlyMap<TicketStatus, ReadonlySet<TicketStatus>> =
   new Map([
-    ['CREATED',          new Set<TicketStatus>(['ASSIGNED'])],
-    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'CANCEL_REQUESTED'])],
-    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'CANCEL_REQUESTED'])],
-    ['COMPLETED',        new Set<TicketStatus>(['CLOSED'])],
-    ['CANCEL_REQUESTED', new Set<TicketStatus>(['CANCEL_APPROVED', 'CANCEL_REJECTED'])],
+    // Corrected direct work returns to fresh Survey review without a new SWR.
+    ['SUBMITTED', new Set<TicketStatus>(['APPROVED','RETURNED_FOR_CORRECTION','REQUESTER_CANCELED','SURVEY_CANCELED'])],
+    ['APPROVED', new Set<TicketStatus>(['ASSIGNED','RETURNED_FOR_CORRECTION','REQUESTER_CANCELED','SURVEY_CANCELED'])],
+    ['ASSIGNED',         new Set<TicketStatus>(['IN_PROGRESS', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['IN_PROGRESS',      new Set<TicketStatus>(['COMPLETED', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'RETURNED_FOR_CORRECTION', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['PENDING_FIELD_VALIDATION', new Set<TicketStatus>(['RETURNED_FOR_CORRECTION', 'IN_PROGRESS', 'REQUESTER_CANCELED', 'SURVEY_CANCELED'])],
+    ['RETURNED_FOR_CORRECTION', new Set<TicketStatus>(['SUBMITTED', 'REQUESTER_CANCELED'])],
+    ['PENDING_PC_APPROVAL', new Set<TicketStatus>([
+      'COMPLETED',
+      'IN_PROGRESS',
+      'DELAYED',
+      'FIELD_CANCELED',
+      'REQUESTER_CANCELED',
+      'SURVEY_CANCELED',
+    ])],
+    ['DELAYED',          new Set<TicketStatus>([
+      'IN_PROGRESS',
+      'PENDING_FIELD_VALIDATION',
+      'RETURNED_FOR_CORRECTION',
+      'PENDING_PC_APPROVAL',
+      'REQUESTER_CANCELED',
+      'SURVEY_CANCELED',
+    ])],
   ]);
 
 // ---------------------------------------------------------------------------

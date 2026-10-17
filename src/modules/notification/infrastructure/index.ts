@@ -1,5 +1,392 @@
 /**
- * Notification infrastructure — email transport adapter.
- * Use-case implementations added here in Phase 2.
+ * Notification infrastructure — candidate queries and transport adapter.
  */
-export {};
+import type { DbClient, UUID } from '@/shared/types';
+import type { IEmailTransport } from '@/lib/email';
+import type {
+  ApproverTimeoutCandidate,
+  OrphanWorkflowCandidate,
+  INotificationRepository,
+  INotificationTransport,
+  NotificationMessage,
+  NotificationRecipient,
+  VacancyEscalationCandidate,
+} from '../application';
+
+interface ApproverTimeoutRow {
+  tenant_id: UUID;
+  project_id: UUID;
+  ticket_id: UUID;
+  ticket_number: string | null;
+  submitted_at: Date | string;
+  has_warning_sent: boolean;
+  has_unlocked_sent: boolean;
+  recipients: unknown;
+}
+
+interface VacancyEscalationRow {
+  grant_id: UUID;
+  tenant_id: UUID;
+  project_id: UUID;
+  project_name: string;
+  role: VacancyEscalationCandidate['role'];
+  granted_reason: string;
+  created_at: Date | string;
+  recipients: unknown;
+}
+
+interface OrphanWorkflowRow {
+  tenant_id: UUID;
+  project_id: UUID;
+  ticket_id: UUID;
+  ticket_number: string | null;
+  row_version: number | null;
+  orphaned_at: Date | string;
+  assigned_party_chief_id: UUID | null;
+  assigned_instrument_man_id: UUID | null;
+  survey_lead_id: UUID | null;
+  assigned_party_chief_orphaned: boolean;
+  assigned_instrument_man_orphaned: boolean;
+  survey_lead_orphaned: boolean;
+  fallback_project_admin_id: UUID | null;
+  escalation_recipients: unknown;
+  has_escalation_signal: boolean;
+}
+
+export class NotificationRepository implements INotificationRepository {
+  async listApproverTimeoutCandidates(
+    db: DbClient,
+    now: Date,
+    tenantId?: UUID,
+  ): Promise<ApproverTimeoutCandidate[]> {
+    const { rows } = await db.query<ApproverTimeoutRow>(
+      `SELECT
+         t.tenant_id,
+         t.project_id,
+         t.id AS ticket_id,
+         t.ticket_number,
+         t.submitted_at,
+         EXISTS (
+           SELECT 1
+           FROM ticket_events te
+           WHERE te.ticket_id = t.id
+             AND te.tenant_id = t.tenant_id
+             AND te.event_type = 'approver.timeout_warning_sent'
+         ) AS has_warning_sent,
+         EXISTS (
+           SELECT 1
+           FROM ticket_events te
+           WHERE te.ticket_id = t.id
+             AND te.tenant_id = t.tenant_id
+             AND te.event_type = 'approver.timeout_unlocked'
+         ) AS has_unlocked_sent,
+         COALESCE(
+           jsonb_agg(DISTINCT jsonb_build_object('userId', u.id, 'email', u.email, 'name', u.name))
+             FILTER (WHERE u.id IS NOT NULL),
+           '[]'::jsonb
+         ) AS recipients
+       FROM tickets t
+       JOIN projects p
+         ON p.id = t.project_id
+        AND p.tenant_id = t.tenant_id
+       LEFT JOIN project_memberships pm
+         ON pm.project_id = t.project_id
+        AND pm.role = 'SURVEY_MANAGER' AND pm.access_disabled_at IS NULL
+       LEFT JOIN users u
+         ON u.id = pm.user_id
+        AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
+       WHERE ($2::uuid IS NULL OR t.tenant_id = $2)
+         AND t.status = 'SUBMITTED'
+         AND t.submitted_at IS NOT NULL
+         AND p.status = 'ACTIVE'
+         AND $1::timestamptz - t.submitted_at >= interval '18 hours'
+       GROUP BY
+         t.tenant_id,
+         t.project_id,
+         t.id,
+         t.ticket_number,
+         t.submitted_at`,
+      [now, tenantId ?? null],
+    );
+
+    return rows.map((row) => ({
+      tenantId: row.tenant_id,
+      projectId: row.project_id,
+      ticketId: row.ticket_id,
+      ticketNumber: row.ticket_number,
+      submittedAt: toDate(row.submitted_at),
+      recipients: parseRecipients(row.recipients),
+      hasWarningSent: row.has_warning_sent,
+      hasUnlockedSent: row.has_unlocked_sent,
+    }));
+  }
+
+  async listVacancyEscalationCandidates(
+    db: DbClient,
+    now: Date,
+    tenantId?: UUID,
+  ): Promise<VacancyEscalationCandidate[]> {
+    const { rows } = await db.query<VacancyEscalationRow>(
+      `SELECT
+         ag.id AS grant_id,
+         ag.tenant_id,
+         ag.project_id,
+         p.name AS project_name,
+         ag.role,
+         ag.granted_reason,
+         ag.created_at,
+         COALESCE(tenant_admins.recipients, '[]'::jsonb) ||
+         COALESCE(project_admins.recipients, '[]'::jsonb) AS recipients
+       FROM acting_grants ag
+       JOIN projects p
+         ON p.id = ag.project_id
+        AND p.tenant_id = ag.tenant_id
+       LEFT JOIN LATERAL (
+         SELECT jsonb_agg(
+           DISTINCT jsonb_build_object('userId', u.id, 'email', u.email, 'name', u.name)
+         ) AS recipients
+         FROM tenant_memberships tm
+         JOIN users u
+           ON u.id = tm.user_id
+          AND u.tenant_id = ag.tenant_id
+         WHERE tm.tenant_id = ag.tenant_id
+           AND tm.role = 'TENANT_ADMIN' AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
+       ) AS tenant_admins ON TRUE
+       LEFT JOIN LATERAL (
+         SELECT jsonb_agg(
+           DISTINCT jsonb_build_object('userId', u.id, 'email', u.email, 'name', u.name)
+         ) AS recipients
+         FROM project_memberships pm
+         JOIN users u
+           ON u.id = pm.user_id
+          AND u.tenant_id = ag.tenant_id
+         WHERE pm.project_id = ag.project_id
+           AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
+       ) AS project_admins ON TRUE
+       WHERE ($2::uuid IS NULL OR ag.tenant_id = $2)
+         AND ag.revoked_at IS NULL
+         AND p.status = 'ACTIVE'
+         AND ag.role IN ('SURVEY_MANAGER', 'PARTY_CHIEF', 'INSTRUMENT_MAN')
+         AND $1::timestamptz - ag.created_at >= CASE
+           WHEN ag.role = 'SURVEY_MANAGER' THEN interval '24 hours'
+           ELSE interval '48 hours'
+         END`,
+      [now, tenantId ?? null],
+    );
+
+    return rows.map((row) => ({
+      grantId: row.grant_id,
+      tenantId: row.tenant_id,
+      projectId: row.project_id,
+      projectName: row.project_name,
+      role: row.role,
+      grantedReason: row.granted_reason,
+      createdAt: toDate(row.created_at),
+      recipients: parseRecipients(row.recipients),
+    }));
+  }
+
+  async listOrphanWorkflowCandidates(
+    db: DbClient,
+    tenantId?: UUID,
+  ): Promise<OrphanWorkflowCandidate[]> {
+    const { rows } = await db.query<OrphanWorkflowRow>(
+      `SELECT
+         t.tenant_id,
+         t.project_id,
+         t.id AS ticket_id,
+         t.ticket_number,
+         COALESCE(t.row_version, 0) AS row_version,
+         COALESCE(
+           LEAST(
+             COALESCE(pc.deactivated_at, pc_membership.access_disabled_at, t.updated_at),
+             COALESCE(im.deactivated_at, im_membership.access_disabled_at, t.updated_at),
+             COALESCE(sl.deactivated_at, sl_membership.access_disabled_at, t.updated_at)
+           ),
+           t.updated_at
+         ) AS orphaned_at,
+         t.assigned_party_chief_id,
+         t.assigned_instrument_man_id,
+         t.survey_lead_id,
+         (t.assigned_party_chief_id IS NOT NULL AND (pc.id IS NULL OR pc.deactivated_at IS NOT NULL OR pc_membership.id IS NULL OR pc_membership.access_disabled_at IS NOT NULL)) AS assigned_party_chief_orphaned,
+         (t.assigned_instrument_man_id IS NOT NULL AND (im.id IS NULL OR im.deactivated_at IS NOT NULL OR im_membership.id IS NULL OR im_membership.access_disabled_at IS NOT NULL)) AS assigned_instrument_man_orphaned,
+         (t.survey_lead_id IS NOT NULL AND (sl.id IS NULL OR sl.deactivated_at IS NOT NULL OR sl_membership.id IS NULL OR sl_membership.access_disabled_at IS NOT NULL)) AS survey_lead_orphaned,
+         fallback_admin.user_id AS fallback_project_admin_id,
+         COALESCE(escalation_recipients.recipients, '[]'::jsonb) AS escalation_recipients,
+         EXISTS (
+           SELECT 1
+           FROM ticket_events te
+           WHERE te.ticket_id = t.id
+             AND te.tenant_id = t.tenant_id
+             AND te.event_type = 'workflow.orphan_escalation'
+         ) AS has_escalation_signal
+       FROM tickets t
+       JOIN projects p
+         ON p.id = t.project_id
+        AND p.tenant_id = t.tenant_id
+       LEFT JOIN users pc
+         ON pc.id = t.assigned_party_chief_id
+        AND pc.tenant_id = t.tenant_id
+       LEFT JOIN users im
+         ON im.id = t.assigned_instrument_man_id
+        AND im.tenant_id = t.tenant_id
+       LEFT JOIN users sl
+         ON sl.id = t.survey_lead_id
+        AND sl.tenant_id = t.tenant_id
+       LEFT JOIN project_memberships pc_membership
+         ON pc_membership.project_id=t.project_id AND pc_membership.user_id=t.assigned_party_chief_id
+       LEFT JOIN project_memberships im_membership
+         ON im_membership.project_id=t.project_id AND im_membership.user_id=t.assigned_instrument_man_id
+       LEFT JOIN project_memberships sl_membership
+         ON sl_membership.project_id=t.project_id AND sl_membership.user_id=t.survey_lead_id
+       LEFT JOIN LATERAL (
+         SELECT pm.user_id
+         FROM project_memberships pm
+         JOIN users u
+           ON u.id = pm.user_id
+          AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
+         WHERE pm.project_id = t.project_id
+           AND pm.role IN ('PROJECT_ADMIN') AND pm.access_disabled_at IS NULL
+           AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
+         ORDER BY pm.user_id
+         LIMIT 1
+       ) AS fallback_admin ON TRUE
+       LEFT JOIN LATERAL (
+         SELECT jsonb_agg(
+           DISTINCT jsonb_build_object('userId', recipients.user_id, 'email', recipients.email, 'name', recipients.name)
+         ) AS recipients
+         FROM (
+           SELECT u.id AS user_id, u.email, u.name
+           FROM tenant_memberships tm
+           JOIN users u
+             ON u.id = tm.user_id
+            AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
+           WHERE tm.tenant_id = t.tenant_id
+             AND tm.role = 'TENANT_ADMIN' AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
+           UNION
+           SELECT u.id AS user_id, u.email, u.name
+           FROM project_memberships pm
+           JOIN users u
+             ON u.id = pm.user_id
+            AND u.tenant_id = t.tenant_id AND u.deactivated_at IS NULL
+           WHERE pm.project_id = t.project_id
+             AND pm.access_disabled_at IS NULL AND u.deactivated_at IS NULL
+           AND EXISTS(SELECT 1 FROM project_admin_grants g WHERE g.tenant_id=u.tenant_id AND g.project_id=pm.project_id AND g.user_id=pm.user_id AND g.revoked_at IS NULL)
+           AND EXISTS(SELECT 1 FROM companies c WHERE c.tenant_id=u.tenant_id AND c.id=u.company_id AND c.type IN ('GC','OWNER_REP'))
+         ) AS recipients
+       ) AS escalation_recipients ON TRUE
+       WHERE ($1::uuid IS NULL OR t.tenant_id = $1)
+         AND p.status = 'ACTIVE'
+         AND t.status IN ('ASSIGNED', 'IN_PROGRESS', 'PENDING_PC_APPROVAL', 'PENDING_FIELD_VALIDATION', 'DELAYED')
+         AND (
+           (t.assigned_party_chief_id IS NOT NULL AND (pc.id IS NULL OR pc.deactivated_at IS NOT NULL OR pc_membership.id IS NULL OR pc_membership.access_disabled_at IS NOT NULL)) OR
+           (t.assigned_instrument_man_id IS NOT NULL AND (im.id IS NULL OR im.deactivated_at IS NOT NULL OR im_membership.id IS NULL OR im_membership.access_disabled_at IS NOT NULL)) OR
+           (t.survey_lead_id IS NOT NULL AND (sl.id IS NULL OR sl.deactivated_at IS NOT NULL OR sl_membership.id IS NULL OR sl_membership.access_disabled_at IS NOT NULL))
+         )`,
+      [tenantId ?? null],
+    );
+
+    return rows.map((row) => ({
+      tenantId: row.tenant_id,
+      projectId: row.project_id,
+      ticketId: row.ticket_id,
+      ticketNumber: row.ticket_number,
+      rowVersion: row.row_version ?? 0,
+      orphanedAt: toDate(row.orphaned_at),
+      assignedPartyChiefId: row.assigned_party_chief_id,
+      assignedInstrumentManId: row.assigned_instrument_man_id,
+      surveyLeadId: row.survey_lead_id,
+      assignedPartyChiefOrphaned: row.assigned_party_chief_orphaned,
+      assignedInstrumentManOrphaned: row.assigned_instrument_man_orphaned,
+      surveyLeadOrphaned: row.survey_lead_orphaned,
+      fallbackProjectAdminId: row.fallback_project_admin_id,
+      escalationRecipients: parseRecipients(row.escalation_recipients),
+      hasEscalationSignal: row.has_escalation_signal,
+    }));
+  }
+
+  async reassignOrphanWorkflowTicket(
+    db: DbClient,
+    params: {
+      tenantId: UUID;
+      ticketId: UUID;
+      expectedRowVersion: number;
+      fallbackProjectAdminId: UUID;
+      assignedPartyChiefOrphaned: boolean;
+      assignedInstrumentManOrphaned: boolean;
+      surveyLeadOrphaned: boolean;
+    },
+  ): Promise<boolean> {
+    // Retained internal signature for worker integrations; never changes duties.
+    void db;
+    void params;
+    throw new Error('Automatic orphan reassignment is retired; use authorized Survey reassignment');
+  }
+}
+
+export class CallbackNotificationTransport implements INotificationTransport {
+  constructor(
+    private readonly callback: (message: NotificationMessage) => Promise<void> | void,
+  ) {}
+
+  async send(message: NotificationMessage): Promise<void> {
+    await this.callback(message);
+  }
+}
+
+export class EmailNotificationTransport implements INotificationTransport {
+  constructor(private readonly emailTransport: IEmailTransport) {}
+
+  async send(message: NotificationMessage): Promise<void> {
+    const recipients = message.recipients
+      .map((recipient) => recipient.email)
+      .filter((email, index, all) => all.indexOf(email) === index);
+
+    if (recipients.length === 0) {
+      return;
+    }
+
+    await this.emailTransport.send({
+      to: recipients,
+      subject: message.subject,
+      text: message.body,
+      metadata: {
+        kind: message.kind,
+        tenantId: message.tenantId,
+        projectId: message.projectId,
+        ticketId: message.ticketId ?? null,
+        ...message.metadata,
+      },
+    });
+  }
+}
+
+function parseRecipients(raw: unknown): NotificationRecipient[] {
+  const parsed = typeof raw === 'string'
+    ? JSON.parse(raw) as unknown
+    : raw;
+
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+
+  const recipients = parsed
+    .filter((value): value is Record<string, unknown> => !!value && typeof value === 'object')
+    .map((recipient) => ({
+      userId: String(recipient.userId) as UUID,
+      email: String(recipient.email),
+      name: recipient.name == null ? null : String(recipient.name),
+    }));
+  const unique = new Map<UUID, NotificationRecipient>();
+  for (const recipient of recipients) unique.set(recipient.userId, recipient);
+  return [...unique.values()];
+}
+
+function toDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value);
+}

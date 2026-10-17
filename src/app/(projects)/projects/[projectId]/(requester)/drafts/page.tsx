@@ -1,0 +1,105 @@
+'use client';
+
+import Link from 'next/link';
+import { AdministrationRecords } from '@/components/ui/administration-records';
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { apiClient } from '@/lib/apiClient';
+import { getErrorMessage } from '@/lib/errors';
+import { RetryableMutation } from '@/lib/retryable-mutation';
+
+import { ticketTypeLabel } from '@/lib/display-labels';
+import { useAreaNames } from '@/lib/use-area-names';
+import { Icon } from '@/components/ui/icon';
+import type { TicketRecord } from '@/lib/contracts';
+import { PaginationControls } from '@/components/forms';
+import { Button, Card, ErrorBanner, Select, SuccessBanner } from '@/components/ui';
+import { useRequestDetailsDialog } from '@/components/tickets/request-details-dialog';
+
+export default function DraftsPage() {
+  const params = useParams<{ projectId: string }>();
+  const projectId = params.projectId;
+  const areaNames = useAreaNames(projectId);
+  const [tickets, setTickets] = useState<TicketRecord[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  // Deletion from the request page arrives here; confirm it once, then tidy the address.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('deleted') !== '1') return;
+    setSuccess('Draft deleted. Project Admin can restore it within 30 days; its files and history are retained.');
+    window.history.replaceState(null, '', window.location.pathname);
+  }, []);
+  const [limit, setLimit] = useState(20);
+  const [deleting, setDeleting] = useState(false);
+  const busy = useRef(false);
+  const attempt = useRef(new RetryableMutation<{ ticketId:string; expectedVersion:number }>());
+
+  // After a change in the popup the rows refresh in place (quiet), keeping the list and its scroll.
+  const details = useRequestDetailsDialog(projectId, message => { if (message) setSuccess(message); void loadDrafts(true); });
+  async function loadDrafts(quiet = false) {
+    if (!quiet) setLoading(true);
+    setError(null);
+    try {
+      const page = await apiClient.listTickets(projectId, limit, offset, { status: 'DRAFT' });
+      setTickets(page.data);
+      setTotal(page.total);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Unable to load draft tickets.'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadDrafts();
+  }, [projectId, offset, limit]);
+
+  async function remove(ticket:TicketRecord) {
+    if (busy.current) return;
+    busy.current = true; setDeleting(true); setError(null); setSuccess(null);
+    try {
+      await attempt.current.run({ ticketId:ticket.id, expectedVersion:ticket.rowVersion ?? 0 },
+        (input,key) => apiClient.deleteDraft(input.ticketId,input.expectedVersion,key));
+      setTickets(items => items.filter(item => item.id !== ticket.id)); setTotal(count => count-1);
+      setSuccess('Draft deleted. Project Admin can restore it within 30 days; its files and history are retained.');
+      if (tickets.length === 1 && offset > 0) setOffset(value => Math.max(0,value-limit));
+    } catch (err) { setError(getErrorMessage(err,'Unable to confirm deletion. Retry the same draft; no permanent purge occurs.')); }
+    finally { busy.current = false; setDeleting(false); }
+  }
+
+  return (
+    <Card actions={<Link className="button" href={`/projects/${projectId}/request/new`}><Icon name="plus" />Start a new request</Link>} title="Drafts" description="Saved progress, not submitted work. Resume a draft when you’re ready; deleted drafts can be recovered by Project Admin within 30 days.">
+      <div className="stack">
+        {error ? <ErrorBanner message={error} /> : null}
+        {success ? <SuccessBanner message={success} /> : null}
+        {details.dialog}
+        
+        {loading ? <p className="muted">Loading drafts...</p> : null}
+        {!loading && tickets.length === 0 && !error ? <div className="empty-state"><strong>No saved drafts</strong><span>Start a request and use Save Draft at any step.</span></div> : null}
+        {!loading?<AdministrationRecords label="saved drafts on this page" rows={tickets} id={t=>t.id} disabled={deleting||Boolean(attempt.current.pending)} columns={[
+          {key:'description',label:'Draft',text:t=>t.description||'Untitled draft'},
+          {key:'area',label:'Area',text:t=>t.aorNodeId?areaNames.get(t.aorNodeId)?.path??'Not specified':'Not specified'},
+          {key:'type',label:'Type',text:t=>ticketTypeLabel(t.ticketType)},
+          {key:'date',label:'Need-By',text:t=>t.requestedDate??'Not specified'},
+          {key:'saved',label:'Saved',text:t=>t.draftLastSavedAt??'',render:t=>t.draftLastSavedAt?new Date(t.draftLastSavedAt).toLocaleString():'Not recorded'}
+        ]} actions={ticket=><><Link className="button" href={`/projects/${projectId}/request/new?draft=${ticket.id}`}>Resume draft</Link><Button variant="secondary" onClick={() => details.open(ticket.id)}>Saved details and files</Button><Button variant="secondary" disabled={deleting||Boolean(attempt.current.pending&&attempt.current.pending.input.ticketId!==ticket.id)} onClick={()=>void remove(ticket)}>{attempt.current.pending?.input.ticketId===ticket.id?'Retry Delete Draft':'Delete Draft'}</Button></>}/>:null}
+        {error ? (
+          <Button variant="secondary" disabled={deleting || Boolean(attempt.current.pending)} onClick={() => void loadDrafts()}>
+            Retry
+          </Button>
+        ) : null}
+        <label className="field"><span className="field-label">Drafts per page</span><Select disabled={deleting || Boolean(attempt.current.pending)} value={limit} onChange={event => { setLimit(Number(event.target.value)); setOffset(0); }}>{[10,20,50,100].map(size => <option key={size} value={size}>{size}</option>)}</Select></label>
+        <PaginationControls
+          offset={offset}
+          limit={limit}
+          total={total}
+          onChange={next => { if (!deleting && !attempt.current.pending) setOffset(next); }}
+        />
+      </div>
+    </Card>
+  );
+}

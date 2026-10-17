@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-03T00:59:26.471Z",
+  "checks": [
+    {
+      "name": "Mobile handover has no horizontal document overflow",
+      "pass": true
+    },
+    {
+      "name": "Actual admin UI confirmed guarded manager appointment",
+      "pass": true,
+      "eventId": "ceb2d4c7-7ee7-46a1-ad82-acb51d649702"
+    },
+    {
+      "name": "Incoming Superintendent prior session is revoked",
+      "pass": true,
+      "status": 401
+    },
+    {
+      "name": "Coverage Superintendent prior session is revoked",
+      "pass": true,
+      "status": 401
+    }
+  ],
+  "result": {
+    "eventId": "ceb2d4c7-7ee7-46a1-ad82-acb51d649702",
+    "incomingUserId": "b2c0138e-697f-4d58-a745-62b0e850a9af",
+    "coverageUserId": "71b4c537-2b2f-4c99-a7d7-f55d1da34048"
+  }
+}

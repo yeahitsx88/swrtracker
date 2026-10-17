@@ -1,0 +1,62 @@
+{
+  "at": "2026-10-03T04:56:06.658Z",
+  "checks": [
+    {
+      "name": "Central IT can load archived readiness evidence",
+      "pass": true
+    },
+    {
+      "name": "Foreign tenant project evidence hidden",
+      "pass": true
+    },
+    {
+      "name": "Survey Manager cannot appoint project owner",
+      "pass": true
+    },
+    {
+      "name": "Guarded preparation begins",
+      "pass": true
+    },
+    {
+      "name": "Lost-response begin retry is stable",
+      "pass": true
+    },
+    {
+      "name": "Preparation retains ID and explicit period",
+      "pass": true
+    },
+    {
+      "name": "Ordinary activation cannot bypass readiness",
+      "pass": true
+    },
+    {
+      "name": "Ordinary workflow is suspended in preparation",
+      "pass": true
+    },
+    {
+      "name": "Incomplete access review rejected",
+      "pass": true
+    },
+    {
+      "name": "Stale evidence rejected",
+      "pass": true
+    },
+    {
+      "name": "Readiness has no unresolved blockers",
+      "pass": true
+    },
+    {
+      "name": "Reviewed project reopens",
+      "pass": true
+    },
+    {
+      "name": "Reopening retry does not duplicate period",
+      "pass": true
+    },
+    {
+      "name": "Next operating period is active",
+      "pass": true
+    }
+  ],
+  "scope": "Normal authenticated HTTP requests against disposable copy3117; original archived project remains untouched."
+}

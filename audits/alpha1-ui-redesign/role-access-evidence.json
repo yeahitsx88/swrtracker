@@ -1,0 +1,287 @@
+{
+  "sourceDigest": "00ab5b59f617d4215143f30d16f9586cf255b5f989496ace4d1f32c935827432",
+  "digestAlgorithm": "sorted src + db/migrations paths, NUL, raw file bytes, NUL; SHA-256",
+  "checkpoints": [
+    "45a67e3",
+    "7288761"
+  ],
+  "toolchain": {
+    "node": "22.23.3",
+    "pnpm": "11.19.0",
+    "postgres": "15"
+  },
+  "verification": {
+    "strictUnusedTypes": "pass",
+    "unitTests": 584,
+    "productionBuild": "pass",
+    "postgresSuites": 30,
+    "customRoleCases": 21,
+    "supportCases": 42,
+    "httpChecks": 67,
+    "browserChecks": 50,
+    "sharedNoticeChecks": 15,
+    "conditionalBrowserChecks": 19
+  },
+  "httpReceipt": [
+    "Owned schema guard",
+    "TenantAdmin diagnostics authority",
+    "TenantAdmin custom-role creation authority",
+    "TenantAdmin can submit help desk ticket",
+    "TenantAdmin can reply to own support",
+    "ProjectAdmin diagnostics authority",
+    "ProjectAdmin custom-role creation authority",
+    "ProjectAdmin cannot grant Project Admin",
+    "ProjectAdmin can submit help desk ticket",
+    "ProjectAdmin can reply to own support",
+    "SurveyManager diagnostics authority",
+    "SurveyManager custom-role creation authority",
+    "SurveyManager cannot grant Project Admin",
+    "SurveyManager can submit help desk ticket",
+    "SurveyManager can reply to own support",
+    "SurveyManager cannot change support status",
+    "Superintendent diagnostics authority",
+    "Superintendent custom-role creation authority",
+    "Superintendent cannot grant Project Admin",
+    "Superintendent can submit help desk ticket",
+    "Superintendent can reply to own support",
+    "Superintendent cannot change support status",
+    "PartyChief diagnostics authority",
+    "PartyChief custom-role creation authority",
+    "PartyChief cannot grant Project Admin",
+    "PartyChief can submit help desk ticket",
+    "PartyChief can reply to own support",
+    "PartyChief cannot change support status",
+    "InstrumentMan diagnostics authority",
+    "InstrumentMan custom-role creation authority",
+    "InstrumentMan cannot grant Project Admin",
+    "InstrumentMan can submit help desk ticket",
+    "InstrumentMan can reply to own support",
+    "InstrumentMan cannot change support status",
+    "Requester diagnostics authority",
+    "Requester custom-role creation authority",
+    "Requester cannot grant Project Admin",
+    "Requester can submit help desk ticket",
+    "Requester can reply to own support",
+    "Requester cannot change support status",
+    "Viewer diagnostics authority",
+    "Viewer custom-role creation authority",
+    "Viewer cannot grant Project Admin",
+    "Viewer can submit help desk ticket",
+    "Viewer can reply to own support",
+    "Viewer cannot change support status",
+    "Members see only their own support tickets",
+    "Another member cannot inspect support conversation",
+    "Concurrent same-key help desk decision replays",
+    "Concurrent reply appended once",
+    "Help desk exact-body mismatch requires reload",
+    "Tenant queue prioritizes escalation",
+    "Project Admin cannot read tenant queue",
+    "Project Admin creates ordinary employee",
+    "Project Admin cannot provision another administrator",
+    "Tenant Admin provisions independent Project Admin",
+    "Project Admin assigns exact custom Viewer template",
+    "Assigned custom role cannot be deleted",
+    "Foreign tenant diagnostics denied",
+    "Scoped malformed request recorded as 400",
+    "Diagnostics names scoped 400 and 403 actors",
+    "Diagnostics uses actual timing samples and leaves absent baseline empty",
+    "Diagnostics excludes credential bodies",
+    "Observation failure preserves business response",
+    "Failed observation does not persist partial metadata",
+    "Telemetry lifecycle lock timeout preserves successful read",
+    "Best-effort telemetry does not wait indefinitely behind lifecycle mutation"
+  ],
+  "browserReceipt": [
+    "TenantAdmin admin deep-link gate",
+    "TenantAdmin Project Admin creation UI gate",
+    "TenantAdmin custom wizard UI gate",
+    "TenantAdmin reachable help desk",
+    "ProjectAdmin admin deep-link gate",
+    "ProjectAdmin Project Admin creation UI gate",
+    "ProjectAdmin custom wizard UI gate",
+    "ProjectAdmin reachable help desk",
+    "SurveyManager admin deep-link gate",
+    "SurveyManager Project Admin creation UI gate",
+    "SurveyManager custom wizard UI gate",
+    "SurveyManager reachable help desk",
+    "Superintendent admin deep-link gate",
+    "Superintendent Project Admin creation UI gate",
+    "Superintendent custom wizard UI gate",
+    "Superintendent reachable help desk",
+    "PartyChief admin deep-link gate",
+    "PartyChief Project Admin creation UI gate",
+    "PartyChief custom wizard UI gate",
+    "PartyChief reachable help desk",
+    "InstrumentMan admin deep-link gate",
+    "InstrumentMan Project Admin creation UI gate",
+    "InstrumentMan custom wizard UI gate",
+    "InstrumentMan reachable help desk",
+    "Requester admin deep-link gate",
+    "Requester Project Admin creation UI gate",
+    "Requester custom wizard UI gate",
+    "Requester reachable help desk",
+    "Requester submits assistance from browser",
+    "role-help-desk-user-1864 has no page overflow",
+    "Viewer admin deep-link gate",
+    "Viewer Project Admin creation UI gate",
+    "Viewer custom wizard UI gate",
+    "Viewer reachable help desk",
+    "role-wizard-user-1864 has no page overflow",
+    "Tenant Admin deploys three-step wizard",
+    "No administration back-to-top",
+    "Personnel member section is visible",
+    "role-personnel-user-1864 has no page overflow",
+    "Subcontractor access on Companies",
+    "Request policy on Project Settings",
+    "Removed member restoration reachable",
+    "role-diagnostics-user-1864 has no page overflow",
+    "Measured diagnostic donuts present",
+    "role-diagnostics-desktop has no page overflow",
+    "role-diagnostics-mobile has no page overflow",
+    "role-help-desk-mobile has no page overflow",
+    "Uncertain help desk locks sibling Companies editor",
+    "Uncertain support exact body/key retry",
+    "Help desk uncertain intent survives sibling route"
+  ],
+  "noticeReceipt": [
+    "Project Help Desk notice visible on sibling",
+    "Project Help Desk explains recovery state",
+    "Companies locked while support uncertain",
+    "Exact unchanged body/key for **/api/projects/*/help-desk",
+    "Project Help Desk notice visible on sibling",
+    "Project Help Desk explains recovery state",
+    "Custom Roles notice visible on sibling",
+    "Custom Roles explains recovery state",
+    "Tenant employee creation locked by custom role uncertainty",
+    "Exact unchanged body/key for **/api/roles",
+    "Member Access Restoration notice visible on sibling",
+    "Member Access Restoration explains recovery state",
+    "Exact unchanged body/key for **/api/projects/*/members/*/restore",
+    "Member Access Restoration notice visible on sibling",
+    "Member Access Restoration explains recovery state"
+  ],
+  "captures": [
+    {
+      "localPath": ".impeccable/review/role-diagnostics-desktop.png",
+      "sha256": "4c07a6bd00ae5a7a37357aa2b5e4a166fe3b922a2419f777dc70ce8f2c0557d7"
+    },
+    {
+      "localPath": ".impeccable/review/role-diagnostics-mobile.png",
+      "sha256": "f95ac8dd3c25eebd6a00b8c8f5821b2f90f112e353637f03da31ce2ed2dc3a12"
+    },
+    {
+      "localPath": ".impeccable/review/role-diagnostics-user-1864.png",
+      "sha256": "62712d05653c725aede73e919694b5a956bb36d56b57b2d5b8ec48c642cb2c95"
+    },
+    {
+      "localPath": ".impeccable/review/role-eligibility-user-1864.png",
+      "sha256": "bb28bdd1d8dd1e8737860e554ba59eede11a3eefa4f089f697bec987af36d6db"
+    },
+    {
+      "localPath": ".impeccable/review/role-help-desk-mobile.png",
+      "sha256": "8d38b3b5d6b6a89a412e23034c0ccf47bfe098fe36476878656fa8fd058b6cdf"
+    },
+    {
+      "localPath": ".impeccable/review/role-help-desk-user-1864.png",
+      "sha256": "d10f833b7a0d812937d73aba562e68be7843dfeddc7d696129808c442154ac9d"
+    },
+    {
+      "localPath": ".impeccable/review/role-notice-catalog-desktop.png",
+      "sha256": "b6b1b6bee195551d5217cf903030d13299a3713efd996159f9683e4714a4aae5"
+    },
+    {
+      "localPath": ".impeccable/review/role-notice-help-desktop.png",
+      "sha256": "5650a4d7d125f7e85261059ae90a51c686fc160aeccb067357a6f51f7fe311de"
+    },
+    {
+      "localPath": ".impeccable/review/role-notice-help-mobile.png",
+      "sha256": "a9addb032590dbb0b579b4c81dad281d1c74d37aaeb5f1d6c5afe8e166e08fd3"
+    },
+    {
+      "localPath": ".impeccable/review/role-notice-restoration-desktop.png",
+      "sha256": "fde8946ef00320a22a86a6679bab9f94eec0298089c5f1a47541b2ec0a6e1b33"
+    },
+    {
+      "localPath": ".impeccable/review/role-notice-restoration-mobile.png",
+      "sha256": "cf5c3cf396656fccc8cbf6080245214e4a633d3347c0298077ca044c94076528"
+    },
+    {
+      "localPath": ".impeccable/review/role-personnel-user-1864.png",
+      "sha256": "0d9a113dd027cecbdb292fd8ac2431a27ee97c2df2da93132e6ac5400ce8248c"
+    },
+    {
+      "localPath": ".impeccable/review/role-restoration-archived-mobile.png",
+      "sha256": "f2f66241ac5bc36f64bc79de59f770adafa0777d01a44626be429134845a7aa7"
+    },
+    {
+      "localPath": ".impeccable/review/role-restoration-archived-user-1864.png",
+      "sha256": "a0a4883ca3291faa8e86e12be22712a563ca95d6aa4407220983c00398584583"
+    },
+    {
+      "localPath": ".impeccable/review/role-wizard-user-1864.png",
+      "sha256": "842a0db6c6ccb6d7cb9e1704d4c7765786f3a54355c184f9fb47a2a0170218ae"
+    }
+  ],
+  "review": {
+    "firstFull": "fix: shared notices",
+    "recapture": "header/logo evidence validity; fresh full review",
+    "secondFull": "fix: existing-account eligibility and Archived restoration",
+    "final": "ship at listed-fix scope: both resolved; earlier shared notices preserved",
+    "requiredCaptures": 15,
+    "documentation": "ordinary extension compared; DESIGN/sidecar preserved; prior drift reported"
+  },
+  "limitations": [
+    "Full96-cell source audit is not96 independently executed browser mutations.",
+    "Submitted recovery and general administrator/scoped Superintendent survey role workflows remain High findings.",
+    "Timing samples exclude browser/network and telemetry persistence; dispatch/capture is not a survey-team read receipt."
+  ],
+  "sharedNoticeReceipt": [
+    "Project Help Desk notice visible on sibling",
+    "Project Help Desk explains recovery state",
+    "Companies locked while support uncertain",
+    "Exact unchanged body/key for **/api/projects/*/help-desk",
+    "Project Help Desk notice visible on sibling",
+    "Project Help Desk explains recovery state",
+    "Custom Roles notice visible on sibling",
+    "Custom Roles explains recovery state",
+    "Tenant employee creation locked by custom role uncertainty",
+    "Exact unchanged body/key for **/api/roles",
+    "Member Access Restoration notice visible on sibling",
+    "Member Access Restoration explains recovery state",
+    "Exact unchanged body/key for **/api/projects/*/members/*/restore",
+    "Member Access Restoration notice visible on sibling",
+    "Member Access Restoration explains recovery state"
+  ],
+  "conditionalBrowserReceipt": [
+    "itOnly ordinary company permits Viewer",
+    "itOnly person change invalidates Viewer",
+    "itOnly subcontractor excludes Viewer and survey roles",
+    "itOnly eligibility explained before review",
+    "itOnly permitted subcontractor membership reaches review",
+    "role-eligibility-user-1864 has no page overflow",
+    "localAdmin ordinary company permits Viewer",
+    "localAdmin person change invalidates Viewer",
+    "localAdmin subcontractor excludes Viewer and survey roles",
+    "localAdmin eligibility explained before review",
+    "localAdmin permitted subcontractor membership reaches review",
+    "Archived restoration disabled",
+    "Archived read-only reason visible",
+    "Archived removed member history inspectable",
+    "role-restoration-archived-user-1864 has no page overflow",
+    "role-restoration-archived-mobile has no page overflow",
+    "Direct Archived restoration rejected",
+    "Archived membership unchanged",
+    "Archived restoration adds no administrative event"
+  ],
+  "retainedDemo": {
+    "additiveMigrations": [
+      35,
+      36
+    ],
+    "existingRowDigests": "matched before/after",
+    "originalFileVolume": "preserved",
+    "actualBrowser": "existing Project Admin session, new tabs and measured diagnostics",
+    "credentials": "unchanged",
+    "pushMergeAlpha2": false
+  }
+}

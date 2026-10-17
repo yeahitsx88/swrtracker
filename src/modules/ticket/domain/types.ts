@@ -9,19 +9,21 @@ export type { TicketStatus, WorkflowVariant };
 
 /** Structured ticket categories — never free text (CLAUDE.md §4). */
 export type TicketType = 'LAYOUT' | 'CHECK_OUT' | 'AS_BUILT' | 'TOPO' | 'PERMIT';
+export type PendingPcOutcome = 'COMPLETED' | 'DELAYED' | 'FIELD_CANCELED';
+export type TicketPriority = 'HIGH' | 'MED_HIGH' | 'MEDIUM' | 'NORMAL';
 
 export interface Ticket {
   id: UUID;
   tenantId: UUID;
   projectId: UUID;
-  areaId: UUID;
-  subareaId: UUID;
+  aorNodeId: UUID | null;
+  departmentId: UUID | null;
   companyId: UUID;
-  /** Human-readable number, e.g. FSS-U1-00247. Immutable after creation. */
-  ticketNumber: string;
-  ticketType: TicketType;
+  /** Human-readable number, e.g. FSS-U1-00247. Assigned on DRAFT -> SUBMITTED and immutable after that. */
+  ticketNumber: string | null;
+  ticketType: TicketType | null;
   requesterId: UUID;
-  /** Required — one Party Chief per ticket. */
+  /** Optional coordination assignment; an Instrument Man may be assigned directly. */
   assignedPartyChiefId: UUID | null;
   /** Optional — Survey Lead may explicitly assign any Instrument Man in the project. */
   assignedInstrumentManId: UUID | null;
@@ -29,23 +31,37 @@ export interface Ticket {
   workflowVariant: WorkflowVariant;
   status: TicketStatus;
   craft: string;
+  fieldContact?: string | null;
+  fieldChannel?: string | null;
   description: string;
-  requestedDate: Date;
+  requestedDate: Date | null;
+  draftLastSavedAt?: Date | null;
+  draftDeletedAt?: Date | null;
+  draftDeletedReason?: 'REQUESTER_DELETED' | null;
+  originalRequestedDate?: Date | null;
+  firstSubmittedAt?: Date | null;
+  returnCycle?: number;
+  fieldValidationReviewerId?: UUID | null;
   submittedAt: Date | null;
   approvedAt: Date | null;
   assignedAt: Date | null;
   startedAt: Date | null;
+  pendingPcOutcome: PendingPcOutcome | null;
+  pendingPcReason: string | null;
+  surveyCancelRequestedBy: UUID | null;
+  surveyCancelRequestedRole: string | null;
+  surveyCancelReason: string | null;
+  surveyCancelRequestedAt: Date | null;
   completedAt: Date | null;
   closedAt: Date | null;
   /** Required when status is REJECTED. */
   rejectionReason: string | null;
   /** Set on resubmission after rejection — links to the rejected ticket. */
   parentTicketId: UUID | null;
-  isPriority: boolean;
-  /** Set only on Path B manual elevation. */
-  priorityElevatedBy: UUID | null;
-  /** Required when priorityElevatedBy is set. */
-  priorityElevatedReason: string | null;
+  priority: TicketPriority;
+  prioritySetBy: UUID | null;
+  prioritySetReason: string | null;
+  rowVersion?: number;
   createdAt: Date;
   updatedAt: Date;
 }

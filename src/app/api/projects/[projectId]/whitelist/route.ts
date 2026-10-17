@@ -1,3 +1,8 @@
+import {observeProjectRoute} from '@/lib/observe-project-route';
+import { administrationRetry } from '@/lib/administration-retry';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
+import { appendAdministrativeEvent } from '@/modules/audit/infrastructure/administrative-event.repository';
+import { withTransaction } from '@/lib/with-transaction';
 /**
  * POST   /api/projects/[projectId]/whitelist — add email to priority whitelist
  * DELETE /api/projects/[projectId]/whitelist — remove email from priority whitelist
@@ -6,21 +11,21 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
-import { pool } from '@/lib/db';
-import { getProjectRole } from '@/lib/get-project-role';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
+
 import { addToWhitelist, removeFromWhitelist } from '@/modules/tenancy/application/whitelist';
 import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
 import type { UUID } from '@/shared/types';
+import { assertProjectAdministrator } from '@/lib/project-capabilities';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+async function observedPOST(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as unknown;
 
@@ -30,14 +35,26 @@ export async function POST(
     }
 
     const { email } = body as { email: string };
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
-    const repo = new TenancyRepository();
-    const entry = await addToWhitelist(repo, pool, {
+    const entry = await withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
+      const actorRole = (await assertProjectAdministrator(client,auth,projectId as UUID)).centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';
+      const resolvedActorRole = actorRole;
+      const repo = new TenancyRepository();
+      return administrationRetry(client,req,auth,`POST /api/projects/${projectId}/whitelist`,{email},201,async()=>{
+      const entry = await addToWhitelist(repo, client, {
       tenantId:  auth.tenantId,
       projectId: projectId as UUID,
       email,
       addedBy:   auth.userId,
-      actorRole,
+      actorRole: resolvedActorRole,
+    });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'PRIORITY_WHITELIST', action: 'ADDED', email },
+      });
+      return entry;
+      });
     });
     return NextResponse.json({ entry }, { status: 201 });
   } catch (err) {
@@ -45,12 +62,12 @@ export async function POST(
   }
 }
 
-export async function DELETE(
+async function observedDELETE(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
-    const auth = requireAuth(req);
+    const auth = await requireAuth(req);
     const { projectId } = await params;
     const body = await req.json() as unknown;
 
@@ -60,16 +77,31 @@ export async function DELETE(
     }
 
     const { email } = body as { email: string };
-    const actorRole = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
-    const repo = new TenancyRepository();
-    await removeFromWhitelist(repo, pool, {
+    await withTransaction(async (client) => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'EXCLUSIVE', requireAuth);
+      const actorRole = (await assertProjectAdministrator(client,auth,projectId as UUID)).centralIT?'TENANT_ADMIN':'PROJECT_ADMIN';
+      const resolvedActorRole = actorRole;
+      const repo = new TenancyRepository();
+      return administrationRetry(client,req,auth,`DELETE /api/projects/${projectId}/whitelist`,{email},200,async()=>{
+      await removeFromWhitelist(repo, client, {
       tenantId:  auth.tenantId,
       projectId: projectId as UUID,
       email,
-      actorRole,
+      actorRole: resolvedActorRole,
+    });
+      await appendAdministrativeEvent(client, {
+        auth, projectId: projectId as UUID, subjectUserId: null,
+        eventType: 'project.configuration_changed', authorityEvidence: { actorRole },
+        changes: { resource: 'PRIORITY_WHITELIST', action: 'REMOVED', email },
+      });
+      return {success:true};
+      });
     });
     return NextResponse.json({ success: true });
   } catch (err) {
     return errorResponse(err);
   }
 }
+
+export const POST=observeProjectRoute(observedPOST);
+export const DELETE=observeProjectRoute(observedDELETE);

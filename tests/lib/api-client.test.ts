@@ -1,0 +1,199 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { apiClient } from '@/lib/apiClient';
+import { ApiClientError, NetworkError } from '@/lib/errors';
+
+const originalFetch = globalThis.fetch;
+
+function restoreFetch() {
+  globalThis.fetch = originalFetch;
+}
+
+test('apiClient forwards method/body/query and parses success payloads', { concurrency: false }, async () => {
+  let capturedUrl = '';
+  let capturedInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    capturedUrl = String(input);
+    capturedInit = init;
+    return new Response(JSON.stringify({ data: [], total: 0, limit: 20, offset: 0 }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }) as typeof fetch;
+
+  try {
+    const result = await apiClient.listTickets('project-1', 20, 0);
+
+    assert.equal(capturedUrl, '/api/tickets?projectId=project-1&limit=20&offset=0');
+    assert.equal(capturedInit?.method, 'GET');
+    assert.equal(capturedInit?.credentials, 'include');
+    assert.equal(capturedInit?.cache, 'no-store');
+    assert.equal(result.total, 0);
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient lists projects from the authenticated project collection', { concurrency: false }, async () => {
+  let capturedUrl = '';
+  let capturedInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    capturedUrl = String(input);
+    capturedInit = init;
+    return new Response(JSON.stringify({
+      projects: [{ id: 'project-1', name: 'Amelia', status: 'ACTIVE', role: 'REQUESTER' }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }) as typeof fetch;
+
+  try {
+    const result = await apiClient.listProjects();
+
+    assert.equal(capturedUrl, '/api/projects');
+    assert.equal(capturedInit?.method, 'GET');
+    assert.equal(capturedInit?.credentials, 'include');
+    assert.equal(result.projects[0]?.name, 'Amelia');
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient adds Idempotency-Key headers for idempotent ticket mutations', { concurrency: false }, async () => {
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    requests.push({ url: String(input), init });
+    return new Response(JSON.stringify({ ticket: { id: 'ticket-1' } }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }) as typeof fetch;
+
+  try {
+    await apiClient.createTicket({
+      projectId: 'project-1',
+      aorNodeId: 'aor-1',
+      ticketType: 'LAYOUT',
+      craft: 'Survey',
+      fieldContact: 'Crew Lead',
+      fieldChannel: 'CH-1',
+      description: 'Need a layout',
+      requestedDate: '2026-03-05T00:00:00.000Z',
+    });
+    await apiClient.requesterCancel('ticket-1');
+
+    assert.equal(requests.length, 2);
+    for (const request of requests) {
+      const headers = new Headers(request.init?.headers);
+      const key = headers.get('Idempotency-Key');
+      assert.equal(typeof key, 'string');
+      assert.notEqual(key, '');
+    }
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient throws typed ApiClientError when backend returns api error payload', { concurrency: false }, async () => {
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify({
+        error: {
+          type: 'ForbiddenError',
+          message: 'Access denied',
+        },
+      }),
+      {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      },
+    )) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () => apiClient.listAorTree('project-1'),
+      (error) => {
+        assert(error instanceof ApiClientError);
+        assert.equal(error.type, 'ForbiddenError');
+        assert.equal(error.message, 'Access denied');
+        assert.equal(error.status, 403);
+        return true;
+      },
+    );
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient never shows raw proxy text for non-json error bodies; it keeps the status and uncertain type', { concurrency: false }, async () => {
+  globalThis.fetch = (async () =>
+    new Response('  upstream timeout  ', {
+      status: 504,
+      headers: { 'content-type': 'text/plain' },
+    })) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () => apiClient.getTicket('ticket-1'),
+      (error) => {
+        assert(error instanceof ApiClientError);
+        assert.equal(error.type, 'InternalError');
+        assert.doesNotMatch(error.message, /upstream timeout/);
+        assert.match(error.message, /^Something went wrong on our side/);
+        assert.equal(error.status, 504);
+        return true;
+      },
+    );
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient gives a plain status explanation when an error response has an empty body', { concurrency: false }, async () => {
+  globalThis.fetch = (async () => new Response('', { status: 500 })) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () => apiClient.validateInvite('token-1'),
+      (error) => {
+        assert(error instanceof ApiClientError);
+        assert.equal(error.type, 'InternalError');
+        assert.match(error.message, /^Something went wrong on our side/);
+        assert.equal(error.status, 500);
+        return true;
+      },
+    );
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient turns a dropped connection into a NetworkError that is not an ApiClientError', { concurrency: false }, async () => {
+  globalThis.fetch = (async () => { throw new TypeError('Failed to fetch'); }) as typeof fetch;
+  try {
+    await assert.rejects(() => apiClient.getTicket('ticket-1'), (error) => {
+      assert(error instanceof NetworkError);
+      assert(!(error instanceof ApiClientError));
+      assert.match(error.message, /Couldn’t reach SWRTracker/);
+      return true;
+    });
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('apiClient explains a non-json 403 without exposing the body', { concurrency: false }, async () => {
+  globalThis.fetch = (async () => new Response('<html>Forbidden</html>', { status: 403, headers: { 'content-type': 'text/html' } })) as typeof fetch;
+  try {
+    await assert.rejects(() => apiClient.getTicket('ticket-1'), (error) => {
+      assert(error instanceof ApiClientError);
+      assert.equal(error.status, 403);
+      assert.doesNotMatch(error.message, /html/i);
+      assert.match(error.message, /permission/);
+      return true;
+    });
+  } finally {
+    restoreFetch();
+  }
+});

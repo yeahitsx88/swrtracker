@@ -1,0 +1,150 @@
+{
+  "status": "verified-named-A4-reopening-criteria;remaining-A4-open",
+  "baseline": "a5a0215",
+  "productionBehaviorChanged": false,
+  "source": {
+    "files": 576,
+    "sha256": "d00147c204fbdeb7d38e7175b482f4d48b120b62fef430ede0bdb8889ae502e4",
+    "rawArtifactComparison": "All current src/db bytes and package/lock/Next/TypeScript configuration match E255 pinned runtime"
+  },
+  "checks": {
+    "initialOperatingWitnesses": 9,
+    "browserReopening": 53,
+    "correctedBoundaries": 20,
+    "total": 82
+  },
+  "cases": {
+    "initial": [
+      "Actual initial readiness activation establishes prior operating state",
+      "Actual named team exists before lifecycle",
+      "Actual prior running request and assignment history recorded",
+      "Actual prior completed request and assignment history recorded",
+      "Actual requester-owned instruction file stored before archive",
+      "Actual submitted work can be resolved through existing preparation cancellation path",
+      "Viewer has no unresolved offboarding obligation",
+      "Actual independent Admin offboarding records disabled project access",
+      "Actual archive preserves an operating period with unfinished work"
+    ],
+    "reopening": [
+      "Actual browser BEGIN enters preparation",
+      "Lost committed preparation freezes original reason/consent",
+      "Keyboard exact preparation retry retains one period/event/grant effect",
+      "Outstanding actual invitation blocks readiness with three unfinished requests",
+      "Actual disabled project account is excluded from retention and replacement candidates",
+      "Named team retained for current readiness",
+      "Browser cannot reopen through invitation blocker",
+      "Blocked readiness and ordinary activation bypass have no effects",
+      "Current Survey/Area/retained access readiness passes after governed invitation cancellation",
+      "Exact current readiness still requires explicit every-member/company/work disposition",
+      "All reviewed current records and consent enable reopening",
+      "Actual intervening request cancellation makes old reviewed OPEN stale without effects",
+      "Failed stale reload keeps old decision frozen",
+      "Successful current reload requires renewed reason/consent and selection",
+      "Resolved requester cancellation is excluded from continuing work",
+      "reopening-reviewed LIGHT viewport contained",
+      "reopening-reviewed DARK viewport contained",
+      "Actual final audit failure rolls back project/period/evidence/ledger atomically",
+      "Lost committed OPEN keeps reason and exact continued work body frozen",
+      "Fault/lost-response keyboard exact reopening retry has one effect",
+      "reopening-completed LIGHT viewport contained",
+      "reopening-completed DARK viewport contained",
+      "One opened operating period records actual Central actor and replacement Admin",
+      "Atomic lifecycle events retain reviewed snapshot/reason and explicit disposition",
+      "Immutable start evidence retains original unresolved operating work",
+      "Retained original ticket_events bytes unchanged",
+      "Retained original attachments bytes unchanged",
+      "Retained original ticket_assignment_history bytes unchanged",
+      "Retained original survey_teams bytes unchanged",
+      "Retained original survey_team_members bytes unchanged",
+      "Retained original survey_team_areas bytes unchanged",
+      "Retained original survey_reporting_links bytes unchanged",
+      "Retained original crew_rosters bytes unchanged",
+      "Retained original aor_assignments bytes unchanged",
+      "Retained original administrative_events bytes unchanged",
+      "Reopening retains original running identity/number/state/assignment/version",
+      "Reopening retains original completed identity/number/state/assignment/version",
+      "Reopening retains original instructionDraft identity/number/state/assignment/version",
+      "Disabled project access and recorded actor/timestamp survive reopening",
+      "Requester reads original stored instruction bytes after reopening",
+      "Replacement independent Admin retains active administration",
+      "manager cannot review or replay Central reopening",
+      "superintendent cannot review or replay Central reopening",
+      "chief cannot review or replay Central reopening",
+      "instrument cannot review or replay Central reopening",
+      "requester cannot review or replay Central reopening",
+      "projectAdmin cannot review or replay Central reopening",
+      "Wrong-role recorded retries cannot mutate or disclose lifecycle evidence",
+      "Combined independent administrative authority retains Central review",
+      "Authorized recorded OPEN retry remains one effect",
+      "Personally assigned work continues through existing completion after reopening",
+      "Requester may create new work after guarded reopening",
+      "No browser page errors"
+    ],
+    "boundaries": [
+      "Actual offboarded viewer old session cannot inspect or replay reopened project",
+      "Foreign current Central tenant cannot inspect/replay original reopening and causes no effects",
+      "Subcontractor Tenant Admin metadata cannot inspect/replay Central reopening and causes no effects",
+      "Actual GET lifecycle wait precedes authority revalidation",
+      "Current authority revoked after GET wait refuses evidence/owned replay without effects",
+      "Disposable GET authority revocation remains recorded",
+      "Disposable authority POST actor owns a genuine committed OPEN command before revocation",
+      "Actual POST lifecycle wait precedes authority revalidation",
+      "Current authority revoked after POST wait refuses evidence/owned replay without effects",
+      "Disposable POST authority revocation remains recorded",
+      "Actual GET lifecycle wait precedes session revalidation",
+      "Current session revoked after GET wait refuses evidence/owned replay without effects",
+      "Disposable GET session revocation remains recorded",
+      "Disposable session POST actor owns a genuine committed OPEN command before revocation",
+      "Actual POST lifecycle wait precedes session revalidation",
+      "Current session revoked after POST wait refuses evidence/owned replay without effects",
+      "Disposable POST session revocation remains recorded",
+      "Two concurrent current-authorized recorded OPEN retries retain one operating period/event/ledger effect after new work",
+      "Changed reviewed body cannot reuse reopening key",
+      "Original reopening and two genuine disposable-actor periods each retain one lifecycle event"
+    ]
+  },
+  "runs": {
+    "directory": ".local/alpha-closure261",
+    "origin": "http://127.0.0.1:3302",
+    "fixture": "New UUID-owned schema with all44 migrations; no retained fixture reset",
+    "receiptFiles": [
+      "before.json",
+      "results.json",
+      "boundaries.json",
+      "original-history.json",
+      "revocation-subjects.json"
+    ]
+  },
+  "captures": {
+    "retained": [
+      ".local/alpha-closure261/reopening-reviewed-light-1440.png",
+      ".local/alpha-closure261/reopening-reviewed-dark-390.png",
+      ".local/alpha-closure261/reopening-completed-light-1440.png",
+      ".local/alpha-closure261/reopening-completed-dark-390.png"
+    ],
+    "opened": 4,
+    "scope": "Light1440 and Dark390 reviewed and completed reopening; mobile bounded scrolling viewport does not show every retained record simultaneously",
+    "pageErrors": []
+  },
+  "retainedWitnesses": {
+    "originalHistorySha256": "5a1438954340dda423e01cefbb2523c0a364d97968a3b71b03cd613b44eee5ae",
+    "identity": "Actual original running/completed requests, draft and uploaded file persisted before archive; original identity/number/date/state/assignment reviewed",
+    "history": "Original event/attachment/team/coverage/reporting/roster/Area/administrative bytes checked before personally assigned work legitimately completed",
+    "access": "Actual offboarded Viewer access remains disabled; old session refused; replacement independent administration does not grant operational visibility",
+    "periods": "Initial reopening plus two genuine later OPEN commands owned by distinct disposable revocation actors; original recorded replay remains one effect",
+    "revocations": "Four separate actors; authority removals and session-version increments retained without restoring roles or decrementing versions"
+  },
+  "observerCorrection": {
+    "initialReceipt": "boundaries-initial-observer-UUID.json retained privately",
+    "reason": "Copied historical boundary helper temporarily restored the primary disposable actor role/session. Initial run retained as observer history, excluded from current20 boundary certificate. Corrected helper uses distinct actors and genuine actor-owned OPEN commands; no retained older fixture or production behavior changed."
+  },
+  "gates": {
+    "baselineHostStrict": "passed",
+    "baselineUnits": 693,
+    "postHostStrict": "passed",
+    "postUnits": 693,
+    "helperSyntax": "All four node --check pass",
+    "pinnedProductionAndSql": "E255 Node22.23.3/Next15.5.27 compilation and full33SQL retained for exactly matching production/configuration; not claimed freshly rerun for evidence-only changes"
+  },
+  "remaining": "A4 governed D6 cancellation/completion-only cleanup and final D7/D8 reconciliation remain; A5-A7/fullAlpha open. No new business decision. Release advisory, deferred Org follow-ons, deployment/main/Alpha2 remain separate."
+}

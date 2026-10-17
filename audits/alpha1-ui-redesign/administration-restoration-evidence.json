@@ -1,0 +1,711 @@
+{
+  "implementation": "c55319a99104301b924a71c9604e5752d5c376b1ca853346ea64f02d65c5d18c",
+  "at": "2026-10-04T14:32:12.389Z",
+  "scope": "Owner-requested administration workflow restoration; local production verification, not release/security approval",
+  "gates": {
+    "types": "strict and unused",
+    "unitTests": 566,
+    "productionBuild": "Node 22.23.3; pnpm 11.19.0",
+    "postgresSuites": 28,
+    "http": 52,
+    "lifecycleBrowser": 24,
+    "lostResponseBrowser": 26,
+    "restorationHttp": 33,
+    "administrativeBrowser": 156,
+    "administrativeBrowserReceipt": [
+      "tenant-accounts has one full-width page",
+      "tenant-accounts route matches content",
+      "tenant-accounts light 1864 stays contained",
+      "tenant-reviews has one full-width page",
+      "tenant-reviews route matches content",
+      "tenant-reviews light 1864 stays contained",
+      "tenant-templates has one full-width page",
+      "tenant-templates route matches content",
+      "tenant-templates light 1864 stays contained",
+      "admin-personnel has its own page",
+      "admin-personnel route matches content",
+      "admin-personnel light 1864 stays contained",
+      "admin-administrators has its own page",
+      "admin-administrators route matches content",
+      "admin-administrators light 1864 stays contained",
+      "admin-companies has its own page",
+      "admin-companies route matches content",
+      "admin-companies light 1864 stays contained",
+      "admin-settings has its own page",
+      "admin-settings route matches content",
+      "admin-settings light 1864 stays contained",
+      "admin-request-policy has its own page",
+      "admin-request-policy route matches content",
+      "admin-request-policy light 1864 stays contained",
+      "admin-access-recovery has its own page",
+      "admin-access-recovery route matches content",
+      "admin-access-recovery light 1864 stays contained",
+      "admin-diagnostics has its own page",
+      "admin-diagnostics route matches content",
+      "admin-diagnostics light 1864 stays contained",
+      "Member wizard hidden on Companies page",
+      "Sibling routes preserve wizard input",
+      "tenant-accounts has one full-width page",
+      "tenant-accounts route matches content",
+      "tenant-accounts light 390 stays contained",
+      "tenant-reviews has one full-width page",
+      "tenant-reviews route matches content",
+      "tenant-reviews light 390 stays contained",
+      "tenant-templates has one full-width page",
+      "tenant-templates route matches content",
+      "tenant-templates light 390 stays contained",
+      "admin-personnel has its own page",
+      "admin-personnel route matches content",
+      "admin-personnel light 390 stays contained",
+      "admin-administrators has its own page",
+      "admin-administrators route matches content",
+      "admin-administrators light 390 stays contained",
+      "admin-companies has its own page",
+      "admin-companies route matches content",
+      "admin-companies light 390 stays contained",
+      "admin-settings has its own page",
+      "admin-settings route matches content",
+      "admin-settings light 390 stays contained",
+      "admin-request-policy has its own page",
+      "admin-request-policy route matches content",
+      "admin-request-policy light 390 stays contained",
+      "admin-access-recovery has its own page",
+      "admin-access-recovery route matches content",
+      "admin-access-recovery light 390 stays contained",
+      "admin-diagnostics has its own page",
+      "admin-diagnostics route matches content",
+      "admin-diagnostics light 390 stays contained",
+      "Member wizard hidden on Companies page",
+      "Sibling routes preserve wizard input",
+      "tenant-accounts has one full-width page",
+      "tenant-accounts route matches content",
+      "tenant-accounts dark 1864 stays contained",
+      "tenant-reviews has one full-width page",
+      "tenant-reviews route matches content",
+      "tenant-reviews dark 1864 stays contained",
+      "tenant-templates has one full-width page",
+      "tenant-templates route matches content",
+      "tenant-templates dark 1864 stays contained",
+      "admin-personnel has its own page",
+      "admin-personnel route matches content",
+      "admin-personnel dark 1864 stays contained",
+      "admin-administrators has its own page",
+      "admin-administrators route matches content",
+      "admin-administrators dark 1864 stays contained",
+      "admin-companies has its own page",
+      "admin-companies route matches content",
+      "admin-companies dark 1864 stays contained",
+      "admin-settings has its own page",
+      "admin-settings route matches content",
+      "admin-settings dark 1864 stays contained",
+      "admin-request-policy has its own page",
+      "admin-request-policy route matches content",
+      "admin-request-policy dark 1864 stays contained",
+      "admin-access-recovery has its own page",
+      "admin-access-recovery route matches content",
+      "admin-access-recovery dark 1864 stays contained",
+      "admin-diagnostics has its own page",
+      "admin-diagnostics route matches content",
+      "admin-diagnostics dark 1864 stays contained",
+      "Member wizard hidden on Companies page",
+      "Sibling routes preserve wizard input",
+      "tenant-accounts has one full-width page",
+      "tenant-accounts route matches content",
+      "tenant-accounts dark 390 stays contained",
+      "tenant-reviews has one full-width page",
+      "tenant-reviews route matches content",
+      "tenant-reviews dark 390 stays contained",
+      "tenant-templates has one full-width page",
+      "tenant-templates route matches content",
+      "tenant-templates dark 390 stays contained",
+      "admin-personnel has its own page",
+      "admin-personnel route matches content",
+      "admin-personnel dark 390 stays contained",
+      "admin-administrators has its own page",
+      "admin-administrators route matches content",
+      "admin-administrators dark 390 stays contained",
+      "admin-companies has its own page",
+      "admin-companies route matches content",
+      "admin-companies dark 390 stays contained",
+      "admin-settings has its own page",
+      "admin-settings route matches content",
+      "admin-settings dark 390 stays contained",
+      "admin-request-policy has its own page",
+      "admin-request-policy route matches content",
+      "admin-request-policy dark 390 stays contained",
+      "admin-access-recovery has its own page",
+      "admin-access-recovery route matches content",
+      "admin-access-recovery dark 390 stays contained",
+      "admin-diagnostics has its own page",
+      "admin-diagnostics route matches content",
+      "admin-diagnostics dark 390 stays contained",
+      "Member wizard hidden on Companies page",
+      "Sibling routes preserve wizard input",
+      "Uncertain employee blocks sibling company command",
+      "Uncertain employee blocks Request Policy",
+      "Uncertain employee freezes policy input",
+      "Uncertain employee freezes invitation fields",
+      "Uncertain employee blocks draft recovery",
+      "Uncertain employee blocks protected handover",
+      "Retry preserves exact employee body",
+      "Retry preserves idempotency key",
+      "Lost response recovered through one exact retry",
+      "New employee can actually sign in",
+      "Project Admin adds an existing eligible account through the wizard",
+      "Uncertain invitation blocks Request Policy",
+      "Uncertain invitation blocks member creation",
+      "Invitation retry preserves exact body/key",
+      "Invitation recovers through one unchanged retry",
+      "Uncertain policy blocks member creation",
+      "Policy retry preserves exact body/key",
+      "Policy recovers through one unchanged retry",
+      "Tenant IT creates Project Admin through UI",
+      "Central IT creates template through wizard",
+      "Company creation works with visible completion on Companies page",
+      "company failure visible on its own route",
+      "Shared error survives route switch",
+      "admin grant failure visible on its own route",
+      "whitelist failure visible on its own route",
+      "archive failure visible on its own route",
+      "Diagnostics failure visible on Diagnostics page",
+      "Archived project omits creation wizard"
+    ],
+    "namedCases": 55,
+    "roles": [
+      "Tenant IT without operational membership",
+      "Viewer with independent Project Admin",
+      "scalar Project Admin",
+      "Manager without admin (denial)"
+    ],
+    "themes": [
+      "LIGHT",
+      "DARK"
+    ],
+    "widths": [
+      1864,
+      797,
+      390
+    ]
+  },
+  "namedCases": [
+    {
+      "id": "A01",
+      "name": "tenant_disable_atomic",
+      "passed": true
+    },
+    {
+      "id": "A02",
+      "name": "central_without_project",
+      "passed": true
+    },
+    {
+      "id": "A03",
+      "name": "local_cannot_disable_tenant",
+      "passed": true
+    },
+    {
+      "id": "A04",
+      "name": "subcontractor_cannot_be_central",
+      "passed": true
+    },
+    {
+      "id": "A05",
+      "name": "fresh_bearer_after_wait",
+      "passed": true
+    },
+    {
+      "id": "A06",
+      "name": "unauthorized_foreign_subject",
+      "passed": true
+    },
+    {
+      "id": "A07",
+      "name": "foreign_and_missing_subject_indistinguishable",
+      "passed": true
+    },
+    {
+      "id": "A08",
+      "name": "self_disable_refused",
+      "passed": true
+    },
+    {
+      "id": "A09",
+      "name": "last_eligible_central_continuity",
+      "passed": true
+    },
+    {
+      "id": "A10",
+      "name": "actual_manager_continuity",
+      "passed": true
+    },
+    {
+      "id": "A11",
+      "name": "all_live_blocker_families",
+      "passed": true
+    },
+    {
+      "id": "A12",
+      "name": "history_and_drafts_are_retained",
+      "passed": true
+    },
+    {
+      "id": "A13",
+      "name": "already_disabled_fresh_noop",
+      "passed": true
+    },
+    {
+      "id": "A14",
+      "name": "same_key_race_and_lost_response",
+      "passed": true
+    },
+    {
+      "id": "A15",
+      "name": "changed_intent_key_mismatch",
+      "passed": true
+    },
+    {
+      "id": "A16",
+      "name": "different_key_one_transition",
+      "passed": true
+    },
+    {
+      "id": "A17",
+      "name": "snapshot_changes_require_reload",
+      "passed": true
+    },
+    {
+      "id": "A18",
+      "name": "subject_writer_waits_and_revalidates",
+      "passed": true
+    },
+    {
+      "id": "A19",
+      "name": "protected_writer_barrier_both_orders",
+      "passed": true
+    },
+    {
+      "id": "A20",
+      "name": "copied_old_sessions_rejected",
+      "passed": true
+    },
+    {
+      "id": "A21",
+      "name": "authority_loss_before_replay",
+      "passed": true
+    },
+    {
+      "id": "A22",
+      "name": "reset_and_invite_cannot_restore",
+      "passed": true
+    },
+    {
+      "id": "A23",
+      "name": "conditional_event_ledger_commit_rollback",
+      "passed": true
+    },
+    {
+      "id": "A24",
+      "name": "extra_domain_fields_rejected",
+      "passed": true
+    },
+    {
+      "id": "A25",
+      "name": "terminal_history_file_digest_preserved",
+      "passed": true
+    },
+    {
+      "id": "A26",
+      "name": "workers_preserve_assignments",
+      "passed": true
+    },
+    {
+      "id": "A27",
+      "name": "frozen_accessible_scoped_browser_recovery",
+      "passed": true
+    },
+    {
+      "id": "A28",
+      "name": "reactivation_refused",
+      "passed": true
+    },
+    {
+      "id": "A29",
+      "name": "local_transition_atomic",
+      "passed": true
+    },
+    {
+      "id": "A30",
+      "name": "outside_project_denied",
+      "passed": true
+    },
+    {
+      "id": "A31",
+      "name": "other_project_duties_and_access_preserved",
+      "passed": true
+    },
+    {
+      "id": "A32",
+      "name": "renewed_local_access_and_central_warning",
+      "passed": true
+    },
+    {
+      "id": "A33",
+      "name": "stacked_roles_scope_stays_explicit",
+      "passed": true
+    },
+    {
+      "id": "A34",
+      "name": "durable_review_recipients_deduplicated",
+      "passed": true
+    },
+    {
+      "id": "A35",
+      "name": "local_retry_one_review",
+      "passed": true
+    },
+    {
+      "id": "A36",
+      "name": "outbox_failure_atomic_delivery_retry",
+      "passed": true
+    },
+    {
+      "id": "A37",
+      "name": "separate_global_decision_and_linked_review",
+      "passed": true
+    },
+    {
+      "id": "A38",
+      "name": "no_central_local_disable_truthful",
+      "passed": true
+    },
+    {
+      "id": "A39",
+      "name": "archived_access_metadata_only",
+      "passed": true
+    },
+    {
+      "id": "A40",
+      "name": "independent_admin_and_current_race_authority",
+      "passed": true
+    },
+    {
+      "id": "P01",
+      "name": "local_administration_parity",
+      "passed": true
+    },
+    {
+      "id": "P02",
+      "name": "manager_only_no_admin",
+      "passed": true
+    },
+    {
+      "id": "P03",
+      "name": "central_admin_manager_navigation",
+      "passed": true
+    },
+    {
+      "id": "P04",
+      "name": "admin_grant_preserves_manager",
+      "passed": true
+    },
+    {
+      "id": "P05",
+      "name": "operational_role_preserves_admin",
+      "passed": true
+    },
+    {
+      "id": "P06",
+      "name": "foreign_project_isolation",
+      "passed": true
+    },
+    {
+      "id": "P07",
+      "name": "local_and_tenant_decisions_separate",
+      "passed": true
+    },
+    {
+      "id": "P08",
+      "name": "authority_and_subject_races",
+      "passed": true
+    },
+    {
+      "id": "P09",
+      "name": "tenant_role_template_project_creation_denied",
+      "passed": true
+    },
+    {
+      "id": "P10",
+      "name": "legacy_grant_no_invented_manager",
+      "passed": true
+    },
+    {
+      "id": "P11",
+      "name": "one_person_one_notification_and_witness",
+      "passed": true
+    },
+    {
+      "id": "P12",
+      "name": "archived_admin_local_access_only",
+      "passed": true
+    },
+    {
+      "id": "P13",
+      "name": "local_admin_not_central_replacement",
+      "passed": true
+    },
+    {
+      "id": "P14",
+      "name": "direct_http_enforces_authority",
+      "passed": true
+    },
+    {
+      "id": "P15",
+      "name": "central_manager_actual_operational_semantics",
+      "passed": true
+    }
+  ],
+  "captures": [
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-accounts-light-1864.png",
+      "sha256": "f40aeb9e1e637eeac6ca94dc7327bd93a0c2b23b6d1b9968b55b38e250f9f61e"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-reviews-light-1864.png",
+      "sha256": "920fda7b1c49abde3e168c958a9100e4e5025d96827a2f54c2d463538268540d"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-templates-light-1864.png",
+      "sha256": "8d16036726c368aa2e1ce0db124a336c878b644c7896f79993061f483d9253de"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-personnel-light-1864.png",
+      "sha256": "6a644554ba8ee4bad053511a15cc216a239148626d97c30162340900cffaad4c"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-administrators-light-1864.png",
+      "sha256": "23c0b69b2a192beb067fa46728cdbb944dd42f1043427694c3185f5e315c3603"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-companies-light-1864.png",
+      "sha256": "ff2bcde272e25c5fbfdc2d0f9c3ee08533785e25c8fe8e03d0ccb3a579084cc4"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-settings-light-1864.png",
+      "sha256": "aabadddb736ebc1050d64be06ecffb1cf27c343de6849193010c01ba48a138ec"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-request-policy-light-1864.png",
+      "sha256": "2162cc633c26e335f4eaafc27dfa6d960bb62c98335947528321d072abba8db5"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-access-recovery-light-1864.png",
+      "sha256": "b547caf88e2331dc698729980046ac77ac6f8e89d5a08a1effd21054193277ea"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-diagnostics-light-1864.png",
+      "sha256": "08aab78fa249c36436b888e7c196dadb4387b751872dfa70a133159aea1aa5de"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/member-wizard-light-1864.png",
+      "sha256": "79a2d45ba1c34062410ec03366e05bb9c840db0c0613d4f11906da5092409560"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-accounts-light-390.png",
+      "sha256": "c256180b6163b8533ab13de01ad4d10e0e7d3ce62ea7024f47997ffc6278e6a1"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-reviews-light-390.png",
+      "sha256": "f5a6e6420ed95ca04cc48de9a0d25bde0b3e80165d76c6aca6683098e71b0d89"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-templates-light-390.png",
+      "sha256": "efa242f9328c1927659ca2303c2aeac1ff52db6fa49c654f35144ea5eb1bf928"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-personnel-light-390.png",
+      "sha256": "4a29c006dc6dcfde9582c212912b9b2ca8578cf7686ec9d0e97c01df9890e506"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-administrators-light-390.png",
+      "sha256": "8ed85ec0b8947ab1a883faab848125da3ce62ac78e4d4638604ebbe1b233c0ec"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-companies-light-390.png",
+      "sha256": "2870aede302955f0ea4c88271fa251e8a791e654990c3984e88b7467f993c70f"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-settings-light-390.png",
+      "sha256": "5dd1e726b83a1bb608bb551cfa3e9e38f220e9f9e7049f1ee5e7491dab1845d8"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-request-policy-light-390.png",
+      "sha256": "d20b16b75fc5eb386b61c4227a5871954f6a2a7a76a396d8ee56d1b6cae7884f"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-access-recovery-light-390.png",
+      "sha256": "8455ef9186724a4338b15ce00288de24f73c42efd7dc63b9ab30efd642952af9"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-diagnostics-light-390.png",
+      "sha256": "666b35a75a96401111cc97c58f5996988b27917b4d47569234f55003b24c4a58"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/member-wizard-light-390.png",
+      "sha256": "81e42c43ad0b30c58c4246f6f269ed397a49473aaabe8e935ad12571b28560d4"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-accounts-dark-1864.png",
+      "sha256": "cae757b50233e22db079fb8387095a66974348ef9543ff85961f12d205069924"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-reviews-dark-1864.png",
+      "sha256": "745beb7b8205fb0a28cb96f3c334dbfb359031f9a68e449d2c377e584d9d36a7"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-templates-dark-1864.png",
+      "sha256": "7696ba9cb4984457843e5baa1e7f58f3547da149b0743e9fe7fff25a46cc072e"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-personnel-dark-1864.png",
+      "sha256": "ceaa1579bbb1e135e4b8215359898bc708db298473580dc11096e79d0e2c2971"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-administrators-dark-1864.png",
+      "sha256": "dda46c277b9e2c40a60c039f476b7b95c2c23f6ea95057833478507d9f1b4360"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-companies-dark-1864.png",
+      "sha256": "38fe00b2fcfba33cb81ba5da443e5a93301a82e7c203e6c42ec420e9d17784de"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-settings-dark-1864.png",
+      "sha256": "c1d50269599247493c961e7a6ff5cbd442c878e3dfae7338774d81ba9b3d139a"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-request-policy-dark-1864.png",
+      "sha256": "6764928d0de7aa5d5570bb03ba13bdaea88d27bc8b9af0fbb935675497ee2e4c"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-access-recovery-dark-1864.png",
+      "sha256": "cdffcf3e3ba6dbe23c721a8a758668ef9d44bf5326d2d14f1ff4e2d1379b4efa"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-diagnostics-dark-1864.png",
+      "sha256": "d703232e4034a6d2f1f7531b00fc802e49ac48ed6058d247c281d1c2f14acbb6"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/member-wizard-dark-1864.png",
+      "sha256": "f8fa72a3094496f475eb3c02495c37a06d8458464e2efc0a0bdbdcecc357a596"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-accounts-dark-390.png",
+      "sha256": "3773b72a4b2643f3b1b811169a081810a182e1cb0d5cafe47161a8ea0ee71a84"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-reviews-dark-390.png",
+      "sha256": "f13da45d0c9da9df0db1b4b5daae375295efa2248c309ad6c8c5742e806509e6"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-templates-dark-390.png",
+      "sha256": "3a1a216a717a235cfe0dee504f5d205dff836b4ce1fce7db5cef0561f622e4dc"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-personnel-dark-390.png",
+      "sha256": "a9e7281237fb62bcce1873f587c4526eb22b60284506e70ddcdcb3482e9234ba"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-administrators-dark-390.png",
+      "sha256": "61d731a2e18d302dea6c005856aaee36b99d134bb779dda655f8588f9ec6f95d"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-companies-dark-390.png",
+      "sha256": "f58bcc84173063267eeac53959cc9d28316cd477089aeaea2fe78393bd0670dd"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-settings-dark-390.png",
+      "sha256": "ef76d3e2e60c2c1da55a901900d6f841c304941b9f4fb449de4c5944ff17e07b"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-request-policy-dark-390.png",
+      "sha256": "ead644c62513061f1dda908223d4964f14ff51b742c0b5ea8594450aaa417c45"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-access-recovery-dark-390.png",
+      "sha256": "7884e41ee95083097ed2941145b8caf4bff5ae839072e9d6a089173cf9f34f13"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/admin-diagnostics-dark-390.png",
+      "sha256": "d336373c1b043c114c50882dba8366b4a26c7d01e636691e8b2e863bc06f2d2d"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/member-wizard-dark-390.png",
+      "sha256": "7cbec4ee470fe30089a8bff8cfe891c870293a9e83e5aa976f5ce9b370df11a3"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/employee-access-mobile.png",
+      "sha256": "150e6fa4dbfd2f9ba2f7f92105be3a7642accf04f0e489dd079189cfadfde641"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/employee-review-mobile.png",
+      "sha256": "112ff4d8a0759df7a61b561f0064625e3136215e5f1b2da716a3310794dfeee8"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/employee-review-desktop.png",
+      "sha256": "8de10e2d670dcf46fa9e50832b1ea32e7337785cf21c35b5a29dec76151cba55"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/tenant-project-admin-review-desktop.png",
+      "sha256": "bbf873a6f6abe591f9d65ea086486f02712cb37c56c60b54ea1bd7579344c929"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/template-review-desktop.png",
+      "sha256": "a4a480e60d5d765a09280e7839efd5a338ccaaf00e69e8760e077e4bd68cdcc1"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/company-error-light-1864.png",
+      "sha256": "de28dbaff315508ae50fd814389c96bdfa47b4d0fa3a4d4c51c7e7390831066b"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/company-error-light-390.png",
+      "sha256": "d6ce075be33908fd1a3026fc96f3c5526d18c663a7bf7959b96fe6c85432f923"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/diagnostics-error-light-797.png",
+      "sha256": "90b5be960be36dcc92e596c89e764de5bbfbaf0f37db01524200f99d3b53b0e8"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/archived-personnel-dark-797.png",
+      "sha256": "83114a64a1e4e9d5163abec61ef65c6c9fbbc16b0237b9004cba8430782b7e5c"
+    },
+    {
+      "path": ".impeccable/review/admin-restoration/current/setup-settings-light-797.png",
+      "sha256": "bb2913a30c7c31e8e44a59c294ea3b9ebe767c4c26b7f9866c664ae04923e6f1"
+    }
+  ],
+  "finishReview": {
+    "disposition": "ship",
+    "scope": "Fresh full review found two material fixes; same-reviewer verdict scored both resolved after correction, not a new whole-surface approval",
+    "limitations": "Visual review covers supplied states; executable gates provide separate functional evidence",
+    "detector": {
+      "primary": 0,
+      "advisory": 1,
+      "note": "Existing fluid h1 type ramp advisory"
+    },
+    "fixes": [
+      {
+        "finding": "Shared workspace command ownership and exact recovery",
+        "score": "resolved"
+      },
+      {
+        "finding": "Visible task notices and recovery",
+        "score": "resolved"
+      }
+    ],
+    "requiredCapturesIndividuallyInspected": 54
+  },
+  "implementationCheckpoint": "66b66ad",
+  "restorationCheckpoint": "eb84572",
+  "documentation": "Shipped documenter compared the ordinary extension with incumbent design; system files preserved and scoped reference refreshed",
+  "buildWarnings": "Pre-existing autoprefixer start/end compatibility warnings in Survey Operations/project review styles",
+  "preservation": "Retained demo snapshot matched before/after web-only refresh; no schema/volume reset or credential/preference change"
+}

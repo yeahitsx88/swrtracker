@@ -6,24 +6,55 @@
  */
 import type { UUID } from '@/shared/types';
 
+export const SYSTEM_AUDIT_ACTOR = 'SWRTracker System';
+
 export type AuditEventType =
   | 'ticket.created'
+  | 'ticket.draft_saved'
+  | 'ticket.draft_deleted'
+  | 'ticket.draft_recovered'
+  | 'ticket.requester_fields_updated'
   | 'ticket.submitted'
+  | 'ticket.resubmitted'
+  | 'ticket.urgent_request_submitted'
   | 'ticket.approved'
+  | 'ticket.returned_for_correction'
+  | 'ticket.field_inability_reported'
+  | 'ticket.field_inability_rejected'
   | 'ticket.rejected'
+  | 'ticket.rejection_proposed'
+  | 'ticket.rejection_proposal_resolved'
   | 'ticket.rejection_overridden'
   | 'ticket.priority_set_by_whitelist'
   | 'ticket.priority_elevated'
+  | 'ticket.priority_revised'
+  | 'ticket.need_by_revised'
   | 'ticket.assigned'
+  | 'ticket.team_delegated'
+  | 'ticket.party_chief_assigned'
   | 'ticket.unassigned'
+  | 'workflow.orphan_escalation'
   | 'ticket.in_progress'
+  | 'ticket.pending_pc_approval'
+  | 'ticket.pc_approval_given'
+  | 'ticket.pc_approval_rejected'
+  | 'ticket.pc_approval_overridden'
   | 'ticket.completed'
-  | 'ticket.closed'
-  | 'ticket.cancel_requested'
-  | 'ticket.cancel_approved'
-  | 'ticket.cancel_rejected'
+  | 'ticket.follow_up_created'
+  | 'ticket.delayed'
+  | 'ticket.delay_restarted'
+  | 'ticket.requester_canceled'
+  | 'ticket.field_cancel_requested'
+  | 'ticket.field_canceled'
+  | 'ticket.survey_cancel_requested'
+  | 'ticket.survey_canceled'
+  | 'ticket.im_stop_work_notified'
+  | 'approver.timeout_warning_sent'
+  | 'approver.timeout_unlocked'
   | 'attachment.uploaded'
   | 'attachment.downloaded'
+  | 'attachment.withdrawn'
+  | 'ticket.comment_added'
   | 'user.role_changed'
   | 'whitelist.entry_added'
   | 'whitelist.entry_removed';
@@ -32,7 +63,8 @@ export interface TicketEvent {
   id: UUID;
   ticketId: UUID;
   tenantId: UUID;
-  actorId: UUID;
+  actorId: UUID | null;
+  actorKind: 'USER' | 'SYSTEM';
   eventType: AuditEventType;
   payload: Record<string, unknown>;
   createdAt: Date;

@@ -1,0 +1,100 @@
+{
+  "batch": 241,
+  "baseline": "bd2645c6d48cd26c86bf2b1fa4032196bf6f69e1",
+  "authority": [
+    "Approved attachment parent visibility, current request state upload capabilities and append-only attachment.downloaded audit contract (CLAUDE Sections4/12 and approved later contracts).",
+    "Owner Alpha hardening: current role/denied/loading/error states and preserved file/history semantics.",
+    "Standing verified checkpoint/push directive."
+  ],
+  "classification": "Verified stale attachment display correction on failed/revoked/mismatched detail loads; wider role/state and Alpha acceptance remain open.",
+  "production": {
+    "files": 576,
+    "sha256": "a474ff8b69b1baab41b6a00ee236792febd67a90c78fcaf7933c5298b5d77d6e",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Clear cached attachment rows when current detail loading starts; show existing attachment panel only with successfully accepted request. Existing upload/download/server/state/authority/history behavior retained."
+  },
+  "before": {
+    "checks": [
+      "Authorized Viewer actual stored instruction bytes match original",
+      "Authorized Viewer detail lists current file and download",
+      "Revoked Viewer cannot list current attachments",
+      "Revoked Viewer cannot download actual stored attachment",
+      "Before revoked failed-refresh retains previously loaded filename",
+      "Before revoked failed-refresh retains stale Download link",
+      "Before denied request still claims attachment-read permission",
+      "Before refusal leaves stored rows/history intact"
+    ],
+    "productionChanged": false
+  },
+  "verification": {
+    "strictUnusedTypes": "pass host and pinned",
+    "unitTests": 690,
+    "focusedTests": 32,
+    "focusedFiles": [
+      "tests/attachment/attachment-read-route.test.ts",
+      "tests/attachment/attachment-permissions.test.ts",
+      "tests/ticket/visibility-repository.test.ts",
+      "tests/ticket/get-ticket-capabilities.test.ts"
+    ],
+    "pinnedProductionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "actualCurrentChecks": [
+      "Authorized Viewer actual stored instruction bytes match original",
+      "Authorized Viewer detail lists current file and download",
+      "Actual current-detail GET transport failure observed during Refresh",
+      "Failed current-detail refresh removes previously loaded file rows/download links",
+      "Failed load makes no attachment-read authorization claim",
+      "Transport failure preserves server-authorized stored instruction bytes",
+      "Successful Refresh restores current authorized attachment display",
+      "Revoked Viewer cannot list current attachments",
+      "Revoked Viewer cannot download actual stored attachment",
+      "Revoked failed-refresh removes stale file metadata/download links",
+      "Revoked failed-refresh makes no attachment-read claim",
+      "Original requester retains authorized actual bytes after Viewer revocation",
+      "Approved requester retains current read-only instruction capability",
+      "Current Manager retains approved field-support upload controls",
+      "Mismatched project detail shows no attachment metadata or links",
+      "Mismatched project detail makes no attachment-read claim",
+      "Denied files LIGHT1440 viewport contained",
+      "Denied files DARK390 viewport contained",
+      "Read/refusal preserves tickets rows exactly",
+      "Every original history row is retained unchanged",
+      "Exactly two permitted byte checks append matching Viewer/requester download audits; denied reads append none",
+      "Read/refusal preserves attachments rows exactly",
+      "Read/refusal preserves ticket_assignment_history rows exactly",
+      "Read/refusal preserves survey_work_delegations rows exactly",
+      "No failed-file page errors"
+    ],
+    "currentCapturesOpened": [
+      ".local/alpha-closure241-confirmation2/failed-files-light-1440.png",
+      ".local/alpha-closure241-confirmation2/failed-files-dark-390.png"
+    ],
+    "pageErrors": [],
+    "actualFile": "Actual multipart requester instruction upload, original stored SHA-256 bytes checked by authorized Viewer and Requester; denied Viewer list/download refuse after paired membership revocation.",
+    "history": "Exact unchanged ticket/attachment/assignment/delegation rows and every original event; exactly2new permitted attachment.downloaded events with matching file/hash/ticket and distinct expected Viewer/Requester actors. Denied reads append none."
+  },
+  "observerReconciliation": [
+    "Initial filename selector also matched audit history; scoped to attachment table. Next route announcer shared alert role; scoped actual application error banner. Existing committed upload/request reused without duplicate commands.",
+    "Original requester-upload expectation in APPROVED state was stale: current instruction capabilities are Draft/Returned only. Corrected read-only requester expectation and separately verified Manager field-support uploader. Preserved interrupted fixture and created distinct confirmation2.",
+    "Persisted original witness revealed2expected authorized byte-download audit additions. Corrected comparison to preserve all old events exactly and explicitly permit only matching2download events. Continued only remaining comparisons from saved progress/witness/captures; no upload/download/workflow/access commands repeated."
+  ],
+  "limits": [
+    "Synthetic independently owned schemas and signed fixture cookies rather than interactive sign-in. Named Active-project failed-read/refusal/capability checks; whole foreign/company/project-state/role/keyboard matrix still open.",
+    "Transport failure is an actual intercepted GET abort; project-access revocation is controlled paired fixture update, not claimed as an administrative workflow journey.",
+    "Screens show mismatched-project failed-file absence; revoked failure and transport failure have actual browser/HTTP criteria, not separate screenshot review.",
+    "Concurrent overlapping detail responses and attachment-uploader uncertain-response ownership remain candidates requiring direct verification.",
+    "Inherited source-map-js/GHSA-68fv-2mgg-jv7q remains separate. Compilation is not release readiness; no main integration/deployment/Alpha2."
+  ],
+  "git": {
+    "preCheckpointDev": "0/0",
+    "mainDivergence": "197 local / 7 remote; no integration",
+    "push": "routine authorized checkpoint; verify after commit"
+  },
+  "next": "Verify overlapping current-detail read responses and uploader uncertain-response ownership, then remaining role/state acceptance."
+}

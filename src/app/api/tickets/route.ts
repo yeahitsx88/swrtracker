@@ -1,24 +1,32 @@
+import {assertRecommissioningMutation,findPreparationCleanupTickets} from '@/lib/recommissioning-gate';
+import { coordinateAuthenticatedMutation } from '@/lib/tenant-lifecycle-lock';
+import { parseNeedBy } from '@/lib/requester-intake-input';
 /**
- * POST /api/tickets — create a ticket
- * GET  /api/tickets?projectId=...&limit=...&offset=... — list tickets (paginated)
+ * POST /api/tickets -- create a ticket
+ * GET  /api/tickets?projectId=...&limit=...&offset=... -- list tickets (paginated)
  *
- * No raw pool.query() calls — all DB access via repository methods.
- * Visibility scoping enforced via resolveVisibility (CLAUDE.md §7A).
+ * No raw pool.query() calls -- all DB access via repository methods.
+ * Visibility scoping enforced via resolveVisibility (CLAUDE.md Section 7A).
  */
 import { NextResponse, type NextRequest } from 'next/server';
-import { ValidationError } from '@/shared/errors';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/shared/errors';
 import { errorResponse } from '@/lib/api-error';
-import { requireAuth } from '@/lib/auth';
+import { requireActiveAuth as requireAuth } from '@/lib/auth';
 import { withTransaction } from '@/lib/with-transaction';
+import { executeIdempotentHttpMutation, requireIdempotencyKey } from '@/lib/idempotency';
+import { withRequestCorrelation } from '@/lib/correlation';
 import { pool } from '@/lib/db';
 import { getProjectRole } from '@/lib/get-project-role';
 import { resolveVisibility } from '@/lib/resolve-visibility';
-import { TenancyRepository } from '@/modules/tenancy/infrastructure/tenancy.repository';
+import { parseTicketListQuery } from '@/lib/ticket-list-query';
+import { requireResourceUuid } from '@/lib/resource-uuid';
 import { TicketRepository } from '@/modules/ticket/infrastructure/ticket.repository';
+import { UserRepository } from '@/modules/identity/infrastructure/user.repository';
 import { createTicket } from '@/modules/ticket/application/create-ticket';
+import { authorizeDirectAssignment, createDirectAssignmentTicket } from '@/modules/ticket/application/create-direct-assignment-ticket';
 import type { WorkflowVariant } from '@/modules/workflow/domain/transitions';
 import type { TicketType } from '@/modules/ticket/domain/types';
-import type { UUID } from '@/shared/types';
+import type { DbClient, UUID } from '@/shared/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,102 +34,314 @@ const VALID_VARIANTS: WorkflowVariant[] = ['STANDARD_APPROVAL', 'DIRECT_ASSIGNME
 const VALID_TYPES: TicketType[] = ['LAYOUT', 'CHECK_OUT', 'AS_BUILT', 'TOPO', 'PERMIT'];
 
 export async function POST(req: NextRequest) {
-  try {
-    const auth = requireAuth(req);
-    const body = await req.json() as unknown;
-    const b = body as Record<string, unknown>;
+  return withRequestCorrelation(req, async () => {
+    try {
+    const auth = await requireAuth(req);
+      const idempotencyKey = requireIdempotencyKey(req);
+      const body = await req.json() as unknown;
+      const b = body as Record<string, unknown>;
 
     if (
       !body || typeof body !== 'object' ||
-      typeof b.projectId       !== 'string' ||
-      typeof b.areaId          !== 'string' ||
-      typeof b.subareaId       !== 'string' ||
-      typeof b.companyId       !== 'string' ||
-      typeof b.ticketType      !== 'string' ||
-      typeof b.workflowVariant !== 'string' ||
-      typeof b.craft           !== 'string' ||
-      typeof b.description     !== 'string' ||
-      typeof b.requestedDate   !== 'string' ||
-      !VALID_TYPES.includes(b.ticketType as TicketType) ||
-      !VALID_VARIANTS.includes(b.workflowVariant as WorkflowVariant)
+      typeof b.projectId !== 'string' ||
+      typeof b.aorNodeId !== 'string' ||
+      typeof b.ticketType !== 'string' ||
+      typeof b.fieldContact !== 'string' ||
+      typeof b.description !== 'string' ||
+      typeof b.requestedDate !== 'string' ||
+      (b.craft !== undefined && typeof b.craft !== 'string') ||
+      (b.fieldChannel !== undefined && typeof b.fieldChannel !== 'string') ||
+      (b.workflowVariant !== undefined && (
+        typeof b.workflowVariant !== 'string' ||
+        !VALID_VARIANTS.includes(b.workflowVariant as WorkflowVariant)
+      )) ||
+      !VALID_TYPES.includes(b.ticketType as TicketType)
     ) {
       throw new ValidationError(
-        'projectId, areaId, subareaId, companyId, ticketType, workflowVariant, craft, description, requestedDate are required',
+        'projectId, aorNodeId, ticketType, fieldContact, description, and requestedDate are required',
       );
     }
 
     const {
-      projectId, areaId, subareaId, companyId,
-      ticketType, workflowVariant, craft, description, requestedDate,
+      projectId,
+      aorNodeId,
+      workflowVariant,
+      requesterId,
+      assignedPartyChiefId,
+      assignedInstrumentManId,
+      departmentId,
+      ticketType,
+      craft,
+      fieldContact,
+      fieldChannel,
+      description,
+      requestedDate,
     } = b as {
-      projectId: string; areaId: string; subareaId: string; companyId: string;
-      ticketType: TicketType; workflowVariant: WorkflowVariant;
-      craft: string; description: string; requestedDate: string;
+      projectId: string;
+      aorNodeId: string;
+      workflowVariant?: WorkflowVariant;
+      requesterId?: string;
+      assignedPartyChiefId?: string;
+      assignedInstrumentManId?: string;
+      departmentId?: string;
+      ticketType: TicketType;
+      craft?: string;
+      fieldContact: string;
+      fieldChannel?: string;
+      description: string;
+      requestedDate: string;
     };
 
-    const parsedDate = new Date(requestedDate);
-    if (isNaN(parsedDate.getTime())) {
-      throw new ValidationError('requestedDate is not a valid ISO date');
+    const normalizedCraft = craft?.trim() ?? '';
+    const normalizedFieldContact = fieldContact.trim();
+    const normalizedFieldChannel = fieldChannel?.trim() || null;
+    const normalizedDescription = description.trim();
+
+    if (!normalizedFieldContact) {
+      throw new ValidationError('fieldContact is required');
+    }
+    if (!normalizedDescription) {
+      throw new ValidationError('description is required');
     }
 
-    const ticketRepo  = new TicketRepository();
-    const tenancyRepo = new TenancyRepository();
+    const parsedDate = parseNeedBy(requestedDate);
+    if (!parsedDate) {
+      throw new ValidationError('requestedDate must be a valid calendar date');
+    }
 
-    // Both calls go through repository methods — no raw SQL in the route
-    const requesterEmail = await ticketRepo.findUserEmail(pool, auth.tenantId, auth.userId) ?? '';
-    const isWhitelisted  = await tenancyRepo.isEmailWhitelisted(
-      pool, auth.tenantId, projectId as UUID, requesterEmail,
+    const ticketRepo = new TicketRepository();
+    return await withTransaction(async client => {
+      await coordinateAuthenticatedMutation(client, req, auth, 'SHARED', requireAuth);
+      const runOnClient = <T>(fn: (db: DbClient) => Promise<T>): Promise<T> => fn(client);
+    const actorRole = await getProjectRole(
+      client,
+      auth.tenantId,
+      projectId as UUID,
+      auth.userId,
+      auth.sessionVersion,
+    );
+    await assertRecommissioningMutation(client,auth.tenantId,projectId as UUID);
+    const projectStatus = await ticketRepo.findProjectStatus(client, auth.tenantId, projectId as UUID);
+    if (!projectStatus) {
+      throw new NotFoundError('Project not found');
+    }
+
+    if ((workflowVariant ?? 'STANDARD_APPROVAL') === 'DIRECT_ASSIGNMENT') {
+      if (actorRole !== 'SURVEY_MANAGER' && actorRole !== 'SURVEY_SUPERINTENDENT') {
+        throw new ForbiddenError('Only SURVEY_MANAGER or SURVEY_SUPERINTENDENT may create direct-assignment tickets');
+      }
+      if (projectStatus !== 'ACTIVE') {
+        if (projectStatus === 'SETUP') {
+          throw new ConflictError('Tickets cannot be submitted while the project is in SETUP');
+        }
+        throw new ConflictError('Archived projects are read-only');
+      }
+      if (typeof requesterId !== 'string') {
+        throw new ValidationError('requesterId is required for direct-assignment tickets');
+      }
+      if (typeof assignedInstrumentManId !== 'string') {
+        throw new ValidationError('assignedInstrumentManId is required for direct-assignment tickets');
+      }
+
+      const result = await runOnClient(async client => {
+        const currentRole = await getProjectRole(client, auth.tenantId, projectId as UUID, auth.userId, auth.sessionVersion);
+        await authorizeDirectAssignment(ticketRepo, client, { tenantId: auth.tenantId,
+          projectId: projectId as UUID, actorId: auth.userId, actorRole: currentRole,
+          aorNodeId: aorNodeId as UUID, sessionVersion: auth.sessionVersion });
+        return executeIdempotentHttpMutation(
+          client,
+          {
+            tenantId: auth.tenantId,
+            actorId: auth.userId,
+            endpoint: 'POST:/api/tickets',
+            idempotencyKey,
+          },
+          body,
+          async () => {
+            const directTicket = await createDirectAssignmentTicket(ticketRepo, client, {
+              tenantId: auth.tenantId,
+              projectId: projectId as UUID,
+              aorNodeId: aorNodeId as UUID,
+              requesterId: requesterId as UUID,
+              actorId: auth.userId,
+              actorRole: currentRole,
+              sessionVersion: auth.sessionVersion,
+              assignedPartyChiefId: typeof assignedPartyChiefId === 'string'
+                ? assignedPartyChiefId as UUID
+                : null,
+              assignedInstrumentManId: assignedInstrumentManId as UUID,
+              departmentId: typeof departmentId === 'string' ? departmentId as UUID : undefined,
+              ticketType,
+              craft: normalizedCraft,
+              fieldContact: normalizedFieldContact,
+              fieldChannel: normalizedFieldChannel,
+              description: normalizedDescription,
+              requestedDate: parsedDate,
+            });
+            return { status: 201, body: { ticket: directTicket } };
+          },
+        );
+      });
+
+      return NextResponse.json(result.body, { status: result.status });
+    }
+
+    if (actorRole !== 'REQUESTER') {
+      throw new ForbiddenError('Only REQUESTER may create tickets');
+    }
+
+    await assertRecommissioningMutation(client,auth.tenantId,projectId as UUID);
+    if (projectStatus === 'ARCHIVED') {
+      throw new ConflictError('Archived projects are read-only');
+    }
+
+    const companyInfo = await ticketRepo.findUserCompanyInfo(client, auth.tenantId, auth.userId);
+    if (!companyInfo) {
+      throw new ForbiddenError('Authenticated user is missing company context');
+    }
+
+    const membership = await ticketRepo.findRequesterDepartmentMembership(
+      client,
+      auth.tenantId,
+      projectId as UUID,
+      auth.userId,
+    );
+    const resolvedDepartmentId = membership
+      ? membership.departmentId
+      : typeof departmentId === 'string'
+        ? departmentId as UUID
+        : null;
+
+    if (resolvedDepartmentId) {
+      const department = await ticketRepo.findDepartmentById(
+        client,
+        auth.tenantId,
+        projectId as UUID,
+        resolvedDepartmentId,
+      );
+      if (!department) {
+        throw new ValidationError('departmentId must reference a department in this project');
+      }
+
+      const result = await runOnClient((client) =>
+        executeIdempotentHttpMutation(
+          client,
+          {
+            tenantId: auth.tenantId,
+            actorId: auth.userId,
+            endpoint: 'POST:/api/tickets',
+            idempotencyKey,
+          },
+          body,
+          async () => {
+            const ticket = await createTicket(ticketRepo, client, {
+              tenantId: auth.tenantId,
+              projectId: projectId as UUID,
+              aorNodeId: aorNodeId as UUID,
+              departmentId: department.id,
+              companyId: companyInfo.companyId,
+              requesterId: auth.userId,
+              ticketType,
+              workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
+              craft: normalizedCraft,
+              fieldContact: normalizedFieldContact,
+              fieldChannel: normalizedFieldChannel,
+              description: normalizedDescription,
+              requestedDate: parsedDate,
+            });
+            return { status: 201, body: { ticket } };
+          },
+        ),
+      );
+
+      return NextResponse.json(result.body, { status: result.status });
+    }
+
+    const result = await runOnClient((client) =>
+      executeIdempotentHttpMutation(
+        client,
+        {
+          tenantId: auth.tenantId,
+          actorId: auth.userId,
+          endpoint: 'POST:/api/tickets',
+          idempotencyKey,
+        },
+        body,
+        async () => {
+          const ticket = await createTicket(ticketRepo, client, {
+            tenantId: auth.tenantId,
+            projectId: projectId as UUID,
+            aorNodeId: aorNodeId as UUID,
+            companyId: companyInfo.companyId,
+            requesterId: auth.userId,
+            ticketType,
+            workflowVariant: 'STANDARD_APPROVAL' as WorkflowVariant,
+            craft: normalizedCraft,
+            fieldContact: normalizedFieldContact,
+            fieldChannel: normalizedFieldChannel,
+            description: normalizedDescription,
+            requestedDate: parsedDate,
+          });
+          return { status: 201, body: { ticket } };
+        },
+      ),
     );
 
-    const ticket = await withTransaction((client) =>
-      createTicket(ticketRepo, client, {
-        tenantId:        auth.tenantId,
-        projectId:       projectId  as UUID,
-        areaId:          areaId     as UUID,
-        subareaId:       subareaId  as UUID,
-        companyId:       companyId  as UUID,
-        requesterId:     auth.userId,
-        requesterEmail,
-        ticketType,
-        workflowVariant,
-        craft,
-        description,
-        requestedDate:   parsedDate,
-        isWhitelisted,
-      }),
-    );
-
-    return NextResponse.json({ ticket }, { status: 201 });
-  } catch (err) {
-    return errorResponse(err);
-  }
+      return NextResponse.json(result.body, { status: result.status });
+    });
+    } catch (err) {
+      return errorResponse(err);
+    }
+  });
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const auth = requireAuth(req);
-    const { searchParams } = new URL(req.url);
-    const projectId = searchParams.get('projectId');
-    if (!projectId) throw new ValidationError('projectId query parameter is required');
+  return withRequestCorrelation(req, async () => {
+    try {
+    const auth = await requireAuth(req);
+      const { searchParams } = new URL(req.url);
+      const projectId = searchParams.get('projectId');
+      if (!projectId) throw new ValidationError('projectId query parameter is required');
 
-    const limit  = Math.min(parseInt(searchParams.get('limit')  ?? '50', 10), 200);
-    const offset = Math.max(parseInt(searchParams.get('offset') ?? '0',  10), 0);
+      const listQuery = parseTicketListQuery(searchParams);
+      requireResourceUuid(projectId, 'projectId');
 
-    const actorRole  = await getProjectRole(pool, auth.tenantId, projectId as UUID, auth.userId);
-    const visibility = await resolveVisibility(
-      pool, auth.tenantId, projectId as UUID, auth.userId, actorRole,
-    );
+      const actorRole = await getProjectRole(
+        pool,
+        auth.tenantId,
+        projectId as UUID,
+        auth.userId,
+        auth.sessionVersion,
+      );
+      const visibility = await resolveVisibility(
+        pool, auth.tenantId, projectId as UUID, auth.userId, actorRole, listQuery.filters.cohort,
+      );
 
-    const ticketRepo = new TicketRepository();
-    const page = await ticketRepo.list(pool, auth.tenantId, {
-      projectId: projectId as UUID,
-      visibility,
-      limit,
-      offset,
-    });
+      const ticketRepo = new TicketRepository();
+      const page = await ticketRepo.list(pool, auth.tenantId, {
+        projectId: projectId as UUID,
+        visibility,
+        ...listQuery,
+      });
 
-    return NextResponse.json(page);
-  } catch (err) {
-    return errorResponse(err);
-  }
+      const requesterNames = await new UserRepository().findNamesByIds(
+        pool,
+        auth.tenantId,
+        page.data.map((ticket) => ticket.requesterId),
+      );
+
+      const cleanup=await findPreparationCleanupTickets(pool,auth.tenantId,projectId as UUID,page.data.map(ticket=>ticket.id));
+      return NextResponse.json({
+        ...page,
+        data: page.data.map((ticket) => ({
+          ...ticket,
+          requesterName: requesterNames.get(ticket.requesterId) ?? 'Unknown requester',
+          isOwnRequest: ticket.requesterId === auth.userId,
+          preparationCleanupAllowed: cleanup.has(ticket.id),
+        })),
+      }, {headers:{'Cache-Control':'private, no-store'}});
+    } catch (err) {
+      return errorResponse(err);
+    }
+  });
 }

@@ -5,12 +5,16 @@
  * Never let unknown errors propagate to Next.js unhandled.
  */
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
+import { getCorrelationId } from './correlation';
+import { logError } from './observability';
 import {
   ValidationError,
   UnauthorizedError,
   ForbiddenError,
   NotFoundError,
   ConflictError,
+  RateLimitError,
   InternalError,
   type AppError,
 } from '@/shared/errors';
@@ -21,7 +25,18 @@ const HTTP_STATUS: Record<AppError['type'], number> = {
   ForbiddenError:    403,
   NotFoundError:     404,
   ConflictError:     409,
+  RateLimitError:    429,
   InternalError:     500,
+};
+
+const DEFAULT_CODE: Record<AppError['type'], string> = {
+  ValidationError: 'VALIDATION_ERROR',
+  UnauthorizedError: 'AUTH_UNAUTHORIZED',
+  ForbiddenError: 'AUTH_FORBIDDEN',
+  NotFoundError: 'NOT_FOUND',
+  ConflictError: 'CONFLICT',
+  RateLimitError: 'RATE_LIMITED',
+  InternalError: 'INTERNAL_ERROR',
 };
 
 function isAppError(err: unknown): err is AppError {
@@ -31,19 +46,53 @@ function isAppError(err: unknown): err is AppError {
     err instanceof ForbiddenError    ||
     err instanceof NotFoundError     ||
     err instanceof ConflictError     ||
+    err instanceof RateLimitError    ||
     err instanceof InternalError
   );
 }
 
+function logUnexpectedError(err: unknown, correlationId: string): void {
+  // Raw messages, stacks, query text and causes can contain credentials or data.
+  const classes = new Set(['Error', 'TypeError', 'RangeError', 'SyntaxError', 'ReferenceError']);
+  const codes = new Set(['23505', '23503', '23514', '40001', '40P01', '42P01', '42703', '57014', '53300', '57P01', '08006', '22P02']);
+  const code = err instanceof Error && 'code' in err && typeof err.code === 'string' && codes.has(err.code) ? err.code : undefined;
+  logError('API request failed', {
+    eventType: 'api.unexpected_error', correlation_id: correlationId,
+    error_class: err instanceof Error && classes.has(err.name) ? err.name : 'UnknownError',
+    ...(code ? { database_code: code } : {}),
+  });
+}
+
 export function errorResponse(err: unknown): NextResponse {
+  const correlationId = getCorrelationId() ?? randomUUID();
+
   if (isAppError(err)) {
+    const status = HTTP_STATUS[err.type];
+    if (status === 500) logUnexpectedError(err, correlationId);
     return NextResponse.json(
-      { error: { type: err.type, message: err.message } },
-      { status: HTTP_STATUS[err.type] },
+      {
+        error: {
+          type: err.type,
+          code: err.code ?? DEFAULT_CODE[err.type],
+          message: err.message,
+          correlationId,
+          status,
+        },
+      },
+      { status },
     );
   }
+  logUnexpectedError(err, correlationId);
   return NextResponse.json(
-    { error: { type: 'InternalError', message: 'An unexpected error occurred' } },
+    {
+      error: {
+        type: 'InternalError',
+        code: DEFAULT_CODE.InternalError,
+        message: 'An unexpected error occurred',
+        correlationId,
+        status: 500,
+      },
+    },
     { status: 500 },
   );
 }

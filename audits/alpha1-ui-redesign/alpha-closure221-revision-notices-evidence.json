@@ -1,0 +1,80 @@
+{
+  "batch": 221,
+  "baseline": "3c511d4",
+  "productionChange": false,
+  "production": {
+    "files": 568,
+    "sha256": "0d387338d1d2e16511cda6bd0f1a72d56a77488bd430d59ef0f734ab635ecbb7",
+    "compiled220RuntimeBytesMatch": true,
+    "method": "globally sorted forward-slash relative path/NUL/raw bytes/NUL over src/db/migrations"
+  },
+  "verification": {
+    "strictUnusedTypes": "pass current host",
+    "units": 659,
+    "pinnedCompilationAndFull33Postgres": "Retained E220 evidence at identical production bytes, not rerun in221",
+    "connectedChecks": 26,
+    "cases": [
+      "Direct creation preserves initial requester date",
+      "Need-By exact retry preserves one revision/event/outbox/ledger",
+      "Need-By retains original date and independent priority",
+      "Requester scoped local preview consumes revised-date reason",
+      "Other requester receives no other recipient notices",
+      "Independent Admin sees delivery health without request payload",
+      "Wrong-role revision refusals leave date/priority/history/outbox/ledger unchanged",
+      "Priority exact retry preserves one priority event/ledger",
+      "Priority leaves current Need-By unchanged",
+      "Priority does not create a date notice",
+      "Outbox insertion failure atomically rolls back date/revision/event/ledger",
+      "Priority audit failure atomically rolls back sequence/event/ledger",
+      "Observed held revision overwrites newer date with no conflict",
+      "Existing local channel captures revised notices once without external delivery",
+      "manager-local-noticesLIGHT page overflow contained",
+      "manager-local-noticesDARK page overflow contained",
+      "Requester request view presents current and original dates",
+      "requester-date-historyLIGHT page overflow contained",
+      "requester-date-historyDARK page overflow contained",
+      "Only personally assigned IM can complete",
+      "Direct completion exact retry retains one completion/history/requester notice",
+      "Completion records personally assigned actor and time",
+      "Requester local preview consumes exactly one completed notice",
+      "Other requester still has no completion notice",
+      "Requester cannot operate project-wide notice capture",
+      "No browser page errors"
+    ],
+    "findings": [
+      {
+        "id": "ALPHA-REVISION-STALE-221",
+        "state": "confirmed defect",
+        "priorReviewedDate": "2026-10-17",
+        "concurrentDate": "2026-10-21",
+        "overwritingDate": "2026-10-20",
+        "reviewedVersion": 2,
+        "currentBeforeStale": 3,
+        "requestBody": {
+          "requestedDate": "2026-10-20",
+          "reason": "Held original review should detect a concurrent revision"
+        },
+        "observedStatus": 200,
+        "afterVersion": 4
+      }
+    ],
+    "captures": [
+      ".local/alpha-closure221/manager-local-notices-light-1440.png",
+      ".local/alpha-closure221/manager-local-notices-dark-390.png",
+      ".local/alpha-closure221/requester-date-history-light-1440.png",
+      ".local/alpha-closure221/requester-date-history-dark-390.png"
+    ],
+    "capturesOpened": 4,
+    "pageErrors": []
+  },
+  "channelReconciliation": "Current requester notices are scoped local notification_outbox previews read through authenticated HTTP; actual Manager UI captures locally. No ordinary requester inbox surface or external email delivery was established or added. These are separate channel/design decisions, not accepted by this evidence.",
+  "limits": [
+    "Confirmed ALPHA-REVISION-STALE-221 is an outstanding R07/R10 implementation defect; observed success of the stale action is defect evidence, not acceptance.",
+    "Initial observer correctly completed a prior request but expected a nonexistent completed_by field; corrected proof reads actor_id from ticket.completed. Prior completed request retained intact; explicit second owned run is fully verified.",
+    "Wrong-role ordinary Requester/Admin recipient visibility is404where applicable, not assumed403.",
+    "Current four captures are bounded layouts; mobile dark brand image includes transient state and does not establish full visual readiness.",
+    "No lost-response revision browser retry here; exact HTTP replay/body keys and atomic witnesses verified. Frozen uncertain browser behavior remains to verify with reviewed-version correction.",
+    "Foreign tenant/project/revoked/session broader33SQL source-matched coverage remains retained separately; not a full221role matrix.",
+    "No push/deploy/Alpha2 or separate release remediation."
+  ]
+}

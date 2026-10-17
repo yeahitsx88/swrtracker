@@ -1,0 +1,806 @@
+{
+  "at": "2026-10-03T02:55:10.025Z",
+  "checks": [
+    {
+      "ticketId": "3e56ddd5-e83a-4301-9685-7a907bb7e22d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "3e56ddd5-e83a-4301-9685-7a907bb7e22d",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c6d5fa28-159a-4a12-818a-438b931ca0e3",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c6d5fa28-159a-4a12-818a-438b931ca0e3",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "1aed982d-7499-420e-a1d8-09fd45764a36",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "1aed982d-7499-420e-a1d8-09fd45764a36",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "e6a61636-5c6f-4275-aaf2-4bd2b19b33f1",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e6a61636-5c6f-4275-aaf2-4bd2b19b33f1",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "7b9f060f-1b8e-450a-9526-0cdbc28de748",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "7b9f060f-1b8e-450a-9526-0cdbc28de748",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c8f19a1e-4df6-4111-a2df-16c1e8c1e55a",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c8f19a1e-4df6-4111-a2df-16c1e8c1e55a",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "b324b2e8-34e6-4831-b955-c8a3bf7cb691",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b324b2e8-34e6-4831-b955-c8a3bf7cb691",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "60fb9124-0926-4620-9e5b-e034265ad2b7",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "60fb9124-0926-4620-9e5b-e034265ad2b7",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c53d6918-aa0e-4654-88e1-8430f593c112",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c53d6918-aa0e-4654-88e1-8430f593c112",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "16874571-6ab8-4baf-ae65-84487b119c07",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "16874571-6ab8-4baf-ae65-84487b119c07",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "e88da4b5-3465-47bb-ae06-c461e341ba53",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e88da4b5-3465-47bb-ae06-c461e341ba53",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "61bed0cb-cc03-456a-9b8a-33d35d1b34c9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "61bed0cb-cc03-456a-9b8a-33d35d1b34c9",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "ec883e5b-c450-48bc-802b-89ad394c69b9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "ec883e5b-c450-48bc-802b-89ad394c69b9",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "567e7da9-3454-4fb6-b41d-440756b5d6f0",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "567e7da9-3454-4fb6-b41d-440756b5d6f0",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "e2689279-c78a-4199-9202-7f31c8721f9c",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e2689279-c78a-4199-9202-7f31c8721f9c",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "1310650b-d019-4e3c-8143-383abf3b9664",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "1310650b-d019-4e3c-8143-383abf3b9664",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "e949db43-7925-4781-9a83-6e3050959512",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e949db43-7925-4781-9a83-6e3050959512",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c7677980-6a0b-4b16-9aed-7e0cc510f423",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c7677980-6a0b-4b16-9aed-7e0cc510f423",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "2ca3b655-b7e3-47b8-9916-dc4274940bcb",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "2ca3b655-b7e3-47b8-9916-dc4274940bcb",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "be22de79-536a-4c4b-a407-e0433789705b",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "be22de79-536a-4c4b-a407-e0433789705b",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "f879f2d7-d8d1-496b-a7a4-58dd8a722392",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f879f2d7-d8d1-496b-a7a4-58dd8a722392",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "f31536d7-1076-4c8a-929f-c486bbd82125",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f31536d7-1076-4c8a-929f-c486bbd82125",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "5e712dcc-6df1-49e4-86a7-3bd4e1fde18d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "5e712dcc-6df1-49e4-86a7-3bd4e1fde18d",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "b4ff92cb-9d67-4286-a483-5ce6c99d99b6",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b4ff92cb-9d67-4286-a483-5ce6c99d99b6",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "79d08621-fce6-4203-ba3a-743112de3bda",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "79d08621-fce6-4203-ba3a-743112de3bda",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "55c818d3-bfa8-4281-84d7-b0c4f32fd7e9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "55c818d3-bfa8-4281-84d7-b0c4f32fd7e9",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "fb3c2fe1-2fe8-425f-9829-3468cdb93745",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "fb3c2fe1-2fe8-425f-9829-3468cdb93745",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "ffde1ad1-a0c7-4290-aa94-4eb5fd091a89",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "ffde1ad1-a0c7-4290-aa94-4eb5fd091a89",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "e4b780b9-acac-421b-8388-8a0969a9485c",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "e4b780b9-acac-421b-8388-8a0969a9485c",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "994b4cc5-4b92-42cf-8123-8b63566edb91",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "994b4cc5-4b92-42cf-8123-8b63566edb91",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "3263bd5e-b3d5-4055-b091-f358418bdf66",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "3263bd5e-b3d5-4055-b091-f358418bdf66",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "b11e05ed-38b7-41e9-9a7a-cf3bcf7ee813",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b11e05ed-38b7-41e9-9a7a-cf3bcf7ee813",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "046d7e03-ecc9-4824-8b24-9113cc7191a6",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "046d7e03-ecc9-4824-8b24-9113cc7191a6",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "34e89c65-cbf3-414f-bfae-f32a9c27cb80",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "34e89c65-cbf3-414f-bfae-f32a9c27cb80",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "6a71920b-ef8e-40a3-ad65-0fe60ea77947",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "6a71920b-ef8e-40a3-ad65-0fe60ea77947",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c610551f-c20f-4069-9119-672f5a0bb7f1",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c610551f-c20f-4069-9119-672f5a0bb7f1",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "5e889a09-f0b8-4a1f-b8fe-8f5f2d8489e2",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "5e889a09-f0b8-4a1f-b8fe-8f5f2d8489e2",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "800f7794-882b-458d-8eaf-0f6c086035d8",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "800f7794-882b-458d-8eaf-0f6c086035d8",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "36b3769b-7d10-482e-b237-c5c27a276d50",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "36b3769b-7d10-482e-b237-c5c27a276d50",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "b803ae97-eeca-4b31-ab32-7b1c986382df",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b803ae97-eeca-4b31-ab32-7b1c986382df",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "30792c9f-0f4e-481f-8721-e13af99b7b33",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "30792c9f-0f4e-481f-8721-e13af99b7b33",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "1d03d80d-8f3f-413e-aeeb-906dfc8ef1b7",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "1d03d80d-8f3f-413e-aeeb-906dfc8ef1b7",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "a40721b6-2383-46dc-8de0-861bcdb57651",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "a40721b6-2383-46dc-8de0-861bcdb57651",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "8a5c9770-263e-416f-a7ce-935881a804b9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "8a5c9770-263e-416f-a7ce-935881a804b9",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "60aee969-76e6-4d5d-b06d-c9b7e8699e8d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "60aee969-76e6-4d5d-b06d-c9b7e8699e8d",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "03185def-9c27-42e7-8f33-63861de8c66d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "03185def-9c27-42e7-8f33-63861de8c66d",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "6f85913c-cca0-42f5-9a89-ee040b446a41",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "6f85913c-cca0-42f5-9a89-ee040b446a41",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "44e42750-ecf3-4d43-8690-1c352df1e9ec",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "44e42750-ecf3-4d43-8690-1c352df1e9ec",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "f53e127d-96b2-4320-ba99-cfe2c1eff10a",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f53e127d-96b2-4320-ba99-cfe2c1eff10a",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "d86e5878-88b8-4ca1-be0d-fb1b98cfb5e6",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "d86e5878-88b8-4ca1-be0d-fb1b98cfb5e6",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c2b9f63a-d3d0-4e96-bcbb-e5ccc41b07be",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c2b9f63a-d3d0-4e96-bcbb-e5ccc41b07be",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "54d72144-c7b7-41f4-934d-a623762f64e2",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "54d72144-c7b7-41f4-934d-a623762f64e2",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "cfdea794-c7e6-4fee-94bc-a64a85b1b0b6",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "cfdea794-c7e6-4fee-94bc-a64a85b1b0b6",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "4f369f75-21e3-49e6-a2ad-85c8069d0791",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "4f369f75-21e3-49e6-a2ad-85c8069d0791",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "50e0f5ee-de82-4bb9-a6df-fb595c53d9de",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "50e0f5ee-de82-4bb9-a6df-fb595c53d9de",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "f8145099-dbde-4d5e-8128-9c3aa5bc4756",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f8145099-dbde-4d5e-8128-9c3aa5bc4756",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "2bdaeb58-56ae-4ad3-97f0-8aa65e9b2cbe",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "2bdaeb58-56ae-4ad3-97f0-8aa65e9b2cbe",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c997d24b-0dcd-43e3-8a0c-1c86a1156eb7",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c997d24b-0dcd-43e3-8a0c-1c86a1156eb7",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "d0727fd6-31c4-47b4-b9cc-db09047a342c",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "d0727fd6-31c4-47b4-b9cc-db09047a342c",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "d8166fb1-8855-4ae4-8ee0-27a5656d1b6b",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "d8166fb1-8855-4ae4-8ee0-27a5656d1b6b",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "ab66d1a1-2916-4ea0-bf00-e37b2c361580",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "ab66d1a1-2916-4ea0-bf00-e37b2c361580",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "a031044c-dce3-4e6f-a9f4-809644544a48",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "a031044c-dce3-4e6f-a9f4-809644544a48",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "4770942c-921c-4963-a666-9a35b6676df8",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "4770942c-921c-4963-a666-9a35b6676df8",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "7e5d74dc-3734-41c0-9bc8-caaac9e8187c",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "7e5d74dc-3734-41c0-9bc8-caaac9e8187c",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "994563e1-644f-42c0-a78e-857c7fc4ddca",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "994563e1-644f-42c0-a78e-857c7fc4ddca",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "b951df52-e32c-4b04-b66c-8fbb43e69131",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "b951df52-e32c-4b04-b66c-8fbb43e69131",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "25caa6b5-93c5-4b3d-b756-affb971c5e1f",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "25caa6b5-93c5-4b3d-b756-affb971c5e1f",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "cfe409a0-5b72-4688-8d2a-99bcbf56fca4",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "cfe409a0-5b72-4688-8d2a-99bcbf56fca4",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "df89b540-544f-4726-b6c2-d88aff95c371",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "df89b540-544f-4726-b6c2-d88aff95c371",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "579ad457-121f-4799-b726-2cbbd2fe796d",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "579ad457-121f-4799-b726-2cbbd2fe796d",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "f09adf5b-4549-4f64-97c0-48769c953440",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "f09adf5b-4549-4f64-97c0-48769c953440",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "d25c73f7-933a-4531-bbd1-4e6124b122d0",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "d25c73f7-933a-4531-bbd1-4e6124b122d0",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "999e9cea-852c-4a0b-a6e1-c8e9f9ca7f17",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "999e9cea-852c-4a0b-a6e1-c8e9f9ca7f17",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "73246716-7681-4d0a-a89e-d3cf96c47523",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "73246716-7681-4d0a-a89e-d3cf96c47523",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "7bc2b16d-6694-40d0-9c55-f0e29e3f227a",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "7bc2b16d-6694-40d0-9c55-f0e29e3f227a",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "5780352a-08f7-4e37-a8a1-d45fb81b1060",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "5780352a-08f7-4e37-a8a1-d45fb81b1060",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "0d154c94-8bf8-4b72-b644-1a3094f2c4a9",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "0d154c94-8bf8-4b72-b644-1a3094f2c4a9",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "c6406ca2-af73-4623-b41d-b23cfd2da049",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "c6406ca2-af73-4623-b41d-b23cfd2da049",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "6c9dcf62-5dec-46ee-9b62-fe65a3a6c759",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "6c9dcf62-5dec-46ee-9b62-fe65a3a6c759",
+      "foreignRequesterDenied": true,
+      "status": 404
+    },
+    {
+      "ticketId": "38a8a78a-f585-47ba-b068-cb8ed44779dd",
+      "status": 200,
+      "match": true
+    },
+    {
+      "ticketId": "38a8a78a-f585-47ba-b068-cb8ed44779dd",
+      "foreignRequesterDenied": true,
+      "status": 404
+    }
+  ],
+  "measurement": "Every fourth retained attachment, actual requester download SHA-256 and unrelated-company requester denial after isolated runtime replacement."
+}

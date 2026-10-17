@@ -1,0 +1,64 @@
+{
+  "status": "verified-named-copy-and-runtime-gates-only",
+  "baseline": "98a90ea",
+  "scope": "A6 queued unsupported-file copy; A3 resumed preparation, not staffing acceptance",
+  "source": {
+    "files": 576,
+    "sha256": "d00147c204fbdeb7d38e7175b482f4d48b120b62fef430ede0bdb8889ae502e4",
+    "artifactByteComparison": "All576src/db files and independent configuration/dependency files match",
+    "configurationSha256": {
+      "next.config.ts": "38241ec02fcdc00d1ebdf7c103c7295ded5e8b43ecdc49ff53c481571a1c7baa",
+      "package.json": "fccafd9e25192b44673ec1435834f61d5f722f3852edfb9943a34b0a16e0799c",
+      "pnpm-lock.yaml": "6b800fd984c81c67c72c3cafb11e7a3d385e6ab96a63d8e594e327d38b5e13b6",
+      "tsconfig.json": "faed7a97b01b911d16100919e7b97554b2354dc79d9181dd668f858acda96f12"
+    }
+  },
+  "gates": {
+    "runtime": "Node22.23.3 / Next15.5.27",
+    "strictUnusedTypecheck": "passed",
+    "unitTests": 693,
+    "productionCompilation": "passed",
+    "postgresSuites": {
+      "matrix": 23,
+      "additional": 7,
+      "metrics": 3
+    },
+    "focused75": "E254 current copy-only source, preserved"
+  },
+  "browser": {
+    "cases": [
+      "Incomplete client submission creates no record",
+      "Current copy LIGHT1440 has no page overflow",
+      "Current copy DARK390 has no page overflow",
+      "Definitive400 permits correcting invalid staged file",
+      "Extension/MIME mismatch returns current actionable400",
+      "Rejected staged file not persisted",
+      "Invalid staged file has reachable removal",
+      "Corrected file saves on same incomplete durable draft",
+      "Corrected incomplete draft remains unnumbered unsubmitted",
+      "Corrected file uploaded exactly once",
+      "No refusal/recovery page errors"
+    ],
+    "checks": 11,
+    "id": "20c37dbb-e50a-4034-b198-38af859d4a39",
+    "pageErrors": []
+  },
+  "captures": {
+    "count": 2,
+    "opened": 2,
+    "themesAndDevices": [
+      "LIGHT1440",
+      "DARK390"
+    ],
+    "scope": "Real current400 banner and editable same-draft file recovery; no whole A6 claim"
+  },
+  "runtimeRecovery": {
+    "engine": "29.8.0",
+    "method": "Docker stopped; verified socket-only run and docker-secrets-engine directories renamed intact to unique backups; replacement runtime directories created; existing app hidden launch",
+    "containers": "Only existing owned acceptance197 PostgreSQL container restarted with original port and volume; fresh team253 production container created",
+    "data": "No factory reset, socket deletion, volume removal, retained fixture reset, or persistent Docker data relocation",
+    "reference": "https://github.com/docker/desktop-feedback/issues/554"
+  },
+  "observerFailure": "First copy observer omitted appearance Idempotency-Key and got400. Corrected; prior draft retained; failure excluded.",
+  "limits": "A3-A7 and fullAlpha remain open. E251 original limits/retry/scope and E252 cycles retain explicit unchanged-contract source impact. Compilation is not release readiness; release advisory unchanged."
+}

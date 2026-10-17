@@ -1,0 +1,97 @@
+'use client';
+
+import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
+import { homeRequestFilters } from '@/lib/home-request-filters';
+import { useProjectWorkspace } from '@/components/ui/project-shell-header';
+import { RequestFilterBar } from '@/components/tickets/request-filter-bar';
+import type { TicketStatus } from '@/lib/contracts';
+import { apiClient } from '@/lib/apiClient';
+import { getErrorMessage } from '@/lib/errors';
+import type { TicketRecord } from '@/lib/contracts';
+import { useAreaNames } from '@/lib/use-area-names';
+import { PaginationControls } from '@/components/forms';
+import { TicketList } from '@/components/tickets';
+import { useRequestDetailsDialog } from '@/components/tickets/request-details-dialog';
+import { Card, ErrorBanner } from '@/components/ui';
+import { Icon } from '@/components/ui/icon';
+import { ScopedKpiEntry } from '@/components/ui/scoped-kpi-entry';
+
+const LIMIT = 20;
+const REQUESTER_STATUSES: TicketStatus[] = ['SUBMITTED', 'RETURNED_FOR_CORRECTION', 'APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'DELAYED', 'PENDING_FIELD_VALIDATION', 'COMPLETED', 'REJECTED', 'REQUESTER_CANCELED', 'SURVEY_CANCELED', 'FIELD_CANCELED'];
+const REQUESTER_QUEUES = [{ value: '', label: 'All requests' }, { value: 'open', label: 'Open' }, { value: 'overdue', label: 'Overdue' }, { value: 'completed', label: 'Completed' }];
+export default function MyRequestsPage() {
+  return <Suspense fallback={<p role="status">Loading requests…</p>}><MyRequestsContent /></Suspense>;
+}
+function MyRequestsContent() {
+  const params = useParams<{ projectId: string }>();
+  const projectId = params.projectId;
+  const query = useSearchParams().toString();
+  const parsed = homeRequestFilters(query);
+  const workspace = useProjectWorkspace();
+  const areaNames = useAreaNames(projectId);
+  const [tickets, setTickets] = useState<TicketRecord[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(0);
+  const details = useRequestDetailsDialog(projectId, () => setRefresh(current => current + 1));
+
+  useEffect(() => { setOffset(0); }, [query]);
+  useEffect(() => {
+    let active = true;
+    if(parsed.error) { setError(parsed.error); setLoading(false); return; }
+    setLoading(true);
+    setError(null);
+    apiClient.listTickets(projectId, LIMIT, offset, parsed.filters).then(page => {
+      if(!active) return;
+      setTickets(page.data);
+      setTotal(page.total);
+    }).catch(err => { if(active)setError(getErrorMessage(err, 'Unable to load requester tickets.')); })
+      .finally(() => { if(active)setLoading(false); });
+    return () => { active=false; };
+  }, [projectId, offset, query]);
+  // After an action in Request Details, refresh the rows in place so the list and its scroll stay put.
+  useEffect(() => {
+    if (!refresh || parsed.error) return;
+    let active = true;
+    apiClient.listTickets(projectId, LIMIT, offset, parsed.filters).then(page => { if (active) { setTickets(page.data); setTotal(page.total); } })
+      .catch(err => { if (active) setError(getErrorMessage(err, 'Unable to load requester tickets.')); });
+    return () => { active = false; };
+  }, [refresh]);
+
+  return (
+    <Card
+      title="Requests"
+      description="Your SWRs and any additional company SWRs granted to your account."
+      actions={workspace?.project.status === 'ACTIVE' ? <Link className="button" href={`/projects/${projectId}/request/new`}><Icon name="plus" />New request</Link> : undefined}
+    >
+      <div className="stack">
+        <RequestFilterBar label="Filter your requests" statuses={REQUESTER_STATUSES} queues={REQUESTER_QUEUES} />
+        <ScopedKpiEntry projectId={projectId} audience="requester" />
+        {error ? <ErrorBanner message={error} /> : null}
+        {details.dialog}
+        {loading ? <p className="muted" role="status">Loading requests…</p> : null}
+        {!loading && !error ? (
+          <TicketList compactTools onOpen={details.open}
+            projectId={projectId}
+            tickets={tickets}
+            areaNames={areaNames}
+            emptyTitle="No requests yet"
+            emptyMessage="Start a new request; it will appear here once you submit it."
+          />
+        ) : null}
+        {total > LIMIT ? (
+          <PaginationControls
+            offset={offset}
+            limit={LIMIT}
+            total={total}
+            onChange={setOffset}
+          />
+        ) : null}
+      </div>
+    </Card>
+  );
+}

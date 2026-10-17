@@ -1,0 +1,111 @@
+{
+  "batch": 240,
+  "baseline": "2fba9c203547c6ec297f6d0bad74eacaa746143b",
+  "authority": [
+    "R02: each request belongs to one project; project/context consistency and retained identity.",
+    "Approved ALPHA1_UI_REDESIGN role-based detail return paths and owner Alpha navigation/role hardening scope.",
+    "Standing verified checkpoint/push directive."
+  ],
+  "classification": "Verified demonstrated project/request URL context correction and named current role direct-link/return criteria; whole Alpha acceptance remains open.",
+  "production": {
+    "files": 576,
+    "sha256": "3676e2604feb49b7f5b81d8028f3eeebc346af53d1bdd89f532405f4e5d787a1",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/app/(projects)/projects/[projectId]/(requester)/tickets/[ticketId]/page.tsx"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Refuse authorized request data whose projectId differs from URL project before accepting ticket/capabilities/files; rerun existing load when project or ticket URL changes. Existing role-based returns and server detail visibility stay intact."
+  },
+  "before": {
+    "checks": [
+      "Requester legitimately reads its own request in second authorized project",
+      "Before first-project URL displays second-project request details",
+      "Before return link uses first project despite second-project request"
+    ],
+    "productionChanged": false
+  },
+  "verification": {
+    "strictUnusedTypes": "pass host/pinned",
+    "unitTests": 690,
+    "focusedTests": 9,
+    "focusedFiles": [
+      "tests/ui/project-navigation.test.ts",
+      "tests/ui/team-account-navigation.test.ts",
+      "tests/identity/frozen-command.test.ts"
+    ],
+    "pinnedProductionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "actualCurrentChecks": [
+      "Requester legitimately reads its own request in second authorized project",
+      "Actual Manager crew assignment establishes legitimate Chief and Instrument Man detail visibility",
+      "Mismatched project URL shows no request content",
+      "Mismatched project URL exposes no request mutation controls",
+      "Valid direct link retains requester second-project return path",
+      "Requester return selects Requests in current project sidebar",
+      "manager current detail visibility respects operational authority",
+      "manager direct-link return matches approved fixed role",
+      "manager role return reaches its approved destination",
+      "superintendent current detail visibility respects operational authority",
+      "superintendent direct-link return matches approved fixed role",
+      "superintendent role return reaches its approved destination",
+      "chief current detail visibility respects operational authority",
+      "chief direct-link return matches approved fixed role",
+      "chief role return reaches its approved destination",
+      "viewer current detail visibility respects operational authority",
+      "viewer direct-link return matches approved fixed role",
+      "viewer role return reaches its approved destination",
+      "tenantOnly current detail visibility respects operational authority",
+      "tenantOnly direct-link return matches approved fixed role",
+      "tenantOnly role return reaches its approved destination",
+      "projectAdmin current detail visibility respects operational authority",
+      "projectAdmin direct-link return matches approved fixed role",
+      "projectAdmin denied detail reveals no request description",
+      "projectAdmin role return reaches its approved destination",
+      "combinedAdmin current detail visibility respects operational authority",
+      "combinedAdmin direct-link return matches approved fixed role",
+      "combinedAdmin denied detail reveals no request description",
+      "combinedAdmin role return reaches its approved destination",
+      "instrument current detail visibility respects operational authority",
+      "instrument direct-link return matches approved fixed role",
+      "instrument role return reaches its approved destination",
+      "Mismatch LIGHT1440 viewport contained",
+      "Mismatch DARK390 viewport contained",
+      "All direct links/returns and mismatch refusals preserve request rows and immutable history",
+      "No navigation page errors"
+    ],
+    "currentCapturesOpened": [
+      ".local/alpha-closure240-confirmation/project-mismatch-light-1440.png",
+      ".local/alpha-closure240-confirmation/project-mismatch-dark-390.png"
+    ],
+    "pageErrors": [],
+    "roleMatrix": {
+      "requester": "owns legitimate requests in both projects; valid direct link/return and mismatched-context refusal",
+      "manager": "authorized read; All Requests return",
+      "superintendent": "current covered-Area read; All Requests return",
+      "chief": "actual Manager-assigned request read; Crew Work return",
+      "instrument": "actual personally assigned request read; Crew Work return",
+      "viewer": "authorized read; All Requests return",
+      "tenantOnly": "Tenant Admin plus explicit operational Viewer, read derives from Viewer; All Requests return",
+      "projectAdmin": "PROJECT_ADMIN plus independent grant; request detail denied; Home return",
+      "combinedAdmin": "Requester plus Tenant Admin and independent Project Admin; another requester detail denied; My Requests return"
+    },
+    "history": "All ticket/event/assignment/delegation rows identical across read/navigation/capture witness after actual fixture workflow setup."
+  },
+  "limits": [
+    "Owned synthetic two-project fixture; actual HTTP draft/submit/approval and final actual Manager crew assignment. Signed current fixture cookies rather than interactive login.",
+    "Current named Active-project direct links; full Setup/Archived/cancellation, foreign tenant/company, revoked-session and remaining role/state navigation browser matrix remains open. Current 33 SQL suites preserve broader authorization/tenant/history/Team Management/read-only Org regressions.",
+    "Existing role return behavior retained: origin-specific filtering/paging restoration is not newly introduced.",
+    "Existing failed-load screen retains empty detail/action panels and generic attachment guidance; failed-load attachment presentation/retained-state verification is next.",
+    "Initial focused invocation used an obsolete navigation path and only ran3FrozenCommand cases; corrected actual paths ran9current focused cases.",
+    "No endpoint/payload/schema/audit/permission/assignment/history changes. Inherited source-map-js/GHSA-68fv-2mgg-jv7q release blocker remains separate; compile does not establish release readiness."
+  ],
+  "git": {
+    "preCheckpointDev": "0/0",
+    "mainDivergence": "196 local / 7 remote; no integration",
+    "push": "authorized routine checkpoint; verify after commit"
+  },
+  "next": "Failed-load and stale attachment presentation in request detail, followed by remaining role/state/navigation acceptance."
+}

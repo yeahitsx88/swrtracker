@@ -1,0 +1,106 @@
+{
+  "batch": 239,
+  "baseline": "d7c2de3ca1befa244bf3e890524ed284815e5295",
+  "authority": [
+    "R07/R11 existing Survey operations ordering and role-scoped workload.",
+    "Owner Alpha finalization: readable mobile tables, labels, keyboard navigation, and established components without changed workflow semantics.",
+    "Standing verified commit/push checkpoint directive."
+  ],
+  "classification": "Verified bounded Survey queue mobile table and paging-label correction; wider role/state/navigation and whole Alpha acceptance remain open.",
+  "production": {
+    "files": 576,
+    "sha256": "45097e40ec898e85652a6e8d4f17f897f920789161ceb825d8988a6d93c2f50f",
+    "runtimeBytesMatch": true,
+    "mismatches": [],
+    "changed": true,
+    "changedFiles": [
+      "src/app/(projects)/projects/[projectId]/(survey)/survey/operations/operations.css",
+      "src/app/(projects)/projects/[projectId]/(survey)/survey/operations/page.tsx"
+    ],
+    "method": "globally sorted forward-slash path/NUL/raw bytes/NUL over src/db/migrations",
+    "behavior": "Survey-only mobile table minimum permits existing full references to wrap; pager labels distinguish request/message pages and loaded-request filters. Existing ordering, server queries, roles, assignment, persistence/history, identifiers and shared table defaults retained."
+  },
+  "before": {
+    "checks": [
+      "Server operations ordering places actual last-created HIGH priority first",
+      "Loaded-record table currently exposes25of43loaded rows with its own paging",
+      "Before retains verified server operations order",
+      "Before single-record queue inherits640px table minimum and needs horizontal scrolling",
+      "Before local filter does not name loaded-page scope"
+    ],
+    "serverFirst": "34acef97-2415-4cdd-8adc-1e6f2ab054b8",
+    "renderedFirst": "34acef97-2415-4cdd-8adc-1e6f2ab054b8",
+    "productionChanged": false,
+    "mobileGeometry": {
+      "client": 332,
+      "scroll": 640
+    }
+  },
+  "verification": {
+    "strictUnusedTypes": "pass host and pinned",
+    "unitTests": 690,
+    "focusedTests": 14,
+    "pinnedProductionCompilation": "pass Node22.23.3 Next15.5.27",
+    "postgresSuites": 33,
+    "actualCurrentChecks": [
+      "Server operations ordering places actual last-created HIGH priority first",
+      "Loaded-record table currently exposes25of43loaded rows with its own paging",
+      "Manager loaded table retains exact server operations order",
+      "Loaded-page filter affects current records without changing whole-query total",
+      "Loaded-table next exposes remaining server rows in original order",
+      "Explicit Record column sort remains available as a deliberate local choice",
+      "Whole-query next page retains current server order",
+      "Superintendent Area workload excludes uncovered Area",
+      "Superintendent loaded table retains its independently scoped server order",
+      "Superintendent retains existing role-specific tabs",
+      "Queue LIGHT1440 viewport contained",
+      "Queue LIGHT1440 long-reference table fits without sideways scrolling",
+      "Queue LIGHT1440 loaded-page caption stays visible",
+      "Queue DARK390 viewport contained",
+      "Queue DARK390 long-reference table fits without sideways scrolling",
+      "Queue DARK390 loaded-page caption stays visible",
+      "No queue page errors",
+      "Superintendent keyboard tabs move to current open workload",
+      "Keyboard return preserves Superintendent assignment view",
+      "Current LIGHT1440 visible supplied brand image is loaded",
+      "Current LIGHT1440 request disclosure opens by keyboard",
+      "Current LIGHT1440 request disclosure closes by keyboard",
+      "Current LIGHT1440 complete supplied request reference is retained",
+      "Current LIGHT1440 visible request table has no horizontal overflow",
+      "Confirmed queue LIGHT1440 viewport contained",
+      "Current DARK390 visible supplied brand image is loaded",
+      "Current DARK390 request disclosure opens by keyboard",
+      "Current DARK390 request disclosure closes by keyboard",
+      "Current DARK390 complete supplied request reference is retained",
+      "Current DARK390 visible request table has no horizontal overflow",
+      "Confirmed queue DARK390 viewport contained",
+      "Capture and keyboard navigation preserve all request rows and immutable history"
+    ],
+    "actualRequests": 43,
+    "superintendentVisibleRequests": 42,
+    "currentCapturesOpened": [
+      ".local/alpha-closure239-confirmation/queue-confirmed-light-1440.png",
+      ".local/alpha-closure239-confirmation/queue-confirmed-dark-390.png"
+    ],
+    "originalCapturesOpened": [
+      ".local/alpha-closure239-confirmation/queue-light-1440.png",
+      ".local/alpha-closure239-confirmation/queue-dark-390.png"
+    ],
+    "pageErrors": [],
+    "keyboard": "Survey tab arrows and request disclosure Enter open/close on desktop/mobile.",
+    "history": "Read-only continuation compares all tenant request/event/assignment/delegation rows before and after captures/keyboard navigation."
+  },
+  "limits": [
+    "Synthetic independently owned schemas with actual HTTP-created/submitted/approved requests; authenticated production browser sessions use current signed fixture cookies, not interactive sign-in.",
+    "Named Manager/Superintendent queue criteria; full role/state/browser navigation, zoom, contrast and entire Alpha acceptance remain open.",
+    "Initial captures showed controls with request rows below the viewport; additional retained-data continuation captures show full wrapped references. No workflows repeated.",
+    "No new wrong-role/revocation HTTP matrix; current full SQL/unit regression gates preserve authorization, tenancy, Team Management and read-only Org Chart coverage.",
+    "Inherited source-map-js/GHSA-68fv-2mgg-jv7q remains separate; production compilation does not establish release readiness."
+  ],
+  "git": {
+    "preCheckpointLocalRemote": "0/0",
+    "mainDivergence": "195 local / 7 remote; no merge",
+    "push": "authorized routine checkpoint; confirm after commit"
+  },
+  "next": "Project/direct-link/back-context navigation and remaining role/state visual acceptance."
+}

@@ -1,0 +1,126 @@
+{
+  "at": "2026-10-03T02:47:13.696Z",
+  "scope": "Disposable PostgreSQL lifecycle fixture; retained Northbank untouched",
+  "checks": [
+    {
+      "name": "Chief move with active work preserves crew, recorded assignments and history",
+      "pass": true
+    },
+    {
+      "name": "Exact reorganization retry creates no duplicate event",
+      "pass": true
+    },
+    {
+      "name": "Stale roster preview rejects a distinct command",
+      "pass": true
+    },
+    {
+      "name": "Intact crew Area change blocks unresolved active work",
+      "pass": true
+    },
+    {
+      "name": "Instrument Man moves roster and named team atomically while active assigned work stays recorded",
+      "pass": true
+    },
+    {
+      "name": "Consecutive Instrument Man movements remain coherent",
+      "pass": true
+    },
+    {
+      "name": "Audit failure rolls back roster, named teams, events and retry ledger",
+      "pass": true
+    },
+    {
+      "name": "Chief cannot invoke Manager reorganization",
+      "pass": true
+    },
+    {
+      "name": "Cross-tenant project is inaccessible",
+      "pass": true
+    },
+    {
+      "name": "Revoked Manager session cannot reuse a staffing command",
+      "pass": true
+    },
+    {
+      "name": "Resolved intact crew movement changes reporting, Area and named team in one command",
+      "pass": true
+    },
+    {
+      "name": "Archived history remains discoverable; organizational mutation stays blocked",
+      "pass": true
+    },
+    {
+      "name": "Project Admin candidate beyond100 is reachable through bounded pages",
+      "pass": true
+    },
+    {
+      "name": "Central IT without a project membership recovers the final Project Admin vacancy",
+      "pass": true
+    },
+    {
+      "name": "Company View batch retry preserves exactly one grant/revoke transition",
+      "pass": true
+    },
+    {
+      "name": "Known, unknown and unknown-tenant recovery requests use the same public response",
+      "pass": true
+    },
+    {
+      "name": "Single-use random token delivered to recorded email through encrypted outbox; payload erased after capture",
+      "pass": true
+    },
+    {
+      "name": "Reset rejects malformed/reused tokens, replaces password, revokes old session and retains history",
+      "pass": true
+    },
+    {
+      "name": "Reset completion audit is durable and contains no password or bearer token",
+      "pass": true
+    },
+    {
+      "name": "Cooldown and account throttle suppress duplicate reset issuance without public account enumeration",
+      "pass": true
+    },
+    {
+      "name": "Expired token cannot reset the account",
+      "pass": true
+    },
+    {
+      "name": "Disabled account cannot use an outstanding token, receive a new token, or renew login",
+      "pass": true
+    },
+    {
+      "name": "Superintendent departure blocks unresolved reporting, coverage, crew or team duties",
+      "pass": true
+    },
+    {
+      "name": "Party Chief departure blocks unresolved reporting, coverage, crew or team duties",
+      "pass": true
+    },
+    {
+      "name": "Tenant Admin departure with an eligible successor revokes previous session",
+      "pass": true
+    },
+    {
+      "name": "Last eligible Tenant Admin cannot be removed or demoted without a successor",
+      "pass": true
+    },
+    {
+      "name": "Final actual Survey Manager removal remains blocked",
+      "pass": true
+    },
+    {
+      "name": "Manager appointment refuses unresolved protected obligations",
+      "pass": true
+    },
+    {
+      "name": "Guarded successor appointment permits separate Manager departure and preserves history",
+      "pass": true
+    },
+    {
+      "name": "Remaining Tenant Admin cannot self-disable",
+      "pass": true
+    }
+  ]
+}

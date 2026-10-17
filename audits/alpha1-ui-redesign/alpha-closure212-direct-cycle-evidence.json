@@ -1,0 +1,158 @@
+{
+  "batch": 212,
+  "baseline": "9108a93",
+  "productionChanged": true,
+  "implementation": "bdad087e8319aa7ed022be03c1feb8a486732883066e1a5c844030450d7fc2c8",
+  "productionFilesMatched": 568,
+  "authority": [
+    "R07 original/current Need-By history",
+    "R02 same-record correction",
+    "Decision35 fresh Survey approval after direct resubmission"
+  ],
+  "scope": "Preserve original Need-By at direct creation and verify the connected correction/fresh-review/completion cycle",
+  "change": "Set originalRequestedDate at direct creation; persist the existing original_requested_date column on insert. Ordinary drafts retain NULL until submission. No historical backfill, migration, endpoint, event or role changes.",
+  "ownership": {
+    "schema": "alpha_direct212_796a4695c56a410fb22cf98c01e434e8",
+    "freshUuidSchema": true,
+    "runtime": "swr-alpha-direct212-final-web",
+    "loopbackPort": 3228,
+    "retainedCustomerDataModified": false
+  },
+  "verification": {
+    "strictUnused": "passed final source",
+    "unitTests": 643,
+    "focusedTests": 18,
+    "pinnedUnits": 643,
+    "pinnedUnitLimit": "All643units rerun and passed inside the exact final pinned runtime after comment-byte restoration.",
+    "pinnedProductionCompilation": "Node22.23.3 matching lock passed",
+    "postgresSuites": 30,
+    "namedAcceptance": 55,
+    "offboardingHttpChecks": 52,
+    "offboardingBrowserChecks": 24,
+    "directCycle": {
+      "checks": 35,
+      "cases": [
+        "requester direct creation refused",
+        "viewer direct creation refused",
+        "instrument direct creation refused",
+        "Actual authorized direct creation starts assigned",
+        "Direct original Need-By persisted at creation",
+        "Direct creation does not fabricate requester submission",
+        "Creation exact retry returns same durable record",
+        "Revision preserves original and changes only current Need-By",
+        "Manager browser returns existing direct field work",
+        "Return ends active staffing without restoring historical ownership",
+        "Requester detail renders original Need-By after revision",
+        "Unsaved requester changes block resubmission",
+        "Uncertain resubmission freezes requester edits",
+        "Actual direct resubmission commits before reply loss",
+        "Direct resubmission retries identical reviewed version/body/key",
+        "Resubmission retains direct identity number variant and creation time",
+        "Resubmitted direct record requires fresh approval and assignment",
+        "First actual requester submission records time and preserves original Need-By and Survey priority",
+        "Direct reassignment before renewed approval refused",
+        "Old field actor cannot restart awaiting review",
+        "Denied stale field actor preserves awaiting-review state",
+        "Requester cannot supply Survey approval",
+        "Fresh Manager browser approval remains separate from assignment",
+        "Corrected direct record completes through current personally assigned field browser",
+        "Original creation assignment date priority events remain byte-identical",
+        "ticket.resubmitted has one current transition",
+        "ticket.approved has one current transition",
+        "ticket.completed has one current transition",
+        "Requester transition notices persisted alongside connected workflow",
+        "Corrected direct request retains actual file bytes",
+        "LIGHT1440 requester detail contains overflow",
+        "LIGHT390 requester detail contains overflow",
+        "DARK1440 requester detail contains overflow",
+        "DARK390 requester detail contains overflow",
+        "No direct-cycle runtime page errors"
+      ],
+      "captures": [
+        ".local/alpha-closure212/direct-uncertain-desktop.png",
+        ".local/alpha-closure212/direct-completed-light-1440.png",
+        ".local/alpha-closure212/direct-completed-light-390.png",
+        ".local/alpha-closure212/direct-completed-dark-1440.png",
+        ".local/alpha-closure212/direct-completed-dark-390.png"
+      ],
+      "pageErrors": []
+    },
+    "directAtomic": {
+      "checks": 9,
+      "cases": [
+        "Actual original-date direct command establishes recorded retry",
+        "Revoked leadership cannot replay recorded direct creation",
+        "Archived lifecycle refuses direct creation replay",
+        "Authority and lifecycle refusals preserve existing direct request",
+        "Actual audit fault refuses newly created date snapshot",
+        "Failed audit rolls back direct request and original/current dates",
+        "Failed audit rolls back recorded creation response",
+        "Exact previously failed command succeeds after fault removed",
+        "Actual committed retry retains original/current initial date"
+      ]
+    }
+  },
+  "captures": [
+    {
+      "path": ".local/alpha-closure212/direct-uncertain-desktop.png",
+      "sha256": "9048312398902f19707eadef4c03376236406e3e1b26f6e864dd3e0849985f6e",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/direct-completed-light-1440.png",
+      "sha256": "ca568e5d96050558e39be78abea09bc8b7416a7d4acc43f663f335d5501c5ada",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/direct-completed-light-390.png",
+      "sha256": "07568f9bb93606f2900041fbdbd600423cf85533a194e63a635c73b8b905c23c",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/direct-completed-dark-1440.png",
+      "sha256": "b32c8e672c629525d93e4fb255d95890d489f911d20e542125c555cfb884e2e6",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/direct-completed-dark-390.png",
+      "sha256": "6a0d8eeccbe4c183d1ccec4a19c66e8fa8f62a26bda27b9f4e15d72ae342608c",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/offboarding/.local-alpha1/browser/desktop.png",
+      "sha256": "12c3db3b05905b1d3e435d728d92e96730e169a52bf762ed293087161ee6ca9b",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/offboarding/.local-alpha1/browser/mobile.png",
+      "sha256": "c5386e4c2a2b3534581b66ce2edbe8b6e9bb936f919b608db85375ea4d1b7c87",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/offboarding/.local-alpha1/browser/reviews-desktop.png",
+      "sha256": "d85e54f30b11ec06a7bebdfd22a1d422ad96b5d6be4a39c78776be76a129abb3",
+      "executorOpened": true
+    },
+    {
+      "path": ".local/alpha-closure212/offboarding/.local-alpha1/browser/reviews-mobile.png",
+      "sha256": "e7acb2e82f621cbd1a73171489c7372421fe36b2c79c4aa550e5c16e76318c7e",
+      "executorOpened": true
+    }
+  ],
+  "limitations": [
+    "Uncertain screenshot is a transient Submitting state; frozen intent and successful identical retry are established by actual requests.",
+    "Offboarding desktop capture retains the completed editor and reviews desktop capture includes an intermediate loading appearance; these are not broad visual clearance.",
+    "Requester notices verified as persisted outbox rows, not inbox consumption or external delivery.",
+    "Existing direct records with missing original snapshots are not silently backfilled.",
+    "Direct creation does not fabricate first submission; first actual requester resubmission legitimately initializes first_submitted_at.",
+    "Old paired Team/Visual receipts remain historical at the prior digest; current units, 30 SQL suites and named gate preserve tested boundaries, not every visual mutation journey.",
+    "Whole Alpha acceptance remains open; release advisory remediation remains separate."
+  ],
+  "excludedAttempts": [
+    "Expected RED date probe and regression failures before correction",
+    "Copied pinned test context initially omitted Dockerfile/compose/writer audit artifacts; corrected full units passed",
+    "Former-IM refusal initially asserted only 403; current non-disclosure 404 is also accepted and final complete fresh journey passed",
+    "Initial atomic helper assumed a nonexistent ledger body column; final helper owns its exact original command",
+    "Read-only offboarding runtime initially used ignored attachment environment setting; explicit writable owned SWR_ATTACHMENT_ROOT fixed verification configuration without production changes"
+  ]
+}

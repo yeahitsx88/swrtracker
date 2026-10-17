@@ -16,14 +16,13 @@ export async function appendAuditEvent(
   event: {
     ticketId:  UUID;
     tenantId:  UUID;
-    actorId:   UUID;
     eventType: AuditEventType;
     payload:   Record<string, unknown>;
-  },
+  } & ({actorId: UUID;actorKind?: 'USER'} | {actorId: null;actorKind: 'SYSTEM'}),
 ): Promise<void> {
   await db.query(
-    `INSERT INTO ticket_events (id, ticket_id, tenant_id, actor_id, event_type, payload, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+    `INSERT INTO ticket_events (id, ticket_id, tenant_id, actor_id, event_type, payload, actor_kind, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
     [
       randomUUID() as UUID,
       event.ticketId,
@@ -31,6 +30,7 @@ export async function appendAuditEvent(
       event.actorId,
       event.eventType,
       JSON.stringify(event.payload),
+      event.actorKind ?? 'USER',
     ],
   );
 }

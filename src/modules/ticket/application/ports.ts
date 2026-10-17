@@ -4,23 +4,44 @@
  */
 import type { DbClient, UUID, Page } from '@/shared/types';
 import type { ProjectRole } from '@/modules/identity/domain/types';
-import type { Ticket, TicketStatus } from '../domain/types';
+import type { PendingPcOutcome, Ticket, TicketPriority, TicketStatus } from '../domain/types';
+import type { ProjectStatus } from '@/modules/tenancy/domain/types';
+import type { ProjectLeadTimeConfig } from '../domain/lead-time-policy';
+import type { TicketQueryFilters } from './query-filters';
 
 export interface TicketStatusPatch {
   status:                   TicketStatus;
+  departmentId?:            UUID | null;
+  ticketNumber?:            string | null;
   submittedAt?:             Date | null;
+  firstSubmittedAt?:        Date | null;
+  originalRequestedDate?:   Date | null;
+  requestedDate?:           Date;
+  returnCycle?:             number;
+  fieldValidationReviewerId?: UUID | null;
   approvedAt?:              Date | null;
   assignedAt?:              Date | null;
   startedAt?:               Date | null;
+  pendingPcOutcome?:        PendingPcOutcome | null;
+  pendingPcReason?:         string | null;
+  surveyCancelRequestedBy?: UUID | null;
+  surveyCancelRequestedRole?: string | null;
+  surveyCancelReason?:      string | null;
+  surveyCancelRequestedAt?: Date | null;
   completedAt?:             Date | null;
   closedAt?:                Date | null;
   rejectionReason?:         string | null;
   assignedPartyChiefId?:    UUID | null;
   assignedInstrumentManId?: UUID | null;
   surveyLeadId?:            UUID | null;
-  isPriority?:              boolean;
-  priorityElevatedBy?:      UUID | null;
-  priorityElevatedReason?:  string | null;
+  priority?:                TicketPriority;
+  prioritySetBy?:           UUID | null;
+  prioritySetReason?:       string | null;
+}
+
+export interface PatchTicketOptions {
+  expectedStatus?: TicketStatus;
+  expectedRowVersion?: number;
 }
 
 /**
@@ -30,10 +51,18 @@ export interface TicketStatusPatch {
 export interface VisibilityScope {
   actorId:   UUID;
   actorRole: ProjectRole;
+  /** Project for which the current access grant was resolved. */
+  projectId?: UUID;
+  /** The actor's project department membership, when visibility depends on department tags. */
+  departmentId?: UUID;
   /** The actor's company_id — used for SUBCONTRACTOR isolation on top of role scoping. */
   companyId: UUID;
-  /** Area IDs the actor may see — only required/used for AREA_VIEWER role. */
-  areaIds?:  UUID[];
+  /** The actor's company type — SUBCONTRACTOR triggers company-level isolation. */
+  companyType?: string;
+  /** AOR node IDs the actor may see — includes descendants for AOR-scoped roles. */
+  aorNodeIds?: UUID[];
+  /** Optional, server-resolved explicit reporting + Area intersection for linked-crew views. */
+  linkedCrewAssignments?: Array<{ partyChiefId: UUID; areaId: UUID }>;
   /**
    * The Party Chief ID the actor reports to — required for INSTRUMENT_MAN role
    * so the repository can filter to that Party Chief's tickets.
@@ -42,13 +71,22 @@ export interface VisibilityScope {
 }
 
 export interface ListTicketsOptions {
+  filters?: TicketQueryFilters;
+  sort?: 'created' | 'operations';
   projectId:         UUID;
   visibility:        VisibilityScope;
   limit:             number;
   offset:            number;
 }
 
+export interface DirectAssignmentAuthority {
+  tenantId: UUID; projectId: UUID; actorId: UUID; actorRole: ProjectRole;
+  aorNodeId: UUID; sessionVersion?: number;
+}
+
 export interface ITicketRepository {
+  /** Locks current leadership and Area authority inside the creation transaction. */
+  lockDirectAssignmentAuthority?(db: DbClient, scope: DirectAssignmentAuthority): Promise<boolean>;
   /** Returns null if ticket doesn't exist or actor cannot see it under visibility rules. */
   findById(db: DbClient, tenantId: UUID, ticketId: UUID, visibility: VisibilityScope): Promise<Ticket | null>;
 
@@ -72,11 +110,41 @@ export interface ITicketRepository {
    */
   nextSequence(db: DbClient, projectId: UUID): Promise<number>;
 
-  /** Fetch the area code string for ticket number generation. */
-  findAreaCode(db: DbClient, tenantId: UUID, areaId: UUID): Promise<string | null>;
+  /** Fetch the AOR node code string for ticket number generation. */
+  findAorNodeCode(db: DbClient, tenantId: UUID, projectId: UUID, aorNodeId: UUID): Promise<string | null>;
+  findDepartmentById(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    departmentId: UUID,
+  ): Promise<{ id: UUID } | null>;
+  findRequesterDepartmentMembership(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    requesterId: UUID,
+  ): Promise<{ departmentId: UUID; title: string | null } | null>;
+  findDepartmentTitlePriority(
+    db: DbClient,
+    tenantId: UUID,
+    departmentId: UUID,
+    title: string,
+  ): Promise<TicketPriority | null>;
+  isEmailWhitelisted(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    email: string,
+  ): Promise<boolean>;
 
   /** Patch ticket status + associated timestamp / field changes. */
-  patchTicket(db: DbClient, tenantId: UUID, ticketId: UUID, patch: TicketStatusPatch): Promise<void>;
+  patchTicket(
+    db: DbClient,
+    tenantId: UUID,
+    ticketId: UUID,
+    patch: TicketStatusPatch,
+    options?: PatchTicketOptions,
+  ): Promise<void>;
 
   /** Paginated list, always scoped to tenantId + visibility rules. */
   list(db: DbClient, tenantId: UUID, opts: ListTicketsOptions): Promise<Page<Ticket>>;
@@ -85,6 +153,8 @@ export interface ITicketRepository {
   findUserCompanyInfo(
     db: DbClient, tenantId: UUID, userId: UUID,
   ): Promise<{ companyId: UUID; companyType: string } | null>;
+
+  hasCompanyAuthority?(db: DbClient, tenantId: UUID, projectId: UUID, userId: UUID, companyId: UUID): Promise<boolean>;
 
   /** Look up the email of a user (for whitelist check at ticket creation). */
   findUserEmail(db: DbClient, tenantId: UUID, userId: UUID): Promise<string | null>;
@@ -98,10 +168,24 @@ export interface ITicketRepository {
   ): Promise<UUID | null>;
 
   /**
-   * Find all area IDs assigned to a user via area_memberships.
-   * Used for AREA_VIEWER visibility scoping.
+   * Find all AOR node IDs assigned to a user, including descendants.
+   * Used for AOR-scoped visibility.
    */
-  findAreaIdsForUser(
+  findAorNodeIdsForUser(
     db: DbClient, projectId: UUID, userId: UUID,
   ): Promise<UUID[]>;
+
+  findProjectStatus(db: DbClient, tenantId: UUID, projectId: UUID): Promise<ProjectStatus | null>;
+  findProjectLeadTimeConfig?(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+  ): Promise<ProjectLeadTimeConfig | null>;
+  isActiveProjectMemberWithRole?(
+    db: DbClient,
+    tenantId: UUID,
+    projectId: UUID,
+    userId: UUID,
+    roles: readonly ProjectRole[],
+  ): Promise<boolean>;
 }
