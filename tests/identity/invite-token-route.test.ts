@@ -18,6 +18,7 @@ function makeDeps(overrides?: Partial<InviteTokenRouteDeps>): InviteTokenRouteDe
   return {
     queryInvite: async () => ({
       tenant_id: 'tenant-1',
+      tenant_name: 'Entergy Amelia',
       project_id: 'project-1',
       company_id: 'company-1',
       email: 'field.user@example.com',
@@ -40,6 +41,7 @@ test('handleGetInviteToken returns invite details for an active token', async ()
   const json = await response.json() as {
     invite: {
       tenantId: string;
+      tenantName: string;
       projectId: string;
       email: string;
       role: string;
@@ -47,6 +49,7 @@ test('handleGetInviteToken returns invite details for an active token', async ()
     };
   };
   assert.equal(json.invite.tenantId, 'tenant-1');
+  assert.equal(json.invite.tenantName, 'Entergy Amelia');
   assert.equal(json.invite.projectId, 'project-1');
   assert.equal(json.invite.email, 'field.user@example.com');
   assert.equal(json.invite.role, 'REQUESTER');
@@ -72,6 +75,7 @@ test('handleGetInviteToken returns 409 when token is expired', async () => {
     makeDeps({
       queryInvite: async () => ({
         tenant_id: 'tenant-1',
+        tenant_name: 'Entergy Amelia',
         project_id: 'project-1',
         company_id: 'company-1',
         email: 'field.user@example.com',

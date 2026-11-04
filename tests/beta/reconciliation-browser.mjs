@@ -11,7 +11,7 @@ const f=JSON.parse(await readFile('.local-reconciliation-fixture.json','utf8'));
 const origin='https://127.0.0.1:3321',browser=await chromium.launch({channel:'msedge',headless:true}),checks=[],captures=[],errors=[];
 const check=(value,label)=>{assert(value,label);checks.push(label);};
 async function login(who,width=1440){const context=await browser.newContext({viewport:{width,height:1000},ignoreHTTPSErrors:true,reducedMotion:'reduce'}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.goto(origin+'/login?returnTo='+encodeURIComponent('/projects/'+f.project));await page.getByLabel('Tenant ID',{exact:true}).fill(f.tenant);await page.getByLabel('Email',{exact:true}).fill(f.people[who]+'@reconciliation.invalid');await page.getByLabel('Password',{exact:true}).fill(f.password);
+ await page.goto(origin+'/login?returnTo='+encodeURIComponent('/projects/'+f.project));await page.getByLabel('Email',{exact:true}).fill(f.people[who]+'@reconciliation.invalid');await page.getByLabel('Password',{exact:true}).fill(f.password);
  const response=page.waitForResponse(r=>r.url()===origin+'/api/auth/login'&&r.request().method()==='POST');await page.getByRole('button',{name:'Sign In',exact:true}).press('Enter');check((await response).status()===200,who+' actual credential login');await page.waitForURL(url=>!url.pathname.startsWith('/login'));return {context,page};}
 async function capture(page,name){await page.waitForLoadState('networkidle');check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' has contained document width');const p='.local/reconciliation-captures/'+name+'.png';await page.screenshot({path:p});captures.push(p);}
 try{

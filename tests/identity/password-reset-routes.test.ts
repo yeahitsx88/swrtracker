@@ -47,6 +47,9 @@ function makeForgotDeps(overrides?: Partial<ForgotPasswordRouteDeps>): ForgotPas
     enqueueResetEmail: async () => undefined,
     resolveAppBaseUrl: () => 'http://localhost:3000',
     allowAttempt: async () => true,
+    findAccountTenants: async () => {
+      throw new Error('email-wide account lookup was not expected');
+    },
     ...overrides,
   };
 }
@@ -89,14 +92,68 @@ test('handlePostForgotPassword returns the same response without a generated tok
 });
 
 test('handlePostForgotPassword returns 400 for invalid payload', async () => {
+  for (const body of [{}, { email: '  ' }, { tenantId: 7, email: 'field.user@example.com' }]) {
+    const response = await handlePostForgotPassword(
+      makeRequest('http://localhost/api/auth/forgot-password', body),
+      makeForgotDeps(),
+    );
+    assert.equal(response.status, 400);
+  }
+});
+
+test('handlePostForgotPassword without a tenant requests a reset in each tenant holding the email', async () => {
+  const tenantA = '10000000-0000-4000-8000-00000000000a';
+  const tenantB = '10000000-0000-4000-8000-00000000000b';
+  const lockedTenants: unknown[] = [];
+  const requested: Array<{ tenantId: string; email: string }> = [];
+  const queued: Array<{ tenantId: string; recipientEmail: string }> = [];
+  let lookedUp = '';
   const response = await handlePostForgotPassword(
-    makeRequest('http://localhost/api/auth/forgot-password', {
-      email: 'field.user@example.com',
+    makeRequest('http://localhost/api/auth/forgot-password', { email: ' Field.User@Example.com ' }),
+    makeForgotDeps({
+      findAccountTenants: async (email) => { lookedUp = email; return [tenantA, tenantB] as never; },
+      withTransaction: async (fn) => fn({
+        query: async <T extends object>(sql: string, params?: unknown[]) => {
+          if (sql.includes('FROM tenants')) lockedTenants.push(params?.[0]);
+          return { rows: [sql.includes('pg_current_xact_id') ? { transaction_id: 'reset-email-only' } : { id: params?.[0] }] as T[] };
+        },
+      }),
+      requestPasswordReset: async (_repo, _db, params) => {
+        requested.push({ tenantId: params.tenantId, email: params.email });
+        return { resetToken: `token-${params.tenantId}` };
+      },
+      enqueueResetEmail: async (_db, params) => {
+        queued.push({ tenantId: params.tenantId, recipientEmail: params.recipientEmail });
+      },
     }),
-    makeForgotDeps(),
   );
 
-  assert.equal(response.status, 400);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { success: true });
+  assert.equal(lookedUp, 'field.user@example.com');
+  assert.deepEqual(lockedTenants, [tenantA, tenantB]);
+  assert.deepEqual(requested, [
+    { tenantId: tenantA, email: 'field.user@example.com' },
+    { tenantId: tenantB, email: 'field.user@example.com' },
+  ]);
+  assert.deepEqual(queued, [
+    { tenantId: tenantA, recipientEmail: 'field.user@example.com' },
+    { tenantId: tenantB, recipientEmail: 'field.user@example.com' },
+  ]);
+});
+
+test('handlePostForgotPassword without a tenant gives the same reply for an unknown email', async () => {
+  let transactions = 0;
+  const response = await handlePostForgotPassword(
+    makeRequest('http://localhost/api/auth/forgot-password', { email: 'nobody@example.com' }),
+    makeForgotDeps({
+      findAccountTenants: async () => [],
+      withTransaction: async (fn) => { transactions += 1; return fn(db); },
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { success: true });
+  assert.equal(transactions, 0);
 });
 
 test('handlePostForgotPassword enqueues reset email only when token is generated', async () => {

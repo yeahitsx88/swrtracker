@@ -9,6 +9,20 @@
 import type { User, UserWithCredentials } from '../domain/types';
 import type { DbClient, UUID } from '@/shared/types';
 
+/** A LOCAL account found by email before any tenant is known (Decision 58). */
+export interface EmailAccount extends UserWithCredentials {
+  tenantName: string;
+}
+
+/**
+ * Pre-authentication lookup for email-only Sign In and Forgot Password.
+ * The only Identity read that is not scoped by tenant_id; its results must not
+ * leave the server until a password has matched.
+ */
+export interface IEmailAccountLookup {
+  findLocalAccountsByEmail(db: DbClient, email: string, limit: number): Promise<EmailAccount[]>;
+}
+
 export interface IUserRepository {
   findByEmail(db: DbClient, tenantId: UUID, email: string): Promise<UserWithCredentials | null>;
   findById(db: DbClient, tenantId: UUID, userId: UUID): Promise<User | null>;

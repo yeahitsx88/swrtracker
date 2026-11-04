@@ -1,16 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { readRememberedTenant } from '@/lib/remembered-tenant';
+import { useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
 import { Field } from '@/components/forms';
 
 export default function ForgotPasswordPage() {
-  const [tenantId, setTenantId] = useState('');
-  useEffect(() => { setTenantId(current => current || readRememberedTenant()); }, []);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,8 +15,8 @@ export default function ForgotPasswordPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!tenantId.trim() || !email.trim()) {
-      setError('Tenant ID and email are required.');
+    if (!email.trim()) {
+      setError('Email is required.');
       return;
     }
 
@@ -28,10 +25,7 @@ export default function ForgotPasswordPage() {
     setSuccess(null);
 
     try {
-      await apiClient.forgotPassword({
-        tenantId: tenantId.trim(),
-        email: email.trim().toLowerCase(),
-      });
+      await apiClient.forgotPassword({ email: email.trim().toLowerCase() });
       setSuccess('If an eligible account exists, a reset link will be sent to its email address.');
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to process password reset request right now.'));
@@ -43,14 +37,11 @@ export default function ForgotPasswordPage() {
   return (
     <Card
       title="Forgot Password"
-      description="Enter your tenant ID and account email to request a password reset."
+      description="Enter your account email to request a password reset."
     >
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
-        <Field label="Tenant ID">
-          <Input value={tenantId} onChange={(event) => setTenantId(event.target.value)} required />
-        </Field>
         <Field label="Email">
           <Input
             type="email"

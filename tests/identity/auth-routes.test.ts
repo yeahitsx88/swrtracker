@@ -85,11 +85,15 @@ function makeLoginDeps(overrides?: Partial<LoginRouteDeps>): LoginRouteDeps {
   return {
     db,
     createRepo: () => makeRepo(),
+    createEmailLookup: () => ({ findLocalAccountsByEmail: async () => [] }),
     createRateLimiter: () => rateLimiter,
     authenticateUser: async () => ({
       user: makeUser(),
       token: 'test-jwt-token',
     }),
+    signInByEmail: async () => {
+      throw new Error('email-only sign-in was not expected');
+    },
     ...overrides,
   };
 }
@@ -335,9 +339,63 @@ test('handlePostLogin returns 429 when login attempts are rate limited', async (
   assert.equal(json.error.code, 'AUTH_RATE_LIMITED');
 });
 
+test('handlePostLogin without a tenant signs in by email and sets the session cookie', async () => {
+  let received: { email: string; password: string } | null = null;
+  const response = await handlePostLogin(
+    makeRequest('http://localhost/api/auth/login', {
+      email: ' Field.User@Example.com ',
+      password: 'strong-password',
+    }),
+    makeLoginDeps({
+      authenticateUser: async () => {
+        throw new Error('tenant-scoped sign-in was not expected');
+      },
+      signInByEmail: async (_lookup, _rateLimiter, _db, params) => {
+        received = params;
+        return { kind: 'signed-in', user: makeUser(), token: 'email-jwt-token' };
+      },
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(received, { email: 'field.user@example.com', password: 'strong-password' });
+  const json = await response.json() as { user: User };
+  assert.equal(json.user.tenantId, tenantId);
+  assert.match(response.headers.get('set-cookie') ?? '', /swr_session=email-jwt-token/);
+});
+
+test('handlePostLogin returns only the matched organizations and no session when several match', async () => {
+  const organizations = [
+    { tenantId, name: 'Entergy Amelia' },
+    { tenantId: '10000000-0000-4000-8000-000000000009' as UUID, name: 'Other Organization' },
+  ];
+  const response = await handlePostLogin(
+    makeRequest('http://localhost/api/auth/login', { email: 'field.user@example.com', password: 'strong-password' }),
+    makeLoginDeps({
+      signInByEmail: async () => ({ kind: 'choose-organization', organizations }),
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { organizations });
+  assert.equal(response.headers.get('set-cookie'), null);
+});
+
+test('handlePostLogin returns 401 from email-only sign-in for an unknown email or wrong password', async () => {
+  const response = await handlePostLogin(
+    makeRequest('http://localhost/api/auth/login', { email: 'field.user@example.com', password: 'wrong-password' }),
+    makeLoginDeps({
+      signInByEmail: async () => {
+        throw new UnauthorizedError('Invalid email or password');
+      },
+    }),
+  );
+  assert.equal(response.status, 401);
+});
+
 test('login rejects malformed JSON, invalid tenant IDs and empty credentials before authentication',async()=>{
- let called=false;const deps=makeLoginDeps({authenticateUser:async()=>{called=true;throw new Error('must not authenticate');}});
- for(const body of ['{',JSON.stringify({tenantId:'not-a-uuid',email:'person@example.invalid',password:'x'}),JSON.stringify({tenantId,email:' ',password:'x'}),JSON.stringify({tenantId,email:'person@example.invalid',password:''})]) {
+ let called=false;const deps=makeLoginDeps({authenticateUser:async()=>{called=true;throw new Error('must not authenticate');},signInByEmail:async()=>{called=true;throw new Error('must not authenticate');}});
+ for(const body of ['{',JSON.stringify({tenantId:'not-a-uuid',email:'person@example.invalid',password:'x'}),JSON.stringify({tenantId,email:' ',password:'x'}),JSON.stringify({tenantId,email:'person@example.invalid',password:''}),JSON.stringify({email:' ',password:'x'}),JSON.stringify({email:'person@example.invalid',password:''}),JSON.stringify({password:'x'}),JSON.stringify({tenantId:7,email:'person@example.invalid',password:'x'})]) {
   const response=await handlePostLogin(new NextRequest('http://localhost/api/auth/login',{method:'POST',body}),deps);
   assert.equal(response.status,400);
  }

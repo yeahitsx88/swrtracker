@@ -5,6 +5,7 @@ import { pool } from '@/lib/db';
 
 interface InviteRow {
   tenant_id: string;
+  tenant_name: string;
   project_id: string;
   company_id: string | null;
   email: string;
@@ -20,11 +21,12 @@ export interface InviteTokenRouteDeps {
 const defaultDeps: InviteTokenRouteDeps = {
   queryInvite: async (token) => {
     const { rows } = await pool.query<InviteRow>(
-      `SELECT tenant_id, project_id, company_id, email, role, expires_at
-       FROM invites
-       WHERE token = $1
-         AND accepted_at IS NULL
-         AND canceled_at IS NULL
+      `SELECT i.tenant_id, t.name AS tenant_name, i.project_id, i.company_id, i.email, i.role, i.expires_at
+       FROM invites i
+       JOIN tenants t ON t.id = i.tenant_id
+       WHERE i.token = $1
+         AND i.accepted_at IS NULL
+         AND i.canceled_at IS NULL
        LIMIT 1`,
       [token],
     );
@@ -55,6 +57,7 @@ export async function handleGetInviteToken(
     return NextResponse.json({
       invite: {
         tenantId: invite.tenant_id,
+        tenantName: invite.tenant_name,
         projectId: invite.project_id,
         email: invite.email,
         role: invite.role,
