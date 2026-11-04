@@ -9,6 +9,7 @@ import type {
   ForgotPasswordResponse,
   InviteValidationResponse,
   LoginRequest,
+  LoginResponse,
   RegisterRequest,
   ResetPasswordRequest,
   ResetPasswordResponse,
@@ -180,8 +181,8 @@ export const apiClient = {
     return apiRequest(withQuery('/api/account', { projectId }));
   },
 
-  login(input: LoginRequest): Promise<AuthResponse> {
-    return apiRequest<AuthResponse>('/api/auth/login', { method: 'POST', body: input });
+  login(input: LoginRequest): Promise<LoginResponse> {
+    return apiRequest<LoginResponse>('/api/auth/login', { method: 'POST', body: input });
   },
 
   register(input: RegisterRequest): Promise<AuthResponse> {

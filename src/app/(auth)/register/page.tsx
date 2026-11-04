@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { getErrorMessage } from '@/lib/errors';
 import { Button, Card, ErrorBanner, Input, SuccessBanner } from '@/components/ui';
@@ -27,12 +27,30 @@ function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const tenantLocked = Boolean(inviteToken && tenantId);
   const emailLocked = Boolean(inviteToken && email);
+
+  // Decision 58: the organization comes from the invitation, never typed. Links
+  // from the invitation page carry it; otherwise resolve it from the token.
+  useEffect(() => {
+    if (!inviteToken?.trim() || tenantId) return;
+    let active = true;
+    apiClient.validateInvite(inviteToken.trim())
+      .then((result) => { if (active) setTenantId(result.invite.tenantId); })
+      .catch((err: unknown) => { if (active) setError(getErrorMessage(err, 'Unable to validate invite token.')); });
+    return () => { active = false; };
+  }, [inviteToken, tenantId]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!tenantId.trim() || !name.trim() || !email.trim() || !password || !inviteToken?.trim()) {
+    if (!inviteToken?.trim()) {
+      setError('Open the invitation link you received to create an account.');
+      return;
+    }
+    if (!tenantId.trim()) {
+      setError('The invitation is still being checked. Try again in a moment.');
+      return;
+    }
+    if (!name.trim() || !email.trim() || !password) {
       setError('All registration fields are required.');
       return;
     }
@@ -48,7 +66,7 @@ function RegisterForm() {
         inviteToken: inviteToken.trim(),
       });
       setSuccess('Registration complete. Sign in with your new credentials.');
-      router.push(`/login?tenantId=${encodeURIComponent(tenantId.trim())}&email=${encodeURIComponent(email.trim())}`);
+      router.push(`/login?email=${encodeURIComponent(email.trim())}`);
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to register right now.'));
     } finally {
@@ -62,14 +80,6 @@ function RegisterForm() {
         {error ? <ErrorBanner message={error} /> : null}
         {success ? <SuccessBanner message={success} /> : null}
         {inviteToken ? <p className="muted">Your invitation determines company and project access.</p> : <p className="muted">Ask your project administrator for an invitation link.</p>}
-        <Field label="Tenant ID">
-          <Input
-            value={tenantId}
-            onChange={(event) => setTenantId(event.target.value)}
-            readOnly={tenantLocked}
-            required
-          />
-        </Field>
         <Field label="Full Name">
           <Input value={name} onChange={(event) => setName(event.target.value)} required />
         </Field>

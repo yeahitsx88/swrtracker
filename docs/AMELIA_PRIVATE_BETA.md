@@ -53,7 +53,7 @@ pnpm beta:stop
 
 ## Shared beta identifiers
 
-The login currently requires the tenant ID in addition to the user credentials. After sign-in, choose **Entergy Amelia** from the project launcher; the project ID remains useful for direct links and troubleshooting.
+Sign in with email and password only (Decision 58). After sign-in, choose **Entergy Amelia** from the project launcher; the tenant and project IDs remain useful for direct links, API calls and troubleshooting.
 
 | Field | Value |
 |---|---|
@@ -91,7 +91,7 @@ The seeded queue is designed to populate the Survey Operations priorities and al
 Use a private browser window or sign out between roles so each step uses the intended identity.
 
 1. **Requester correction and resubmission**
-   - Sign in as `requester@amelia.local` using the tenant ID above.
+   - Sign in as `requester@amelia.local`.
    - Choose **Entergy Amelia** in **Project Launcher**, then open **Requests**.
    - Open the returned SWR, change a requester field, and save it.
    - Upload a replacement instruction file, then select **Resubmit for Approval**. The same SWR number should remain in use through the new approval cycle.

@@ -52,7 +52,7 @@ Branch `alpha1-audit-hardening`. Owner-authorized scope: end-to-end workflow val
 
 1. **Rejection notifies no one.** Approval queues a requester notice; rejection queues none. Notification recipients are an open requirement (REQUIREMENTS item 5), so this was not changed.
 2. **Requester uploads after submission.** No upload is offered to the requester once submitted. Attachment behavior is an open requirement; not changed.
-3. **Sign-in by organization.** Users must know the tenant id unless their link carries it. Looking it up from the email address would remove this, but it trades off account enumeration. Product and security decision.
+3. **Sign-in by organization.** Users must know the tenant id unless their link carries it. Looking it up from the email address would remove this, but it trades off account enumeration. Product and security decision. *Resolved 2026-11-04 by Decision 58 (Batch 302): email and password only; the organization is resolved after the password check.*
 4. **Sign-in redirect origin (dev).** In the dev server, the middleware redirect for a signed-out visit switches `127.0.0.1` to `localhost` (absolute URL from `req.url`). A relative redirect is rejected by Next middleware ("Invalid URL"), and header-derived hosts risk open redirects, so this was reverted unchanged. Verify on a production build and proxy before changing.
 5. **Remaining governed evidence ids.** The Superintendent cleanup flow intentionally shows exact assignment and grant ids as evidence; left as is.
 

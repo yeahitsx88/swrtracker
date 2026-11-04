@@ -6,10 +6,23 @@ export interface AuthUser {
 }
 
 export interface LoginRequest {
-  tenantId: string;
+  /** Optional (Decision 58): sent only after choosing among matched organizations. */
+  tenantId?: string;
   email: string;
   password: string;
 }
+
+export interface OrganizationChoice {
+  tenantId: string;
+  name: string;
+}
+
+/** The password matched in several organizations; no session was issued. */
+export interface OrganizationChoiceResponse {
+  organizations: OrganizationChoice[];
+}
+
+export type LoginResponse = AuthResponse | OrganizationChoiceResponse;
 
 export interface RegisterRequest {
   tenantId: string;
@@ -24,7 +37,8 @@ export interface AuthResponse {
 }
 
 export interface ForgotPasswordRequest {
-  tenantId: string;
+  /** Optional (Decision 58): without it every organization with this email is covered. */
+  tenantId?: string;
   email: string;
 }
 
@@ -44,6 +58,7 @@ export interface ResetPasswordResponse {
 export interface InviteValidationResponse {
   invite: {
     tenantId: string;
+    tenantName: string;
     projectId: string;
     email: string;
     role: string;

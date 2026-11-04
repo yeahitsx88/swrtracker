@@ -5,9 +5,15 @@
 export type { User, UserWithCredentials, ProjectMembership, Role, ProjectRole, TenantRole }
   from '../domain/types';
 
-export type { IUserRepository }     from './ports';
+export type { EmailAccount, IEmailAccountLookup, IUserRepository } from './ports';
 export type { CreateUserParams }    from './create-user';
-export type { AuthenticateParams, AuthenticateResult } from './authenticate';
+export type {
+  AuthenticateParams,
+  AuthenticateResult,
+  EmailSignInParams,
+  EmailSignInResult,
+  OrganizationChoice,
+} from './authenticate';
 export type {
   IPasswordResetRepository,
   PasswordResetToken,
@@ -17,5 +23,5 @@ export type {
 } from './password-reset';
 
 export { createUser }       from './create-user';
-export { authenticateUser } from './authenticate';
+export { authenticateUser, signInByEmail, MAX_EMAIL_SIGN_IN_ACCOUNTS } from './authenticate';
 export { requestPasswordReset, resetPassword, hashPasswordResetToken } from './password-reset';

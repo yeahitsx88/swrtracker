@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
-import { readRememberedTenant, rememberTenant, TENANT_HELP } from '@/lib/remembered-tenant';
+import { Suspense, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
+import type { OrganizationChoice } from '@/lib/contracts';
 import { getErrorMessage } from '@/lib/errors';
 import { getSafeReturnPath } from '@/lib/safe-return-path';
 import { Button, Card, ErrorBanner, Input } from '@/components/ui';
@@ -21,26 +21,22 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tenantId, setTenantId] = useState(searchParams.get('tenantId') ?? '');
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [password, setPassword] = useState('');
+  const [organizations, setOrganizations] = useState<OrganizationChoice[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  useEffect(() => { if (!searchParams.get('tenantId')) setTenantId(current => current || readRememberedTenant()); }, [searchParams]);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!tenantId.trim() || !email.trim() || !password) {
-      setError('Tenant ID, email, and password are required.');
-      return;
-    }
+  async function signIn(tenantId?: string) {
     setError(null);
     setLoading(true);
     try {
-      await apiClient.login({ tenantId: tenantId.trim(), email: email.trim(), password });
-      rememberTenant(tenantId.trim());
-      const returnTo = getSafeReturnPath(searchParams.get('returnTo'));
-      router.push(returnTo);
+      const result = await apiClient.login({ email: email.trim(), password, ...(tenantId ? { tenantId } : {}) });
+      if ('organizations' in result) {
+        setOrganizations(result.organizations);
+        return;
+      }
+      router.push(getSafeReturnPath(searchParams.get('returnTo')));
       router.refresh();
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to sign in at this time.'));
@@ -49,14 +45,47 @@ function LoginForm() {
     }
   }
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!email.trim() || !password) {
+      setError('Email and password are required.');
+      return;
+    }
+    await signIn();
+  }
+
+  function startOver() {
+    setOrganizations(null);
+    setPassword('');
+    setError(null);
+  }
+
+  if (organizations) {
+    return (
+      <Card title="Choose Organization" description={`${email.trim()} has an account in more than one organization. Choose where to sign in.`}>
+        <div className="stack">
+          {error ? <ErrorBanner message={error} /> : null}
+          <ul className="stack" aria-label="Organizations" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {organizations.map((organization) => (
+              <li key={organization.tenantId}>
+                <Button type="button" disabled={loading} onClick={() => void signIn(organization.tenantId)} style={{ width: '100%' }}>
+                  {organization.name}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <Button type="button" variant="secondary" disabled={loading} onClick={startOver}>
+            Use a different account
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card title="Sign In" description="Submit and track survey work requests for your project.">
       <form className="stack" onSubmit={handleSubmit}>
         {error ? <ErrorBanner message={error} /> : null}
-        <Field label="Tenant ID">
-          <Input value={tenantId} onChange={(event) => setTenantId(event.target.value)} required aria-describedby="tenant-help" />
-          <span id="tenant-help" className="muted field-help">{TENANT_HELP}</span>
-        </Field>
         <Field label="Email">
           <Input
             type="email"

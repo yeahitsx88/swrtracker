@@ -50,7 +50,7 @@ export default function InvitePage() {
         <div className="stack">
           <p className="muted">Email: {invite.email}</p>
           <p className="muted">Role: {invite.role}</p>
-          <p className="muted">Tenant: {invite.tenantId}</p>
+          <p className="muted">Organization: {invite.tenantName}</p>
           <p className="muted">Project: {invite.projectId}</p>
           <p className="muted">Expires: {new Date(invite.expiresAt).toLocaleString()}</p>
           <Link

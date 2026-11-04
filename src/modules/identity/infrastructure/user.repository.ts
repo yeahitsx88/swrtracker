@@ -3,11 +3,12 @@
  *
  * Accepts DbClient on every method — consistent with all other repositories.
  * This allows callers to pass a pool client inside a pg transaction when needed.
- * All queries are scoped by tenant_id. Never expose password_hash outside this file.
+ * All queries are scoped by tenant_id, except the Decision 58 pre-authentication
+ * email lookup (findLocalAccountsByEmail). Never expose password_hash outside Identity.
  */
 import type { DbClient, UUID } from '@/shared/types';
 import type { AuthMethod, User, UserWithCredentials } from '../domain/types';
-import type { IUserRepository } from '../application/ports';
+import type { EmailAccount, IEmailAccountLookup, IUserRepository } from '../application/ports';
 import type { PasswordResetToken } from '../application/password-reset';
 import { ConflictError, ValidationError } from '@/shared/errors';
 
@@ -63,7 +64,7 @@ function rowToUser(row: DbRow): User {
   };
 }
 
-export class UserRepository implements IUserRepository {
+export class UserRepository implements IUserRepository, IEmailAccountLookup {
   async findNamesByIds(
     db: DbClient,
     tenantId: UUID,
@@ -89,6 +90,22 @@ export class UserRepository implements IUserRepository {
       [tenantId, email],
     );
     return rows[0] ? rowToUserWithCreds(rows[0]) : null;
+  }
+
+  /** Decision 58 pre-authentication lookup; the one users read not scoped by tenant_id. */
+  async findLocalAccountsByEmail(db: DbClient, email: string, limit: number): Promise<EmailAccount[]> {
+    const { rows } = await db.query<DbRow & { tenant_name: string }>(
+      `SELECT u.id, u.tenant_id, u.company_id, u.email, u.password_hash, u.auth_method, u.name,
+              u.session_version, u.deactivated_at, u.created_at, t.name AS tenant_name
+       FROM users u
+       JOIN tenants t ON t.id = u.tenant_id
+       WHERE LOWER(u.email) = LOWER($1)
+         AND u.auth_method = 'LOCAL'
+       ORDER BY t.name, u.tenant_id
+       LIMIT $2`,
+      [email, limit],
+    );
+    return rows.map((row) => ({ ...rowToUserWithCreds(row), tenantName: row.tenant_name }));
   }
 
   async findById(db: DbClient, tenantId: UUID, userId: UUID): Promise<User | null> {
