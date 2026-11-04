@@ -5238,4 +5238,11 @@ User requested finishing next checkpoint, committing ALL uncommitted work, pushi
   - Baseline before the change (host, Node 24.13.1): strict typecheck passes, 777/777 units pass, and the audit fails with exactly the two advisories.
   - Host after the change: `pnpm audit --prod --audit-level=high` reports "No known vulnerabilities found"; strict typecheck passes; 777/777 units pass; `pnpm build` passes on Next.js 15.5.28 with only the existing worktree workspace-root lockfile notice.
   - Pinned image: `docker build --target runtime -t swr-next15528 .` on node:22.23.3-bookworm-slim. Frozen install, audit (clean), strict typecheck, 777/777 units and production build all pass. The image reports Node 22.23.3, next 15.5.28, sharp 0.35.5 (libvips 8.18.7) and postcss 8.5.28. The image was removed afterwards.
-- Limitations: PostgreSQL, HTTP and browser acceptance were not run, because this is a dependency-only patch with no source or migration change. 15.5.28 has not been run against a live fixture. No retained database or existing swr-* container was touched.
+  - Manual smoke test on a newly owned disposable fixture. Setup: a postgres:15 container `swr-smoke303-db-ff2388f0` on its own network, published on loopback 15530; migrations 001–049 applied with db/migrate.ts and seeded with scripts/seed-amelia-beta.ts. The pinned runtime image ran with a generated JWT secret on loopback 3340. Results in the in-app browser:
+    - The seeded Requester signed in and opened Entergy Amelia.
+    - A Layout request (North Area, need-by 2026-11-12) went through all six wizard steps with a staged 96x64 PNG and submitted as FSS-NORTH-00006 (Pending Review). The PNG was placed in the file input by script, because the browser cannot drive the native file picker.
+    - The PNG uploaded, and Preview rendered it from the authenticated attachment route.
+    - The login logo loaded through `/_next/image` (200). Direct optimizer requests returned image/webp for `/brand/axiom-icon.png` and 400 for a remote SVG URL.
+    - There were no browser console errors and no server ERROR/WARN log lines.
+    - The fixture's containers, volume, network, image and generated secrets were removed afterwards.
+- Limitations: maintained PostgreSQL, HTTP and browser acceptance runners were not run locally, because this is a dependency-only patch with no source or migration change; PR CI runs `pnpm test:postgres`. The smoke test covered one Requester path only. No retained database or existing swr-* container was touched.
